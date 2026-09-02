@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,7 +124,7 @@ export default function PlanCurrencyPage() {
                 <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><CalendarCheck className="h-4 w-4 text-[var(--cs-teal-strong)]" /> Plan review currency</div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{data.headline}</p>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <Stat value={`${s.currency_rate}%`} label="In date" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
+                  <Stat value={`${formatRate(s.currency_rate)}`} label="In date" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
                   <Stat value={s.overdue} label="Overdue" tone="bg-red-50 border-red-200 text-red-800" Icon={AlertOctagon} />
                   <Stat value={s.due_soon} label="Due within 30d" tone="bg-amber-50 border-amber-200 text-amber-800" Icon={Clock} />
                   <Stat value={s.no_date} label="No review date" tone="bg-[var(--cs-bg)] border-[var(--cs-border)] text-[var(--cs-navy)]" Icon={FileWarning} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, GraduationCap } from "lucide-react";
@@ -74,23 +75,23 @@ export function HomeStaffCompetencyTrainingIntelligenceCard() {
         {d.competency_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", (d.staff_assessed_rate ?? 0) >= 90 ? "bg-green-50" : (d.staff_assessed_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.staff_assessed_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_assessed_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_assessed_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.staff_assessed_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_assessed_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_assessed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Assessed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.competent_or_above_rate ?? 0) >= 80 ? "bg-green-50" : (d.competent_or_above_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.competent_or_above_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.competent_or_above_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.competent_or_above_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.competent_or_above_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.competent_or_above_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.competent_or_above_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Competent+</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.training_compliance_rate ?? 0) >= 90 ? "bg-green-50" : (d.training_compliance_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.training_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.training_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_compliance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.training_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.training_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.training_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.cpd_engagement_rate ?? 0) >= 80 ? "bg-green-50" : (d.cpd_engagement_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.cpd_engagement_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.cpd_engagement_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cpd_engagement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.cpd_engagement_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.cpd_engagement_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cpd_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">CPD</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.handbook_acknowledgement_rate ?? 0) >= 90 ? "bg-green-50" : (d.handbook_acknowledgement_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.handbook_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.handbook_acknowledgement_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handbook_acknowledgement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.handbook_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.handbook_acknowledgement_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handbook_acknowledgement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Handbook</p>
             </div>
           </div>

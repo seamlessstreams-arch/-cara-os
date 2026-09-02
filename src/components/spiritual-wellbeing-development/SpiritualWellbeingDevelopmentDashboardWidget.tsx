@@ -140,8 +140,8 @@ export function SpiritualWellbeingDevelopmentDashboardWidget() {
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
               <div>Activities: {child.totalActivities}</div>
-              <div>Engagement: {child.engagementRate}%</div>
-              <div>Child Choice: {child.childChoiceRate}%</div>
+              <div>Engagement: {formatRate(child.engagementRate)}</div>
+              <div>Child Choice: {formatRate(child.childChoiceRate)}</div>
             </div>
           </div>
         ))}

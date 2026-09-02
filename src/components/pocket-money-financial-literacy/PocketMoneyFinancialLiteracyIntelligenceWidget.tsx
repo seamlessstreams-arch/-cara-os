@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -70,26 +71,26 @@ export function PocketMoneyFinancialLiteracyIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Sessions" value={quality.totalSessions} />
-        <Stat label="Competency" value={`${quality.competencyRate}%`} />
+        <Stat label="Competency" value={`${formatRate(quality.competencyRate)}`} />
         <Stat label="Staff" value={staffReadiness.totalStaff} />
       </div>
 
       <Section title="Financial Quality" defaultOpen>
         <ScoreBar label="Financial Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Competency" value={`${quality.competencyRate}%`} />
-          <Stat label="Engagement" value={`${quality.engagementRate}%`} />
-          <Stat label="Practical Application" value={`${quality.practicalApplicationRate}%`} />
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
+          <Stat label="Competency" value={`${formatRate(quality.competencyRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(quality.engagementRate)}`} />
+          <Stat label="Practical Application" value={`${formatRateLoose(quality.practicalApplicationRate)}`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="Financial Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback Given" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback Given" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Skill Diversity" value={`${compliance.skillTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -109,12 +110,12 @@ export function PocketMoneyFinancialLiteracyIntelligenceWidget() {
       <Section title="Staff Financial Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Education Skills" value={`${staffReadiness.financialEducationSkillsRate}%`} />
-          <Stat label="Budgeting Support" value={`${staffReadiness.budgetingSupportRate}%`} />
-          <Stat label="Age Teaching" value={`${staffReadiness.ageAppropriateTeachingRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingFinancialAbuseRate}%`} />
-          <Stat label="Independence" value={`${staffReadiness.independencePromotionSkillsRate}%`} />
-          <Stat label="Record Keeping" value={`${staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Education Skills" value={`${formatRateLoose(staffReadiness.financialEducationSkillsRate)}`} />
+          <Stat label="Budgeting Support" value={`${formatRateLoose(staffReadiness.budgetingSupportRate)}`} />
+          <Stat label="Age Teaching" value={`${formatRateLoose(staffReadiness.ageAppropriateTeachingRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRateLoose(staffReadiness.safeguardingFinancialAbuseRate)}`} />
+          <Stat label="Independence" value={`${formatRateLoose(staffReadiness.independencePromotionSkillsRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staffReadiness.recordKeepingRate)}`} />
         </div>
       </Section>
 

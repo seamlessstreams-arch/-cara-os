@@ -7,6 +7,7 @@
 // Powered by the Health & Wellbeing Intelligence Engine — live data (Reg 23/7).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -168,7 +169,7 @@ export function HealthIntelligenceCard() {
               "text-sm font-bold tabular-nums",
               (appointments.dna_rate ?? 0) <= 5 ? "text-[--cs-success]" : (appointments.dna_rate ?? 0) <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {appointments.dna_rate}%
+              {formatRate(appointments.dna_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DNA rate</p>
           </div>

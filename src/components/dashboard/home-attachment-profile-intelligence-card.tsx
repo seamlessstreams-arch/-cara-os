@@ -78,15 +78,15 @@ export function HomeAttachmentProfileIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Profiles</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.children_with_profile_rate, 80) ? "bg-green-50" : meets(d.children_with_profile_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_with_profile_rate, 80) ? "text-[--cs-success]" : meets(d.children_with_profile_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_with_profile_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_with_profile_rate, 80) ? "text-[--cs-success]" : meets(d.children_with_profile_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_with_profile_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.active_profile_rate, 85) ? "bg-green-50" : meets(d.active_profile_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.active_profile_rate, 85) ? "text-[--cs-success]" : meets(d.active_profile_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.active_profile_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.active_profile_rate, 85) ? "text-[--cs-success]" : meets(d.active_profile_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.active_profile_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.behaviour_analysis_rate, 75) ? "bg-green-50" : meets(d.behaviour_analysis_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.behaviour_analysis_rate, 75) ? "text-[--cs-success]" : meets(d.behaviour_analysis_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.behaviour_analysis_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.behaviour_analysis_rate, 75) ? "text-[--cs-success]" : meets(d.behaviour_analysis_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.behaviour_analysis_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Analysis</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 80) ? "bg-green-50" : meets(d.child_voice_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
@@ -94,7 +94,7 @@ export function HomeAttachmentProfileIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_guidance_rate, 80) ? "bg-green-50" : meets(d.staff_guidance_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_guidance_rate, 80) ? "text-[--cs-success]" : meets(d.staff_guidance_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_guidance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_guidance_rate, 80) ? "text-[--cs-success]" : meets(d.staff_guidance_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_guidance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Guidance</p>
             </div>
           </div>

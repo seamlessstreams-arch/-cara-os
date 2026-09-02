@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function FireSafetyIntelligenceWidget() {
       <Section title="Fire Safety Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Drill Completion" value={`${quality.drillCompletedSuccessfullyRate}%`} />
-          <Stat label="Children Accounted" value={`${quality.allChildrenAccountedRate}%`} />
-          <Stat label="Evacuation Time Recorded" value={`${quality.evacuationTimeRecordedRate}%`} />
-          <Stat label="Equipment Functional" value={`${quality.equipmentFunctionalRate}%`} />
+          <Stat label="Drill Completion" value={`${formatRate(quality.drillCompletedSuccessfullyRate)}`} />
+          <Stat label="Children Accounted" value={`${formatRate(quality.allChildrenAccountedRate)}`} />
+          <Stat label="Evacuation Time Recorded" value={`${formatRate(quality.evacuationTimeRecordedRate)}`} />
+          <Stat label="Equipment Functional" value={`${formatRate(quality.equipmentFunctionalRate)}`} />
         </div>
       </Section>
 
       <Section title="Fire Safety Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Children Accounted" value={`${compliance.allChildrenAccountedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Children Accounted" value={`${formatRate(compliance.allChildrenAccountedRate)}`} />
           <Stat label="Categories Covered" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function FireSafetyIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Fire Warden Training" value={`${staff.fireWardenTrainingRate}%`} />
-          <Stat label="Evacuation Knowledge" value={`${staff.evacuationProcedureKnowledgeRate}%`} />
-          <Stat label="Extinguisher Use" value={`${staff.fireExtinguisherUseRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.fireRiskAssessmentRate}%`} />
-          <Stat label="Alarm System" value={`${staff.alarmSystemKnowledgeRate}%`} />
-          <Stat label="First Aid (Fire)" value={`${staff.firstAidFireInjuryRate}%`} />
+          <Stat label="Fire Warden Training" value={`${formatRate(staff.fireWardenTrainingRate)}`} />
+          <Stat label="Evacuation Knowledge" value={`${formatRate(staff.evacuationProcedureKnowledgeRate)}`} />
+          <Stat label="Extinguisher Use" value={`${formatRate(staff.fireExtinguisherUseRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(staff.fireRiskAssessmentRate)}`} />
+          <Stat label="Alarm System" value={`${formatRate(staff.alarmSystemKnowledgeRate)}`} />
+          <Stat label="First Aid (Fire)" value={`${formatRate(staff.firstAidFireInjuryRate)}`} />
         </div>
       </Section>
 

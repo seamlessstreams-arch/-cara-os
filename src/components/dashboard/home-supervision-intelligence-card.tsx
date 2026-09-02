@@ -7,6 +7,7 @@
 // CHR 2015 Reg 33. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -176,8 +177,8 @@ export function HomeSupervisionIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Actions completed: <span className={cn("font-medium", (d.supervision_profile.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision_profile.action_completion_rate}%</span></p>
-                <p>Obs positive: <span className={cn("font-medium", (d.observation_profile.positive_outcome_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.observation_profile.positive_outcome_rate}%</span></p>
+                <p>Actions completed: <span className={cn("font-medium", (d.supervision_profile.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.supervision_profile.action_completion_rate)}</span></p>
+                <p>Obs positive: <span className={cn("font-medium", (d.observation_profile.positive_outcome_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.observation_profile.positive_outcome_rate)}</span></p>
                 {(d.appraisal_profile.avg_competency_score ?? 0) > 0 && (
                   <p>Competency: <span className={cn("font-medium", (d.appraisal_profile.avg_competency_score ?? 0) >= 3.5 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.appraisal_profile.avg_competency_score}/5</span></p>
                 )}
@@ -186,7 +187,7 @@ export function HomeSupervisionIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Signatures: <span className={cn("font-medium", d.supervision_profile.signature_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision_profile.signature_rate}%</span></p>
+                <p>Signatures: <span className={cn("font-medium", d.supervision_profile.signature_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.supervision_profile.signature_rate)}</span></p>
                 {hasOverdue && <p>Overdue appraisals: <span className="font-medium text-red-600">{d.appraisal_profile.overdue_count}</span></p>}
                 {(d.supervision_profile.avg_wellbeing_score ?? 0) > 0 && (
                   <p>Wellbeing avg: <span className={cn("font-medium", (d.supervision_profile.avg_wellbeing_score ?? 0) >= 7 ? "text-[--cs-success]" : (d.supervision_profile.avg_wellbeing_score ?? 0) >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_profile.avg_wellbeing_score}/10</span></p>

@@ -213,8 +213,8 @@ export default function NightCareDashboardWidget() {
                     <span className="text-xs text-gray-500 ml-2">{cp.totalRecords} records</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-600">
-                    <span>Checks: {cp.nightCheckCompletedRate}%</span>
-                    <span>Sleep: {cp.sleepPatternRecordedRate}%</span>
+                    <span>Checks: {formatRate(cp.nightCheckCompletedRate)}</span>
+                    <span>Sleep: {formatRate(cp.sleepPatternRecordedRate)}</span>
                     <span>Categories: {cp.uniqueCategories}</span>
                     <span className="font-semibold text-gray-900">{cp.overallScore}/10</span>
                   </div>

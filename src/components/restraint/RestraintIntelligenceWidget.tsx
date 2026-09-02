@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function RestraintIntelligenceWidget() {
       <Section title="Restraint Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="De-escalation Attempted" value={`${quality.deEscalationAttemptedRate}%`} />
-          <Stat label="Debrief Completed" value={`${quality.debriefCompletedRate}%`} />
-          <Stat label="Body Map Recorded" value={`${quality.bodyMapRecordedRate}%`} />
-          <Stat label="Parent Notified" value={`${quality.parentNotifiedRate}%`} />
+          <Stat label="De-escalation Attempted" value={`${formatRate(quality.deEscalationAttemptedRate)}`} />
+          <Stat label="Debrief Completed" value={`${formatRate(quality.debriefCompletedRate)}`} />
+          <Stat label="Body Map Recorded" value={`${formatRate(quality.bodyMapRecordedRate)}`} />
+          <Stat label="Parent Notified" value={`${formatRate(quality.parentNotifiedRate)}`} />
         </div>
       </Section>
 
       <Section title="Restraint Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Debrief Completed" value={`${compliance.debriefCompletedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Debrief Completed" value={`${formatRate(compliance.debriefCompletedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function RestraintIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Approved Technique" value={`${staff.approvedTechniqueTrainingRate}%`} />
-          <Stat label="De-escalation Skills" value={`${staff.deEscalationSkillsRate}%`} />
-          <Stat label="Post-Incident Debrief" value={`${staff.postIncidentDebriefRate}%`} />
-          <Stat label="Body Map Recording" value={`${staff.bodyMapRecordingRate}%`} />
-          <Stat label="Notification Procedures" value={`${staff.notificationProceduresRate}%`} />
-          <Stat label="Reduction Strategy" value={`${staff.reductionStrategyKnowledgeRate}%`} />
+          <Stat label="Approved Technique" value={`${formatRate(staff.approvedTechniqueTrainingRate)}`} />
+          <Stat label="De-escalation Skills" value={`${formatRate(staff.deEscalationSkillsRate)}`} />
+          <Stat label="Post-Incident Debrief" value={`${formatRate(staff.postIncidentDebriefRate)}`} />
+          <Stat label="Body Map Recording" value={`${formatRate(staff.bodyMapRecordingRate)}`} />
+          <Stat label="Notification Procedures" value={`${formatRate(staff.notificationProceduresRate)}`} />
+          <Stat label="Reduction Strategy" value={`${formatRate(staff.reductionStrategyKnowledgeRate)}`} />
         </div>
       </Section>
 

@@ -195,8 +195,8 @@ export function SafeguardingOversightIntelligenceWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Records: <span className="font-medium">{child.totalRecords}</span></div>
-                    <div>Risk Assessed: <span className="font-medium">{child.riskAssessmentCompletedRate}%</span></div>
-                    <div>DSL Informed: <span className="font-medium">{child.safeguardingLeadInformedRate}%</span></div>
+                    <div>Risk Assessed: <span className="font-medium">{formatRate(child.riskAssessmentCompletedRate)}</span></div>
+                    <div>DSL Informed: <span className="font-medium">{formatRate(child.safeguardingLeadInformedRate)}</span></div>
                     <div>Categories: <span className="font-medium">{child.categoriesCovered.length}</span></div>
                   </div>
                 </div>

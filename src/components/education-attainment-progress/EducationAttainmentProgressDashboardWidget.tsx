@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildProfile { childId: string; childName: string; totalRecords: number; progressRate: number; pepUpdatedRate: number; uniqueAreas: number; overallScore: number; }
@@ -86,18 +87,18 @@ export default function EducationAttainmentProgressDashboardWidget() {
       <Section title="Education Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.educationQuality.totalRecords} />
-          <Stat label="Progress Rate" value={`${data.educationQuality.progressRate}%`} />
-          <Stat label="PEP Updated" value={`${data.educationQuality.pepUpdatedRate}%`} />
-          <Stat label="Attendance" value={`${data.educationQuality.attendanceRate}%`} />
-          <Stat label="Child Views" value={`${data.educationQuality.childViewsRate}%`} />
+          <Stat label="Progress Rate" value={`${formatRate(data.educationQuality.progressRate)}`} />
+          <Stat label="PEP Updated" value={`${formatRate(data.educationQuality.pepUpdatedRate)}`} />
+          <Stat label="Attendance" value={`${formatRate(data.educationQuality.attendanceRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(data.educationQuality.childViewsRate)}`} />
         </div>
       </Section>
 
       <Section title="Education Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Staff Advocacy" value={`${data.educationCompliance.staffAdvocacyRate}%`} />
-          <Stat label="Documented" value={`${data.educationCompliance.documentedRate}%`} />
-          <Stat label="Virtual School" value={`${data.educationCompliance.virtualSchoolRate}%`} />
+          <Stat label="Staff Advocacy" value={`${formatRate(data.educationCompliance.staffAdvocacyRate)}`} />
+          <Stat label="Documented" value={`${formatRate(data.educationCompliance.documentedRate)}`} />
+          <Stat label="Virtual School" value={`${formatRate(data.educationCompliance.virtualSchoolRate)}`} />
           <Stat label="Area Diversity" value={`${Math.round(data.educationCompliance.areaDiversity * 100)}%`} />
         </div>
       </Section>
@@ -121,12 +122,12 @@ export default function EducationAttainmentProgressDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffEducationReadiness.totalStaff} />
-          <Stat label="Education Support" value={`${data.staffEducationReadiness.educationSupportRate}%`} />
-          <Stat label="PEP Process" value={`${data.staffEducationReadiness.pepProcessRate}%`} />
-          <Stat label="Attendance" value={`${data.staffEducationReadiness.attendanceImportanceRate}%`} />
-          <Stat label="SEN Awareness" value={`${data.staffEducationReadiness.senAwarenessRate}%`} />
-          <Stat label="Homework" value={`${data.staffEducationReadiness.homeworkStrategiesRate}%`} />
-          <Stat label="Virtual School" value={`${data.staffEducationReadiness.virtualSchoolProtocolRate}%`} />
+          <Stat label="Education Support" value={`${formatRate(data.staffEducationReadiness.educationSupportRate)}`} />
+          <Stat label="PEP Process" value={`${formatRate(data.staffEducationReadiness.pepProcessRate)}`} />
+          <Stat label="Attendance" value={`${formatRate(data.staffEducationReadiness.attendanceImportanceRate)}`} />
+          <Stat label="SEN Awareness" value={`${formatRate(data.staffEducationReadiness.senAwarenessRate)}`} />
+          <Stat label="Homework" value={`${formatRate(data.staffEducationReadiness.homeworkStrategiesRate)}`} />
+          <Stat label="Virtual School" value={`${formatRate(data.staffEducationReadiness.virtualSchoolProtocolRate)}`} />
         </div>
       </Section>
 
@@ -136,7 +137,7 @@ export default function EducationAttainmentProgressDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Progress: {cp.progressRate}%</span><span>PEP: {cp.pepUpdatedRate}%</span><span>Areas: {cp.uniqueAreas}</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Progress: {formatRate(cp.progressRate)}</span><span>PEP: {formatRate(cp.pepUpdatedRate)}</span><span>Areas: {cp.uniqueAreas}</span></div>
               </div>
             ))}
           </div>

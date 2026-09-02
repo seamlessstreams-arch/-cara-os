@@ -13,6 +13,7 @@
 // - Tokenistic practice detection
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 function fmt(v: number | null | undefined): string {
@@ -110,10 +111,10 @@ function DomainBar({ domain }: { domain: DomainCaptureData }) {
     <div className="space-y-0.5">
       <div className="flex justify-between text-xs">
         <span className="text-gray-600 truncate">{domain.domainLabel ?? domain.domain.replace(/_/g, " ")}</span>
-        <span className="font-semibold ml-2">{domain.captureRate}%</span>
+        <span className="font-semibold ml-2">{formatRate(domain.captureRate)}</span>
       </div>
       <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${domain.captureRate}%` }} />
+        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${formatRate(domain.captureRate)}` }} />
       </div>
     </div>
   );

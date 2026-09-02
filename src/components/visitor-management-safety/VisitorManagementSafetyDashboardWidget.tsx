@@ -13,6 +13,7 @@
 // - Regulatory framework references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local Type Definitions ────────────────────────────────────────────────
@@ -297,12 +298,12 @@ export function VisitorManagementSafetyDashboardWidget() {
           {/* Visitor Compliance */}
           <Section title="Visitor Compliance" defaultOpen>
             <StatRow label="Total visitor records" value={data.visitorCompliance.totalRecords} />
-            <StatRow label="Sign-in rate" value={`${data.visitorCompliance.signInRate}%`} />
-            <StatRow label="Sign-out rate" value={`${data.visitorCompliance.signOutRate}%`} />
-            <StatRow label="ID check rate" value={`${data.visitorCompliance.idCheckRate}%`} />
-            <StatRow label="DBS verified rate" value={`${data.visitorCompliance.dbsVerifiedRate}%`} />
-            <StatRow label="Safeguarding brief rate" value={`${data.visitorCompliance.safeguardingBriefRate}%`} />
-            <StatRow label="Supervised visit rate" value={`${data.visitorCompliance.supervisedRate}%`} />
+            <StatRow label="Sign-in rate" value={`${formatRate(data.visitorCompliance.signInRate)}`} />
+            <StatRow label="Sign-out rate" value={`${formatRate(data.visitorCompliance.signOutRate)}`} />
+            <StatRow label="ID check rate" value={`${formatRate(data.visitorCompliance.idCheckRate)}`} />
+            <StatRow label="DBS verified rate" value={`${formatRate(data.visitorCompliance.dbsVerifiedRate)}`} />
+            <StatRow label="Safeguarding brief rate" value={`${formatRate(data.visitorCompliance.safeguardingBriefRate)}`} />
+            <StatRow label="Supervised visit rate" value={`${formatRate(data.visitorCompliance.supervisedRate)}`} />
             <StatRow label="Score" value={`${data.visitorCompliance.visitorComplianceScore}/25`} />
             {Object.keys(data.visitorCompliance.visitsByType).length > 0 && (
               <div className="text-xs text-gray-500 mt-1">
@@ -323,12 +324,12 @@ export function VisitorManagementSafetyDashboardWidget() {
           {/* Policy Adherence */}
           <Section title="Policy Adherence">
             <StatRow label="Total policies" value={data.policyAdherence.totalPolicies} />
-            <StatRow label="Sign-in system in place" value={`${data.policyAdherence.signInSystemRate}%`} />
-            <StatRow label="ID check mandatory" value={`${data.policyAdherence.idCheckMandatoryRate}%`} />
-            <StatRow label="DBS check required" value={`${data.policyAdherence.dbsCheckRequiredRate}%`} />
-            <StatRow label="Safeguarding brief required" value={`${data.policyAdherence.safeguardingBriefRequiredRate}%`} />
-            <StatRow label="Visitor guide available" value={`${data.policyAdherence.visitorGuideRate}%`} />
-            <StatRow label="Restricted list maintained" value={`${data.policyAdherence.restrictedListRate}%`} />
+            <StatRow label="Sign-in system in place" value={`${formatRate(data.policyAdherence.signInSystemRate)}`} />
+            <StatRow label="ID check mandatory" value={`${formatRate(data.policyAdherence.idCheckMandatoryRate)}`} />
+            <StatRow label="DBS check required" value={`${formatRate(data.policyAdherence.dbsCheckRequiredRate)}`} />
+            <StatRow label="Safeguarding brief required" value={`${formatRate(data.policyAdherence.safeguardingBriefRequiredRate)}`} />
+            <StatRow label="Visitor guide available" value={`${formatRate(data.policyAdherence.visitorGuideRate)}`} />
+            <StatRow label="Restricted list maintained" value={`${formatRate(data.policyAdherence.restrictedListRate)}`} />
             <StatRow label="Score" value={`${data.policyAdherence.policyAdherenceScore}/25`} />
           </Section>
 
@@ -337,8 +338,8 @@ export function VisitorManagementSafetyDashboardWidget() {
             <StatRow label="Total incidents" value={data.incidentManagement.totalIncidents} />
             {data.incidentManagement.totalIncidents > 0 ? (
               <>
-                <StatRow label="Resolved rate" value={`${data.incidentManagement.resolvedRate}%`} />
-                <StatRow label="Reported rate" value={`${data.incidentManagement.reportedRate}%`} />
+                <StatRow label="Resolved rate" value={`${formatRate(data.incidentManagement.resolvedRate)}`} />
+                <StatRow label="Reported rate" value={`${formatRate(data.incidentManagement.reportedRate)}`} />
                 <StatRow label="Unauthorised access" value={data.incidentManagement.unauthorisedAccessCount} />
                 <StatRow label="Safeguarding concerns" value={data.incidentManagement.safeguardingConcernCount} />
                 {Object.keys(data.incidentManagement.byType).length > 0 && (
@@ -358,12 +359,12 @@ export function VisitorManagementSafetyDashboardWidget() {
           {/* Staff Visitor Readiness */}
           <Section title="Staff Visitor Readiness">
             <StatRow label="Total staff" value={data.staffVisitorReadiness.totalStaff} />
-            <StatRow label="Visitor policy trained" value={`${data.staffVisitorReadiness.visitorPolicyTrainedRate}%`} />
-            <StatRow label="Safeguarding visitors" value={`${data.staffVisitorReadiness.safeguardingVisitorsRate}%`} />
-            <StatRow label="Sign-in procedures" value={`${data.staffVisitorReadiness.signInProceduresRate}%`} />
-            <StatRow label="DBS check process" value={`${data.staffVisitorReadiness.dbsCheckProcessRate}%`} />
-            <StatRow label="Incident reporting" value={`${data.staffVisitorReadiness.incidentReportingRate}%`} />
-            <StatRow label="Restricted visitor awareness" value={`${data.staffVisitorReadiness.restrictedVisitorAwarenessRate}%`} />
+            <StatRow label="Visitor policy trained" value={`${formatRate(data.staffVisitorReadiness.visitorPolicyTrainedRate)}`} />
+            <StatRow label="Safeguarding visitors" value={`${formatRate(data.staffVisitorReadiness.safeguardingVisitorsRate)}`} />
+            <StatRow label="Sign-in procedures" value={`${formatRate(data.staffVisitorReadiness.signInProceduresRate)}`} />
+            <StatRow label="DBS check process" value={`${formatRate(data.staffVisitorReadiness.dbsCheckProcessRate)}`} />
+            <StatRow label="Incident reporting" value={`${formatRate(data.staffVisitorReadiness.incidentReportingRate)}`} />
+            <StatRow label="Restricted visitor awareness" value={`${formatRate(data.staffVisitorReadiness.restrictedVisitorAwarenessRate)}`} />
             <StatRow label="Score" value={`${data.staffVisitorReadiness.staffVisitorReadinessScore}/25`} />
           </Section>
 
@@ -377,7 +378,7 @@ export function VisitorManagementSafetyDashboardWidget() {
                     <span className="font-medium text-gray-900">Safety: {child.safetyScore}/10</span>
                   </div>
                   <div className="text-xs text-gray-500">
-                    {child.totalVisits} visits | Sign-in: {child.signedInRate}% | ID checked: {child.idCheckedRate}% | DBS: {child.dbsVerifiedRate}% | Brief: {child.safeguardingBriefRate}%
+                    {child.totalVisits} visits | Sign-in: {formatRate(child.signedInRate)} | ID checked: {formatRate(child.idCheckedRate)} | DBS: {formatRate(child.dbsVerifiedRate)} | Brief: {formatRate(child.safeguardingBriefRate)}
                   </div>
                   {child.visitorTypes.length > 0 && (
                     <div className="text-xs text-gray-400 mt-0.5">

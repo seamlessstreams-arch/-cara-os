@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -348,10 +349,10 @@ export default function PeerRelationshipDynamicsDashboardWidget() {
                       <span className="font-medium text-sm">{profile.childName}</span>
                       <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                         <span>{profile.totalInteractions} interactions</span>
-                        <span>{profile.positiveOutcomeRate}% positive</span>
-                        <span>{profile.socialSkillPracticedRate}% skills</span>
+                        <span>{formatRate(profile.positiveOutcomeRate)} positive</span>
+                        <span>{formatRate(profile.socialSkillPracticedRate)} skills</span>
                         {profile.negativeInteractionRate > 0 && (
-                          <span className="text-red-400">{profile.negativeInteractionRate}% negative</span>
+                          <span className="text-red-400">{formatRate(profile.negativeInteractionRate)} negative</span>
                         )}
                       </div>
                     </div>

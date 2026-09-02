@@ -12,6 +12,7 @@
 // - Regulatory framework
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Types (local mirror for the widget) ───────────────────────────────────
@@ -502,7 +503,7 @@ export function MultiAgencyEffectivenessDashboardWidget() {
                   Child Participation
                 </span>
                 <span className="font-medium">
-                  {data.meetingEffectiveness.childParticipationRate}%
+                  {formatRate(data.meetingEffectiveness.childParticipationRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
@@ -510,7 +511,7 @@ export function MultiAgencyEffectivenessDashboardWidget() {
                   Parent Participation
                 </span>
                 <span className="font-medium">
-                  {data.meetingEffectiveness.parentParticipationRate}%
+                  {formatRate(data.meetingEffectiveness.parentParticipationRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
@@ -526,7 +527,7 @@ export function MultiAgencyEffectivenessDashboardWidget() {
                   Action Completion
                 </span>
                 <span className="font-medium">
-                  {data.meetingEffectiveness.actionCompletionRate}%
+                  {formatRate(data.meetingEffectiveness.actionCompletionRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
@@ -588,13 +589,13 @@ export function MultiAgencyEffectivenessDashboardWidget() {
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-400 block">Timeliness</span>
                 <span className="font-medium">
-                  {data.informationSharing.timelinessRate}%
+                  {formatRate(data.informationSharing.timelinessRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-400 block">Completeness</span>
                 <span className="font-medium">
-                  {data.informationSharing.completenessRate}%
+                  {formatRate(data.informationSharing.completenessRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
@@ -640,8 +641,8 @@ export function MultiAgencyEffectivenessDashboardWidget() {
                         {agencyLabel(a.agency)}
                       </span>
                       <div className="flex gap-3 text-gray-500">
-                        <span>Timely: {a.timelinessRate}%</span>
-                        <span>Complete: {a.completenessRate}%</span>
+                        <span>Timely: {formatRate(a.timelinessRate)}</span>
+                        <span>Complete: {formatRate(a.completenessRate)}</span>
                         <span className="text-gray-400">
                           ({a.totalRecords} records)
                         </span>
@@ -747,13 +748,13 @@ export function MultiAgencyEffectivenessDashboardWidget() {
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-400 block">Response Rate</span>
                 <span className="font-medium">
-                  {data.escalationManagement.responseRate}%
+                  {formatRate(data.escalationManagement.responseRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-400 block">Timely</span>
                 <span className="font-medium">
-                  {data.escalationManagement.timelinessRate}%
+                  {formatRate(data.escalationManagement.timelinessRate)}
                 </span>
               </div>
               <div className="bg-gray-50 rounded p-2">
@@ -788,8 +789,8 @@ export function MultiAgencyEffectivenessDashboardWidget() {
                         {agencyLabel(a.agency)}
                       </span>
                       <div className="flex gap-3 text-gray-500">
-                        <span>Response: {a.responseRate}%</span>
-                        <span>Outcome: {a.outcomeRate}%</span>
+                        <span>Response: {formatRate(a.responseRate)}</span>
+                        <span>Outcome: {formatRate(a.outcomeRate)}</span>
                         <span className="text-gray-400">
                           ({a.count} escalation{a.count !== 1 ? "s" : ""})
                         </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,11 +78,11 @@ export function PlacementMatchingQualityIntelligenceWidget() {
       <Section title="Matching Process" defaultOpen>
         <ScoreBar label="Matching Process" value={matching.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Excellent/Good" value={`${matching.excellentGoodRate}%`} />
-          <Stat label="Impact Assessment" value={`${matching.impactAssessmentRate}%`} />
-          <Stat label="Consultation" value={`${matching.consultationRate}%`} />
-          <Stat label="Risk Assessment" value={`${matching.riskAssessmentRate}%`} />
-          <Stat label="Referral Complete" value={`${matching.referralCompleteRate}%`} />
+          <Stat label="Excellent/Good" value={`${formatRate(matching.excellentGoodRate)}`} />
+          <Stat label="Impact Assessment" value={`${formatRate(matching.impactAssessmentRate)}`} />
+          <Stat label="Consultation" value={`${formatRate(matching.consultationRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(matching.riskAssessmentRate)}`} />
+          <Stat label="Referral Complete" value={`${formatRateLoose(matching.referralCompleteRate)}`} />
           <Stat label="Avg Criteria Met" value={matching.averageCriteriaMet} />
         </div>
       </Section>
@@ -89,9 +90,9 @@ export function PlacementMatchingQualityIntelligenceWidget() {
       <Section title="Compatibility">
         <ScoreBar label="Compatibility" value={compat.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Compatible" value={`${compat.compatibleRate}%`} />
-          <Stat label="Mgmt Plans" value={`${compat.managementPlanRate}%`} />
-          <Stat label="Positive Relations" value={`${compat.positiveRelationshipRate}%`} />
+          <Stat label="Compatible" value={`${formatRateLoose(compat.compatibleRate)}`} />
+          <Stat label="Mgmt Plans" value={`${formatRate(compat.managementPlanRate)}`} />
+          <Stat label="Positive Relations" value={`${formatRate(compat.positiveRelationshipRate)}`} />
           <Stat label="Risks Identified" value={compat.risksIdentifiedCount} />
         </div>
       </Section>
@@ -99,21 +100,21 @@ export function PlacementMatchingQualityIntelligenceWidget() {
       <Section title="Stability Outcome">
         <ScoreBar label="Stability" value={stability.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Stable/Settling" value={`${stability.stableSettlingRate}%`} />
+          <Stat label="Stable/Settling" value={`${formatRateLoose(stability.stableSettlingRate)}`} />
           <Stat label="At Risk" value={stability.atRiskCount} />
           <Stat label="Disrupted" value={stability.disruptedCount} />
-          <Stat label="School Attending" value={`${stability.schoolAttendingRate}%`} />
-          <Stat label="Therapeutic" value={`${stability.therapeuticEngagedRate}%`} />
-          <Stat label="Key Relationship" value={`${stability.keyRelationshipRate}%`} />
+          <Stat label="School Attending" value={`${formatRateLoose(stability.schoolAttendingRate)}`} />
+          <Stat label="Therapeutic" value={`${formatRateLoose(stability.therapeuticEngagedRate)}`} />
+          <Stat label="Key Relationship" value={`${formatRateLoose(stability.keyRelationshipRate)}`} />
         </div>
       </Section>
 
       <Section title="Disruption Learning">
         <ScoreBar label="Disruption Learning" value={disruption.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Planned Moves" value={`${disruption.plannedMoveRate}%`} />
-          <Stat label="Lessons Documented" value={`${disruption.lessonDocumentedRate}%`} />
-          <Stat label="Impact Assessed" value={`${disruption.impactAssessedRate}%`} />
+          <Stat label="Planned Moves" value={`${formatRateLoose(disruption.plannedMoveRate)}`} />
+          <Stat label="Lessons Documented" value={`${formatRateLoose(disruption.lessonDocumentedRate)}`} />
+          <Stat label="Impact Assessed" value={`${formatRate(disruption.impactAssessedRate)}`} />
         </div>
       </Section>
 

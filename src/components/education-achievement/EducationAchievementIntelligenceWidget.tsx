@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,10 +79,10 @@ export function EducationAchievementIntelligenceWidget() {
         <ScoreBar label="Attendance" value={attendance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={attendance.totalRecords} />
-          <Stat label="Attendance Rate" value={`${attendance.attendanceRate}%`} />
-          <Stat label="Unauthorised Absence" value={`${attendance.unauthorisedAbsenceRate}%`} />
+          <Stat label="Attendance Rate" value={`${formatRate(attendance.attendanceRate)}`} />
+          <Stat label="Unauthorised Absence" value={`${formatRate(attendance.unauthorisedAbsenceRate)}`} />
           <Stat label="Persistent Absence" value={attendance.persistentAbsenceChildren} />
-          <Stat label="Late Rate" value={`${attendance.lateRate}%`} />
+          <Stat label="Late Rate" value={`${formatRate(attendance.lateRate)}`} />
           <Stat label="Exclusion Days" value={attendance.exclusionDays} />
         </div>
       </Section>
@@ -90,11 +91,11 @@ export function EducationAchievementIntelligenceWidget() {
         <ScoreBar label="PEP Quality" value={pep.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total PEPs" value={pep.totalPEPs as number} />
-          <Stat label="Current Rate" value={`${pep.currentRate}%`} />
-          <Stat label="Child Views" value={`${pep.childViewsRate}%`} />
-          <Stat label="SMART Targets" value={`${pep.smartTargetsRate}%`} />
-          <Stat label="Virtual School" value={`${pep.virtualSchoolInvolvedRate}%`} />
-          <Stat label="PP Funding Used" value={`${pep.ppFundingUsedRate}%`} />
+          <Stat label="Current Rate" value={`${formatRateLoose(pep.currentRate)}`} />
+          <Stat label="Child Views" value={`${formatRateLoose(pep.childViewsRate)}`} />
+          <Stat label="SMART Targets" value={`${formatRateLoose(pep.smartTargetsRate)}`} />
+          <Stat label="Virtual School" value={`${formatRateLoose(pep.virtualSchoolInvolvedRate)}`} />
+          <Stat label="PP Funding Used" value={`${formatRateLoose(pep.ppFundingUsedRate)}`} />
         </div>
       </Section>
 
@@ -102,8 +103,8 @@ export function EducationAchievementIntelligenceWidget() {
         <ScoreBar label="Academic Progress" value={academic.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Outcomes" value={academic.totalOutcomes as number} />
-          <Stat label="Exceeding/Expected" value={`${academic.exceedingExpectedRate}%`} />
-          <Stat label="Below Expected" value={`${academic.belowExpectedRate}%`} />
+          <Stat label="Exceeding/Expected" value={`${formatRateLoose(academic.exceedingExpectedRate)}`} />
+          <Stat label="Below Expected" value={`${formatRateLoose(academic.belowExpectedRate)}`} />
           <Stat label="Subject Coverage" value={academic.subjectCoverage as number} />
         </div>
       </Section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
@@ -125,7 +126,7 @@ function ChildLACCard({ profile }: { profile: LACReviewChildProfile }) {
             profile.actionCompletionRate >= 60 ? "bg-amber-100 text-amber-700" :
             "bg-red-100 text-red-700"
           }`}>
-            {profile.actionCompletionRate}% actions complete
+            {formatRate(profile.actionCompletionRate)} actions complete
           </span>
         )}
       </div>

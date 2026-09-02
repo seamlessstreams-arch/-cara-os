@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -157,7 +158,7 @@ export default function MandatoryTrainingMatrixPage() {
         {/* summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Team Compliance", value: `${stats.compliancePct}%`, icon: Shield, clr: "text-purple-600" },
+            { label: "Team Compliance", value: `${formatRate(stats.compliancePct)}`, icon: Shield, clr: "text-purple-600" },
             { label: "Expiring (30 days)", value: stats.totalExpiring, icon: Clock, clr: "text-[--cs-warning]" },
             { label: "Expired Courses", value: stats.totalExpired, icon: AlertTriangle, clr: "text-[--cs-risk]" },
             { label: "Fully Compliant Staff", value: `${stats.fullyCompliant}/${stats.totalStaff}`, icon: CheckCircle2, clr: "text-[--cs-success]" },

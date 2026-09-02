@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -42,47 +43,47 @@ export function TransitionReadinessIntelligenceWidget() {
       <Section title="Transition Planning" defaultOpen>
         <ScoreBar label="Planning Quality" value={tp.overallScore as number} max={30} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Planned Rate" value={`${tp.plannedTransitionRate}%`} />
-          <Stat label="Child Involvement" value={`${tp.childInvolvementRate}%`} />
-          <Stat label="Child Views" value={`${tp.childViewsRate}%`} />
-          <Stat label="Parent Involvement" value={`${tp.parentInvolvementRate}%`} />
-          <Stat label="Visit Completed" value={`${tp.visitCompletedRate}%`} />
-          <Stat label="Risk Assessment" value={`${tp.riskAssessmentRate}%`} />
-          <Stat label="Info Transfer" value={`${tp.infoTransferRate}%`} />
-          <Stat label="Goodbyes Celebrated" value={`${tp.goodbyesCelebratedRate}%`} />
+          <Stat label="Planned Rate" value={`${formatRateLoose(tp.plannedTransitionRate)}`} />
+          <Stat label="Child Involvement" value={`${formatRateLoose(tp.childInvolvementRate)}`} />
+          <Stat label="Child Views" value={`${formatRateLoose(tp.childViewsRate)}`} />
+          <Stat label="Parent Involvement" value={`${formatRateLoose(tp.parentInvolvementRate)}`} />
+          <Stat label="Visit Completed" value={`${formatRateLoose(tp.visitCompletedRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRateLoose(tp.riskAssessmentRate)}`} />
+          <Stat label="Info Transfer" value={`${formatRateLoose(tp.infoTransferRate)}`} />
+          <Stat label="Goodbyes Celebrated" value={`${formatRateLoose(tp.goodbyesCelebratedRate)}`} />
         </div>
       </Section>
       <Section title="Handover Quality">
         <ScoreBar label="Handover" value={ho.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Comprehensive Rate" value={`${ho.comprehensiveRate}%`} />
-          <Stat label="Document Transfer" value={`${ho.documentTransferRate}%`} />
-          <Stat label="Care Plan Shared" value={`${ho.carePlanSharedRate}%`} />
-          <Stat label="Health Info" value={`${ho.healthInfoRate}%`} />
-          <Stat label="Triggers Shared" value={`${ho.triggersSharedRate}%`} />
-          <Stat label="Child Preferences" value={`${ho.childPreferencesRate}%`} />
+          <Stat label="Comprehensive Rate" value={`${formatRateLoose(ho.comprehensiveRate)}`} />
+          <Stat label="Document Transfer" value={`${formatRateLoose(ho.documentTransferRate)}`} />
+          <Stat label="Care Plan Shared" value={`${formatRateLoose(ho.carePlanSharedRate)}`} />
+          <Stat label="Health Info" value={`${formatRateLoose(ho.healthInfoRate)}`} />
+          <Stat label="Triggers Shared" value={`${formatRateLoose(ho.triggersSharedRate)}`} />
+          <Stat label="Child Preferences" value={`${formatRateLoose(ho.childPreferencesRate)}`} />
         </div>
       </Section>
       <Section title="Readiness Assessments">
         <ScoreBar label="Readiness" value={rd.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Fully Ready" value={`${rd.fullyReadyRate}%`} />
-          <Stat label="Support Plan" value={`${rd.supportPlanRate}%`} />
-          <Stat label="Contingency" value={`${rd.contingencyRate}%`} />
-          <Stat label="Prof. Briefed" value={`${rd.professionalBriefedRate}%`} />
-          <Stat label="Emotional Readiness" value={`${rd.emotionalReadinessGoodRate}%`} />
+          <Stat label="Fully Ready" value={`${formatRateLoose(rd.fullyReadyRate)}`} />
+          <Stat label="Support Plan" value={`${formatRateLoose(rd.supportPlanRate)}`} />
+          <Stat label="Contingency" value={`${formatRateLoose(rd.contingencyRate)}`} />
+          <Stat label="Prof. Briefed" value={`${formatRateLoose(rd.professionalBriefedRate)}`} />
+          <Stat label="Emotional Readiness" value={`${formatRateLoose(rd.emotionalReadinessGoodRate)}`} />
           <Stat label="Total Assessments" value={rd.totalAssessments as number} />
         </div>
       </Section>
       <Section title="Post-Transition Support">
         <ScoreBar label="Post-Transition" value={pt.overallScore as number} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Follow-Up Completed" value={`${pt.followUpCompletedRate}%`} />
+          <Stat label="Follow-Up Completed" value={`${formatRateLoose(pt.followUpCompletedRate)}`} />
           <Stat label="Within 7 Days" value={`${pt.within7DaysRate}%`} />
-          <Stat label="Settling-In Review" value={`${pt.settlingInReviewRate}%`} />
-          <Stat label="Key Worker Contact" value={`${pt.previousKeyWorkerContactRate}%`} />
-          <Stat label="Child Feedback" value={`${pt.childFeedbackRate}%`} />
-          <Stat label="Issue Resolution" value={`${pt.issueResolutionRate}%`} />
+          <Stat label="Settling-In Review" value={`${formatRateLoose(pt.settlingInReviewRate)}`} />
+          <Stat label="Key Worker Contact" value={`${formatRateLoose(pt.previousKeyWorkerContactRate)}`} />
+          <Stat label="Child Feedback" value={`${formatRateLoose(pt.childFeedbackRate)}`} />
+          <Stat label="Issue Resolution" value={`${formatRateLoose(pt.issueResolutionRate)}`} />
         </div>
       </Section>
       {childProfiles.length > 0 && <Section title={`Child Profiles (${childProfiles.length})`}>

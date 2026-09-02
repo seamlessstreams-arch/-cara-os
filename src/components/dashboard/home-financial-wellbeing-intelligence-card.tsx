@@ -7,6 +7,7 @@
 // CHR 2015 Reg 7, Reg 8. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -141,7 +142,7 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                   (d.spending_profile.receipt_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.spending_profile.receipt_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.spending_profile.receipt_rate}%
+                  {formatRate(d.spending_profile.receipt_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Receipts</p>
@@ -155,7 +156,7 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                   (d.savings_profile.savings_participation_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.savings_profile.savings_participation_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.savings_profile.savings_participation_rate}%
+                  {formatRate(d.savings_profile.savings_participation_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Saving</p>
@@ -188,7 +189,7 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                 <p>Regularity: <span className={cn("font-medium",
                   (d.allowance_profile.regularity_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.allowance_profile.regularity_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.allowance_profile.regularity_rate}%</span></p>
+                )}>{formatRate(d.allowance_profile.regularity_rate)}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">
@@ -199,7 +200,7 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                 <p>Approved: <span className={cn("font-medium",
                   (d.spending_profile.approval_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.spending_profile.approval_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.spending_profile.approval_rate}%</span></p>
+                )}>{formatRate(d.spending_profile.approval_rate)}</span></p>
               </div>
             </div>
           </div>

@@ -14,6 +14,7 @@
 // - Management presence
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface GovernanceData {
@@ -142,7 +143,7 @@ function SoPStatusCard({ sop }: { sop: GovernanceData["sopCompliance"] }) {
         </div>
         <div>
           <div className={`text-sm font-bold ${sop.accuracyRate === 100 ? "text-green-700" : "text-orange-700"}`}>
-            {sop.accuracyRate}%
+            {formatRate(sop.accuracyRate)}
           </div>
           <div className="text-[10px] text-gray-500">Accuracy</div>
         </div>
@@ -248,19 +249,19 @@ export function GovernanceDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.reg45Compliance.completionRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.reg45Compliance.completionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Reg 45 Complete</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.policyCompliance.complianceRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.policyCompliance.complianceRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Policies Current</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.notificationCompliance.timelinesRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.notificationCompliance.timelinesRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Notifications Timely</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.managementPresence.averageRmPresenceRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.managementPresence.averageRmPresenceRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">RM Presence</div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,10 +79,10 @@ export function DisabilityReasonableAdjustmentsIntelligenceWidget() {
         <ScoreBar label="Adjustments" value={adj.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Adjustments" value={adj.totalAdjustments} />
-          <Stat label="In Place" value={`${adj.inPlaceRate}%`} />
-          <Stat label="Review Current" value={`${adj.reviewCurrentRate}%`} />
-          <Stat label="EHCP Rate" value={`${adj.ehcpRate}%`} />
-          <Stat label="Professional Involved" value={`${adj.professionalInvolvedRate}%`} />
+          <Stat label="In Place" value={`${formatRate(adj.inPlaceRate)}`} />
+          <Stat label="Review Current" value={`${formatRate(adj.reviewCurrentRate)}`} />
+          <Stat label="EHCP Rate" value={`${formatRate(adj.ehcpRate)}`} />
+          <Stat label="Professional Involved" value={`${formatRate(adj.professionalInvolvedRate)}`} />
         </div>
       </Section>
 
@@ -89,11 +90,11 @@ export function DisabilityReasonableAdjustmentsIntelligenceWidget() {
         <ScoreBar label="Accessibility" value={acc.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Audits" value={acc.totalAudits} />
-          <Stat label="Physical Access" value={`${acc.physicalAccessRate}%`} />
-          <Stat label="Sensory Adaptation" value={`${acc.sensoryAdaptationRate}%`} />
-          <Stat label="Communication Aids" value={`${acc.communicationAidsRate}%`} />
-          <Stat label="Signage Accessible" value={`${acc.signageAccessibleRate}%`} />
-          <Stat label="Overall Compliance" value={`${acc.overallComplianceRate}%`} />
+          <Stat label="Physical Access" value={`${formatRate(acc.physicalAccessRate)}`} />
+          <Stat label="Sensory Adaptation" value={`${formatRate(acc.sensoryAdaptationRate)}`} />
+          <Stat label="Communication Aids" value={`${formatRate(acc.communicationAidsRate)}`} />
+          <Stat label="Signage Accessible" value={`${formatRate(acc.signageAccessibleRate)}`} />
+          <Stat label="Overall Compliance" value={`${formatRate(acc.overallComplianceRate)}`} />
         </div>
       </Section>
 
@@ -101,8 +102,8 @@ export function DisabilityReasonableAdjustmentsIntelligenceWidget() {
         <ScoreBar label="Equipment" value={equip.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Equipment" value={equip.totalEquipment} />
-          <Stat label="Good Condition" value={`${equip.goodConditionRate}%`} />
-          <Stat label="Maintenance Current" value={`${equip.maintenanceCurrentRate}%`} />
+          <Stat label="Good Condition" value={`${formatRate(equip.goodConditionRate)}`} />
+          <Stat label="Maintenance Current" value={`${formatRate(equip.maintenanceCurrentRate)}`} />
           <Stat label="Replacement Backlog" value={equip.replacementBacklog} />
         </div>
       </Section>
@@ -111,11 +112,11 @@ export function DisabilityReasonableAdjustmentsIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Awareness" value={`${staff.awarenessRate}%`} />
-          <Stat label="Adjustments Training" value={`${staff.adjustmentsTrainingRate}%`} />
-          <Stat label="EHCP Understanding" value={`${staff.ehcpUnderstandingRate}%`} />
-          <Stat label="Communication" value={`${staff.communicationStrategiesRate}%`} />
-          <Stat label="Emergency Evacuation" value={`${staff.emergencyEvacuationRate}%`} />
+          <Stat label="Awareness" value={`${formatRate(staff.awarenessRate)}`} />
+          <Stat label="Adjustments Training" value={`${formatRate(staff.adjustmentsTrainingRate)}`} />
+          <Stat label="EHCP Understanding" value={`${formatRate(staff.ehcpUnderstandingRate)}`} />
+          <Stat label="Communication" value={`${formatRate(staff.communicationStrategiesRate)}`} />
+          <Stat label="Emergency Evacuation" value={`${formatRate(staff.emergencyEvacuationRate)}`} />
         </div>
       </Section>
 

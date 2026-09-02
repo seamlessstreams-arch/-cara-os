@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function NightCareIntelligenceWidget() {
       <Section title="Night Care Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Night Check" value={`${quality.nightCheckCompletedRate}%`} />
-          <Stat label="Sleep Pattern" value={`${quality.sleepPatternRecordedRate}%`} />
-          <Stat label="Incident Handled" value={`${quality.incidentHandledAppropriatelyRate}%`} />
-          <Stat label="Comfort Checked" value={`${quality.childComfortCheckedRate}%`} />
+          <Stat label="Night Check" value={`${formatRate(quality.nightCheckCompletedRate)}`} />
+          <Stat label="Sleep Pattern" value={`${formatRate(quality.sleepPatternRecordedRate)}`} />
+          <Stat label="Incident Handled" value={`${formatRate(quality.incidentHandledAppropriatelyRate)}`} />
+          <Stat label="Comfort Checked" value={`${formatRate(quality.childComfortCheckedRate)}`} />
         </div>
       </Section>
 
       <Section title="Night Care Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Night Check" value={`${compliance.nightCheckCompletedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Night Check" value={`${formatRate(compliance.nightCheckCompletedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function NightCareIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Night Care" value={`${staff.nightCareCompetencyRate}%`} />
-          <Stat label="Sleep Monitoring" value={`${staff.sleepMonitoringSkillsRate}%`} />
-          <Stat label="Incident Response" value={`${staff.nightIncidentResponseRate}%`} />
-          <Stat label="Medication" value={`${staff.nightMedicationHandlingRate}%`} />
-          <Stat label="Comfort Techniques" value={`${staff.childComfortTechniquesRate}%`} />
-          <Stat label="Handover" value={`${staff.nightHandoverProcedureRate}%`} />
+          <Stat label="Night Care" value={`${formatRate(staff.nightCareCompetencyRate)}`} />
+          <Stat label="Sleep Monitoring" value={`${formatRate(staff.sleepMonitoringSkillsRate)}`} />
+          <Stat label="Incident Response" value={`${formatRate(staff.nightIncidentResponseRate)}`} />
+          <Stat label="Medication" value={`${formatRate(staff.nightMedicationHandlingRate)}`} />
+          <Stat label="Comfort Techniques" value={`${formatRate(staff.childComfortTechniquesRate)}`} />
+          <Stat label="Handover" value={`${formatRate(staff.nightHandoverProcedureRate)}`} />
         </div>
       </Section>
 

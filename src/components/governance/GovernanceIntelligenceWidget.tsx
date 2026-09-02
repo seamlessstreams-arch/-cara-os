@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -89,7 +90,7 @@ export function GovernanceIntelligenceWidget() {
           <Stat label="Overdue" value={sopCompliance.isOverdue ? "Yes" : "No"} />
           <Stat label="Days Since Review" value={sopCompliance.daysSinceReview as number} />
           <Stat label="Shared with Ofsted" value={sopCompliance.sharedWithOfsted ? "Yes" : "No"} />
-          <Stat label="Accuracy Rate" value={`${sopCompliance.accuracyRate}%`} />
+          <Stat label="Accuracy Rate" value={`${formatRateLoose(sopCompliance.accuracyRate)}`} />
           <Stat label="Children's Guide" value={childrenGuide.available ? "Available" : "Missing"} />
         </div>
         <ul className="text-sm space-y-1 mt-2">
@@ -103,10 +104,10 @@ export function GovernanceIntelligenceWidget() {
         <ScoreBar label="Completion" value={reg45.completionRate as number} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Completed" value={`${reg45.completed}/${reg45.totalExpected}`} />
-          <Stat label="Ofsted Submission" value={`${reg45.ofstedSubmissionRate}%`} />
-          <Stat label="Action Completion" value={`${reg45.actionCompletionRate}%`} />
-          <Stat label="Children Consulted" value={`${reg45.childrenConsultedRate}%`} />
-          <Stat label="Staff Consulted" value={`${reg45.staffConsultedRate}%`} />
+          <Stat label="Ofsted Submission" value={`${formatRateLoose(reg45.ofstedSubmissionRate)}`} />
+          <Stat label="Action Completion" value={`${formatRateLoose(reg45.actionCompletionRate)}`} />
+          <Stat label="Children Consulted" value={`${formatRateLoose(reg45.childrenConsultedRate)}`} />
+          <Stat label="Staff Consulted" value={`${formatRateLoose(reg45.staffConsultedRate)}`} />
           <Stat label="Avg Actions/Report" value={reg45.averageActionsIdentified as number} />
         </div>
         {overdueReports.length > 0 && (
@@ -122,7 +123,7 @@ export function GovernanceIntelligenceWidget() {
           <Stat label="Up to Date" value={policyCompliance.upToDate as number} />
           <Stat label="Overdue" value={policyCompliance.overdue as number} />
           <Stat label="Total Policies" value={policyCompliance.totalPolicies as number} />
-          <Stat label="Staff Acknowledgement" value={`${policyCompliance.averageStaffAcknowledgementRate}%`} />
+          <Stat label="Staff Acknowledgement" value={`${formatRateLoose(policyCompliance.averageStaffAcknowledgementRate)}`} />
         </div>
         {overdueByCategory.length > 0 && (
           <div className="mt-2">
@@ -177,10 +178,10 @@ export function GovernanceIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Total Meetings" value={meetingCompliance.totalMeetings} />
           <Stat label="Staff Meetings" value={meetingCompliance.staffMeetings} />
-          <Stat label="Attendance Rate" value={`${meetingCompliance.averageAttendanceRate}%`} />
-          <Stat label="Minutes Recorded" value={`${meetingCompliance.minutesRecordedRate}%`} />
+          <Stat label="Attendance Rate" value={`${formatRateLoose(meetingCompliance.averageAttendanceRate)}`} />
+          <Stat label="Minutes Recorded" value={`${formatRate(meetingCompliance.minutesRecordedRate)}`} />
           <Stat label="Avg Actions/Meeting" value={meetingCompliance.averageActionsPerMeeting} />
-          <Stat label="Action Completion" value={`${meetingCompliance.actionCompletionRate}%`} />
+          <Stat label="Action Completion" value={`${formatRate(meetingCompliance.actionCompletionRate)}`} />
           <Stat label="Meetings/Month" value={meetingCompliance.meetingsPerMonth} />
         </div>
       </Section>
@@ -188,7 +189,7 @@ export function GovernanceIntelligenceWidget() {
       <Section title="Management Presence">
         <div className="grid grid-cols-2 gap-2">
           <Stat label="RM Avg Hours in Home" value={mgmtPresence.averageRmHoursInHome} />
-          <Stat label="RM Presence Rate" value={`${mgmtPresence.averageRmPresenceRate}%`} />
+          <Stat label="RM Presence Rate" value={`${formatRate(mgmtPresence.averageRmPresenceRate)}`} />
           <Stat label="DRM Avg Hours in Home" value={mgmtPresence.averageDrmHoursInHome} />
           <Stat label="Avg Child Interactions" value={mgmtPresence.averageChildInteractions} />
           <Stat label="Weeks Low Presence" value={mgmtPresence.weeksWithLowPresence} />

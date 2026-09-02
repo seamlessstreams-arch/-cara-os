@@ -148,8 +148,8 @@ export function TherapeuticCrisisInterventionDashboardWidget() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Incidents: <span className="font-medium">{child.totalIncidents}</span></div>
                     <div>Physical: <span className={`font-medium ${child.physicalInterventions > 0 ? "text-red-600" : "text-green-600"}`}>{child.physicalInterventions}</span></div>
-                    <div>De-escalation: <span className="font-medium">{child.deescalationSuccessRate}%</span></div>
-                    <div>Debriefed: <span className="font-medium">{child.debriefRate}%</span></div>
+                    <div>De-escalation: <span className="font-medium">{formatRate(child.deescalationSuccessRate)}</span></div>
+                    <div>Debriefed: <span className="font-medium">{formatRate(child.debriefRate)}</span></div>
                   </div>
                 </div>
               ))}

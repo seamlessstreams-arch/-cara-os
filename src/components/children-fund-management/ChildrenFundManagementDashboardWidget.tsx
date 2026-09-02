@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 // -- Local Interfaces (widget-only, no engine import in client) ---------------
@@ -251,19 +252,19 @@ export function ChildrenFundManagementDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           label="Receipt Rate"
-          value={`${transactionIntegrity.receiptRate}%`}
+          value={`${formatRate(transactionIntegrity.receiptRate)}`}
           sub="receipts retained"
           score={transactionIntegrity.receiptRate}
         />
         <MetricCard
           label="Two Signatures"
-          value={`${transactionIntegrity.twoSignatureRate}%`}
+          value={`${formatRate(transactionIntegrity.twoSignatureRate)}`}
           sub="dual authorisation"
           score={transactionIntegrity.twoSignatureRate}
         />
         <MetricCard
           label="Child Consent"
-          value={`${transactionIntegrity.consentRate}%`}
+          value={`${formatRate(transactionIntegrity.consentRate)}`}
           sub="informed consent"
           score={transactionIntegrity.consentRate}
         />
@@ -371,7 +372,7 @@ export function ChildrenFundManagementDashboardWidget() {
             <div className="bg-white rounded p-2 border border-slate-100">
               <p className="text-xs text-slate-500">Consent Rate</p>
               <p className={`text-sm font-semibold ${getScoreColour(activeChild.consentRate)}`}>
-                {activeChild.consentRate}%
+                {formatRate(activeChild.consentRate)}
               </p>
             </div>
             <div className="bg-white rounded p-2 border border-slate-100">
@@ -483,7 +484,7 @@ export function ChildrenFundManagementDashboardWidget() {
           />
           <MiniStat
             label="Signed"
-            value={`${accountManagement.signedAgreementRate}%`}
+            value={`${formatRate(accountManagement.signedAgreementRate)}`}
           />
         </div>
         <span className="text-xs text-slate-400">

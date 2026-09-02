@@ -7,6 +7,7 @@
 // SCCIF: Helped & Protected — "Children's health and wellbeing needs are met."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +107,7 @@ export function SleepQualityAssessmentCard() {
               "text-lg font-bold tabular-nums",
               o.all_children_checked_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.all_children_checked_rate}%
+              {formatRate(o.all_children_checked_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Checks</p>
           </div>
@@ -136,7 +137,7 @@ export function SleepQualityAssessmentCard() {
               "text-lg font-bold tabular-nums",
               o.building_secure_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.building_secure_rate}%
+              {formatRate(o.building_secure_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Secure</p>
           </div>
@@ -164,22 +165,22 @@ export function SleepQualityAssessmentCard() {
                   <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
                       className="h-full bg-indigo-400 rounded-full"
-                      style={{ width: `${child.asleep_rate}%` }}
+                      style={{ width: `${formatRate(child.asleep_rate)}` }}
                     />
                   </div>
                   <span className="text-[10px] tabular-nums text-muted-foreground w-16 text-right">
-                    {child.asleep_rate}% asleep
+                    {formatRate(child.asleep_rate)} asleep
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
                       className="h-full bg-amber-400 rounded-full"
-                      style={{ width: `${child.awake_rate}%` }}
+                      style={{ width: `${formatRate(child.awake_rate)}` }}
                     />
                   </div>
                   <span className="text-[10px] tabular-nums text-muted-foreground w-16 text-right">
-                    {child.awake_rate}% awake
+                    {formatRate(child.awake_rate)} awake
                   </span>
                 </div>
               </div>

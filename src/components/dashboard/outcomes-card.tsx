@@ -7,6 +7,7 @@
 // Powered by the Outcomes Progress Engine — live data (Reg 7–14, SCCIF).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,12 +108,12 @@ export function OutcomesCard() {
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (o.improving_pct ?? 0) >= 50 ? "bg-green-50" : "bg-amber-50")}>
             <p className={cn("text-lg font-bold tabular-nums", (o.improving_pct ?? 0) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.improving_pct}%
+              {formatRate(o.improving_pct)}
             </p>
             <p className="text-[10px] text-muted-foreground">Improving</p>
           </div>
           <div className="text-center rounded-lg bg-purple-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-purple-600">{o.avg_progress_pct}%</p>
+            <p className="text-lg font-bold tabular-nums text-purple-600">{formatRate(o.avg_progress_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Progress</p>
           </div>
         </div>
@@ -149,10 +150,10 @@ export function OutcomesCard() {
                         : (d.avg_progress_pct ?? 0) >= 30 ? "bg-amber-400"
                         : "bg-red-400",
                     )}
-                    style={{ width: `${d.avg_progress_pct}%` }}
+                    style={{ width: `${formatRate(d.avg_progress_pct)}` }}
                   />
                 </div>
-                <span className="w-8 text-right tabular-nums font-medium">{d.avg_progress_pct}%</span>
+                <span className="w-8 text-right tabular-nums font-medium">{formatRate(d.avg_progress_pct)}</span>
                 <Badge variant="outline" className="text-[10px] tabular-nums">{d.active_targets}</Badge>
               </div>
             ))}
@@ -177,7 +178,7 @@ export function OutcomesCard() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold tabular-nums">{child.avg_progress_pct}%</span>
+                    <span className="font-bold tabular-nums">{formatRate(child.avg_progress_pct)}</span>
                     <span className="text-muted-foreground text-[10px]">progress</span>
                   </div>
                 </div>
@@ -210,7 +211,7 @@ export function OutcomesCard() {
             <div>
               <p className="text-xs font-medium">Review Compliance</p>
               <p className="text-[10px] text-muted-foreground">
-                {rc.total_reviews_30d} reviews (30d) · {rc.yp_participation_rate}% YP voice
+                {rc.total_reviews_30d} reviews (30d) · {formatRate(rc.yp_participation_rate)} YP voice
               </p>
             </div>
           </div>

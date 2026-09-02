@@ -220,8 +220,8 @@ export default function IndependenceDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Records: <span className="font-medium">{child.totalRecords}</span></div>
-                    <div>Plan Rate: <span className="font-medium">{child.individualPlanRate}%</span></div>
-                    <div>Engaged: <span className="font-medium">{child.childEngagedRate}%</span></div>
+                    <div>Plan Rate: <span className="font-medium">{formatRate(child.individualPlanRate)}</span></div>
+                    <div>Engaged: <span className="font-medium">{formatRate(child.childEngagedRate)}</span></div>
                     <div>Categories: <span className="font-medium">{child.uniqueCategories}</span></div>
                   </div>
                 </div>

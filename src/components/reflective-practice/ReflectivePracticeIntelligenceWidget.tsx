@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -66,7 +67,7 @@ export function ReflectivePracticeIntelligenceWidget() {
       <Section title="Reflective Engagement" defaultOpen>
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Per Staff" value={engagement.activitiesPerStaff as number} />
-          <Stat label="Engagement Rate" value={`${engagement.engagementRate}%`} />
+          <Stat label="Engagement Rate" value={`${formatRateLoose(engagement.engagementRate)}`} />
           <Stat label="Total Hours" value={engagement.totalHours as number} />
           <Stat label="Avg Hours/Staff" value={engagement.avgHoursPerStaff as number} />
         </div>
@@ -80,11 +81,11 @@ export function ReflectivePracticeIntelligenceWidget() {
 
       <Section title="Learning Outcomes">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Practice Change" value={`${outcomes.practiceChangeRate}%`} />
-          <Stat label="Skill Development" value={`${outcomes.skillDevelopmentRate}%`} />
-          <Stat label="Shared With Team" value={`${outcomes.sharedWithTeamRate}%`} />
-          <Stat label="Child Outcome Link" value={`${outcomes.linkedToChildOutcomeRate}%`} />
-          <Stat label="No Outcome" value={`${outcomes.noOutcomeRate}%`} />
+          <Stat label="Practice Change" value={`${formatRateLoose(outcomes.practiceChangeRate)}`} />
+          <Stat label="Skill Development" value={`${formatRateLoose(outcomes.skillDevelopmentRate)}`} />
+          <Stat label="Shared With Team" value={`${formatRateLoose(outcomes.sharedWithTeamRate)}`} />
+          <Stat label="Child Outcome Link" value={`${formatRateLoose(outcomes.linkedToChildOutcomeRate)}`} />
+          <Stat label="No Outcome" value={`${formatRateLoose(outcomes.noOutcomeRate)}`} />
           <Stat label="Total Outcomes" value={outcomes.totalOutcomes as number} />
         </div>
       </Section>
@@ -93,7 +94,7 @@ export function ReflectivePracticeIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Team Sessions" value={teamLearning.totalTeamSessions as number} />
           <Stat label="Avg Attendance" value={teamLearning.avgAttendance as number} />
-          <Stat label="Shared Learning" value={`${teamLearning.sharedLearningRate}%`} />
+          <Stat label="Shared Learning" value={`${formatRateLoose(teamLearning.sharedLearningRate)}`} />
         </div>
         {((teamLearning.topTeamTopics ?? []) as Record<string, unknown>[]).length > 0 && (
           <div className="mt-2">
@@ -114,7 +115,7 @@ export function ReflectivePracticeIntelligenceWidget() {
           <Stat label="Achieved" value={goals.achieved as number} />
           <Stat label="In Progress" value={goals.inProgress as number} />
           <Stat label="Overdue" value={goals.overdue as number} />
-          <Stat label="Achievement Rate" value={`${goals.achievementRate}%`} />
+          <Stat label="Achievement Rate" value={`${formatRateLoose(goals.achievementRate)}`} />
         </div>
         {((goals.overdueGoals ?? []) as Record<string, unknown>[]).length > 0 && (
           <div className="mt-2">

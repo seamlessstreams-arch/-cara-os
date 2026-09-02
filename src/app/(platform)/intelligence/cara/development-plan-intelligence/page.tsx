@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type {
@@ -86,7 +87,7 @@ function StaffPlanCard({ p }: { p: DevPlanStaffProfile }) {
         <div className="flex justify-between text-xs text-slate-500">
           <span>{p.completedActions}/{p.totalActions} actions complete</span>
           <span className={pct >= 80 ? "text-green-600" : pct >= 50 ? "text-amber-600" : "text-red-600"}>
-            {p.completionRate !== null ? `${p.completionRate}%` : "—"}
+            {p.completionRate !== null ? `${formatRate(p.completionRate)}` : "—"}
           </span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -185,13 +186,13 @@ export default function DevelopmentPlanIntelligencePage() {
           <div className="flex justify-between text-sm">
             <span className="font-medium text-slate-700">Overall action completion</span>
             <span className={`font-semibold ${d.overallCompletionRate >= 80 ? "text-green-600" : d.overallCompletionRate >= 50 ? "text-amber-600" : "text-red-600"}`}>
-              {d.overallCompletionRate}%
+              {formatRate(d.overallCompletionRate)}
             </span>
           </div>
           <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
             <div
               className={`h-full rounded-full ${d.overallCompletionRate >= 80 ? "bg-green-400" : d.overallCompletionRate >= 50 ? "bg-amber-400" : "bg-red-400"}`}
-              style={{ width: `${d.overallCompletionRate}%` }}
+              style={{ width: `${formatRate(d.overallCompletionRate)}` }}
             />
           </div>
         </div>

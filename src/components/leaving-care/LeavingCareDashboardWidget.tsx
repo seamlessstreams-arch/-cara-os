@@ -10,6 +10,7 @@
 // - Expandable sections for strengths, areas, regulatory links
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface SkillCategoryData {
@@ -214,7 +215,7 @@ function ChildReadinessCard({ child }: { child: ChildProfileData }) {
         <div>
           <div className="text-xs text-gray-500">Goals</div>
           <div className="text-sm font-bold text-gray-800">
-            {child.hasPathwayPlan ? `${child.goalAchievementRate}%` : "---"}
+            {child.hasPathwayPlan ? `${formatRate(child.goalAchievementRate)}` : "---"}
           </div>
         </div>
         <div>
@@ -352,7 +353,7 @@ export function LeavingCareDashboardWidget() {
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
           <div className="text-xl font-bold text-green-700">
-            {data.independenceSkills.coverageRate}%
+            {formatRate(data.independenceSkills.coverageRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">
             Skills Coverage

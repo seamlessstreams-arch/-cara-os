@@ -198,7 +198,7 @@ export function HomeFireSafetyIntelligenceCard() {
                 )}>{(d.evacuation.slowest_evacuation ?? 0) > 0 ? `${d.evacuation.slowest_evacuation}s` : "—"}</span></p>
                 <p>Within target: <span className={cn("font-medium",
                   (d.evacuation.target_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.evacuation.target_compliance_rate}%</span></p>
+                )}>{formatRate(d.evacuation.target_compliance_rate)}</span></p>
                 <p>All present: <span className="font-medium text-slate-600">{formatRate(d.participation.all_present_rate)}</span></p>
               </div>
             </div>

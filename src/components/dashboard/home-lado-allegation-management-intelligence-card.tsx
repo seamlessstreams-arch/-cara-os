@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } from "lucide-react";
@@ -78,11 +79,11 @@ export function HomeLadoAllegationManagementIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Open</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.ofsted_notification_rate ?? 0) >= 95 ? "bg-green-50" : (d.ofsted_notification_rate ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_notification_rate ?? 0) >= 95 ? "text-[--cs-success]" : (d.ofsted_notification_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_notification_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_notification_rate ?? 0) >= 95 ? "text-[--cs-success]" : (d.ofsted_notification_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ofsted_notification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Notified</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.resolution_rate ?? 0) >= 90 ? "bg-green-50" : (d.resolution_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.resolution_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.resolution_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resolution_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.resolution_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.resolution_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.average_days_to_close ?? 0) <= 30 ? "bg-green-50" : (d.average_days_to_close ?? 0) <= 60 ? "bg-amber-50" : "bg-red-50")}>

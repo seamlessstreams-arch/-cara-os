@@ -138,7 +138,7 @@ export function BodyMapProtocolDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Total Records: <span className="font-medium">{child.totalRecords}</span></div>
-                    <div>Thorough: <span className="font-medium">{child.thoroughRate}%</span></div>
+                    <div>Thorough: <span className="font-medium">{formatRate(child.thoroughRate)}</span></div>
                     <div>Unexplained: <span className={`font-medium ${child.unexplainedCount > 0 ? "text-amber-600" : "text-green-600"}`}>{child.unexplainedCount}</span></div>
                     <div>Escalations: <span className="font-medium">{child.escalationCount}</span></div>
                   </div>

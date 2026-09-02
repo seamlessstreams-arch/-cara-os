@@ -129,7 +129,7 @@ function ChildProfileCard({ profile }: { profile: ChildBehaviourProfile }) {
       <div className="grid grid-cols-3 gap-2 text-center mb-3">
         <div>
           <span className="text-lg font-bold text-gray-900">
-            {profile.deEscalationSuccessRate}%
+            {formatRate(profile.deEscalationSuccessRate)}
           </span>
           <p className="text-xs text-gray-500">De-escalation</p>
         </div>
@@ -497,9 +497,9 @@ export function PositiveBehaviourDashboardWidget() {
                       </span>
                       <div className="flex gap-4 text-gray-500">
                         <span>{child.totalAttempts} episodes</span>
-                        <span>{child.successRate}% success</span>
+                        <span>{formatRate(child.successRate)} success</span>
                         <span>{child.avgDuration} min avg</span>
-                        <span>{child.piAvoidanceRate}% PI avoided</span>
+                        <span>{formatRate(child.piAvoidanceRate)} PI avoided</span>
                       </div>
                     </div>
                   ))}
@@ -550,7 +550,7 @@ export function PositiveBehaviourDashboardWidget() {
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Proportionality</span>
                     <span>
-                      {data.rewardSanctionBalance.sanctionProportionalityRate}%
+                      {formatRate(data.rewardSanctionBalance.sanctionProportionalityRate)}
                     </span>
                   </div>
                   <ProgressBar
@@ -565,7 +565,7 @@ export function PositiveBehaviourDashboardWidget() {
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Child Voice Recorded</span>
                     <span>
-                      {data.rewardSanctionBalance.childVoiceInSanctionsRate}%
+                      {formatRate(data.rewardSanctionBalance.childVoiceInSanctionsRate)}
                     </span>
                   </div>
                   <ProgressBar
@@ -580,7 +580,7 @@ export function PositiveBehaviourDashboardWidget() {
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Restoration Planned</span>
                     <span>
-                      {data.rewardSanctionBalance.restorationPlanningRate}%
+                      {formatRate(data.rewardSanctionBalance.restorationPlanningRate)}
                     </span>
                   </div>
                   <ProgressBar
@@ -593,7 +593,7 @@ export function PositiveBehaviourDashboardWidget() {
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Parent Notified</span>
                     <span>
-                      {data.rewardSanctionBalance.parentNotificationRate}%
+                      {formatRate(data.rewardSanctionBalance.parentNotificationRate)}
                     </span>
                   </div>
                   <ProgressBar

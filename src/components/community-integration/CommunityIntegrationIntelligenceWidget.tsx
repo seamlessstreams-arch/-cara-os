@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,21 +78,21 @@ export function CommunityIntegrationIntelligenceWidget() {
       <Section title="Activity Participation" defaultOpen>
         <ScoreBar label="Participation" value={activity.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Regular Participation" value={`${activity.regularParticipationRate}%`} />
+          <Stat label="Regular Participation" value={`${formatRate(activity.regularParticipationRate)}`} />
           <Stat label="Activity Variety" value={activity.activityVariety} />
-          <Stat label="Community Based" value={`${activity.communityBasedRate}%`} />
-          <Stat label="Enjoyment" value={`${activity.enjoymentRate}%`} />
-          <Stat label="Independent Attendance" value={`${activity.independentAttendanceRate}%`} />
+          <Stat label="Community Based" value={`${formatRate(activity.communityBasedRate)}`} />
+          <Stat label="Enjoyment" value={`${formatRate(activity.enjoymentRate)}`} />
+          <Stat label="Independent Attendance" value={`${formatRate(activity.independentAttendanceRate)}`} />
         </div>
       </Section>
 
       <Section title="Social Networks">
         <ScoreBar label="Social Networks" value={social.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Friendship Quality" value={`${social.friendshipQualityRate}%`} />
-          <Stat label="Friends Outside Care" value={`${social.friendsOutsideCareRate}%`} />
-          <Stat label="Mentor Rate" value={`${social.mentorRate}%`} />
-          <Stat label="Social Media Safety" value={`${social.socialMediaSafetyRate}%`} />
+          <Stat label="Friendship Quality" value={`${formatRate(social.friendshipQualityRate)}`} />
+          <Stat label="Friends Outside Care" value={`${formatRate(social.friendsOutsideCareRate)}`} />
+          <Stat label="Mentor Rate" value={`${formatRate(social.mentorRate)}`} />
+          <Stat label="Social Media Safety" value={`${formatRate(social.socialMediaSafetyRate)}`} />
         </div>
       </Section>
 
@@ -99,18 +100,18 @@ export function CommunityIntegrationIntelligenceWidget() {
         <ScoreBar label="Barriers" value={barrier.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Barriers" value={barrier.totalBarriers} />
-          <Stat label="Resolution Rate" value={`${barrier.resolutionRate}%`} />
-          <Stat label="Action Taken" value={`${barrier.actionTakenRate}%`} />
+          <Stat label="Resolution Rate" value={`${formatRate(barrier.resolutionRate)}`} />
+          <Stat label="Action Taken" value={`${formatRate(barrier.actionTakenRate)}`} />
         </div>
       </Section>
 
       <Section title="Inclusion Outcomes">
         <ScoreBar label="Inclusion" value={inclusion.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Community Belonging" value={`${inclusion.communityBelongingRate}%`} />
-          <Stat label="Amenity Access" value={`${inclusion.amenityAccessRate}%`} />
-          <Stat label="Positive Relationships" value={`${inclusion.positiveRelationshipsRate}%`} />
-          <Stat label="Independent Travel" value={`${inclusion.independentTravelRate}%`} />
+          <Stat label="Community Belonging" value={`${formatRate(inclusion.communityBelongingRate)}`} />
+          <Stat label="Amenity Access" value={`${formatRate(inclusion.amenityAccessRate)}`} />
+          <Stat label="Positive Relationships" value={`${formatRate(inclusion.positiveRelationshipsRate)}`} />
+          <Stat label="Independent Travel" value={`${formatRate(inclusion.independentTravelRate)}`} />
         </div>
       </Section>
 

@@ -12,6 +12,7 @@
 // - Per-child identity profiles
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ActivityTypeBreakdown {
@@ -261,19 +262,19 @@ export function CultureIdentityDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.identitySupport.assessmentRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.identitySupport.assessmentRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Assessed</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.identitySupport.needsMetRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.identitySupport.needsMetRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Needs Met</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.activityProvision.childEngagementRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.activityProvision.childEngagementRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Engagement</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.staffCompetence.trainingRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.staffCompetence.trainingRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Staff Trained</div>
         </div>
       </div>
@@ -365,15 +366,15 @@ export function CultureIdentityDashboardWidget() {
               <h4 className="text-sm font-semibold text-gray-800 mb-2">Diversity Incidents</h4>
               <div className="grid grid-cols-4 gap-2 text-center mb-2">
                 <div className="p-1.5 bg-green-50 rounded">
-                  <div className="text-sm font-bold text-green-700">{data.incidentAnalysis.reportedRate}%</div>
+                  <div className="text-sm font-bold text-green-700">{formatRate(data.incidentAnalysis.reportedRate)}</div>
                   <div className="text-[9px] text-gray-500">Reported</div>
                 </div>
                 <div className="p-1.5 bg-blue-50 rounded">
-                  <div className="text-sm font-bold text-blue-700">{data.incidentAnalysis.investigatedRate}%</div>
+                  <div className="text-sm font-bold text-blue-700">{formatRate(data.incidentAnalysis.investigatedRate)}</div>
                   <div className="text-[9px] text-gray-500">Investigated</div>
                 </div>
                 <div className="p-1.5 bg-purple-50 rounded">
-                  <div className="text-sm font-bold text-purple-700">{data.incidentAnalysis.resolvedRate}%</div>
+                  <div className="text-sm font-bold text-purple-700">{formatRate(data.incidentAnalysis.resolvedRate)}</div>
                   <div className="text-[9px] text-gray-500">Resolved</div>
                 </div>
                 <div className="p-1.5 bg-orange-50 rounded">

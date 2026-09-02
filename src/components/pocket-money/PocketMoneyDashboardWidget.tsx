@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface ChildStatus {
@@ -137,7 +138,7 @@ export function PocketMoneyDashboardWidget({ homeId = "home-oak" }: Props) {
           <p className="text-[10px] text-muted-foreground">On time</p>
         </div>
         <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.savingsAccountRate}%</p>
+          <p className="text-lg font-bold">{formatRate(metrics.savingsAccountRate)}</p>
           <p className="text-[10px] text-muted-foreground">Savings accts</p>
         </div>
         <div className="p-3 text-center">

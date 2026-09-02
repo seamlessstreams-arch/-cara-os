@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -214,7 +215,7 @@ export default function TherapeuticInputPage() {
             { l: "Active",          v: stats.active, icon: CheckCircle2, c: "text-green-600" },
             { l: "Pending",         v: stats.pending, icon: Clock, c: "text-amber-600" },
             { l: "Sessions Logged", v: stats.totalSessions, icon: Calendar, c: "text-blue-600" },
-            { l: "Attendance",      v: `${stats.attendanceRate}%`, icon: CheckCircle2, c: "text-purple-600" },
+            { l: "Attendance",      v: `${formatRate(stats.attendanceRate)}`, icon: CheckCircle2, c: "text-purple-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />

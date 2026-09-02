@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { NutritionHealthyLivingIntelligence } from "@/lib/nutrition-healthy-living";
 
@@ -103,7 +104,7 @@ export function NutritionHealthyLivingDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Meals Recorded</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.mealQuality.excellentGoodRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.mealQuality.excellentGoodRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Meal Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -117,7 +118,7 @@ export function NutritionHealthyLivingDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">NHS Guidelines</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.healthPromotion.annualHealthAssessmentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.healthPromotion.annualHealthAssessmentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Health Assessments</div>
         </div>
       </div>
@@ -142,7 +143,7 @@ export function NutritionHealthyLivingDashboardWidget() {
                     <span className="text-sm text-gray-500">{child.overallScore}/10</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div>Dietary Compliance: <span className="font-medium">{child.dietaryComplianceRate}%</span></div>
+                    <div>Dietary Compliance: <span className="font-medium">{formatRate(child.dietaryComplianceRate)}</span></div>
                     <div>Weekly Activity: <span className="font-medium">{child.weeklyActivityMinutes}min</span></div>
                     <div>Health Checks: <span className={`font-medium ${child.healthChecksUpToDate ? "text-green-600" : "text-red-600"}`}>{child.healthChecksUpToDate ? "Up to date" : "Overdue"}</span></div>
                     <div>Diet: <span className="font-medium">{child.dietaryRequirements.join(", ")}</span></div>
@@ -156,12 +157,12 @@ export function NutritionHealthyLivingDashboardWidget() {
         <Section title="Meal Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Meals:</span> <span className="font-medium">{data.mealQuality.totalMeals}</span></div>
-            <div><span className="text-gray-500">Quality Rate:</span> <span className="font-medium">{data.mealQuality.excellentGoodRate}%</span></div>
-            <div><span className="text-gray-500">Dietary Compliance:</span> <span className="font-medium">{data.mealQuality.dietaryComplianceRate}%</span></div>
-            <div><span className="text-gray-500">Fruit & Veg:</span> <span className="font-medium">{data.mealQuality.freshFruitVegRate}%</span></div>
-            <div><span className="text-gray-500">Child Involved:</span> <span className="font-medium">{data.mealQuality.childInvolvementRate}%</span></div>
-            <div><span className="text-gray-500">Child Enjoyed:</span> <span className="font-medium">{data.mealQuality.childEnjoymentRate}%</span></div>
-            <div><span className="text-gray-500">Portions OK:</span> <span className="font-medium">{data.mealQuality.portionAppropriateRate}%</span></div>
+            <div><span className="text-gray-500">Quality Rate:</span> <span className="font-medium">{formatRate(data.mealQuality.excellentGoodRate)}</span></div>
+            <div><span className="text-gray-500">Dietary Compliance:</span> <span className="font-medium">{formatRate(data.mealQuality.dietaryComplianceRate)}</span></div>
+            <div><span className="text-gray-500">Fruit & Veg:</span> <span className="font-medium">{formatRate(data.mealQuality.freshFruitVegRate)}</span></div>
+            <div><span className="text-gray-500">Child Involved:</span> <span className="font-medium">{formatRate(data.mealQuality.childInvolvementRate)}</span></div>
+            <div><span className="text-gray-500">Child Enjoyed:</span> <span className="font-medium">{formatRate(data.mealQuality.childEnjoymentRate)}</span></div>
+            <div><span className="text-gray-500">Portions OK:</span> <span className="font-medium">{formatRate(data.mealQuality.portionAppropriateRate)}</span></div>
           </div>
         </Section>
 
@@ -169,9 +170,9 @@ export function NutritionHealthyLivingDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Activities:</span> <span className="font-medium">{data.physicalActivity.totalActivities}</span></div>
             <div><span className="text-gray-500">Avg Min/Week:</span> <span className="font-medium">{data.physicalActivity.averageMinutesPerChildPerWeek}</span></div>
-            <div><span className="text-gray-500">Active Children:</span> <span className="font-medium">{data.physicalActivity.activeChildrenRate}%</span></div>
-            <div><span className="text-gray-500">Vigorous/Moderate:</span> <span className="font-medium">{data.physicalActivity.vigorousModerateRate}%</span></div>
-            <div><span className="text-gray-500">Enjoyment:</span> <span className="font-medium">{data.physicalActivity.childEnjoymentRate}%</span></div>
+            <div><span className="text-gray-500">Active Children:</span> <span className="font-medium">{formatRate(data.physicalActivity.activeChildrenRate)}</span></div>
+            <div><span className="text-gray-500">Vigorous/Moderate:</span> <span className="font-medium">{formatRate(data.physicalActivity.vigorousModerateRate)}</span></div>
+            <div><span className="text-gray-500">Enjoyment:</span> <span className="font-medium">{formatRate(data.physicalActivity.childEnjoymentRate)}</span></div>
             <div><span className="text-gray-500">Variety:</span> <span className="font-medium">{data.physicalActivity.activityVariety} types</span></div>
             <div><span className="text-gray-500">NHS Guidelines:</span> <span className={`font-medium ${data.physicalActivity.meetsNHSGuidelines ? "text-green-600" : "text-amber-600"}`}>{data.physicalActivity.meetsNHSGuidelines ? "Met" : "Below"}</span></div>
           </div>
@@ -179,25 +180,25 @@ export function NutritionHealthyLivingDashboardWidget() {
 
         <Section title="Health Promotion">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Hydration:</span> <span className="font-medium">{data.healthPromotion.hydrationGoodRate}%</span></div>
-            <div><span className="text-gray-500">Sleep Quality:</span> <span className="font-medium">{data.healthPromotion.sleepQualityRate}%</span></div>
-            <div><span className="text-gray-500">Dental:</span> <span className="font-medium">{data.healthPromotion.dentalUpToDateRate}%</span></div>
-            <div><span className="text-gray-500">Optical:</span> <span className="font-medium">{data.healthPromotion.opticalUpToDateRate}%</span></div>
-            <div><span className="text-gray-500">Health Assessment:</span> <span className="font-medium">{data.healthPromotion.annualHealthAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Cooking Skills:</span> <span className="font-medium">{data.healthPromotion.cookingSkillsRate}%</span></div>
-            <div><span className="text-gray-500">Nutrition Ed:</span> <span className="font-medium">{data.healthPromotion.nutritionEducationRate}%</span></div>
-            <div><span className="text-gray-500">Mental Wellbeing:</span> <span className="font-medium">{data.healthPromotion.mentalWellbeingRate}%</span></div>
+            <div><span className="text-gray-500">Hydration:</span> <span className="font-medium">{formatRate(data.healthPromotion.hydrationGoodRate)}</span></div>
+            <div><span className="text-gray-500">Sleep Quality:</span> <span className="font-medium">{formatRate(data.healthPromotion.sleepQualityRate)}</span></div>
+            <div><span className="text-gray-500">Dental:</span> <span className="font-medium">{formatRate(data.healthPromotion.dentalUpToDateRate)}</span></div>
+            <div><span className="text-gray-500">Optical:</span> <span className="font-medium">{formatRate(data.healthPromotion.opticalUpToDateRate)}</span></div>
+            <div><span className="text-gray-500">Health Assessment:</span> <span className="font-medium">{formatRate(data.healthPromotion.annualHealthAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Cooking Skills:</span> <span className="font-medium">{formatRate(data.healthPromotion.cookingSkillsRate)}</span></div>
+            <div><span className="text-gray-500">Nutrition Ed:</span> <span className="font-medium">{formatRate(data.healthPromotion.nutritionEducationRate)}</span></div>
+            <div><span className="text-gray-500">Mental Wellbeing:</span> <span className="font-medium">{formatRate(data.healthPromotion.mentalWellbeingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Menu Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Menu Plans:</span> <span className="font-medium">{data.menuPlanning.totalMenuPlans}</span></div>
-            <div><span className="text-gray-500">Balanced:</span> <span className="font-medium">{data.menuPlanning.balancedMealRate}%</span></div>
-            <div><span className="text-gray-500">Children Consulted:</span> <span className="font-medium">{data.menuPlanning.childConsultationRate}%</span></div>
-            <div><span className="text-gray-500">Cultural Diversity:</span> <span className="font-medium">{data.menuPlanning.culturalDiversityRate}%</span></div>
-            <div><span className="text-gray-500">Special Diets:</span> <span className="font-medium">{data.menuPlanning.specialDietsCateredRate}%</span></div>
-            <div><span className="text-gray-500">Seasonal:</span> <span className="font-medium">{data.menuPlanning.seasonalIngredientRate}%</span></div>
+            <div><span className="text-gray-500">Balanced:</span> <span className="font-medium">{formatRate(data.menuPlanning.balancedMealRate)}</span></div>
+            <div><span className="text-gray-500">Children Consulted:</span> <span className="font-medium">{formatRate(data.menuPlanning.childConsultationRate)}</span></div>
+            <div><span className="text-gray-500">Cultural Diversity:</span> <span className="font-medium">{formatRate(data.menuPlanning.culturalDiversityRate)}</span></div>
+            <div><span className="text-gray-500">Special Diets:</span> <span className="font-medium">{formatRate(data.menuPlanning.specialDietsCateredRate)}</span></div>
+            <div><span className="text-gray-500">Seasonal:</span> <span className="font-medium">{formatRate(data.menuPlanning.seasonalIngredientRate)}</span></div>
           </div>
         </Section>
 

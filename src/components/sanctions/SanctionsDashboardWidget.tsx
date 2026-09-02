@@ -384,8 +384,8 @@ export default function SanctionsDashboardWidget() {
                   <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-600">
                     <span>Sanctions: {child.totalSanctions}</span>
                     <span>Types: {child.sanctionTypes.length}</span>
-                    <span>Proportionate: {child.proportionateRate}%</span>
-                    <span>Child views: {child.childViewsRate}%</span>
+                    <span>Proportionate: {formatRate(child.proportionateRate)}</span>
+                    <span>Child views: {formatRate(child.childViewsRate)}</span>
                     <span>Escalated: {child.escalatedCount}</span>
                   </div>
                 </div>

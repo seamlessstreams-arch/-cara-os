@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -143,7 +144,7 @@ export default function ChildrenMissingEducationPage() {
     { header: "School", accessor: (r: CMERecord) => r.school },
     { header: "Year Group", accessor: (r: CMERecord) => r.year_group },
     { header: "Status", accessor: (r: CMERecord) => CME_STATUS_LABEL[r.current_status] },
-    { header: "Attendance %", accessor: (r: CMERecord) => `${r.attendance_percentage}%` },
+    { header: "Attendance %", accessor: (r: CMERecord) => `${formatRate(r.attendance_percentage)}` },
     { header: "Attendance Level", accessor: (r: CMERecord) => ATTENDANCE_LEVEL_LABEL[r.attendance_level] },
     { header: "Authorised Absences", accessor: (r: CMERecord) => r.authorised_absences.toString() },
     { header: "Unauthorised Absences", accessor: (r: CMERecord) => r.unauthorised_absences.toString() },
@@ -239,7 +240,7 @@ export default function ChildrenMissingEducationPage() {
                       <CardTitle className="text-base flex items-center gap-2">
                         {getYPName(r.child_id)} — {r.school}
                         <Badge variant="outline" className={STATUS_CLR[r.current_status]}>{CME_STATUS_LABEL[r.current_status]}</Badge>
-                        <Badge variant="outline" className={ATTEND_CLR[r.attendance_level]}>{r.attendance_percentage}% — {ATTENDANCE_LEVEL_LABEL[r.attendance_level]}</Badge>
+                        <Badge variant="outline" className={ATTEND_CLR[r.attendance_level]}>{formatRate(r.attendance_percentage)} — {ATTENDANCE_LEVEL_LABEL[r.attendance_level]}</Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {r.year_group} · Authorised: {r.authorised_absences} · Unauthorised: {r.unauthorised_absences} · Exclusions: {r.exclusions.fixed_term} FTE, {r.exclusions.permanent} Perm
@@ -258,7 +259,7 @@ export default function ChildrenMissingEducationPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Attendance</p>
-                        <p className="text-xs text-muted-foreground">{r.attendance_percentage}% ({ATTENDANCE_LEVEL_LABEL[r.attendance_level]})</p>
+                        <p className="text-xs text-muted-foreground">{formatRate(r.attendance_percentage)} ({ATTENDANCE_LEVEL_LABEL[r.attendance_level]})</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Authorised Absences</p>

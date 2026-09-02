@@ -13,6 +13,7 @@
 // - Strengths, areas for improvement, and actions
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ContactQualityData {
@@ -225,7 +226,7 @@ function FamilyProfileCard({
         <div>
           <div className="text-xs text-gray-500">Positive</div>
           <div className={`text-sm font-bold ${rateColor(profile.positiveContactRate)}`}>
-            {profile.positiveContactRate}%
+            {formatRate(profile.positiveContactRate)}
           </div>
         </div>
         <div>
@@ -237,7 +238,7 @@ function FamilyProfileCard({
         <div>
           <div className="text-xs text-gray-500">Goals</div>
           <div className={`text-sm font-bold ${rateColor(profile.goalAchievementRate)}`}>
-            {profile.goalAchievementRate}%
+            {formatRate(profile.goalAchievementRate)}
           </div>
         </div>
       </div>
@@ -328,19 +329,19 @@ export function ParentalEngagementDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.contactQuality.positiveOutcomeRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.contactQuality.positiveOutcomeRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Positive Contacts</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.contactQuality.moodUpliftRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.contactQuality.moodUpliftRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Mood Uplift</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.parentalSupport.effectiveRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.parentalSupport.effectiveRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Support Effective</div>
         </div>
         <div className="text-center p-2 bg-teal-50 rounded-lg">
-          <div className="text-xl font-bold text-teal-700">{data.familyPlanning.goalAchievementRate}%</div>
+          <div className="text-xl font-bold text-teal-700">{formatRate(data.familyPlanning.goalAchievementRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Goals Achieved</div>
         </div>
       </div>

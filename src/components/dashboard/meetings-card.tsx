@@ -104,7 +104,7 @@ export function MeetingsCard() {
               "text-lg font-bold tabular-nums",
               (o.avg_attendance_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.avg_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.avg_attendance_rate}%
+              {formatRate(o.avg_attendance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Attendance</p>
           </div>
@@ -175,7 +175,7 @@ export function MeetingsCard() {
                         : (c.attendance_rate ?? 0) >= 50 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
                         : "bg-[--cs-risk-bg] text-[--cs-risk]",
                     )}>
-                      {c.attendance_rate}%
+                      {formatRate(c.attendance_rate)}
                     </Badge>
                   </div>
                 </div>

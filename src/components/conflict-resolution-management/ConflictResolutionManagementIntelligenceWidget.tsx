@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function ConflictResolutionManagementIntelligenceWidget() {
       <Section title="Conflict Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Resolution" value={`${quality.resolutionRate}%`} />
-          <Stat label="De-Escalation" value={`${quality.deEscalationRate}%`} />
-          <Stat label="Child Voice" value={`${quality.childVoiceRate}%`} />
-          <Stat label="Restorative" value={`${quality.restorativeRate}%`} />
+          <Stat label="Resolution" value={`${formatRate(quality.resolutionRate)}`} />
+          <Stat label="De-Escalation" value={`${formatRate(quality.deEscalationRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(quality.childVoiceRate)}`} />
+          <Stat label="Restorative" value={`${formatRate(quality.restorativeRate)}`} />
         </div>
       </Section>
 
       <Section title="Conflict Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Type Diversity" value={`${compliance.conflictTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function ConflictResolutionManagementIntelligenceWidget() {
       <Section title="Staff Conflict Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="De-Escalation" value={`${staffReadiness.deEscalationTechniquesRate}%`} />
-          <Stat label="Restorative Practice" value={`${staffReadiness.restorativePracticeRate}%`} />
-          <Stat label="Conflict Mediation" value={`${staffReadiness.conflictMediationRate}%`} />
-          <Stat label="Trauma-Informed" value={`${staffReadiness.traumaInformedResponseRate}%`} />
-          <Stat label="Physical Intervention" value={`${staffReadiness.physicalInterventionCertifiedRate}%`} />
-          <Stat label="Reflective Debrief" value={`${staffReadiness.reflectiveDebriefRate}%`} />
+          <Stat label="De-Escalation" value={`${formatRate(staffReadiness.deEscalationTechniquesRate)}`} />
+          <Stat label="Restorative Practice" value={`${formatRate(staffReadiness.restorativePracticeRate)}`} />
+          <Stat label="Conflict Mediation" value={`${formatRate(staffReadiness.conflictMediationRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(staffReadiness.traumaInformedResponseRate)}`} />
+          <Stat label="Physical Intervention" value={`${formatRate(staffReadiness.physicalInterventionCertifiedRate)}`} />
+          <Stat label="Reflective Debrief" value={`${formatRate(staffReadiness.reflectiveDebriefRate)}`} />
         </div>
       </Section>
 

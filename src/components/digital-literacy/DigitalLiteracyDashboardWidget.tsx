@@ -14,6 +14,7 @@
 // - Regulatory framework links
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Data interfaces (mirroring engine output) ─────────────────────────────
@@ -164,7 +165,7 @@ function ChildDigitalCard({ child }: { child: ChildDigitalProfileData }) {
         <div>
           <div className="text-xs text-gray-500">Citizen</div>
           <div className={`text-sm font-bold ${child.citizenshipPositiveRate >= 80 ? "text-green-700" : child.citizenshipPositiveRate >= 50 ? "text-yellow-700" : "text-red-700"}`}>
-            {child.citizenshipPositiveRate}%
+            {formatRate(child.citizenshipPositiveRate)}
           </div>
         </div>
       </div>
@@ -285,25 +286,25 @@ export function DigitalLiteracyDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-blue-50 rounded-lg">
           <div className="text-xl font-bold text-blue-700">
-            {data.digitalSkills.assessmentRate}%
+            {formatRate(data.digitalSkills.assessmentRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">Skills Assessed</div>
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
           <div className="text-xl font-bold text-green-700">
-            {data.deviceAccess.accessRate}%
+            {formatRate(data.deviceAccess.accessRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">Device Access</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
           <div className="text-xl font-bold text-purple-700">
-            {data.onlineLearning.positiveOutcomeRate}%
+            {formatRate(data.onlineLearning.positiveOutcomeRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">Positive Outcomes</div>
         </div>
         <div className="text-center p-2 bg-teal-50 rounded-lg">
           <div className="text-xl font-bold text-teal-700">
-            {data.digitalCitizenship.positiveRate}%
+            {formatRate(data.digitalCitizenship.positiveRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">Citizenship</div>
         </div>
@@ -384,19 +385,19 @@ export function DigitalLiteracyDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center mb-3">
           <div className="p-2 bg-gray-50 rounded">
             <div className="text-lg font-bold text-green-700">
-              {data.deviceAccess.accessRate}%
+              {formatRate(data.deviceAccess.accessRate)}
             </div>
             <div className="text-[10px] text-gray-500">Access Rate</div>
           </div>
           <div className="p-2 bg-gray-50 rounded">
             <div className="text-lg font-bold text-blue-700">
-              {data.deviceAccess.agreementComplianceRate}%
+              {formatRate(data.deviceAccess.agreementComplianceRate)}
             </div>
             <div className="text-[10px] text-gray-500">Agreements Signed</div>
           </div>
           <div className="p-2 bg-gray-50 rounded">
             <div className="text-lg font-bold text-green-700">
-              {data.deviceAccess.ageAppropriateRate}%
+              {formatRate(data.deviceAccess.ageAppropriateRate)}
             </div>
             <div className="text-[10px] text-gray-500">Age Appropriate</div>
           </div>
@@ -438,7 +439,7 @@ export function DigitalLiteracyDashboardWidget() {
           </div>
           <div className="p-2 bg-gray-50 rounded">
             <div className="text-lg font-bold text-green-700">
-              {data.onlineLearning.positiveOutcomeRate}%
+              {formatRate(data.onlineLearning.positiveOutcomeRate)}
             </div>
             <div className="text-[10px] text-gray-500">Positive Outcomes</div>
           </div>
@@ -474,7 +475,7 @@ export function DigitalLiteracyDashboardWidget() {
           </div>
           <div className="p-2 bg-gray-50 rounded">
             <div className={`text-lg font-bold ${data.digitalCitizenship.positiveRate >= 80 ? "text-green-700" : "text-orange-700"}`}>
-              {data.digitalCitizenship.positiveRate}%
+              {formatRate(data.digitalCitizenship.positiveRate)}
             </div>
             <div className="text-[10px] text-gray-500">Positive Rate</div>
           </div>

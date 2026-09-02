@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { PropertyDamageAssessmentIntelligence } from "@/lib/property-damage-assessment";
 
@@ -129,20 +130,20 @@ export function PropertyDamageAssessmentDashboardWidget() {
         <Section title="Incident Management" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Incidents:</span> <span className="font-medium">{data.incidentManagement.totalIncidents}</span></div>
-            <div><span className="text-gray-500">Therapeutic Response:</span> <span className="font-medium">{data.incidentManagement.therapeuticResponseRate}%</span></div>
-            <div><span className="text-gray-500">Timely Repair:</span> <span className="font-medium">{data.incidentManagement.timelyRepairRate}%</span></div>
+            <div><span className="text-gray-500">Therapeutic Response:</span> <span className="font-medium">{formatRate(data.incidentManagement.therapeuticResponseRate)}</span></div>
+            <div><span className="text-gray-500">Timely Repair:</span> <span className="font-medium">{formatRate(data.incidentManagement.timelyRepairRate)}</span></div>
             <div><span className="text-gray-500">Insurance Claimed:</span> <span className="font-medium">{data.incidentManagement.insuranceClaimedForSignificant}</span></div>
             <div><span className="text-gray-500">Severe Incidents:</span> <span className={`font-medium ${data.incidentManagement.severeCount > 0 ? "text-red-600" : "text-gray-900"}`}>{data.incidentManagement.severeCount}</span></div>
-            <div><span className="text-gray-500">Context Documented:</span> <span className="font-medium">{data.incidentManagement.contextDocumentedRate}%</span></div>
+            <div><span className="text-gray-500">Context Documented:</span> <span className="font-medium">{formatRate(data.incidentManagement.contextDocumentedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Property Condition">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Inspections:</span> <span className="font-medium">{data.propertyCondition.totalInspections}</span></div>
-            <div><span className="text-gray-500">Good/Excellent:</span> <span className="font-medium">{data.propertyCondition.excellentOrGoodRate}%</span></div>
-            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{data.propertyCondition.issuesResolvedRate}%</span></div>
-            <div><span className="text-gray-500">Maintenance Followed:</span> <span className="font-medium">{data.propertyCondition.maintenanceFollowedRate}%</span></div>
+            <div><span className="text-gray-500">Good/Excellent:</span> <span className="font-medium">{formatRate(data.propertyCondition.excellentOrGoodRate)}</span></div>
+            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{formatRate(data.propertyCondition.issuesResolvedRate)}</span></div>
+            <div><span className="text-gray-500">Maintenance Followed:</span> <span className="font-medium">{formatRate(data.propertyCondition.maintenanceFollowedRate)}</span></div>
             <div><span className="text-gray-500">Regular Inspections:</span> <span className={`font-medium ${data.propertyCondition.regularInspections ? "text-green-600" : "text-amber-600"}`}>{data.propertyCondition.regularInspections ? "Yes" : "No"}</span></div>
           </div>
         </Section>
@@ -152,8 +153,8 @@ export function PropertyDamageAssessmentDashboardWidget() {
             <div><span className="text-gray-500">Total Repairs:</span> <span className="font-medium">{data.repairEffectiveness.totalRepairs}</span></div>
             <div><span className="text-gray-500">Timeliness Score:</span> <span className="font-medium">{data.repairEffectiveness.timelinessScore}/8</span></div>
             <div><span className="text-gray-500">Quality Score:</span> <span className="font-medium">{data.repairEffectiveness.qualityScore}/7</span></div>
-            <div><span className="text-gray-500">Safety Restored:</span> <span className="font-medium">{data.repairEffectiveness.safetyRestoredRate}%</span></div>
-            <div><span className="text-gray-500">Completion Rate:</span> <span className="font-medium">{data.repairEffectiveness.completionRate}%</span></div>
+            <div><span className="text-gray-500">Safety Restored:</span> <span className="font-medium">{formatRate(data.repairEffectiveness.safetyRestoredRate)}</span></div>
+            <div><span className="text-gray-500">Completion Rate:</span> <span className="font-medium">{formatRate(data.repairEffectiveness.completionRate)}</span></div>
           </div>
         </Section>
 
@@ -161,7 +162,7 @@ export function PropertyDamageAssessmentDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Measures:</span> <span className="font-medium">{data.preventionStrategy.totalMeasures}</span></div>
             <div><span className="text-gray-500">Active Measures:</span> <span className="font-medium">{data.preventionStrategy.activeMeasures}</span></div>
-            <div><span className="text-gray-500">Effectiveness:</span> <span className="font-medium">{data.preventionStrategy.effectivenessRate}%</span></div>
+            <div><span className="text-gray-500">Effectiveness:</span> <span className="font-medium">{formatRate(data.preventionStrategy.effectivenessRate)}</span></div>
             <div><span className="text-gray-500">Repeat Children Covered:</span> <span className="font-medium">{data.preventionStrategy.repeatChildrenCovered}</span></div>
             <div><span className="text-gray-500">Environmental Adaptations:</span> <span className="font-medium">{data.preventionStrategy.environmentalAdaptations}</span></div>
             <div><span className="text-gray-500">Reviews Current:</span> <span className="font-medium">{data.preventionStrategy.reviewCurrent}</span></div>
@@ -182,7 +183,7 @@ export function PropertyDamageAssessmentDashboardWidget() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600">
                     <div>Incidents: <span className="font-medium text-gray-900">{child.incidentCount}</span></div>
                     <div>Cost: <span className="font-medium text-gray-900">£{child.totalEstimatedCost}</span></div>
-                    <div>Therapeutic: <span className="font-medium text-gray-900">{child.therapeuticResponseRate}%</span></div>
+                    <div>Therapeutic: <span className="font-medium text-gray-900">{formatRate(child.therapeuticResponseRate)}</span></div>
                     <div>Prevention: <span className="font-medium text-gray-900">{child.preventionMeasuresActive}</span></div>
                   </div>
                   {child.primaryContext && (

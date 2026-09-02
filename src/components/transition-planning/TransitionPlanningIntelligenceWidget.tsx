@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -41,12 +42,12 @@ export function TransitionPlanningIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2"><Stat label="Overall Score" value={`${d.overallScore}/100`} /><Stat label="Total Plans" value={planning.totalPlans as number} /><Stat label="Active Plans" value={planning.activePlans as number} /><Stat label="Overdue Plans" value={planning.overduePlans as number} /></div>
       <Section title="Planning Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Plan Currency" value={`${planning.planCurrencyRate}%`} />
-          <Stat label="Child Voice" value={`${planning.childVoiceRate}%`} />
-          <Stat label="Multi-Agency" value={`${planning.multiAgencyRate}%`} />
-          <Stat label="Goal Achievement" value={`${planning.goalAchievementRate}%`} />
-          <Stat label="Family Involvement" value={`${planning.familyInvolvementRate}%`} />
-          <Stat label="Social Worker" value={`${planning.socialWorkerRate}%`} />
+          <Stat label="Plan Currency" value={`${formatRateLoose(planning.planCurrencyRate)}`} />
+          <Stat label="Child Voice" value={`${formatRateLoose(planning.childVoiceRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRateLoose(planning.multiAgencyRate)}`} />
+          <Stat label="Goal Achievement" value={`${formatRateLoose(planning.goalAchievementRate)}`} />
+          <Stat label="Family Involvement" value={`${formatRateLoose(planning.familyInvolvementRate)}`} />
+          <Stat label="Social Worker" value={`${formatRateLoose(planning.socialWorkerRate)}`} />
           <Stat label="Reviewed Plans" value={planning.reviewedPlans as number} />
           <Stat label="Draft Plans" value={planning.draftPlans as number} />
         </div>
@@ -71,7 +72,7 @@ export function TransitionPlanningIntelligenceWidget() {
           <Stat label="In Progress" value={goals.inProgress as number} />
           <Stat label="Not Started" value={goals.notStarted as number} />
           <Stat label="Deferred" value={goals.deferred as number} />
-          <Stat label="Achievement Rate" value={`${goals.achievementRate}%`} />
+          <Stat label="Achievement Rate" value={`${formatRateLoose(goals.achievementRate)}`} />
           <Stat label="Nearing Deadline" value={(goals.goalsNearingDeadline as unknown[]).length} />
         </div>
       </Section>

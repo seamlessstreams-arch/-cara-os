@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,19 +82,19 @@ export function LifeStoryWorkIntelligenceWidget() {
 
       <Section title="Session Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Engagement Rate" value={`${sq.engagementRate}%`} />
-          <Stat label="Therapeutic Rate" value={`${sq.therapeuticRate}%`} />
-          <Stat label="Child-Led Rate" value={`${sq.childLedRate}%`} />
-          <Stat label="Recorded Rate" value={`${sq.recordedRate}%`} />
-          <Stat label="Follow-Up Rate" value={`${sq.followUpRate}%`} />
+          <Stat label="Engagement Rate" value={`${formatRate(sq.engagementRate)}`} />
+          <Stat label="Therapeutic Rate" value={`${formatRate(sq.therapeuticRate)}`} />
+          <Stat label="Child-Led Rate" value={`${formatRate(sq.childLedRate)}`} />
+          <Stat label="Recorded Rate" value={`${formatRate(sq.recordedRate)}`} />
+          <Stat label="Follow-Up Rate" value={`${formatRate(sq.followUpRate)}`} />
         </div>
       </Section>
 
       <Section title="Memory & Record Keeping">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Secure Storage" value={`${mr.secureStorageRate}%`} />
-          <Stat label="Child Accessible" value={`${mr.childAccessRate}%`} />
-          <Stat label="Quality Checked" value={`${mr.qualityCheckedRate}%`} />
+          <Stat label="Secure Storage" value={`${formatRate(mr.secureStorageRate)}`} />
+          <Stat label="Child Accessible" value={`${formatRate(mr.childAccessRate)}`} />
+          <Stat label="Quality Checked" value={`${formatRate(mr.qualityCheckedRate)}`} />
         </div>
       </Section>
 
@@ -111,12 +112,12 @@ export function LifeStoryWorkIntelligenceWidget() {
 
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Life Story Work" value={`${sr.lifeStoryWorkRate}%`} />
-          <Stat label="Therapeutic Narrative" value={`${sr.therapeuticNarrativeRate}%`} />
-          <Stat label="Trauma Informed" value={`${sr.traumaInformedRate}%`} />
-          <Stat label="Cultural Sensitivity" value={`${sr.culturalSensitivityRate}%`} />
-          <Stat label="Child-Led Approach" value={`${sr.childLedApproachRate}%`} />
-          <Stat label="Memory Keeping" value={`${sr.memoryKeepingRate}%`} />
+          <Stat label="Life Story Work" value={`${formatRate(sr.lifeStoryWorkRate)}`} />
+          <Stat label="Therapeutic Narrative" value={`${formatRate(sr.therapeuticNarrativeRate)}`} />
+          <Stat label="Trauma Informed" value={`${formatRate(sr.traumaInformedRate)}`} />
+          <Stat label="Cultural Sensitivity" value={`${formatRate(sr.culturalSensitivityRate)}`} />
+          <Stat label="Child-Led Approach" value={`${formatRate(sr.childLedApproachRate)}`} />
+          <Stat label="Memory Keeping" value={`${formatRate(sr.memoryKeepingRate)}`} />
         </div>
       </Section>
 

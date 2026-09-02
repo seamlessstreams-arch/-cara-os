@@ -11,6 +11,7 @@
 //   Strengths/Areas/Actions, Regulatory Framework
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local Types ───────────────────────────────────────────────────────────
@@ -316,15 +317,15 @@ export function MedicationManagementDashboardWidget() {
                 <div className="text-[9px] text-gray-500 uppercase">Total</div>
               </div>
               <div className="p-1.5 bg-green-50 rounded">
-                <div className="text-sm font-bold text-green-700">{data.administrationAccuracy.accuracyRate}%</div>
+                <div className="text-sm font-bold text-green-700">{formatRate(data.administrationAccuracy.accuracyRate)}</div>
                 <div className="text-[9px] text-gray-500 uppercase">Accuracy</div>
               </div>
               <div className="p-1.5 bg-orange-50 rounded">
-                <div className="text-sm font-bold text-orange-700">{data.administrationAccuracy.refusalRate}%</div>
+                <div className="text-sm font-bold text-orange-700">{formatRate(data.administrationAccuracy.refusalRate)}</div>
                 <div className="text-[9px] text-gray-500 uppercase">Refusals</div>
               </div>
               <div className="p-1.5 bg-yellow-50 rounded">
-                <div className="text-sm font-bold text-yellow-700">{data.administrationAccuracy.lateRate}%</div>
+                <div className="text-sm font-bold text-yellow-700">{formatRate(data.administrationAccuracy.lateRate)}</div>
                 <div className="text-[9px] text-gray-500 uppercase">Late</div>
               </div>
               <div className="p-1.5 bg-red-50 rounded">
@@ -344,7 +345,7 @@ export function MedicationManagementDashboardWidget() {
                 <div key={child.childId} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
                   <span className="font-medium">{child.childName}</span>
                   <div className="flex gap-3">
-                    <span className="text-green-600">{child.accuracyRate}% accurate</span>
+                    <span className="text-green-600">{formatRate(child.accuracyRate)} accurate</span>
                     <span className="text-gray-400">{child.total} doses</span>
                     {child.refused > 0 && <span className="text-orange-600">{child.refused} refused</span>}
                     {child.late > 0 && <span className="text-yellow-600">{child.late} late</span>}
@@ -442,7 +443,7 @@ export function MedicationManagementDashboardWidget() {
               </div>
               <div className={`p-2 rounded ${data.stockManagement.discrepancyRate === 0 ? "bg-green-50" : "bg-orange-50"}`}>
                 <div className={`text-lg font-bold ${data.stockManagement.discrepancyRate === 0 ? "text-green-700" : "text-orange-700"}`}>
-                  {data.stockManagement.discrepancyRate}%
+                  {formatRate(data.stockManagement.discrepancyRate)}
                 </div>
                 <div className="text-[9px] text-gray-500 uppercase">Discrepancy Rate</div>
               </div>

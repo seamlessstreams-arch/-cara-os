@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -89,11 +90,11 @@ export function TherapeuticCrisisInterventionIntelligenceWidget() {
       <Section title="Post-Incident Practice">
         <ScoreBar label="Post-Incident" value={postInc.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child Debrief" value={`${postInc.childDebriefRate}%`} />
-          <Stat label="Staff Debrief" value={`${postInc.staffDebriefRate}%`} />
-          <Stat label="Body Map" value={`${postInc.bodyMapCompletionRate}%`} />
-          <Stat label="Timely Recording" value={`${postInc.timelyRecordingRate}%`} />
-          <Stat label="Lessons Learned" value={`${postInc.lessonsLearnedRate}%`} />
+          <Stat label="Child Debrief" value={`${formatRate(postInc.childDebriefRate)}`} />
+          <Stat label="Staff Debrief" value={`${formatRate(postInc.staffDebriefRate)}`} />
+          <Stat label="Body Map" value={`${formatRate(postInc.bodyMapCompletionRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(postInc.timelyRecordingRate)}`} />
+          <Stat label="Lessons Learned" value={`${formatRate(postInc.lessonsLearnedRate)}`} />
         </div>
       </Section>
 
@@ -119,12 +120,12 @@ export function TherapeuticCrisisInterventionIntelligenceWidget() {
       <Section title="Staff Crisis Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Therapeutic Approach" value={`${staffReadiness.therapeuticApproachRate}%`} />
-          <Stat label="De-escalation" value={`${staffReadiness.deescalationRate}%`} />
-          <Stat label="Physical Int." value={`${staffReadiness.physicalInterventionRate}%`} />
-          <Stat label="Post-Incident" value={`${staffReadiness.postIncidentSupportRate}%`} />
-          <Stat label="Record Keeping" value={`${staffReadiness.recordKeepingRate}%`} />
-          <Stat label="Body Mapping" value={`${staffReadiness.bodyMappingRate}%`} />
+          <Stat label="Therapeutic Approach" value={`${formatRate(staffReadiness.therapeuticApproachRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(staffReadiness.deescalationRate)}`} />
+          <Stat label="Physical Int." value={`${formatRate(staffReadiness.physicalInterventionRate)}`} />
+          <Stat label="Post-Incident" value={`${formatRate(staffReadiness.postIncidentSupportRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staffReadiness.recordKeepingRate)}`} />
+          <Stat label="Body Mapping" value={`${formatRate(staffReadiness.bodyMappingRate)}`} />
         </div>
       </Section>
 

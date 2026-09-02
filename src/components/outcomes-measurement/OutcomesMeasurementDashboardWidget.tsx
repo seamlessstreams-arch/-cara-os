@@ -7,6 +7,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 // ── Types (mirrored from engine for widget isolation) ───────────────────────
@@ -218,12 +219,12 @@ export function OutcomesMeasurementDashboardWidget({ homeId = "home-oak" }: Prop
         <Stat label="Overall" value={`${data.overallScore}%`} color={scoreColor(data.overallScore)} />
         <Stat
           label="Improving"
-          value={`${data.progressFromBaseline.overallImprovementRate}%`}
+          value={`${formatRate(data.progressFromBaseline.overallImprovementRate)}`}
           color={data.progressFromBaseline.overallImprovementRate >= 75 ? "text-emerald-600" : "text-amber-600"}
         />
         <Stat
           label="Achieved"
-          value={`${data.targetAchievement.achievedRate}%`}
+          value={`${formatRate(data.targetAchievement.achievedRate)}`}
           color={data.targetAchievement.achievedRate >= 50 ? "text-emerald-600" : "text-amber-600"}
         />
         <Stat

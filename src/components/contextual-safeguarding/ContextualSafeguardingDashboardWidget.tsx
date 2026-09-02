@@ -12,6 +12,7 @@
 // - Intervention effectiveness
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface HarmDomainEntry {
@@ -275,11 +276,11 @@ export function ContextualSafeguardingDashboardWidget() {
               <div className="text-[10px] text-gray-500">Avg Protective</div>
             </div>
             <div className="text-center p-2 bg-blue-50 rounded">
-              <div className="text-lg font-bold text-blue-700">{data.interventionEffectivenessRate}%</div>
+              <div className="text-lg font-bold text-blue-700">{formatRate(data.interventionEffectivenessRate)}</div>
               <div className="text-[10px] text-gray-500">Intervention Effect</div>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded">
-              <div className="text-lg font-bold text-purple-700">{data.multiAgencyRate}%</div>
+              <div className="text-lg font-bold text-purple-700">{formatRate(data.multiAgencyRate)}</div>
               <div className="text-[10px] text-gray-500">Multi-Agency</div>
             </div>
           </div>

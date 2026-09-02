@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,40 +82,40 @@ export function MenuPlanningNutritionIntelligenceWidget() {
 
       <Section title="Menu Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Nutritional Balance" value={`${mq.nutritionalBalanceRate}%`} />
-          <Stat label="Variety" value={`${mq.varietyRate}%`} />
-          <Stat label="Cultural Accommodation" value={`${mq.culturalAccommodationRate}%`} />
-          <Stat label="Children Consulted" value={`${mq.childrenConsultedRate}%`} />
-          <Stat label="Special Dietary Met" value={`${mq.specialDietaryMetRate}%`} />
+          <Stat label="Nutritional Balance" value={`${formatRate(mq.nutritionalBalanceRate)}`} />
+          <Stat label="Variety" value={`${formatRate(mq.varietyRate)}`} />
+          <Stat label="Cultural Accommodation" value={`${formatRate(mq.culturalAccommodationRate)}`} />
+          <Stat label="Children Consulted" value={`${formatRate(mq.childrenConsultedRate)}`} />
+          <Stat label="Special Dietary Met" value={`${formatRate(mq.specialDietaryMetRate)}`} />
         </div>
       </Section>
 
       <Section title="Child Satisfaction">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Avg Enjoyment" value={`${cs.averageEnjoyment}/5`} />
-          <Stat label="Portion Satisfactory" value={`${cs.portionSatisfactoryRate}%`} />
-          <Stat label="Positive Feedback" value={`${cs.positiveFeedbackRate}%`} />
-          <Stat label="Response Rate" value={`${cs.responseRate}%`} />
+          <Stat label="Portion Satisfactory" value={`${formatRate(cs.portionSatisfactoryRate)}`} />
+          <Stat label="Positive Feedback" value={`${formatRate(cs.positiveFeedbackRate)}`} />
+          <Stat label="Response Rate" value={`${formatRate(cs.responseRate)}`} />
         </div>
       </Section>
 
       <Section title="Child Involvement">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Participation Rate" value={`${ci.participationRate}%`} />
+          <Stat label="Participation Rate" value={`${formatRate(ci.participationRate)}`} />
           <Stat label="Activity Variety" value={ci.activityVariety} />
-          <Stat label="Child Enjoyed" value={`${ci.childEnjoyedRate}%`} />
-          <Stat label="Cooking Activities" value={`${ci.cookingActivityRate}%`} />
-          <Stat label="Staff Support" value={`${ci.staffSupportRate}%`} />
+          <Stat label="Child Enjoyed" value={`${formatRate(ci.childEnjoyedRate)}`} />
+          <Stat label="Cooking Activities" value={`${formatRate(ci.cookingActivityRate)}`} />
+          <Stat label="Staff Support" value={`${formatRate(ci.staffSupportRate)}`} />
         </div>
       </Section>
 
       <Section title="Nutrition Compliance">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Five a Day" value={`${nc.fiveADayRate}%`} />
-          <Stat label="Fresh Food" value={`${nc.freshFoodRate}%`} />
-          <Stat label="Sugar Limits" value={`${nc.sugarLimitsRate}%`} />
-          <Stat label="Portion Guidance" value={`${nc.portionGuidanceRate}%`} />
-          <Stat label="Overall Compliant" value={`${nc.overallCompliantRate}%`} />
+          <Stat label="Five a Day" value={`${formatRate(nc.fiveADayRate)}`} />
+          <Stat label="Fresh Food" value={`${formatRate(nc.freshFoodRate)}`} />
+          <Stat label="Sugar Limits" value={`${formatRate(nc.sugarLimitsRate)}`} />
+          <Stat label="Portion Guidance" value={`${formatRate(nc.portionGuidanceRate)}`} />
+          <Stat label="Overall Compliant" value={`${formatRate(nc.overallCompliantRate)}`} />
         </div>
       </Section>
 

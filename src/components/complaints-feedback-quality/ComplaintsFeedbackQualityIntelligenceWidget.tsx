@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function ComplaintsFeedbackQualityIntelligenceWidget() {
       <Section title="Complaint Handling" defaultOpen>
         <ScoreBar label="Handling" value={handling.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Within Timescale" value={`${handling.resolvedWithinTimescaleRate}%`} />
-          <Stat label="Upheld/Partial" value={`${handling.upheldPartiallyRate}%`} />
-          <Stat label="Child Informed" value={`${handling.childInformedRate}%`} />
-          <Stat label="Child Supported" value={`${handling.childSupportedRate}%`} />
+          <Stat label="Within Timescale" value={`${formatRate(handling.resolvedWithinTimescaleRate)}`} />
+          <Stat label="Upheld/Partial" value={`${formatRate(handling.upheldPartiallyRate)}`} />
+          <Stat label="Child Informed" value={`${formatRate(handling.childInformedRate)}`} />
+          <Stat label="Child Supported" value={`${formatRate(handling.childSupportedRate)}`} />
           <Stat label="Avg Resolution Days" value={handling.averageResolutionDays} />
           <Stat label="Escalations" value={handling.escalationCount} />
         </div>
@@ -89,9 +90,9 @@ export function ComplaintsFeedbackQualityIntelligenceWidget() {
       <Section title="Feedback Culture">
         <ScoreBar label="Feedback" value={feedback.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Acknowledged" value={`${feedback.acknowledgedRate}%`} />
-          <Stat label="Acted Upon" value={`${feedback.actedUponRate}%`} />
-          <Stat label="Timely Response" value={`${feedback.responseTimelyRate}%`} />
+          <Stat label="Acknowledged" value={`${formatRate(feedback.acknowledgedRate)}`} />
+          <Stat label="Acted Upon" value={`${formatRate(feedback.actedUponRate)}`} />
+          <Stat label="Timely Response" value={`${formatRate(feedback.responseTimelyRate)}`} />
           <Stat label="Child Feedback" value={feedback.childFeedbackCount} />
           <Stat label="Compliments" value={feedback.complimentCount} />
           <Stat label="Suggestions" value={feedback.suggestionCount} />
@@ -102,9 +103,9 @@ export function ComplaintsFeedbackQualityIntelligenceWidget() {
         <ScoreBar label="Learning" value={learning.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Lessons" value={learning.totalLessons} />
-          <Stat label="Implemented" value={`${learning.implementedRate}%`} />
-          <Stat label="Impact Assessed" value={`${learning.impactAssessedRate}%`} />
-          <Stat label="Shared with Team" value={`${learning.sharedWithTeamRate}%`} />
+          <Stat label="Implemented" value={`${formatRate(learning.implementedRate)}`} />
+          <Stat label="Impact Assessed" value={`${formatRate(learning.impactAssessedRate)}`} />
+          <Stat label="Shared with Team" value={`${formatRate(learning.sharedWithTeamRate)}`} />
           <Stat label="Policy Changes" value={learning.policyChangedCount} />
         </div>
       </Section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,22 +79,22 @@ export function MentalHealthWellbeingIntelligenceWidget() {
       <Section title="Wellbeing Assessments" defaultOpen>
         <ScoreBar label="Assessment Score" value={scoring.assessmentScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Coverage" value={`${assess.coverageRate}%`} />
-          <Stat label="Currency" value={`${assess.currencyRate}%`} />
-          <Stat label="Multi-Voice" value={`${assess.multiVoiceRate}%`} />
-          <Stat label="Child Self-Report" value={`${assess.childSelfReportRate}%`} />
-          <Stat label="Staff Input" value={`${assess.staffContributionRate}%`} />
-          <Stat label="Clinical Input" value={`${assess.clinicalInputRate}%`} />
+          <Stat label="Coverage" value={`${formatRate(assess.coverageRate)}`} />
+          <Stat label="Currency" value={`${formatRate(assess.currencyRate)}`} />
+          <Stat label="Multi-Voice" value={`${formatRateLoose(assess.multiVoiceRate)}`} />
+          <Stat label="Child Self-Report" value={`${formatRateLoose(assess.childSelfReportRate)}`} />
+          <Stat label="Staff Input" value={`${formatRateLoose(assess.staffContributionRate)}`} />
+          <Stat label="Clinical Input" value={`${formatRateLoose(assess.clinicalInputRate)}`} />
         </div>
       </Section>
 
       <Section title="Therapeutic Interventions">
         <ScoreBar label="Intervention Score" value={scoring.interventionScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Access Rate" value={`${interv.accessRate}%`} />
-          <Stat label="Attendance" value={`${interv.attendanceRate}%`} />
-          <Stat label="Rescheduled" value={`${interv.rescheduledRate}%`} />
-          <Stat label="Cancelled" value={`${interv.cancelledRate}%`} />
+          <Stat label="Access Rate" value={`${formatRate(interv.accessRate)}`} />
+          <Stat label="Attendance" value={`${formatRate(interv.attendanceRate)}`} />
+          <Stat label="Rescheduled" value={`${formatRateLoose(interv.rescheduledRate)}`} />
+          <Stat label="Cancelled" value={`${formatRateLoose(interv.cancelledRate)}`} />
         </div>
       </Section>
 
@@ -101,23 +102,23 @@ export function MentalHealthWellbeingIntelligenceWidget() {
         <ScoreBar label="Incident Response" value={scoring.incidentResponseScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="15-min Response" value={`${incident.responseWithin15MinRate}%`} />
-          <Stat label="Plan Activated" value={`${incident.safetyPlanActivationRate}%`} />
+          <Stat label="Plan Activated" value={`${formatRateLoose(incident.safetyPlanActivationRate)}`} />
           <Stat label="24h Follow-up" value={`${incident.followUp24hRate}%`} />
           <Stat label="72h Follow-up" value={`${incident.followUp72hRate}%`} />
-          <Stat label="CAMHS Notified" value={`${incident.camhsNotificationRate}%`} />
-          <Stat label="Plan Updated" value={`${incident.planUpdatedRate}%`} />
+          <Stat label="CAMHS Notified" value={`${formatRateLoose(incident.camhsNotificationRate)}`} />
+          <Stat label="Plan Updated" value={`${formatRateLoose(incident.planUpdatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Safety Planning">
         <ScoreBar label="Safety Plan Score" value={scoring.safetyPlanScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Coverage" value={`${safety.coverageRate}%`} />
-          <Stat label="Current Plans" value={`${safety.currentPlanRate}%`} />
-          <Stat label="Child Involved" value={`${safety.childInvolvementRate}%`} />
-          <Stat label="Parent Involved" value={`${safety.parentInvolvementRate}%`} />
-          <Stat label="Key Professional" value={`${safety.keyProfessionalRate}%`} />
-          <Stat label="Multi-Voice" value={`${safety.multiVoiceRate}%`} />
+          <Stat label="Coverage" value={`${formatRate(safety.coverageRate)}`} />
+          <Stat label="Current Plans" value={`${formatRate(safety.currentPlanRate)}`} />
+          <Stat label="Child Involved" value={`${formatRate(safety.childInvolvementRate)}`} />
+          <Stat label="Parent Involved" value={`${formatRate(safety.parentInvolvementRate)}`} />
+          <Stat label="Key Professional" value={`${formatRateLoose(safety.keyProfessionalRate)}`} />
+          <Stat label="Multi-Voice" value={`${formatRateLoose(safety.multiVoiceRate)}`} />
         </div>
       </Section>
 

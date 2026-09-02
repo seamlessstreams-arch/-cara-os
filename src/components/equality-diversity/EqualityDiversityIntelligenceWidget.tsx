@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -52,21 +53,21 @@ export function EqualityDiversityIntelligenceWidget() {
         <ScoreBar label="Individual Support" value={individual.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Children" value={individual.totalChildren as number} />
-          <Stat label="Fully Supported" value={`${individual.fullySupportedRate}%`} />
+          <Stat label="Fully Supported" value={`${formatRateLoose(individual.fullySupportedRate)}`} />
           <Stat label="Cultural Plan" value={`${individual.culturalPlanCoverage}%`} />
-          <Stat label="Dietary" value={`${individual.dietaryRate}%`} />
-          <Stat label="Religious" value={`${individual.religiousRate}%`} />
-          <Stat label="Language" value={`${individual.languageRate}%`} />
-          <Stat label="Identity Work" value={`${individual.identityWorkRate}%`} />
+          <Stat label="Dietary" value={`${formatRateLoose(individual.dietaryRate)}`} />
+          <Stat label="Religious" value={`${formatRateLoose(individual.religiousRate)}`} />
+          <Stat label="Language" value={`${formatRateLoose(individual.languageRate)}`} />
+          <Stat label="Identity Work" value={`${formatRateLoose(individual.identityWorkRate)}`} />
         </div>
       </Section>
       <Section title="Staff Competency">
         <ScoreBar label="Staff Competency" value={staffComp.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staffComp.totalStaff as number} />
-          <Stat label="Completion" value={`${staffComp.completionRate}%`} />
+          <Stat label="Completion" value={`${formatRateLoose(staffComp.completionRate)}`} />
           <Stat label="Overdue" value={staffComp.overdueCount as number} />
-          <Stat label="Coverage" value={`${staffComp.coverageRate}%`} />
+          <Stat label="Coverage" value={`${formatRateLoose(staffComp.coverageRate)}`} />
           <Stat label="Equality Act" value={staffComp.hasEqualityActTraining ? "✓" : "✗"} />
           <Stat label="Cultural Competency" value={staffComp.hasCulturalCompetencyTraining ? "✓" : "✗"} />
         </div>
@@ -75,11 +76,11 @@ export function EqualityDiversityIntelligenceWidget() {
         <ScoreBar label="Incident Response" value={incident.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Incidents" value={incident.totalIncidents as number} />
-          <Stat label="Resolution" value={`${incident.resolutionRate}%`} />
-          <Stat label="Lessons Identified" value={`${incident.lessonsRate}%`} />
+          <Stat label="Resolution" value={`${formatRateLoose(incident.resolutionRate)}`} />
+          <Stat label="Lessons Identified" value={`${formatRateLoose(incident.lessonsRate)}`} />
           <Stat label="Avg Actions" value={incident.averageActionsPerIncident as number} />
           <Stat label="Unresolved Critical" value={incident.unresolvedCriticalOrHigh as number} />
-          <Stat label="Escalated" value={`${incident.escalationRate}%`} />
+          <Stat label="Escalated" value={`${formatRateLoose(incident.escalationRate)}`} />
         </div>
       </Section>
       <Section title="Accessibility & Inclusion">
@@ -90,7 +91,7 @@ export function EqualityDiversityIntelligenceWidget() {
           <Stat label="Communication" value={access.latestCommunicationScore as number} />
           <Stat label="Information" value={access.latestInformationScore as number} />
           <Stat label="Activity" value={access.latestActivityScore as number} />
-          <Stat label="Improvement" value={`${access.improvementRate}%`} />
+          <Stat label="Improvement" value={`${formatRateLoose(access.improvementRate)}`} />
         </div>
       </Section>
       {profiles.length > 0 && (<Section title={`Child Summaries (${profiles.length})`}>{profiles.map((p) => (<div key={p.childId as string} className="mb-2 p-2 bg-gray-50 rounded"><div className="flex justify-between text-sm font-medium"><span>{p.childName as string}</span><span>{p.supportRate as number}%</span></div><p className="text-xs text-gray-500 mt-1">{p.characteristicCount as number} characteristics · {p.fullySupportedCount as number} supported · Cultural: {(p.culturalPlanStatus as string).replace(/_/g, " ")} · Dietary: {p.dietaryNeedsMet ? "✓" : "✗"} · Religious: {p.religiousPracticeFacilitated ? "✓" : "✗"}</p>{Boolean(p.primaryConcern) && <p className="text-xs text-orange-600 mt-1">{p.primaryConcern as string}</p>}</div>))}</Section>)}

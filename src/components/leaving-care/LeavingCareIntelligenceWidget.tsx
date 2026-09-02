@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function LeavingCareIntelligenceWidget() {
       <Section title="Preparation Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Pathway Reviewed" value={`${quality.pathwayPlanReviewedRate}%`} />
-          <Stat label="YP Consulted" value={`${quality.youngPersonConsultedRate}%`} />
-          <Stat label="Skills Assessed" value={`${quality.independenceSkillsAssessedRate}%`} />
-          <Stat label="Transition Plan" value={`${quality.transitionPlanInPlaceRate}%`} />
+          <Stat label="Pathway Reviewed" value={`${formatRate(quality.pathwayPlanReviewedRate)}`} />
+          <Stat label="YP Consulted" value={`${formatRate(quality.youngPersonConsultedRate)}`} />
+          <Stat label="Skills Assessed" value={`${formatRate(quality.independenceSkillsAssessedRate)}`} />
+          <Stat label="Transition Plan" value={`${formatRate(quality.transitionPlanInPlaceRate)}`} />
         </div>
       </Section>
 
       <Section title="Leaving Care Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Pathway Reviewed" value={`${compliance.pathwayPlanReviewedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Pathway Reviewed" value={`${formatRate(compliance.pathwayPlanReviewedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function LeavingCareIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Pathway Planning" value={`${staff.pathwayPlanningKnowledgeRate}%`} />
-          <Stat label="Skills Teaching" value={`${staff.independenceSkillsTeachingRate}%`} />
-          <Stat label="Transition Support" value={`${staff.transitionSupportSkillsRate}%`} />
-          <Stat label="Benefits Advice" value={`${staff.benefitsAdviceKnowledgeRate}%`} />
-          <Stat label="Accommodation" value={`${staff.accommodationSupportSkillsRate}%`} />
-          <Stat label="Emotional Support" value={`${staff.emotionalSupportSkillsRate}%`} />
+          <Stat label="Pathway Planning" value={`${formatRate(staff.pathwayPlanningKnowledgeRate)}`} />
+          <Stat label="Skills Teaching" value={`${formatRate(staff.independenceSkillsTeachingRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(staff.transitionSupportSkillsRate)}`} />
+          <Stat label="Benefits Advice" value={`${formatRate(staff.benefitsAdviceKnowledgeRate)}`} />
+          <Stat label="Accommodation" value={`${formatRate(staff.accommodationSupportSkillsRate)}`} />
+          <Stat label="Emotional Support" value={`${formatRate(staff.emotionalSupportSkillsRate)}`} />
         </div>
       </Section>
 

@@ -5,6 +5,7 @@
 // Temporal + repeat-pattern view of medication safety, with learning-loop closure.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -193,7 +194,7 @@ export default function MedicationErrorTrendsPage() {
                     })}
                   </div>
                   <p className="text-[11px] text-[var(--cs-text-muted)] mt-2">
-                    Harm rate: <span className="font-semibold">{intel.severity_breakdown.harm_rate}%</span> of errors caused moderate-or-worse harm
+                    Harm rate: <span className="font-semibold">{formatRate(intel.severity_breakdown.harm_rate)}</span> of errors caused moderate-or-worse harm
                   </p>
                 </CardContent>
               </Card>

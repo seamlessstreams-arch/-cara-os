@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -82,36 +83,36 @@ export function RoomStandardsPersonalisationIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Rooms" value={roomConditions.totalRooms as number} />
-        <Stat label="Good+ Condition" value={`${roomConditions.roomConditionGoodPlusRate}%`} />
-        <Stat label="Personalised" value={`${personalisation.personalisationGoodPlusRate}%`} />
+        <Stat label="Good+ Condition" value={`${formatRateLoose(roomConditions.roomConditionGoodPlusRate)}`} />
+        <Stat label="Personalised" value={`${formatRateLoose(personalisation.personalisationGoodPlusRate)}`} />
       </div>
 
       <Section title="Room Conditions" defaultOpen>
         <ScoreBar label="Conditions Score" value={roomConditions.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Good+ Condition" value={`${roomConditions.roomConditionGoodPlusRate}%`} />
-          <Stat label="Good+ Furniture" value={`${roomConditions.furnitureGoodPlusRate}%`} />
-          <Stat label="Essential Amenities" value={`${roomConditions.essentialAmenitiesRate}%`} />
-          <Stat label="Privacy & Windows" value={`${roomConditions.privacyWindowsRate}%`} />
+          <Stat label="Good+ Condition" value={`${formatRateLoose(roomConditions.roomConditionGoodPlusRate)}`} />
+          <Stat label="Good+ Furniture" value={`${formatRateLoose(roomConditions.furnitureGoodPlusRate)}`} />
+          <Stat label="Essential Amenities" value={`${formatRateLoose(roomConditions.essentialAmenitiesRate)}`} />
+          <Stat label="Privacy & Windows" value={`${formatRateLoose(roomConditions.privacyWindowsRate)}`} />
         </div>
       </Section>
 
       <Section title="Personalisation">
         <ScoreBar label="Personalisation Score" value={personalisation.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Good+ Personalisation" value={`${personalisation.personalisationGoodPlusRate}%`} />
-          <Stat label="Child Chosen Decor" value={`${personalisation.childChosenDecorRate}%`} />
-          <Stat label="Highly Personalised" value={`${personalisation.highPersonalisationRate}%`} />
-          <Stat label="All Personalised" value={`${personalisation.allPersonalisedRate}%`} />
+          <Stat label="Good+ Personalisation" value={`${formatRateLoose(personalisation.personalisationGoodPlusRate)}`} />
+          <Stat label="Child Chosen Decor" value={`${formatRateLoose(personalisation.childChosenDecorRate)}`} />
+          <Stat label="Highly Personalised" value={`${formatRateLoose(personalisation.highPersonalisationRate)}`} />
+          <Stat label="All Personalised" value={`${formatRateLoose(personalisation.allPersonalisedRate)}`} />
         </div>
       </Section>
 
       <Section title="Inspection Compliance">
         <ScoreBar label="Inspection Score" value={inspectionCompliance.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Pass Rate" value={`${inspectionCompliance.passRate}%`} />
-          <Stat label="Issues Scheduled" value={`${inspectionCompliance.issuesScheduledRate}%`} />
-          <Stat label="Repairs Completed" value={`${inspectionCompliance.repairsCompletedRate}%`} />
+          <Stat label="Pass Rate" value={`${formatRateLoose(inspectionCompliance.passRate)}`} />
+          <Stat label="Issues Scheduled" value={`${formatRateLoose(inspectionCompliance.issuesScheduledRate)}`} />
+          <Stat label="Repairs Completed" value={`${formatRateLoose(inspectionCompliance.repairsCompletedRate)}`} />
           <Stat label="Total Inspections" value={inspectionCompliance.totalInspections as number} />
         </div>
       </Section>
@@ -119,10 +120,10 @@ export function RoomStandardsPersonalisationIntelligenceWidget() {
       <Section title="Staff Room Readiness">
         <ScoreBar label="Readiness Score" value={staffRoomReadiness.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Room Standards" value={`${staffRoomReadiness.roomStandardsRate}%`} />
-          <Stat label="Personalisation" value={`${staffRoomReadiness.personalisationImportanceRate}%`} />
-          <Stat label="Privacy Awareness" value={`${staffRoomReadiness.privacyAwarenessRate}%`} />
-          <Stat label="Safety Checks" value={`${staffRoomReadiness.safetyChecksRate}%`} />
+          <Stat label="Room Standards" value={`${formatRateLoose(staffRoomReadiness.roomStandardsRate)}`} />
+          <Stat label="Personalisation" value={`${formatRateLoose(staffRoomReadiness.personalisationImportanceRate)}`} />
+          <Stat label="Privacy Awareness" value={`${formatRateLoose(staffRoomReadiness.privacyAwarenessRate)}`} />
+          <Stat label="Safety Checks" value={`${formatRateLoose(staffRoomReadiness.safetyChecksRate)}`} />
         </div>
       </Section>
 

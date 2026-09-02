@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function CommunityEngagementParticipationIntelligenceWidget() {
       <Section title="Engagement Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Participation" value={`${quality.participationRate}%`} />
-          <Stat label="Child Initiated" value={`${quality.childInitiatedRate}%`} />
-          <Stat label="Social Skills" value={`${quality.socialSkillsRate}%`} />
-          <Stat label="Community Links" value={`${quality.communityLinksRate}%`} />
+          <Stat label="Participation" value={`${formatRate(quality.participationRate)}`} />
+          <Stat label="Child Initiated" value={`${formatRate(quality.childInitiatedRate)}`} />
+          <Stat label="Social Skills" value={`${formatRate(quality.socialSkillsRate)}`} />
+          <Stat label="Community Links" value={`${formatRate(quality.communityLinksRate)}`} />
         </div>
       </Section>
 
       <Section title="Engagement Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Activity Diversity" value={`${compliance.activityDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function CommunityEngagementParticipationIntelligenceWidget() {
       <Section title="Staff Community Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Community Engagement" value={`${staffReadiness.communityEngagementRate}%`} />
-          <Stat label="Social Inclusion" value={`${staffReadiness.socialInclusionRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingInCommunityRate}%`} />
-          <Stat label="Activity Planning" value={`${staffReadiness.activityPlanningRate}%`} />
-          <Stat label="Partnership Working" value={`${staffReadiness.partnershipWorkingRate}%`} />
-          <Stat label="Documentation" value={`${staffReadiness.documentationRate}%`} />
+          <Stat label="Community Engagement" value={`${formatRate(staffReadiness.communityEngagementRate)}`} />
+          <Stat label="Social Inclusion" value={`${formatRate(staffReadiness.socialInclusionRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staffReadiness.safeguardingInCommunityRate)}`} />
+          <Stat label="Activity Planning" value={`${formatRate(staffReadiness.activityPlanningRate)}`} />
+          <Stat label="Partnership Working" value={`${formatRate(staffReadiness.partnershipWorkingRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staffReadiness.documentationRate)}`} />
         </div>
       </Section>
 

@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface AssessmentSummary {
@@ -254,7 +255,7 @@ export function LocationDashboardWidget() {
         <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
           <div
             className="h-full bg-green-500 rounded-full"
-            style={{ width: `${metrics.actionCompletionRate}%` }}
+            style={{ width: `${formatRate(metrics.actionCompletionRate)}` }}
           />
         </div>
       </div>

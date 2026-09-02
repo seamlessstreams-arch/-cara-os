@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function EmergencyPreparednessIntelligenceWidget() {
       <Section title="Emergency Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Readiness Rate" value={`${quality.readinessRate}%`} />
-          <Stat label="Completion Rate" value={`${quality.completionRate}%`} />
-          <Stat label="Child Briefing" value={`${quality.childBriefingRate}%`} />
-          <Stat label="Debrief Rate" value={`${quality.debriefRate}%`} />
+          <Stat label="Readiness Rate" value={`${formatRate(quality.readinessRate)}`} />
+          <Stat label="Completion Rate" value={`${formatRate(quality.completionRate)}`} />
+          <Stat label="Child Briefing" value={`${formatRate(quality.childBriefingRate)}`} />
+          <Stat label="Debrief Rate" value={`${formatRate(quality.debriefRate)}`} />
         </div>
       </Section>
 
       <Section title="Emergency Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Participation" value={`${compliance.staffParticipationRate}%`} />
-          <Stat label="Improvements" value={`${compliance.improvementsRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Participation" value={`${formatRate(compliance.staffParticipationRate)}`} />
+          <Stat label="Improvements" value={`${formatRate(compliance.improvementsRate)}`} />
           <Stat label="Type Diversity" value={compliance.typeDiversityRatio} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function EmergencyPreparednessIntelligenceWidget() {
       <Section title="Staff Emergency Readiness">
         <ScoreBar label="Staff Readiness" value={staff.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="First Aid" value={`${staff.firstAidCertifiedRate}%`} />
-          <Stat label="Fire Marshall" value={`${staff.fireMarshallTrainedRate}%`} />
-          <Stat label="Evacuation" value={`${staff.evacuationProceduresRate}%`} />
-          <Stat label="Emergency Protocols" value={`${staff.emergencyProtocolsRate}%`} />
-          <Stat label="Safeguarding" value={`${staff.safeguardingInEmergenciesRate}%`} />
-          <Stat label="Crisis Comms" value={`${staff.communicationInCrisisRate}%`} />
+          <Stat label="First Aid" value={`${formatRate(staff.firstAidCertifiedRate)}`} />
+          <Stat label="Fire Marshall" value={`${formatRate(staff.fireMarshallTrainedRate)}`} />
+          <Stat label="Evacuation" value={`${formatRate(staff.evacuationProceduresRate)}`} />
+          <Stat label="Emergency Protocols" value={`${formatRate(staff.emergencyProtocolsRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staff.safeguardingInEmergenciesRate)}`} />
+          <Stat label="Crisis Comms" value={`${formatRate(staff.communicationInCrisisRate)}`} />
         </div>
       </Section>
 

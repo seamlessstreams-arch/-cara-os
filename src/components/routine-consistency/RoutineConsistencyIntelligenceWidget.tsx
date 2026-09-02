@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -65,17 +66,17 @@ export function RoutineConsistencyIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
-        <Stat label="Morning Quality" value={`${morningRoutine.qualityRate}%`} />
-        <Stat label="Evening Quality" value={`${eveningRoutine.qualityRate}%`} />
-        <Stat label="Regular Staff" value={`${staffConsistency.regularStaffRate}%`} />
+        <Stat label="Morning Quality" value={`${formatRateLoose(morningRoutine.qualityRate)}`} />
+        <Stat label="Evening Quality" value={`${formatRateLoose(eveningRoutine.qualityRate)}`} />
+        <Stat label="Regular Staff" value={`${formatRateLoose(staffConsistency.regularStaffRate)}`} />
       </div>
 
       <Section title="Morning Routine" defaultOpen>
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Quality Rate" value={`${morningRoutine.qualityRate}%`} />
-          <Stat label="On-Time Rate" value={`${morningRoutine.onTimeRate}%`} />
-          <Stat label="Cooperation" value={`${morningRoutine.cooperationRate}%`} />
-          <Stat label="School Readiness" value={`${morningRoutine.schoolReadinessRate}%`} />
+          <Stat label="Quality Rate" value={`${formatRateLoose(morningRoutine.qualityRate)}`} />
+          <Stat label="On-Time Rate" value={`${formatRateLoose(morningRoutine.onTimeRate)}`} />
+          <Stat label="Cooperation" value={`${formatRateLoose(morningRoutine.cooperationRate)}`} />
+          <Stat label="School Readiness" value={`${formatRateLoose(morningRoutine.schoolReadinessRate)}`} />
         </div>
         {(morningRoutine.commonDisruptions as Record<string, unknown>[]).length > 0 && (
           <div className="mt-2">
@@ -93,9 +94,9 @@ export function RoutineConsistencyIntelligenceWidget() {
 
       <Section title="Evening Routine">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Quality Rate" value={`${eveningRoutine.qualityRate}%`} />
-          <Stat label="On-Time Rate" value={`${eveningRoutine.onTimeRate}%`} />
-          <Stat label="Bedtime Compliance" value={`${eveningRoutine.bedtimeComplianceRate}%`} />
+          <Stat label="Quality Rate" value={`${formatRateLoose(eveningRoutine.qualityRate)}`} />
+          <Stat label="On-Time Rate" value={`${formatRateLoose(eveningRoutine.onTimeRate)}`} />
+          <Stat label="Bedtime Compliance" value={`${formatRateLoose(eveningRoutine.bedtimeComplianceRate)}`} />
           <Stat label="Wind-Down Quality" value={`${eveningRoutine.windDownQuality}%`} />
         </div>
       </Section>
@@ -123,9 +124,9 @@ export function RoutineConsistencyIntelligenceWidget() {
 
       <Section title="Staff Consistency">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Regular Staff" value={`${staffConsistency.regularStaffRate}%`} />
-          <Stat label="Handover Completion" value={`${staffConsistency.handoverCompletionRate}%`} />
-          <Stat label="Handover Quality" value={`${staffConsistency.handoverQualityRate}%`} />
+          <Stat label="Regular Staff" value={`${formatRateLoose(staffConsistency.regularStaffRate)}`} />
+          <Stat label="Handover Completion" value={`${formatRateLoose(staffConsistency.handoverCompletionRate)}`} />
+          <Stat label="Handover Quality" value={`${formatRateLoose(staffConsistency.handoverQualityRate)}`} />
           <Stat label="Staff Change Disruptions" value={staffConsistency.staffTurnoverImpact as number} />
         </div>
       </Section>

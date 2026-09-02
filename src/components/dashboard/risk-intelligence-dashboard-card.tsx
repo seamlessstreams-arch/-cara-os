@@ -8,6 +8,7 @@
 // and protected.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -190,7 +191,7 @@ export function RiskIntelligenceDashboardCard() {
                 {mo.total_90d} episode{mo.total_90d !== 1 ? "s" : ""} · {mo.unique_children_30d} child{mo.unique_children_30d !== 1 ? "ren" : ""} (30d) · avg {mo.avg_duration_hours}h
               </p>
               <p className="text-[10px] text-muted-foreground">
-                RI: <span className={cn(mo.return_interview_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{mo.return_interview_rate}%</span>
+                RI: <span className={cn(mo.return_interview_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(mo.return_interview_rate)}</span>
                 {mo.cs_risk_episodes > 0 && <span className="text-red-600 ml-1">· {mo.cs_risk_episodes} CS risk</span>}
                 {mo.repeat_missing && <span className="text-amber-600 ml-1">· Repeat</span>}
               </p>
@@ -204,7 +205,7 @@ export function RiskIntelligenceDashboardCard() {
                 {ro.total_90d} episode{ro.total_90d !== 1 ? "s" : ""} · {ro.unique_children_90d} child{ro.unique_children_90d !== 1 ? "ren" : ""} · avg {ro.avg_duration_minutes}min
               </p>
               <p className="text-[10px] text-muted-foreground">
-                Debrief: <span className={cn(ro.debrief_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{ro.debrief_rate}%</span>
+                Debrief: <span className={cn(ro.debrief_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(ro.debrief_rate)}</span>
                 {ro.injuries_count > 0 && <span className="text-red-600 ml-1">· {ro.injuries_count} injury</span>}
                 {ro.unreviewed_count > 0 && <span className="text-amber-600 ml-1">· {ro.unreviewed_count} pending</span>}
               </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,20 +78,20 @@ export function ContactIntelligenceWidget() {
       <Section title="Contact Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child Prepared" value={`${quality.childPreparedRate}%`} />
-          <Stat label="Contact Plan Followed" value={`${quality.contactPlanFollowedRate}%`} />
-          <Stat label="Child View Captured" value={`${quality.childViewCapturedRate}%`} />
-          <Stat label="Safety Measures" value={`${quality.safetyMeasuresRate}%`} />
+          <Stat label="Child Prepared" value={`${formatRate(quality.childPreparedRate)}`} />
+          <Stat label="Contact Plan Followed" value={`${formatRate(quality.contactPlanFollowedRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(quality.childViewCapturedRate)}`} />
+          <Stat label="Safety Measures" value={`${formatRate(quality.safetyMeasuresRate)}`} />
         </div>
       </Section>
 
       <Section title="Contact Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Completed Outcome" value={`${compliance.completedOutcomeRate}%`} />
-          <Stat label="Category Diversity" value={`${compliance.categoryDiversityRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Completed Outcome" value={`${formatRate(compliance.completedOutcomeRate)}`} />
+          <Stat label="Category Diversity" value={`${formatRate(compliance.categoryDiversityRate)}`} />
         </div>
       </Section>
 
@@ -116,12 +117,12 @@ export function ContactIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Contact Supervision" value={`${staff.contactSupervisionRate}%`} />
-          <Stat label="Safeguarding Awareness" value={`${staff.safeguardingAwarenessRate}%`} />
-          <Stat label="Child Communication" value={`${staff.childCommunicationRate}%`} />
-          <Stat label="Family Mediation" value={`${staff.familyMediationRate}%`} />
-          <Stat label="Risk Management" value={`${staff.riskManagementRate}%`} />
-          <Stat label="Record Keeping" value={`${staff.recordKeepingRate}%`} />
+          <Stat label="Contact Supervision" value={`${formatRate(staff.contactSupervisionRate)}`} />
+          <Stat label="Safeguarding Awareness" value={`${formatRate(staff.safeguardingAwarenessRate)}`} />
+          <Stat label="Child Communication" value={`${formatRate(staff.childCommunicationRate)}`} />
+          <Stat label="Family Mediation" value={`${formatRate(staff.familyMediationRate)}`} />
+          <Stat label="Risk Management" value={`${formatRate(staff.riskManagementRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staff.recordKeepingRate)}`} />
         </div>
       </Section>
 

@@ -206,7 +206,7 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
                   <span className="text-[10px] text-muted-foreground">{med.dosage} · {med.type}</span>
                 </div>
                 <span className={cn("text-[10px] font-bold tabular-nums", meets(med.adherence_rate, 95) ? "text-green-600" : meets(med.adherence_rate, 70) ? "text-amber-600" : "text-red-600")}>
-                  {med.administrations_30d > 0 ? `${med.adherence_rate}%` : "—"}
+                  {med.administrations_30d > 0 ? `${formatRate(med.adherence_rate)}` : "—"}
                 </span>
               </div>
             ))}

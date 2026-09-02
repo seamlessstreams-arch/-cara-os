@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarCheck, ArrowRight } from "lucide-react";
@@ -53,7 +54,7 @@ export function PlanCurrencyCard() {
             </div>
             <p className="mt-0.5 text-xs text-slate-600">
               {s
-                ? `${overdue > 0 ? `${overdue} plan${overdue === 1 ? "" : "s"} overdue for review` : "All plans in date"} — ${s.currency_rate}% currency across every child.`
+                ? `${overdue > 0 ? `${overdue} plan${overdue === 1 ? "" : "s"} overdue for review` : "All plans in date"} — ${formatRate(s.currency_rate)} currency across every child.`
                 : "Are every child's statutory plans reviewed and kept in date?"}
             </p>
           </div>

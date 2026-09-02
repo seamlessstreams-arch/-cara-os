@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function InspectionIntelligenceWidget() {
       <Section title="Inspection Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Evidence Documented" value={`${quality.evidenceDocumentedRate}%`} />
-          <Stat label="Action Plan Created" value={`${quality.actionPlanCreatedRate}%`} />
-          <Stat label="Staff Prepared" value={`${quality.staffPreparedRate}%`} />
-          <Stat label="Child View Included" value={`${quality.childViewIncludedRate}%`} />
+          <Stat label="Evidence Documented" value={`${formatRate(quality.evidenceDocumentedRate)}`} />
+          <Stat label="Action Plan Created" value={`${formatRate(quality.actionPlanCreatedRate)}`} />
+          <Stat label="Staff Prepared" value={`${formatRate(quality.staffPreparedRate)}`} />
+          <Stat label="Child View Included" value={`${formatRate(quality.childViewIncludedRate)}`} />
         </div>
       </Section>
 
       <Section title="Inspection Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Child View" value={`${compliance.childViewIncludedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Child View" value={`${formatRate(compliance.childViewIncludedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -117,12 +118,12 @@ export function InspectionIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Inspection Readiness" value={`${staff.inspectionReadinessRate}%`} />
-          <Stat label="Evidence Presentation" value={`${staff.evidencePresentationRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${staff.regulatoryKnowledgeRate}%`} />
-          <Stat label="Self-Assessment" value={`${staff.selfAssessmentRate}%`} />
-          <Stat label="Action Plan Dev" value={`${staff.actionPlanDevelopmentRate}%`} />
-          <Stat label="Quality Assurance" value={`${staff.qualityAssuranceRate}%`} />
+          <Stat label="Inspection Readiness" value={`${formatRate(staff.inspectionReadinessRate)}`} />
+          <Stat label="Evidence Presentation" value={`${formatRate(staff.evidencePresentationRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(staff.regulatoryKnowledgeRate)}`} />
+          <Stat label="Self-Assessment" value={`${formatRate(staff.selfAssessmentRate)}`} />
+          <Stat label="Action Plan Dev" value={`${formatRate(staff.actionPlanDevelopmentRate)}`} />
+          <Stat label="Quality Assurance" value={`${formatRate(staff.qualityAssuranceRate)}`} />
         </div>
       </Section>
 

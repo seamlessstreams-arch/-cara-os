@@ -108,7 +108,7 @@ function ChildProfileCard({ profile }: { profile: ChildAtmosphereProfile }) {
       </div>
       <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t">
         <div>
-          <span className="text-lg font-bold text-gray-900">{profile.positiveRate}%</span>
+          <span className="text-lg font-bold text-gray-900">{formatRate(profile.positiveRate)}</span>
           <p className="text-xs text-gray-500">Positive</p>
         </div>
         <div>

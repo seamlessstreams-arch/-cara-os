@@ -147,9 +147,9 @@ export default function MedicationAdherenceMonitoringDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Records: <span className="font-medium">{child.totalRecords}</span></div>
-                    <div>Correct Admin: <span className="font-medium">{child.correctAdministrationRate}%</span></div>
-                    <div>Documented: <span className="font-medium">{child.documentedImmediatelyRate}%</span></div>
-                    <div>Error Rate: <span className={`font-medium ${above(child.errorRate, 0) ? "text-amber-600" : "text-green-600"}`}>{child.errorRate}%</span></div>
+                    <div>Correct Admin: <span className="font-medium">{formatRate(child.correctAdministrationRate)}</span></div>
+                    <div>Documented: <span className="font-medium">{formatRate(child.documentedImmediatelyRate)}</span></div>
+                    <div>Error Rate: <span className={`font-medium ${above(child.errorRate, 0) ? "text-amber-600" : "text-green-600"}`}>{formatRate(child.errorRate)}</span></div>
                   </div>
                 </div>
               ))}

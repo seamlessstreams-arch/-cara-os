@@ -11,6 +11,7 @@
 //   Regulatory Framework
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 function fmt(v: number | null | undefined): string {
@@ -377,7 +378,7 @@ export function HomeMatchingImpactDashboardWidget() {
             />
             <MetricCard
               label="Completion Rate"
-              value={`${data.matchingQuality.assessmentCompletionRate}%`}
+              value={`${formatRate(data.matchingQuality.assessmentCompletionRate)}`}
               color={(data.matchingQuality.assessmentCompletionRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard

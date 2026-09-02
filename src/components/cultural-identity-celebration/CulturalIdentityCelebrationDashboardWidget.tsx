@@ -142,8 +142,8 @@ export default function CulturalIdentityCelebrationDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Activities: <span className="font-medium">{child.totalActivities}</span></div>
-                    <div>Engagement: <span className="font-medium">{child.engagementRate}%</span></div>
-                    <div>Identity Affirmed: <span className="font-medium">{child.identityAffirmedRate}%</span></div>
+                    <div>Engagement: <span className="font-medium">{formatRate(child.engagementRate)}</span></div>
+                    <div>Identity Affirmed: <span className="font-medium">{formatRate(child.identityAffirmedRate)}</span></div>
                     <div>Cultural Areas: <span className="font-medium">{child.uniqueCulturalAreas}</span></div>
                   </div>
                 </div>

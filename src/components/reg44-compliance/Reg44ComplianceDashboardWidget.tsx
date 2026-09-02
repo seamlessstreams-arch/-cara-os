@@ -12,6 +12,7 @@
 // - Visit timeline
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface Reg44Data {
@@ -176,11 +177,11 @@ function ChildVoiceCard({ cp }: { cp: Reg44Data["childParticipation"] }) {
           <div className="text-[9px] text-gray-500">Coverage</div>
         </div>
         <div>
-          <div className="text-sm font-bold text-blue-700">{cp.viewsCapturedRate}%</div>
+          <div className="text-sm font-bold text-blue-700">{formatRate(cp.viewsCapturedRate)}</div>
           <div className="text-[9px] text-gray-500">Views Captured</div>
         </div>
         <div>
-          <div className="text-sm font-bold text-purple-700">{cp.positiveFeedbackRate}%</div>
+          <div className="text-sm font-bold text-purple-700">{formatRate(cp.positiveFeedbackRate)}</div>
           <div className="text-[9px] text-gray-500">Positive</div>
         </div>
       </div>
@@ -195,7 +196,7 @@ function ChildVoiceCard({ cp }: { cp: Reg44Data["childParticipation"] }) {
             {cp.totalIssuesRaised} issue{cp.totalIssuesRaised !== 1 ? "s" : ""} raised
           </span>
           <span className={`text-[9px] px-1.5 py-0.5 rounded ${cp.issuesActionedRate === 100 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {cp.issuesActionedRate}% actioned
+            {formatRate(cp.issuesActionedRate)} actioned
           </span>
         </div>
       )}
@@ -261,11 +262,11 @@ export function Reg44ComplianceDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.visitCompliance.visitCompletionRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.visitCompliance.visitCompletionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Visit Completion</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.recommendations.completionRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.recommendations.completionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Recs Completed</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
@@ -273,7 +274,7 @@ export function Reg44ComplianceDashboardWidget() {
           <div className="text-[10px] text-gray-500 uppercase">Child Coverage</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.managementResponse.respondedOnTimeRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.managementResponse.respondedOnTimeRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Response On Time</div>
         </div>
       </div>
@@ -429,15 +430,15 @@ export function Reg44ComplianceDashboardWidget() {
           {/* Management Response Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-2 bg-green-50 rounded">
-              <div className="text-lg font-bold text-green-700">{data.managementResponse.averageAcceptanceRate}%</div>
+              <div className="text-lg font-bold text-green-700">{formatRate(data.managementResponse.averageAcceptanceRate)}</div>
               <div className="text-[10px] text-gray-500">Acceptance Rate</div>
             </div>
             <div className="text-center p-2 bg-blue-50 rounded">
-              <div className="text-lg font-bold text-blue-700">{data.recommendations.impactAssessedRate}%</div>
+              <div className="text-lg font-bold text-blue-700">{formatRate(data.recommendations.impactAssessedRate)}</div>
               <div className="text-[10px] text-gray-500">Impact Assessed</div>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded">
-              <div className="text-lg font-bold text-purple-700">{data.recommendations.withEvidenceRate}%</div>
+              <div className="text-lg font-bold text-purple-700">{formatRate(data.recommendations.withEvidenceRate)}</div>
               <div className="text-[10px] text-gray-500">Evidence Provided</div>
             </div>
           </div>

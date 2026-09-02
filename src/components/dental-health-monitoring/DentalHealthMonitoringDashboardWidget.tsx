@@ -141,7 +141,7 @@ export default function DentalHealthMonitoringDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Appointments: <span className="font-medium">{child.appointmentCount}</span></div>
-                    <div>Attendance: <span className="font-medium">{child.attendanceRate}%</span></div>
+                    <div>Attendance: <span className="font-medium">{formatRate(child.attendanceRate)}</span></div>
                     <div>Hygiene: <span className={`font-medium ${child.latestHygieneRating ? (hygieneRatingColors[child.latestHygieneRating] || "") : "text-gray-400"}`}>{child.latestHygieneRating ? child.latestHygieneRating.charAt(0).toUpperCase() + child.latestHygieneRating.slice(1) : "N/A"}</span></div>
                     <div>Active Treatments: <span className={`font-medium ${child.activeTreatments > 0 ? "text-amber-600" : "text-green-600"}`}>{child.activeTreatments}</span></div>
                   </div>

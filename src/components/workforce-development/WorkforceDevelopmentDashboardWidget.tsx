@@ -379,7 +379,7 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.qualifications.evidenceRecordedRate}%
+                    {formatRate(data.qualifications.evidenceRecordedRate)}
                   </div>
                   <div className="text-xs text-gray-500">Evidence Recorded</div>
                 </div>
@@ -434,13 +434,13 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.cpd.overallReflectionRate}%
+                    {formatRate(data.cpd.overallReflectionRate)}
                   </div>
                   <div className="text-xs text-gray-500">Reflection Rate</div>
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.cpd.overallSignOffRate}%
+                    {formatRate(data.cpd.overallSignOffRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Supervisor Sign-Off
@@ -448,7 +448,7 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.cpd.overallImpactDocumentedRate}%
+                    {formatRate(data.cpd.overallImpactDocumentedRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Impact Documented
@@ -541,7 +541,7 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.competency.assessmentCurrency.currencyRate}%
+                    {formatRate(data.competency.assessmentCurrency.currencyRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Assessment Currency
@@ -645,13 +645,13 @@ export function WorkforceDevelopmentDashboardWidget() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.developmentPlanning.planCoverageRate}%
+                    {formatRate(data.developmentPlanning.planCoverageRate)}
                   </div>
                   <div className="text-xs text-gray-500">Plan Coverage</div>
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.developmentPlanning.goalAchievementRate}%
+                    {formatRate(data.developmentPlanning.goalAchievementRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Goal Achievement
@@ -659,13 +659,13 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.developmentPlanning.planCurrencyRate}%
+                    {formatRate(data.developmentPlanning.planCurrencyRate)}
                   </div>
                   <div className="text-xs text-gray-500">Plan Currency</div>
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.developmentPlanning.staffInputRate}%
+                    {formatRate(data.developmentPlanning.staffInputRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Staff Input Recorded
@@ -777,13 +777,13 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-green-600">
-                    {data.practiceQuality.goodOrBetterRate}%
+                    {formatRate(data.practiceQuality.goodOrBetterRate)}
                   </div>
                   <div className="text-xs text-gray-500">Good or Better</div>
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.practiceQuality.followUpCompletionRate}%
+                    {formatRate(data.practiceQuality.followUpCompletionRate)}
                   </div>
                   <div className="text-xs text-gray-500">
                     Follow-Up Complete
@@ -791,7 +791,7 @@ export function WorkforceDevelopmentDashboardWidget() {
                 </div>
                 <div className="bg-white rounded-lg p-2 border text-center">
                   <div className="font-bold text-gray-900">
-                    {data.practiceQuality.actionPlanRate}%
+                    {formatRate(data.practiceQuality.actionPlanRate)}
                   </div>
                   <div className="text-xs text-gray-500">Action Plans</div>
                 </div>

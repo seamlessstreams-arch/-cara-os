@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -96,7 +97,7 @@ export default function StaffTrainingCpdIntelligencePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{d.headline}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Training score: {d.training_score}/100 · {(d.cpd_avg_hours_per_staff ?? 0).toFixed(1)} CPD hrs/staff · {d.mandatory_training_compliance_rate}% mandatory compliance
+                  Training score: {d.training_score}/100 · {(d.cpd_avg_hours_per_staff ?? 0).toFixed(1)} CPD hrs/staff · {formatRate(d.mandatory_training_compliance_rate)} mandatory compliance
                 </p>
               </div>
               <div className="text-right">

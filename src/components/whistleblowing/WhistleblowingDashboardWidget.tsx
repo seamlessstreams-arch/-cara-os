@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { WhistleblowingIntelligenceResult } from "@/lib/whistleblowing";
 
@@ -104,7 +105,7 @@ export function WhistleblowingDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Concerns Raised</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.policyCompliance.staffAwarenessRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.policyCompliance.staffAwarenessRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Staff Awareness</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -141,8 +142,8 @@ export function WhistleblowingDashboardWidget() {
                 <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.concernHandling.totalConcerns}</span></div>
                 <div><span className="text-gray-500">Avg Acknowledgement:</span> <span className="font-medium">{data.concernHandling.averageAcknowledgementDays} days</span></div>
                 <div><span className="text-gray-500">Avg Resolution:</span> <span className="font-medium">{data.concernHandling.averageResolutionDays} days</span></div>
-                <div><span className="text-gray-500">Feedback Rate:</span> <span className="font-medium">{data.concernHandling.feedbackRate}%</span></div>
-                <div><span className="text-gray-500">Escalation Rate:</span> <span className={`font-medium ${data.concernHandling.escalationRate > 50 ? "text-amber-600" : "text-gray-900"}`}>{data.concernHandling.escalationRate}%</span></div>
+                <div><span className="text-gray-500">Feedback Rate:</span> <span className="font-medium">{formatRate(data.concernHandling.feedbackRate)}</span></div>
+                <div><span className="text-gray-500">Escalation Rate:</span> <span className={`font-medium ${data.concernHandling.escalationRate > 50 ? "text-amber-600" : "text-gray-900"}`}>{formatRate(data.concernHandling.escalationRate)}</span></div>
                 <div><span className="text-gray-500">Protection:</span> <span className="font-medium text-green-600">{data.concernHandling.protectionRate}%</span></div>
               </div>
               {Object.keys(data.concernHandling.categoryBreakdown).length > 0 && (
@@ -172,7 +173,7 @@ export function WhistleblowingDashboardWidget() {
               </span>
             </div>
             <div><span className="text-gray-500">Coverage Score:</span> <span className="font-medium">{data.policyCompliance.coverageScore}%</span></div>
-            <div><span className="text-gray-500">Staff Signed:</span> <span className="font-medium">{data.policyCompliance.staffAwarenessRate}%</span></div>
+            <div><span className="text-gray-500">Staff Signed:</span> <span className="font-medium">{formatRate(data.policyCompliance.staffAwarenessRate)}</span></div>
           </div>
         </Section>
 
@@ -180,7 +181,7 @@ export function WhistleblowingDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Records:</span> <span className="font-medium">{data.professionalCourage.totalRecords}</span></div>
             <div><span className="text-gray-500">Staff Engaged:</span> <span className="font-medium">{data.professionalCourage.staffEngaged}</span></div>
-            <div><span className="text-gray-500">Positive Outcomes:</span> <span className="font-medium">{data.professionalCourage.positiveOutcomeRate}%</span></div>
+            <div><span className="text-gray-500">Positive Outcomes:</span> <span className="font-medium">{formatRate(data.professionalCourage.positiveOutcomeRate)}</span></div>
             <div><span className="text-gray-500">Management Support:</span> <span className="font-medium">{data.professionalCourage.managementSupportRate}%</span></div>
             <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{data.professionalCourage.documentedInSupervisionRate}%</span></div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function EscalationThresholdIntelligenceWidget() {
       <Section title="Escalation Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Threshold ID" value={`${quality.thresholdCorrectlyIdentifiedRate}%`} />
-          <Stat label="Timely Escalation" value={`${quality.escalationTimelyCompletedRate}%`} />
-          <Stat label="Correct Recipient" value={`${quality.appropriateRecipientNotifiedRate}%`} />
-          <Stat label="Outcome Recorded" value={`${quality.outcomeRecordedRate}%`} />
+          <Stat label="Threshold ID" value={`${formatRate(quality.thresholdCorrectlyIdentifiedRate)}`} />
+          <Stat label="Timely Escalation" value={`${formatRate(quality.escalationTimelyCompletedRate)}`} />
+          <Stat label="Correct Recipient" value={`${formatRate(quality.appropriateRecipientNotifiedRate)}`} />
+          <Stat label="Outcome Recorded" value={`${formatRate(quality.outcomeRecordedRate)}`} />
         </div>
       </Section>
 
       <Section title="Escalation Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Threshold ID" value={`${compliance.thresholdCorrectlyIdentifiedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Threshold ID" value={`${formatRate(compliance.thresholdCorrectlyIdentifiedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function EscalationThresholdIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Escalation Knowledge" value={`${staff.escalationProcedureKnowledgeRate}%`} />
-          <Stat label="Threshold Assessment" value={`${staff.thresholdAssessmentSkillsRate}%`} />
-          <Stat label="Safeguarding Escalation" value={`${staff.safeguardingEscalationSkillsRate}%`} />
-          <Stat label="Multi-Agency Referral" value={`${staff.multiAgencyReferralSkillsRate}%`} />
-          <Stat label="Prof. Disagreement" value={`${staff.professionalDisagreementResolutionRate}%`} />
-          <Stat label="Emergency Response" value={`${staff.emergencyResponseSkillsRate}%`} />
+          <Stat label="Escalation Knowledge" value={`${formatRate(staff.escalationProcedureKnowledgeRate)}`} />
+          <Stat label="Threshold Assessment" value={`${formatRate(staff.thresholdAssessmentSkillsRate)}`} />
+          <Stat label="Safeguarding Escalation" value={`${formatRate(staff.safeguardingEscalationSkillsRate)}`} />
+          <Stat label="Multi-Agency Referral" value={`${formatRate(staff.multiAgencyReferralSkillsRate)}`} />
+          <Stat label="Prof. Disagreement" value={`${formatRate(staff.professionalDisagreementResolutionRate)}`} />
+          <Stat label="Emergency Response" value={`${formatRate(staff.emergencyResponseSkillsRate)}`} />
         </div>
       </Section>
 

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 5, 6, 7, 10. SCCIF: "Quality of care."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -139,7 +140,7 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
               <div className="flex items-center justify-center gap-1">
                 <MessageCircle className={cn("h-3.5 w-3.5", (d.quality_metrics.child_voice_rate ?? 0) >= 80 ? "text-green-500" : "text-amber-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", (d.quality_metrics.child_voice_rate ?? 0) >= 80 ? "text-green-600" : (d.quality_metrics.child_voice_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
-                  {d.quality_metrics.child_voice_rate}%
+                  {formatRate(d.quality_metrics.child_voice_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Voice Rate</p>
@@ -148,7 +149,7 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className={cn("h-3.5 w-3.5", (d.quality_metrics.follow_up_completion_rate ?? 0) >= 80 ? "text-green-500" : "text-amber-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", (d.quality_metrics.follow_up_completion_rate ?? 0) >= 80 ? "text-green-600" : (d.quality_metrics.follow_up_completion_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
-                  {d.quality_metrics.follow_up_completion_rate}%
+                  {formatRate(d.quality_metrics.follow_up_completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Follow-ups</p>
@@ -172,9 +173,9 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
               <p className="font-medium text-slate-700 mb-1">Mood Impact</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Before: <span className="font-medium text-slate-600">{d.mood_impact.avg_mood_before}/5</span> → After: <span className={cn("font-medium", d.mood_impact.avg_mood_after > d.mood_impact.avg_mood_before ? "text-green-600" : "text-slate-600")}>{d.mood_impact.avg_mood_after}/5</span></p>
-                <p>Positive: <span className="font-medium text-green-600">{d.mood_impact.positive_impact_rate}%</span></p>
+                <p>Positive: <span className="font-medium text-green-600">{formatRate(d.mood_impact.positive_impact_rate)}</span></p>
                 {(d.mood_impact.negative_impact_rate ?? 0) > 0 && (
-                  <p>Negative: <span className="font-medium text-red-600">{d.mood_impact.negative_impact_rate}%</span></p>
+                  <p>Negative: <span className="font-medium text-red-600">{formatRate(d.mood_impact.negative_impact_rate)}</span></p>
                 )}
                 <p>Key worker: <span className={d.key_worker_consistency ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.key_worker_consistency ? "Consistent" : "Mixed"}</span></p>
               </div>
