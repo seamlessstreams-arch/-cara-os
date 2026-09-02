@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffShiftPatternMonitoringRecord>): StaffShiftPatternMonitoringRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    shift_type: overrides?.shift_type ?? "morning",
-    fatigue_risk: overrides?.fatigue_risk ?? "low",
-    staffing_level: overrides?.staffing_level ?? "fully_staffed",
-    shift_compliance: overrides?.shift_compliance ?? "fully_compliant",
-    shift_date: overrides?.shift_date ?? todayStr(),
-    staff_name: overrides?.staff_name ?? "Staff A",
-    shift_supervisor: overrides?.shift_supervisor ?? "Manager A",
-    rest_period_compliant: overrides?.rest_period_compliant ?? true,
-    working_time_directive_met: overrides?.working_time_directive_met ?? true,
-    lone_working_risk_assessed: overrides?.lone_working_risk_assessed ?? true,
-    handover_completed: overrides?.handover_completed ?? true,
-    break_taken: overrides?.break_taken ?? true,
-    training_current: overrides?.training_current ?? true,
-    dbs_current: overrides?.dbs_current ?? true,
-    first_aid_current: overrides?.first_aid_current ?? true,
-    medication_trained: overrides?.medication_trained ?? true,
-    supervision_up_to_date: overrides?.supervision_up_to_date ?? true,
-    wellbeing_checked: overrides?.wellbeing_checked ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    shift_duration_hours: overrides?.shift_duration_hours ?? 8,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    id: "a-1", home_id: "home-1",
+    shift_type: "morning",
+    fatigue_risk: "low",
+    staffing_level: "fully_staffed",
+    shift_compliance: "fully_compliant",
+    shift_date: todayStr(),
+    staff_name: "Staff A",
+    shift_supervisor: "Manager A",
+    rest_period_compliant: true,
+    working_time_directive_met: true,
+    lone_working_risk_assessed: true,
+    handover_completed: true,
+    break_taken: true,
+    training_current: true,
+    dbs_current: true,
+    first_aid_current: true,
+    medication_trained: true,
+    supervision_up_to_date: true,
+    wellbeing_checked: true,
+    recorded_promptly: true,
+    shift_duration_hours: 8,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -128,5 +131,17 @@ describe("staff-shift-pattern-monitoring-service", () => {
       expect(types).toContain("lone_working_not_assessed");
       expect(types).toContain("handover_not_completed");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded working_time_directive_met as a failure", () => {
+    const alerts = _testing.identifyStaffShiftPatternAlerts([makeRecord({ working_time_directive_met: null })]);
+    expect(alerts.some((a) => /working time|directive/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyStaffShiftPatternAlerts([makeRecord({ working_time_directive_met: false })]);
+    expect(alerts.some((a) => /working time|directive/i.test(a.message))).toBe(true);
   });
 });

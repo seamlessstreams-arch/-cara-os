@@ -65,18 +65,20 @@ export interface HomeEnvironmentInspectionRecord {
   compliance_status: ComplianceStatus;
   inspection_date: string;
   inspected_by: string;
-  cleanliness_acceptable: boolean;
-  fire_safety_checked: boolean;
-  electrical_safety_checked: boolean;
-  water_safety_checked: boolean;
-  ventilation_adequate: boolean;
-  lighting_adequate: boolean;
-  maintenance_up_to_date: boolean;
-  child_friendly: boolean;
-  accessibility_adequate: boolean;
-  security_adequate: boolean;
-  pest_free: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  cleanliness_acceptable: boolean | null;
+  fire_safety_checked: boolean | null;
+  electrical_safety_checked: boolean | null;
+  water_safety_checked: boolean | null;
+  ventilation_adequate: boolean | null;
+  lighting_adequate: boolean | null;
+  maintenance_up_to_date: boolean | null;
+  child_friendly: boolean | null;
+  accessibility_adequate: boolean | null;
+  security_adequate: boolean | null;
+  pest_free: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -228,7 +230,8 @@ export function identifyHomeEnvironmentAlerts(
   }
 
   // Fire safety not checked
-  const noFire = records.filter((r) => !r.fire_safety_checked).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const noFire = records.filter((r) => r.fire_safety_checked === false).length;
   if (noFire >= 1) {
     alerts.push({
       type: "fire_safety_not_checked",
@@ -239,7 +242,7 @@ export function identifyHomeEnvironmentAlerts(
   }
 
   // Maintenance not up to date
-  const noMaintenance = records.filter((r) => !r.maintenance_up_to_date).length;
+  const noMaintenance = records.filter((r) => r.maintenance_up_to_date === false).length;
   if (noMaintenance >= 1) {
     alerts.push({
       type: "maintenance_overdue",
@@ -250,7 +253,7 @@ export function identifyHomeEnvironmentAlerts(
   }
 
   // Cleanliness not acceptable
-  const noCleanliness = records.filter((r) => !r.cleanliness_acceptable).length;
+  const noCleanliness = records.filter((r) => r.cleanliness_acceptable === false).length;
   if (noCleanliness >= 2) {
     alerts.push({
       type: "cleanliness_issues",
@@ -261,7 +264,7 @@ export function identifyHomeEnvironmentAlerts(
   }
 
   // Security not adequate
-  const noSecurity = records.filter((r) => !r.security_adequate).length;
+  const noSecurity = records.filter((r) => r.security_adequate === false).length;
   if (noSecurity >= 2) {
     alerts.push({
       type: "security_inadequate",
@@ -344,18 +347,18 @@ export async function createRecord(
       compliance_status: payload.complianceStatus,
       inspection_date: payload.inspectionDate,
       inspected_by: payload.inspectedBy,
-      cleanliness_acceptable: payload.cleanlinessAcceptable ?? true,
-      fire_safety_checked: payload.fireSafetyChecked ?? true,
-      electrical_safety_checked: payload.electricalSafetyChecked ?? true,
-      water_safety_checked: payload.waterSafetyChecked ?? true,
-      ventilation_adequate: payload.ventilationAdequate ?? true,
-      lighting_adequate: payload.lightingAdequate ?? true,
-      maintenance_up_to_date: payload.maintenanceUpToDate ?? true,
-      child_friendly: payload.childFriendly ?? true,
-      accessibility_adequate: payload.accessibilityAdequate ?? true,
-      security_adequate: payload.securityAdequate ?? true,
-      pest_free: payload.pestFree ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      cleanliness_acceptable: payload.cleanlinessAcceptable ?? null,
+      fire_safety_checked: payload.fireSafetyChecked ?? null,
+      electrical_safety_checked: payload.electricalSafetyChecked ?? null,
+      water_safety_checked: payload.waterSafetyChecked ?? null,
+      ventilation_adequate: payload.ventilationAdequate ?? null,
+      lighting_adequate: payload.lightingAdequate ?? null,
+      maintenance_up_to_date: payload.maintenanceUpToDate ?? null,
+      child_friendly: payload.childFriendly ?? null,
+      accessibility_adequate: payload.accessibilityAdequate ?? null,
+      security_adequate: payload.securityAdequate ?? null,
+      pest_free: payload.pestFree ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

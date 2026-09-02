@@ -66,19 +66,21 @@ export interface ComplaintResolutionTrackingRecord {
   complaint_date: string;
   complainant_name: string;
   handled_by: string;
-  acknowledged_promptly: boolean;
-  investigation_thorough: boolean;
-  child_views_sought: boolean;
-  complainant_updated: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  acknowledged_promptly: boolean | null;
+  investigation_thorough: boolean | null;
+  child_views_sought: boolean | null;
+  complainant_updated: boolean | null;
   ofsted_notified: boolean;
-  learning_identified: boolean;
-  action_plan_created: boolean;
-  outcome_communicated: boolean;
-  satisfaction_assessed: boolean;
-  appeal_offered: boolean;
-  records_updated: boolean;
-  manager_oversight: boolean;
-  recorded_promptly: boolean;
+  learning_identified: boolean | null;
+  action_plan_created: boolean | null;
+  outcome_communicated: boolean | null;
+  satisfaction_assessed: boolean | null;
+  appeal_offered: boolean | null;
+  records_updated: boolean | null;
+  manager_oversight: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   resolution_days: number;
@@ -253,7 +255,8 @@ export function identifyComplaintResolutionAlerts(
   }
 
   // Learning not identified
-  const noLearning = records.filter((r) => !r.learning_identified).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const noLearning = records.filter((r) => r.learning_identified === false).length;
   if (noLearning >= 1) {
     alerts.push({
       type: "no_learning_identified",
@@ -264,7 +267,7 @@ export function identifyComplaintResolutionAlerts(
   }
 
   // Satisfaction not assessed
-  const noSatisfaction = records.filter((r) => !r.satisfaction_assessed).length;
+  const noSatisfaction = records.filter((r) => r.satisfaction_assessed === false).length;
   if (noSatisfaction >= 2) {
     alerts.push({
       type: "satisfaction_not_assessed",
@@ -275,7 +278,7 @@ export function identifyComplaintResolutionAlerts(
   }
 
   // Appeal not offered
-  const noAppeal = records.filter((r) => !r.appeal_offered).length;
+  const noAppeal = records.filter((r) => r.appeal_offered === false).length;
   if (noAppeal >= 2) {
     alerts.push({
       type: "appeal_not_offered",
@@ -362,19 +365,19 @@ export async function createRecord(
       complaint_date: payload.complaintDate,
       complainant_name: payload.complainantName,
       handled_by: payload.handledBy,
-      acknowledged_promptly: payload.acknowledgedPromptly ?? true,
-      investigation_thorough: payload.investigationThorough ?? true,
-      child_views_sought: payload.childViewsSought ?? true,
-      complainant_updated: payload.complainantUpdated ?? true,
+      acknowledged_promptly: payload.acknowledgedPromptly ?? null,
+      investigation_thorough: payload.investigationThorough ?? null,
+      child_views_sought: payload.childViewsSought ?? null,
+      complainant_updated: payload.complainantUpdated ?? null,
       ofsted_notified: payload.ofstedNotified ?? false,
-      learning_identified: payload.learningIdentified ?? true,
-      action_plan_created: payload.actionPlanCreated ?? true,
-      outcome_communicated: payload.outcomeCommunicated ?? true,
-      satisfaction_assessed: payload.satisfactionAssessed ?? true,
-      appeal_offered: payload.appealOffered ?? true,
-      records_updated: payload.recordsUpdated ?? true,
-      manager_oversight: payload.managerOversight ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      learning_identified: payload.learningIdentified ?? null,
+      action_plan_created: payload.actionPlanCreated ?? null,
+      outcome_communicated: payload.outcomeCommunicated ?? null,
+      satisfaction_assessed: payload.satisfactionAssessed ?? null,
+      appeal_offered: payload.appealOffered ?? null,
+      records_updated: payload.recordsUpdated ?? null,
+      manager_oversight: payload.managerOversight ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       resolution_days: payload.resolutionDays,
