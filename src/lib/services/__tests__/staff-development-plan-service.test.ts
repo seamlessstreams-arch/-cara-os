@@ -186,3 +186,14 @@ describe("identifyDevelopmentPlanAlerts", () => {
     expect(types).toContain("no_mentoring");
   });
 });
+
+describe("tri-state judgements", () => {
+  it("does not dilute evidence-based with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `p-${i}`, evidence_based: v }));
+    expect(computeDevelopmentPlanMetrics(rows).evidence_based_rate).toBe(100);
+  });
+  it("still scores a recorded not-evidence-based plan", () => {
+    const rows = [true, false].map((v, i) => makeRecord({ id: `p-${i}`, evidence_based: v }));
+    expect(computeDevelopmentPlanMetrics(rows).evidence_based_rate).toBe(50);
+  });
+});

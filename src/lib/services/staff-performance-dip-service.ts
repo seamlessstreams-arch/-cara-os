@@ -78,8 +78,8 @@ export interface StaffPerformanceDipRecord {
   support_offered_detail: string | null;
   manager_response: string | null;
   staff_response: string | null;
-  evidence_documented: boolean;
-  manager_aware: boolean;
+  evidence_documented: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  manager_aware: boolean | null;
   staff_informed: boolean;
   support_offered: boolean;
   triggers_explored: boolean;
@@ -89,7 +89,7 @@ export interface StaffPerformanceDipRecord {
   action_plan_created: boolean;
   staff_responded: boolean;
   follow_up_scheduled: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -174,10 +174,16 @@ export function computePerformanceDipMetrics(
   const unresolvedCount = records.filter((r) => unresolvedStatuses.includes(r.dip_status)).length;
   const escalatedCount = records.filter((r) => r.dip_status === "escalated").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffPerformanceDipRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -389,8 +395,8 @@ export async function createPerformanceDip(
       support_offered_detail: input.supportOfferedDetail ?? null,
       manager_response: input.managerResponse ?? null,
       staff_response: input.staffResponse ?? null,
-      evidence_documented: input.evidenceDocumented ?? true,
-      manager_aware: input.managerAware ?? true,
+      evidence_documented: input.evidenceDocumented ?? null,
+      manager_aware: input.managerAware ?? null,
       staff_informed: input.staffInformed ?? false,
       support_offered: input.supportOffered ?? false,
       triggers_explored: input.triggersExplored ?? false,
@@ -400,7 +406,7 @@ export async function createPerformanceDip(
       action_plan_created: input.actionPlanCreated ?? false,
       staff_responded: input.staffResponded ?? false,
       follow_up_scheduled: input.followUpScheduled ?? false,
-      recorded_promptly: input.recordedPromptly ?? true,
+      recorded_promptly: input.recordedPromptly ?? null,
       issues_found: input.issuesFound ?? [],
       actions_taken: input.actionsTaken ?? [],
       next_review_date: input.nextReviewDate ?? null,

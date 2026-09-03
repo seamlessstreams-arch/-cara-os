@@ -8,17 +8,17 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffSupportPlanRecord>): StaffSupportPlanRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    concern_area: overrides?.concern_area ?? "wellbeing",
-    plan_status: overrides?.plan_status ?? "active",
-    approval_status: overrides?.approval_status ?? "approved",
-    supervision_frequency: overrides?.supervision_frequency ?? "fortnightly",
-    session_date: overrides?.session_date ?? todayStr(),
-    staff_name: overrides?.staff_name ?? "Staff A",
-    created_by: overrides?.created_by ?? "Manager A",
-    what_is_working_well: overrides?.what_is_working_well ?? "Test working well",
-    what_we_are_worried_about: overrides?.what_we_are_worried_about ?? "Test worried about",
-    what_needs_to_improve: overrides?.what_needs_to_improve ?? "Test improve",
+    id: "a-1", home_id: "home-1",
+    concern_area: "wellbeing",
+    plan_status: "active",
+    approval_status: "approved",
+    supervision_frequency: "fortnightly",
+    session_date: todayStr(),
+    staff_name: "Staff A",
+    created_by: "Manager A",
+    what_is_working_well: "Test working well",
+    what_we_are_worried_about: "Test worried about",
+    what_needs_to_improve: "Test improve",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
     support_being_offered: "support_being_offered" in (overrides ?? {}) ? (overrides!.support_being_offered ?? null) : null,
     wellbeing_considerations: "wellbeing_considerations" in (overrides ?? {}) ? (overrides!.wellbeing_considerations ?? null) : null,
@@ -30,20 +30,23 @@ function makeRecord(overrides?: Partial<StaffSupportPlanRecord>): StaffSupportPl
     approved_at: "approved_at" in (overrides ?? {}) ? (overrides!.approved_at ?? null) : null,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    what_working_well_recorded: overrides?.what_working_well_recorded ?? true,
-    concerns_documented: overrides?.concerns_documented ?? true,
-    improvements_identified: overrides?.improvements_identified ?? true,
-    support_offered: overrides?.support_offered ?? true,
-    wellbeing_considered: overrides?.wellbeing_considered ?? true,
-    adjustments_offered: overrides?.adjustments_offered ?? true,
-    mentor_assigned: overrides?.mentor_assigned ?? true,
-    staff_consulted: overrides?.staff_consulted ?? true,
-    staff_agreed: overrides?.staff_agreed ?? true,
-    review_date_set: overrides?.review_date_set ?? true,
-    approved_by_senior: overrides?.approved_by_senior ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    what_working_well_recorded: true,
+    concerns_documented: true,
+    improvements_identified: true,
+    support_offered: true,
+    wellbeing_considered: true,
+    adjustments_offered: true,
+    mentor_assigned: true,
+    staff_consulted: true,
+    staff_agreed: true,
+    review_date_set: true,
+    approved_by_senior: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -138,5 +141,16 @@ describe("staff-support-plan-service", () => {
       expect(types).toContain("no_mentor_assigned");
       expect(types).toContain("no_adjustments_offered");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("does not dilute recorded-promptly with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `p-${i}`, recorded_promptly: v }));
+    expect(computeSupportPlanMetrics(rows).recorded_promptly_rate).toBe(100);
+  });
+  it("still scores a recorded late entry", () => {
+    const rows = [true, false].map((v, i) => makeRecord({ id: `p-${i}`, recorded_promptly: v }));
+    expect(computeSupportPlanMetrics(rows).recorded_promptly_rate).toBe(50);
   });
 });
