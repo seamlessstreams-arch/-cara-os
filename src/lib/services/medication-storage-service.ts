@@ -75,17 +75,19 @@ export interface MedicationStorageRecord {
   temperature_reading: number | null;
   min_temperature: number | null;
   max_temperature: number | null;
-  cabinet_locked: boolean;
-  keys_secure: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  cabinet_locked: boolean | null;
+  keys_secure: boolean | null;
   controlled_drugs_counted: boolean;
-  all_drugs_accounted: boolean;
+  all_drugs_accounted: boolean | null;
   expired_items_found: boolean;
-  items_in_date: boolean;
-  storage_clean: boolean;
-  labels_legible: boolean;
-  correct_storage_conditions: boolean;
-  ventilation_adequate: boolean;
-  access_restricted: boolean;
+  items_in_date: boolean | null;
+  storage_clean: boolean | null;
+  labels_legible: boolean | null;
+  correct_storage_conditions: boolean | null;
+  ventilation_adequate: boolean | null;
+  access_restricted: boolean | null;
   disposal_needed: boolean;
   items_checked: number;
   discrepancies_found: number;
@@ -267,25 +269,31 @@ export function identifyMedicationStorageAlerts(
 
   // Cabinet unlocked — controlled drugs
   for (const r of records) {
-    if (r.storage_type === "controlled_drug_cupboard" && !r.cabinet_locked) {
+    // A CD cupboard with the lock state UNRECORDED must alert — but as a gap,
+    // not as a found-unlocked assertion nobody made.
+    if (r.storage_type === "controlled_drug_cupboard" && r.cabinet_locked !== true) {
       alerts.push({
         type: "controlled_drug_unlocked",
         severity: "critical",
-        message: `Controlled drug cupboard at ${r.storage_location} found unlocked on ${r.check_date} — secure immediately`,
+        message: r.cabinet_locked === false
+          ? `Controlled drug cupboard at ${r.storage_location} found unlocked on ${r.check_date} — secure immediately`
+          : `Controlled drug cupboard at ${r.storage_location} has no lock state recorded on ${r.check_date} — verify and evidence now`,
         id: r.id,
       });
     }
   }
 
   // Drugs not accounted for
+  // On CD checks the reconciliation gap itself is critical: unrecorded counts
+  // with recorded discrepancies together, the message stays true for both.
   const notAccounted = records.filter(
-    (r) => r.storage_type === "controlled_drug_cupboard" && !r.all_drugs_accounted,
+    (r) => r.storage_type === "controlled_drug_cupboard" && r.all_drugs_accounted !== true,
   ).length;
   if (notAccounted >= 1) {
     alerts.push({
       type: "drugs_not_accounted",
       severity: "critical",
-      message: `${notAccounted} controlled drug ${notAccounted === 1 ? "check has" : "checks have"} drugs not accounted for — investigate immediately`,
+      message: `${notAccounted} controlled drug ${notAccounted === 1 ? "check has" : "checks have"} drugs not accounted for or reconciliation unrecorded — investigate immediately`,
       id: "drugs_not_accounted",
     });
   }
@@ -315,7 +323,7 @@ export function identifyMedicationStorageAlerts(
   }
 
   // Storage not clean
-  const notClean = records.filter((r) => !r.storage_clean).length;
+  const notClean = records.filter((r) => r.storage_clean === false).length;
   if (notClean >= 3) {
     alerts.push({
       type: "storage_not_clean",
@@ -408,17 +416,17 @@ export async function createRecord(
       temperature_reading: payload.temperatureReading ?? null,
       min_temperature: payload.minTemperature ?? null,
       max_temperature: payload.maxTemperature ?? null,
-      cabinet_locked: payload.cabinetLocked ?? true,
-      keys_secure: payload.keysSecure ?? true,
+      cabinet_locked: payload.cabinetLocked ?? null,
+      keys_secure: payload.keysSecure ?? null,
       controlled_drugs_counted: payload.controlledDrugsCounted ?? false,
-      all_drugs_accounted: payload.allDrugsAccounted ?? true,
+      all_drugs_accounted: payload.allDrugsAccounted ?? null,
       expired_items_found: payload.expiredItemsFound ?? false,
-      items_in_date: payload.itemsInDate ?? true,
-      storage_clean: payload.storageClean ?? true,
-      labels_legible: payload.labelsLegible ?? true,
-      correct_storage_conditions: payload.correctStorageConditions ?? true,
-      ventilation_adequate: payload.ventilationAdequate ?? true,
-      access_restricted: payload.accessRestricted ?? true,
+      items_in_date: payload.itemsInDate ?? null,
+      storage_clean: payload.storageClean ?? null,
+      labels_legible: payload.labelsLegible ?? null,
+      correct_storage_conditions: payload.correctStorageConditions ?? null,
+      ventilation_adequate: payload.ventilationAdequate ?? null,
+      access_restricted: payload.accessRestricted ?? null,
       disposal_needed: payload.disposalNeeded ?? false,
       items_checked: payload.itemsChecked ?? 0,
       discrepancies_found: payload.discrepanciesFound ?? 0,

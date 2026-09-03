@@ -70,18 +70,20 @@ export interface ChildRiskAssessmentReviewRecord {
   child_name: string;
   child_id: string | null;
   reviewed_by: string;
-  child_participated: boolean;
-  social_worker_consulted: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_participated: boolean | null;
+  social_worker_consulted: boolean | null;
   multi_agency_input: boolean;
-  triggers_updated: boolean;
-  protective_factors_reviewed: boolean;
-  safety_plan_updated: boolean;
-  staff_briefed: boolean;
-  management_oversight: boolean;
-  evidence_documented: boolean;
-  dynamic_factors_assessed: boolean;
-  historical_factors_reviewed: boolean;
-  contingency_plan_current: boolean;
+  triggers_updated: boolean | null;
+  protective_factors_reviewed: boolean | null;
+  safety_plan_updated: boolean | null;
+  staff_briefed: boolean | null;
+  management_oversight: boolean | null;
+  evidence_documented: boolean | null;
+  dynamic_factors_assessed: boolean | null;
+  historical_factors_reviewed: boolean | null;
+  contingency_plan_current: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   previous_risk_level: string | null;
@@ -227,18 +229,22 @@ export function identifyChildRiskReviewAlerts(
 
   // Risk increased without safety plan update
   for (const r of records) {
-    if (r.review_outcome === "risk_increased" && !r.safety_plan_updated) {
+    // Risk went UP: an unrecorded plan-update is itself the critical gap,
+    // worded as a gap rather than an asserted failure.
+    if (r.review_outcome === "risk_increased" && r.safety_plan_updated !== true) {
       alerts.push({
         type: "risk_increased_no_plan",
         severity: "critical",
-        message: `${r.child_name} risk increased in ${r.risk_domain.replace(/_/g, " ")} on ${r.review_date} — safety plan not updated`,
+        message: r.safety_plan_updated === false
+          ? `${r.child_name} risk increased in ${r.risk_domain.replace(/_/g, " ")} on ${r.review_date} — safety plan not updated`
+          : `${r.child_name} risk increased in ${r.risk_domain.replace(/_/g, " ")} on ${r.review_date} — no safety-plan update recorded, evidence it now`,
         id: r.id,
       });
     }
   }
 
   // Child not participated
-  const noChild = records.filter((r) => !r.child_participated).length;
+  const noChild = records.filter((r) => r.child_participated === false).length;
   if (noChild >= 1) {
     alerts.push({
       type: "child_not_participated",
@@ -249,7 +255,7 @@ export function identifyChildRiskReviewAlerts(
   }
 
   // Staff not briefed
-  const notBriefed = records.filter((r) => !r.staff_briefed).length;
+  const notBriefed = records.filter((r) => r.staff_briefed === false).length;
   if (notBriefed >= 1) {
     alerts.push({
       type: "staff_not_briefed",
@@ -260,7 +266,7 @@ export function identifyChildRiskReviewAlerts(
   }
 
   // Triggers not updated
-  const noTriggers = records.filter((r) => !r.triggers_updated).length;
+  const noTriggers = records.filter((r) => r.triggers_updated === false).length;
   if (noTriggers >= 2) {
     alerts.push({
       type: "triggers_not_updated",
@@ -271,7 +277,7 @@ export function identifyChildRiskReviewAlerts(
   }
 
   // Contingency plan not current
-  const noContingency = records.filter((r) => !r.contingency_plan_current).length;
+  const noContingency = records.filter((r) => r.contingency_plan_current === false).length;
   if (noContingency >= 2) {
     alerts.push({
       type: "contingency_not_current",
@@ -359,18 +365,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       reviewed_by: payload.reviewedBy,
-      child_participated: payload.childParticipated ?? true,
-      social_worker_consulted: payload.socialWorkerConsulted ?? true,
+      child_participated: payload.childParticipated ?? null,
+      social_worker_consulted: payload.socialWorkerConsulted ?? null,
       multi_agency_input: payload.multiAgencyInput ?? false,
-      triggers_updated: payload.triggersUpdated ?? true,
-      protective_factors_reviewed: payload.protectiveFactorsReviewed ?? true,
-      safety_plan_updated: payload.safetyPlanUpdated ?? true,
-      staff_briefed: payload.staffBriefed ?? true,
-      management_oversight: payload.managementOversight ?? true,
-      evidence_documented: payload.evidenceDocumented ?? true,
-      dynamic_factors_assessed: payload.dynamicFactorsAssessed ?? true,
-      historical_factors_reviewed: payload.historicalFactorsReviewed ?? true,
-      contingency_plan_current: payload.contingencyPlanCurrent ?? true,
+      triggers_updated: payload.triggersUpdated ?? null,
+      protective_factors_reviewed: payload.protectiveFactorsReviewed ?? null,
+      safety_plan_updated: payload.safetyPlanUpdated ?? null,
+      staff_briefed: payload.staffBriefed ?? null,
+      management_oversight: payload.managementOversight ?? null,
+      evidence_documented: payload.evidenceDocumented ?? null,
+      dynamic_factors_assessed: payload.dynamicFactorsAssessed ?? null,
+      historical_factors_reviewed: payload.historicalFactorsReviewed ?? null,
+      contingency_plan_current: payload.contingencyPlanCurrent ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       previous_risk_level: payload.previousRiskLevel ?? null,

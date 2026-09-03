@@ -8,39 +8,42 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationStorageRecord>): MedicationStorageRecord {
   return {
-    id: overrides?.id ?? "s-1",
-    home_id: overrides?.home_id ?? "home-1",
-    storage_type: overrides?.storage_type ?? "general_medication_cabinet",
-    check_type: overrides?.check_type ?? "daily_check",
-    storage_condition: overrides?.storage_condition ?? "satisfactory",
-    temperature_status: overrides?.temperature_status ?? "in_range",
-    check_date: overrides?.check_date ?? todayStr(),
-    storage_location: overrides?.storage_location ?? "Main Office",
+    id: "s-1",
+    home_id: "home-1",
+    storage_type: "general_medication_cabinet",
+    check_type: "daily_check",
+    storage_condition: "satisfactory",
+    temperature_status: "in_range",
+    check_date: todayStr(),
+    storage_location: "Main Office",
     temperature_reading: "temperature_reading" in (overrides ?? {}) ? (overrides!.temperature_reading ?? null) : 5.0,
     min_temperature: "min_temperature" in (overrides ?? {}) ? (overrides!.min_temperature ?? null) : 2.0,
     max_temperature: "max_temperature" in (overrides ?? {}) ? (overrides!.max_temperature ?? null) : 8.0,
-    cabinet_locked: overrides?.cabinet_locked ?? true,
-    keys_secure: overrides?.keys_secure ?? true,
-    controlled_drugs_counted: overrides?.controlled_drugs_counted ?? true,
-    all_drugs_accounted: overrides?.all_drugs_accounted ?? true,
-    expired_items_found: overrides?.expired_items_found ?? false,
-    items_in_date: overrides?.items_in_date ?? true,
-    storage_clean: overrides?.storage_clean ?? true,
-    labels_legible: overrides?.labels_legible ?? true,
-    correct_storage_conditions: overrides?.correct_storage_conditions ?? true,
-    ventilation_adequate: overrides?.ventilation_adequate ?? true,
-    access_restricted: overrides?.access_restricted ?? true,
-    disposal_needed: overrides?.disposal_needed ?? false,
-    items_checked: overrides?.items_checked ?? 10,
-    discrepancies_found: overrides?.discrepancies_found ?? 0,
-    issues_found: overrides?.issues_found ?? [],
-    actions_taken: overrides?.actions_taken ?? [],
-    checked_by: overrides?.checked_by ?? "Staff A",
+    cabinet_locked: true,
+    keys_secure: true,
+    controlled_drugs_counted: true,
+    all_drugs_accounted: true,
+    expired_items_found: false,
+    items_in_date: true,
+    storage_clean: true,
+    labels_legible: true,
+    correct_storage_conditions: true,
+    ventilation_adequate: true,
+    access_restricted: true,
+    disposal_needed: false,
+    items_checked: 10,
+    discrepancies_found: 0,
+    issues_found: [],
+    actions_taken: [],
+    checked_by: "Staff A",
     witnessed_by: "witnessed_by" in (overrides ?? {}) ? (overrides!.witnessed_by ?? null) : null,
     next_check_date: "next_check_date" in (overrides ?? {}) ? (overrides!.next_check_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -420,5 +423,23 @@ describe("medication-storage-service", () => {
         expect(types).toContain("storage_not_clean");
       });
     });
+  });
+});
+
+// ── Tri-state: CD-cupboard gaps alert as gaps, breaches as breaches ──
+describe("tri-state judgements", () => {
+  it("alerts an unrecorded lock state as unevidenced, not found-unlocked", () => {
+    const alerts = _testing.identifyMedicationStorageAlerts([
+      makeRecord({ storage_type: "controlled_drug_cupboard", cabinet_locked: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "controlled_drug_unlocked");
+    expect(a?.message).toMatch(/no lock state recorded/i);
+    expect(a?.message).not.toMatch(/found unlocked/i);
+  });
+  it("still asserts a recorded unlocked cupboard", () => {
+    const alerts = _testing.identifyMedicationStorageAlerts([
+      makeRecord({ storage_type: "controlled_drug_cupboard", cabinet_locked: false }),
+    ]);
+    expect(alerts.some((x) => /found unlocked/i.test(x.message))).toBe(true);
   });
 });

@@ -74,18 +74,20 @@ export interface StaffMedicationCompetencyRecord {
   assessment_date: string;
   staff_name: string;
   assessed_by: string;
-  theory_passed: boolean;
-  practical_observed: boolean;
-  error_procedure_known: boolean;
-  storage_knowledge: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  theory_passed: boolean | null;
+  practical_observed: boolean | null;
+  error_procedure_known: boolean | null;
+  storage_knowledge: boolean | null;
   controlled_drug_trained: boolean;
-  side_effects_knowledge: boolean;
-  consent_understanding: boolean;
-  record_keeping_competent: boolean;
-  emergency_response_trained: boolean;
-  disposal_knowledge: boolean;
-  child_specific_trained: boolean;
-  refresher_scheduled: boolean;
+  side_effects_knowledge: boolean | null;
+  consent_understanding: boolean | null;
+  record_keeping_competent: boolean | null;
+  emergency_response_trained: boolean | null;
+  disposal_knowledge: boolean | null;
+  child_specific_trained: boolean | null;
+  refresher_scheduled: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -257,7 +259,7 @@ export function identifyStaffMedicationCompetencyAlerts(
   }
 
   // Practical not observed
-  const noObserved = records.filter((r) => !r.practical_observed).length;
+  const noObserved = records.filter((r) => r.practical_observed === false).length;
   if (noObserved >= 1) {
     alerts.push({
       type: "practical_not_observed",
@@ -268,7 +270,7 @@ export function identifyStaffMedicationCompetencyAlerts(
   }
 
   // No refresher scheduled
-  const noRefresher = records.filter((r) => !r.refresher_scheduled).length;
+  const noRefresher = records.filter((r) => r.refresher_scheduled === false).length;
   if (noRefresher >= 2) {
     alerts.push({
       type: "no_refresher_scheduled",
@@ -279,7 +281,7 @@ export function identifyStaffMedicationCompetencyAlerts(
   }
 
   // Error procedure not known
-  const noErrorProc = records.filter((r) => !r.error_procedure_known).length;
+  const noErrorProc = records.filter((r) => r.error_procedure_known === false).length;
   if (noErrorProc >= 2) {
     alerts.push({
       type: "error_procedure_unknown",
@@ -364,18 +366,18 @@ export async function createRecord(
       assessment_date: payload.assessmentDate,
       staff_name: payload.staffName,
       assessed_by: payload.assessedBy,
-      theory_passed: payload.theoryPassed ?? true,
-      practical_observed: payload.practicalObserved ?? true,
-      error_procedure_known: payload.errorProcedureKnown ?? true,
-      storage_knowledge: payload.storageKnowledge ?? true,
+      theory_passed: payload.theoryPassed ?? null,
+      practical_observed: payload.practicalObserved ?? null,
+      error_procedure_known: payload.errorProcedureKnown ?? null,
+      storage_knowledge: payload.storageKnowledge ?? null,
       controlled_drug_trained: payload.controlledDrugTrained ?? false,
-      side_effects_knowledge: payload.sideEffectsKnowledge ?? true,
-      consent_understanding: payload.consentUnderstanding ?? true,
-      record_keeping_competent: payload.recordKeepingCompetent ?? true,
-      emergency_response_trained: payload.emergencyResponseTrained ?? true,
-      disposal_knowledge: payload.disposalKnowledge ?? true,
-      child_specific_trained: payload.childSpecificTrained ?? true,
-      refresher_scheduled: payload.refresherScheduled ?? true,
+      side_effects_knowledge: payload.sideEffectsKnowledge ?? null,
+      consent_understanding: payload.consentUnderstanding ?? null,
+      record_keeping_competent: payload.recordKeepingCompetent ?? null,
+      emergency_response_trained: payload.emergencyResponseTrained ?? null,
+      disposal_knowledge: payload.disposalKnowledge ?? null,
+      child_specific_trained: payload.childSpecificTrained ?? null,
+      refresher_scheduled: payload.refresherScheduled ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
