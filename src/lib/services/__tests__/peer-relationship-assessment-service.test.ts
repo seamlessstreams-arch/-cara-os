@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PeerRelationshipAssessmentRecord>): PeerRelationshipAssessmentRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    relationship_quality: overrides?.relationship_quality ?? "good",
-    social_skill_level: overrides?.social_skill_level ?? "age_appropriate",
-    conflict_style: overrides?.conflict_style ?? "collaborative",
-    friendship_stability: overrides?.friendship_stability ?? "stable",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    relationship_quality: "good",
+    social_skill_level: "age_appropriate",
+    conflict_style: "collaborative",
+    friendship_stability: "stable",
+    assessment_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessed_by: overrides?.assessed_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    positive_interactions_observed: overrides?.positive_interactions_observed ?? true,
-    bullying_screened: overrides?.bullying_screened ?? true,
-    social_skills_supported: overrides?.social_skills_supported ?? true,
-    group_activities_encouraged: overrides?.group_activities_encouraged ?? true,
-    conflict_resolution_taught: overrides?.conflict_resolution_taught ?? true,
-    peer_mentoring_available: overrides?.peer_mentoring_available ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    school_liaison: overrides?.school_liaison ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    assessed_by: "Staff A",
+    child_views_sought: true,
+    positive_interactions_observed: true,
+    bullying_screened: true,
+    social_skills_supported: true,
+    group_activities_encouraged: true,
+    conflict_resolution_taught: true,
+    peer_mentoring_available: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    school_liaison: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,29 @@ describe("peer-relationship-assessment-service", () => {
       expect(types).toContain("conflict_resolution_not_taught");
       expect(types).toContain("group_activities_not_encouraged");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the concerning-relationships critical between recorded no-screen and unrecorded", () => {
+    const nullAlert = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: null }),
+    ]).find((a) => a.type === "concerning_no_bullying_screen");
+    const falseAlert = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: false }),
+    ]).find((a) => a.type === "concerning_no_bullying_screen");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no bullying critical when screening is recorded as done", () => {
+    const alerts = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "concerning_no_bullying_screen")).toBe(false);
+  });
+  it("does not dilute the bullying-screened rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, bullying_screened: v }));
+    expect(computePeerRelationshipMetrics(rows).bullying_screened_rate).toBe(100);
   });
 });
