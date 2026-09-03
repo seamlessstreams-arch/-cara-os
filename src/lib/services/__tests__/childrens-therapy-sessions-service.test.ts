@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildrensTherapySessionRecord>): ChildrensTherapySessionRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    therapy_type: overrides?.therapy_type ?? "camhs",
-    session_outcome: overrides?.session_outcome ?? "positive_progress",
-    child_engagement: overrides?.child_engagement ?? "fully_engaged",
-    therapy_frequency: overrides?.therapy_frequency ?? "weekly",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    therapy_type: "camhs",
+    session_outcome: "positive_progress",
+    child_engagement: "fully_engaged",
+    therapy_frequency: "weekly",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    therapist_name: overrides?.therapist_name ?? "Dr Smith",
-    child_prepared: overrides?.child_prepared ?? true,
-    transport_arranged: overrides?.transport_arranged ?? true,
-    consent_current: overrides?.consent_current ?? true,
-    feedback_obtained: overrides?.feedback_obtained ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    progress_documented: overrides?.progress_documented ?? true,
-    goals_reviewed: overrides?.goals_reviewed ?? true,
-    staff_briefed: overrides?.staff_briefed ?? true,
-    follow_up_actions: overrides?.follow_up_actions ?? true,
-    child_debriefed: overrides?.child_debriefed ?? true,
-    multi_agency_liaison: overrides?.multi_agency_liaison ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    session_duration_minutes: overrides?.session_duration_minutes ?? 45,
+    therapist_name: "Dr Smith",
+    child_prepared: true,
+    transport_arranged: true,
+    consent_current: true,
+    feedback_obtained: true,
+    care_plan_updated: true,
+    social_worker_informed: true,
+    progress_documented: true,
+    goals_reviewed: true,
+    staff_briefed: true,
+    follow_up_actions: true,
+    child_debriefed: true,
+    multi_agency_liaison: true,
+    issues_found: [], actions_taken: [],
+    session_duration_minutes: 45,
     next_session_date: "next_session_date" in (overrides ?? {}) ? (overrides!.next_session_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -131,5 +134,22 @@ describe("childrens-therapy-sessions-service", () => {
       expect(types).toContain("care_plan_not_updated");
       expect(types).toContain("goals_not_reviewed");
     });
+  });
+});
+
+// ── Tri-state: refusal with unrecorded consent alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded consent as a gap", () => {
+    const alerts = _testing.identifyChildrensTherapyAlerts([
+      makeRecord({ child_engagement: "refused", consent_current: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "refused_no_consent");
+    expect(a?.message).toMatch(/no consent status recorded/i);
+  });
+  it("still asserts a recorded lapse", () => {
+    const alerts = _testing.identifyChildrensTherapyAlerts([
+      makeRecord({ child_engagement: "refused", consent_current: false }),
+    ]);
+    expect(alerts.some((x) => /consent not current/i.test(x.message))).toBe(true);
   });
 });

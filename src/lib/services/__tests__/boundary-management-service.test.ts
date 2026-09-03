@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<BoundaryManagementRecord>): BoundaryManagementRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    boundary_type: overrides?.boundary_type ?? "house_rules",
-    child_response: overrides?.child_response ?? "accepted",
-    staff_approach: overrides?.staff_approach ?? "calm_explanation",
-    consistency_rating: overrides?.consistency_rating ?? "fully_consistent",
-    incident_date: overrides?.incident_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    boundary_type: "house_rules",
+    child_response: "accepted",
+    staff_approach: "calm_explanation",
+    consistency_rating: "fully_consistent",
+    incident_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    staff_name: overrides?.staff_name ?? "Staff A",
-    boundary_explained: overrides?.boundary_explained ?? true,
-    age_appropriate: overrides?.age_appropriate ?? true,
-    child_voice_heard: overrides?.child_voice_heard ?? true,
-    trauma_informed: overrides?.trauma_informed ?? true,
-    care_plan_consistent: overrides?.care_plan_consistent ?? true,
-    relationship_maintained: overrides?.relationship_maintained ?? true,
-    de_escalation_used: overrides?.de_escalation_used ?? true,
-    restorative_offered: overrides?.restorative_offered ?? true,
-    learning_identified: overrides?.learning_identified ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    recorded_by: overrides?.recorded_by ?? "Manager A",
+    staff_name: "Staff A",
+    boundary_explained: true,
+    age_appropriate: true,
+    child_voice_heard: true,
+    trauma_informed: true,
+    care_plan_consistent: true,
+    relationship_maintained: true,
+    de_escalation_used: true,
+    restorative_offered: true,
+    learning_identified: true,
+    parent_informed: true,
+    social_worker_informed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    recorded_by: "Manager A",
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -120,5 +123,21 @@ describe("boundary-management-service", () => {
       expect(types).toContain("inconsistent_boundaries");
       expect(types).toContain("no_restorative");
     });
+  });
+});
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded trauma_informed as a failure", () => {
+    const alerts = _testing.identifyBoundaryManagementAlerts([
+      makeRecord({ trauma_informed: null }), makeRecord({ id: "r-2", trauma_informed: null }),
+    ]);
+    expect(alerts.some((a) => a.type === "not_trauma_informed")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyBoundaryManagementAlerts([
+      makeRecord({ trauma_informed: false }), makeRecord({ id: "r-2", trauma_informed: false }),
+    ]);
+    expect(alerts.some((a) => a.type === "not_trauma_informed")).toBe(true);
   });
 });

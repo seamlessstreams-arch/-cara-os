@@ -70,18 +70,20 @@ export interface HomeDecorationPersonalisationRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_chose: boolean;
-  child_involved_planning: boolean;
-  reflects_identity: boolean;
-  culturally_appropriate: boolean;
-  sensory_needs_met: boolean;
-  age_appropriate: boolean;
-  safety_checked: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_chose: boolean | null;
+  child_involved_planning: boolean | null;
+  reflects_identity: boolean | null;
+  culturally_appropriate: boolean | null;
+  sensory_needs_met: boolean | null;
+  age_appropriate: boolean | null;
+  safety_checked: boolean | null;
   photographs_taken: boolean;
   social_worker_informed: boolean;
   budget_discussed: boolean;
-  child_satisfied: boolean;
-  regularly_updated: boolean;
+  child_satisfied: boolean | null;
+  regularly_updated: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   budget_amount: number | null;
@@ -227,18 +229,22 @@ export function identifyHomeDecorationAlerts(
 
   // Dissatisfied child with no choice
   for (const r of records) {
-    if ((r.satisfaction_level === "dissatisfied" || r.satisfaction_level === "very_dissatisfied") && !r.child_chose) {
+    // A dissatisfied child with choice UNRECORDED must not be reported as
+    // having "had no choice" — that asserts a voice failure nobody recorded.
+    if ((r.satisfaction_level === "dissatisfied" || r.satisfaction_level === "very_dissatisfied") && r.child_chose !== true) {
       alerts.push({
         type: "dissatisfied_no_choice",
         severity: "critical",
-        message: `${r.child_name} dissatisfied with ${r.personalisation_type.replace(/_/g, " ")} and had no choice — address immediately`,
+        message: r.child_chose === false
+          ? `${r.child_name} dissatisfied with ${r.personalisation_type.replace(/_/g, " ")} and had no choice — address immediately`
+          : `${r.child_name} dissatisfied with ${r.personalisation_type.replace(/_/g, " ")} and whether they chose is not recorded — establish and evidence now`,
         id: r.id,
       });
     }
   }
 
   // Not reflecting identity
-  const noIdentity = records.filter((r) => !r.reflects_identity).length;
+  const noIdentity = records.filter((r) => r.reflects_identity === false).length;
   if (noIdentity >= 1) {
     alerts.push({
       type: "not_reflecting_identity",
@@ -249,7 +255,7 @@ export function identifyHomeDecorationAlerts(
   }
 
   // Safety not checked
-  const noSafety = records.filter((r) => !r.safety_checked).length;
+  const noSafety = records.filter((r) => r.safety_checked === false).length;
   if (noSafety >= 1) {
     alerts.push({
       type: "safety_not_checked",
@@ -260,7 +266,7 @@ export function identifyHomeDecorationAlerts(
   }
 
   // Not culturally appropriate
-  const noCultural = records.filter((r) => !r.culturally_appropriate).length;
+  const noCultural = records.filter((r) => r.culturally_appropriate === false).length;
   if (noCultural >= 2) {
     alerts.push({
       type: "not_culturally_appropriate",
@@ -271,7 +277,7 @@ export function identifyHomeDecorationAlerts(
   }
 
   // Not regularly updated
-  const notUpdated = records.filter((r) => !r.regularly_updated).length;
+  const notUpdated = records.filter((r) => r.regularly_updated === false).length;
   if (notUpdated >= 3) {
     alerts.push({
       type: "not_regularly_updated",
@@ -359,18 +365,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_chose: payload.childChose ?? true,
-      child_involved_planning: payload.childInvolvedPlanning ?? true,
-      reflects_identity: payload.reflectsIdentity ?? true,
-      culturally_appropriate: payload.culturallyAppropriate ?? true,
-      sensory_needs_met: payload.sensoryNeedsMet ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      safety_checked: payload.safetyChecked ?? true,
+      child_chose: payload.childChose ?? null,
+      child_involved_planning: payload.childInvolvedPlanning ?? null,
+      reflects_identity: payload.reflectsIdentity ?? null,
+      culturally_appropriate: payload.culturallyAppropriate ?? null,
+      sensory_needs_met: payload.sensoryNeedsMet ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      safety_checked: payload.safetyChecked ?? null,
       photographs_taken: payload.photographsTaken ?? false,
       social_worker_informed: payload.socialWorkerInformed ?? false,
       budget_discussed: payload.budgetDiscussed ?? false,
-      child_satisfied: payload.childSatisfied ?? true,
-      regularly_updated: payload.regularlyUpdated ?? true,
+      child_satisfied: payload.childSatisfied ?? null,
+      regularly_updated: payload.regularlyUpdated ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       budget_amount: payload.budgetAmount ?? null,

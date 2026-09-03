@@ -70,17 +70,19 @@ export interface ChildrensTherapySessionRecord {
   child_name: string;
   child_id: string | null;
   therapist_name: string;
-  child_prepared: boolean;
-  transport_arranged: boolean;
-  consent_current: boolean;
-  feedback_obtained: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_prepared: boolean | null;
+  transport_arranged: boolean | null;
+  consent_current: boolean | null;
+  feedback_obtained: boolean | null;
   care_plan_updated: boolean;
-  social_worker_informed: boolean;
-  progress_documented: boolean;
-  goals_reviewed: boolean;
-  staff_briefed: boolean;
-  follow_up_actions: boolean;
-  child_debriefed: boolean;
+  social_worker_informed: boolean | null;
+  progress_documented: boolean | null;
+  goals_reviewed: boolean | null;
+  staff_briefed: boolean | null;
+  follow_up_actions: boolean | null;
+  child_debriefed: boolean | null;
   multi_agency_liaison: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -233,18 +235,22 @@ export function identifyChildrensTherapyAlerts(
 
   // Refused session with no consent
   for (const r of records) {
-    if (r.child_engagement === "refused" && !r.consent_current) {
+    // A refusal with consent status UNRECORDED is itself the critical gap —
+    // worded as a gap, not an asserted lapse.
+    if (r.child_engagement === "refused" && r.consent_current !== true) {
       alerts.push({
         type: "refused_no_consent",
         severity: "critical",
-        message: `${r.child_name} refused ${r.therapy_type.replace(/_/g, " ")} on ${r.session_date} and consent not current — review therapeutic plan`,
+        message: r.consent_current === false
+          ? `${r.child_name} refused ${r.therapy_type.replace(/_/g, " ")} on ${r.session_date} and consent not current — review therapeutic plan`
+          : `${r.child_name} refused ${r.therapy_type.replace(/_/g, " ")} on ${r.session_date} with no consent status recorded — verify and evidence now`,
         id: r.id,
       });
     }
   }
 
   // Progress not documented
-  const noProgress = records.filter((r) => !r.progress_documented).length;
+  const noProgress = records.filter((r) => r.progress_documented === false).length;
   if (noProgress >= 1) {
     alerts.push({
       type: "progress_not_documented",
@@ -255,7 +261,7 @@ export function identifyChildrensTherapyAlerts(
   }
 
   // Child not debriefed
-  const noDebrief = records.filter((r) => !r.child_debriefed).length;
+  const noDebrief = records.filter((r) => r.child_debriefed === false).length;
   if (noDebrief >= 1) {
     alerts.push({
       type: "child_not_debriefed",
@@ -277,7 +283,7 @@ export function identifyChildrensTherapyAlerts(
   }
 
   // Goals not reviewed
-  const noGoals = records.filter((r) => !r.goals_reviewed).length;
+  const noGoals = records.filter((r) => r.goals_reviewed === false).length;
   if (noGoals >= 3) {
     alerts.push({
       type: "goals_not_reviewed",
@@ -365,17 +371,17 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       therapist_name: payload.therapistName,
-      child_prepared: payload.childPrepared ?? true,
-      transport_arranged: payload.transportArranged ?? true,
-      consent_current: payload.consentCurrent ?? true,
-      feedback_obtained: payload.feedbackObtained ?? true,
+      child_prepared: payload.childPrepared ?? null,
+      transport_arranged: payload.transportArranged ?? null,
+      consent_current: payload.consentCurrent ?? null,
+      feedback_obtained: payload.feedbackObtained ?? null,
       care_plan_updated: payload.carePlanUpdated ?? false,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      progress_documented: payload.progressDocumented ?? true,
-      goals_reviewed: payload.goalsReviewed ?? true,
-      staff_briefed: payload.staffBriefed ?? true,
-      follow_up_actions: payload.followUpActions ?? true,
-      child_debriefed: payload.childDebriefed ?? true,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      progress_documented: payload.progressDocumented ?? null,
+      goals_reviewed: payload.goalsReviewed ?? null,
+      staff_briefed: payload.staffBriefed ?? null,
+      follow_up_actions: payload.followUpActions ?? null,
+      child_debriefed: payload.childDebriefed ?? null,
       multi_agency_liaison: payload.multiAgencyLiaison ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
