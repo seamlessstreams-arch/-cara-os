@@ -67,18 +67,18 @@ export interface FinancialLiteracySavingsRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  age_appropriate: boolean;
-  practical_exercise: boolean;
-  real_money_used: boolean;
-  savings_account_active: boolean;
-  budget_created: boolean;
-  targets_set: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  pathway_plan_updated: boolean;
-  resources_provided: boolean;
-  recorded_promptly: boolean;
+  age_appropriate: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  practical_exercise: boolean | null;
+  real_money_used: boolean | null;
+  savings_account_active: boolean | null;
+  budget_created: boolean | null;
+  targets_set: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  pathway_plan_updated: boolean | null;
+  resources_provided: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeFinancialLiteracyMetrics(
   const noSavings = records.filter((r) => r.saving_progress === "no_savings").length;
   const inDebt = records.filter((r) => r.saving_progress === "in_debt").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof FinancialLiteracySavingsRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyFinancialLiteracyAlerts(
   }
 
   // No savings account
-  const noAccount = records.filter((r) => !r.savings_account_active).length;
+  const noAccount = records.filter((r) => r.savings_account_active !== true).length;
   if (noAccount >= 1) {
     alerts.push({
       type: "no_savings_account",
       severity: "high",
-      message: `${noAccount} ${noAccount === 1 ? "session has" : "sessions have"} no active savings account — all children should have savings`,
+      message: `${noAccount} ${noAccount === 1 ? "session has" : "sessions have"} no active savings account evidenced — all children should have savings`,
       id: "no_savings_account",
     });
   }
 
   // No pathway plan
-  const noPathway = records.filter((r) => !r.pathway_plan_updated).length;
+  const noPathway = records.filter((r) => r.pathway_plan_updated !== true).length;
   if (noPathway >= 1) {
     alerts.push({
       type: "no_pathway_plan",
       severity: "high",
-      message: `${noPathway} ${noPathway === 1 ? "session has" : "sessions have"} pathway plan not updated — financial skills must inform transition`,
+      message: `${noPathway} ${noPathway === 1 ? "session has" : "sessions have"} no pathway-plan update evidenced — financial skills must inform transition`,
       id: "no_pathway_plan",
     });
   }
 
   // No practical exercise
-  const noPractical = records.filter((r) => !r.practical_exercise).length;
+  const noPractical = records.filter((r) => r.practical_exercise !== true).length;
   if (noPractical >= 2) {
     alerts.push({
       type: "no_practical_exercise",
       severity: "medium",
-      message: `${noPractical} sessions without practical exercise — hands-on learning essential`,
+      message: `${noPractical} sessions without an evidenced practical exercise — hands-on learning essential`,
       id: "no_practical_exercise",
     });
   }
 
   // No budget created
-  const noBudget = records.filter((r) => !r.budget_created).length;
+  const noBudget = records.filter((r) => r.budget_created !== true).length;
   if (noBudget >= 2) {
     alerts.push({
       type: "no_budget_created",
       severity: "medium",
-      message: `${noBudget} sessions without budget created — budgeting is foundational`,
+      message: `${noBudget} sessions without an evidenced budget — budgeting is foundational`,
       id: "no_budget_created",
     });
   }
@@ -338,13 +344,13 @@ export async function createRecord(payload: {
       home_id: payload.homeId, topic_area: payload.topicArea, understanding_level: payload.understandingLevel,
       engagement_quality: payload.engagementQuality, saving_progress: payload.savingProgress,
       session_date: payload.sessionDate, child_name: payload.childName, child_id: payload.childId ?? null,
-      supported_by: payload.supportedBy, age_appropriate: payload.ageAppropriate ?? true,
-      practical_exercise: payload.practicalExercise ?? true, real_money_used: payload.realMoneyUsed ?? true,
-      savings_account_active: payload.savingsAccountActive ?? true, budget_created: payload.budgetCreated ?? true,
-      targets_set: payload.targetsSet ?? true, care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true, parent_informed: payload.parentInformed ?? true,
-      pathway_plan_updated: payload.pathwayPlanUpdated ?? true, resources_provided: payload.resourcesProvided ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true, issues_found: payload.issuesFound ?? [],
+      supported_by: payload.supportedBy, age_appropriate: payload.ageAppropriate ?? null,
+      practical_exercise: payload.practicalExercise ?? null, real_money_used: payload.realMoneyUsed ?? null,
+      savings_account_active: payload.savingsAccountActive ?? null, budget_created: payload.budgetCreated ?? null,
+      targets_set: payload.targetsSet ?? null, care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null, parent_informed: payload.parentInformed ?? null,
+      pathway_plan_updated: payload.pathwayPlanUpdated ?? null, resources_provided: payload.resourcesProvided ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null, issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [], next_review_date: payload.nextReviewDate ?? null, notes: payload.notes ?? null,
     }).select().single();
   if (error) return { ok: false, error: error.message };
