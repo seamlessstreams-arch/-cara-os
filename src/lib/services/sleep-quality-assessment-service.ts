@@ -75,18 +75,18 @@ export interface SleepQualityAssessmentRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  bedtime_consistent: boolean;
-  wake_time_consistent: boolean;
-  room_comfortable: boolean;
-  temperature_appropriate: boolean;
-  noise_minimised: boolean;
-  screen_free_before_bed: boolean;
-  relaxation_supported: boolean;
-  child_preferences_met: boolean;
+  bedtime_consistent: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  wake_time_consistent: boolean | null;
+  room_comfortable: boolean | null;
+  temperature_appropriate: boolean | null;
+  noise_minimised: boolean | null;
+  screen_free_before_bed: boolean | null;
+  relaxation_supported: boolean | null;
+  child_preferences_met: boolean | null;
   gp_referral_considered: boolean;
-  sleep_plan_in_place: boolean;
-  care_plan_linked: boolean;
-  recorded_promptly: boolean;
+  sleep_plan_in_place: boolean | null;
+  care_plan_linked: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   sleep_hours: number;
@@ -180,10 +180,16 @@ export function computeSleepQualityMetrics(
   const unsuitableEnv = records.filter((r) => r.sleep_environment === "unsuitable").length;
   const continuousDisturbance = records.filter((r) => r.waking_frequency === "continuous_disturbance").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof SleepQualityAssessmentRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -268,12 +274,12 @@ export function identifySleepQualityAlerts(
   }
 
   // No sleep plan in place
-  const noSleepPlan = records.filter((r) => !r.sleep_plan_in_place).length;
+  const noSleepPlan = records.filter((r) => r.sleep_plan_in_place !== true).length;
   if (noSleepPlan >= 1) {
     alerts.push({
       type: "no_sleep_plan",
       severity: "high",
-      message: `${noSleepPlan} ${noSleepPlan === 1 ? "child has" : "children have"} no sleep plan in place — develop individualised sleep plans`,
+      message: `${noSleepPlan} ${noSleepPlan === 1 ? "child has" : "children have"} no sleep plan evidenced — develop individualised sleep plans`,
       id: "no_sleep_plan",
     });
   }
@@ -290,23 +296,23 @@ export function identifySleepQualityAlerts(
   }
 
   // Screen not free before bed
-  const noScreenFree = records.filter((r) => !r.screen_free_before_bed).length;
+  const noScreenFree = records.filter((r) => r.screen_free_before_bed !== true).length;
   if (noScreenFree >= 2) {
     alerts.push({
       type: "screens_before_bed",
       severity: "medium",
-      message: `${noScreenFree} assessments show screens not removed before bed — review screen time boundaries`,
+      message: `${noScreenFree} assessments without evidenced screen-free time before bed — review screen time boundaries`,
       id: "screens_before_bed",
     });
   }
 
   // Room not comfortable
-  const notComfortable = records.filter((r) => !r.room_comfortable).length;
+  const notComfortable = records.filter((r) => r.room_comfortable !== true).length;
   if (notComfortable >= 2) {
     alerts.push({
       type: "room_not_comfortable",
       severity: "medium",
-      message: `${notComfortable} assessments show rooms not comfortable — review bedroom environments`,
+      message: `${notComfortable} assessments without evidenced comfortable rooms — review bedroom environments`,
       id: "room_not_comfortable",
     });
   }
@@ -393,18 +399,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      bedtime_consistent: payload.bedtimeConsistent ?? true,
-      wake_time_consistent: payload.wakeTimeConsistent ?? true,
-      room_comfortable: payload.roomComfortable ?? true,
-      temperature_appropriate: payload.temperatureAppropriate ?? true,
-      noise_minimised: payload.noiseMinimised ?? true,
-      screen_free_before_bed: payload.screenFreeBeforeBed ?? true,
-      relaxation_supported: payload.relaxationSupported ?? true,
-      child_preferences_met: payload.childPreferencesMet ?? true,
+      bedtime_consistent: payload.bedtimeConsistent ?? null,
+      wake_time_consistent: payload.wakeTimeConsistent ?? null,
+      room_comfortable: payload.roomComfortable ?? null,
+      temperature_appropriate: payload.temperatureAppropriate ?? null,
+      noise_minimised: payload.noiseMinimised ?? null,
+      screen_free_before_bed: payload.screenFreeBeforeBed ?? null,
+      relaxation_supported: payload.relaxationSupported ?? null,
+      child_preferences_met: payload.childPreferencesMet ?? null,
       gp_referral_considered: payload.gpReferralConsidered ?? false,
-      sleep_plan_in_place: payload.sleepPlanInPlace ?? true,
-      care_plan_linked: payload.carePlanLinked ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      sleep_plan_in_place: payload.sleepPlanInPlace ?? null,
+      care_plan_linked: payload.carePlanLinked ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       sleep_hours: payload.sleepHours,

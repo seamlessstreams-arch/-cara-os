@@ -62,18 +62,18 @@ export interface RoomSharingAssessmentRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_consent_obtained: boolean;
-  child_views_sought: boolean;
-  safeguarding_check_done: boolean;
-  risk_assessment_current: boolean;
-  age_appropriate: boolean;
-  gender_appropriate: boolean;
-  behaviour_history_considered: boolean;
-  social_worker_consulted: boolean;
+  child_consent_obtained: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_views_sought: boolean | null;
+  safeguarding_check_done: boolean | null;
+  risk_assessment_current: boolean | null;
+  age_appropriate: boolean | null;
+  gender_appropriate: boolean | null;
+  behaviour_history_considered: boolean | null;
+  social_worker_consulted: boolean | null;
   parent_informed: boolean;
-  care_plan_reflects: boolean;
-  privacy_maintained: boolean;
-  recorded_promptly: boolean;
+  care_plan_reflects: boolean | null;
+  privacy_maintained: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -149,10 +149,16 @@ export function computeRoomSharingMetrics(
   const unacceptableRisk = records.filter((r) => r.room_risk_level === "unacceptable").length;
   const emergencySharing = records.filter((r) => r.sharing_arrangement === "emergency_sharing").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof RoomSharingAssessmentRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -213,56 +219,58 @@ export function identifyRoomSharingAlerts(
 
   // Unacceptable risk or incompatible without safeguarding check
   for (const r of records) {
-    if (r.room_risk_level === "unacceptable" && !r.safeguarding_check_done) {
+    if (r.room_risk_level === "unacceptable" && r.safeguarding_check_done !== true) {
       alerts.push({
         type: "unacceptable_no_safeguarding",
         severity: "critical",
-        message: `${r.child_name} has unacceptable room sharing risk without safeguarding check — immediate review required`,
+        message: r.safeguarding_check_done === false
+          ? `${r.child_name} has unacceptable room sharing risk without safeguarding check — immediate review required`
+          : `${r.child_name} has unacceptable room sharing risk with no safeguarding check recorded — complete and evidence the check immediately`,
         id: r.id,
       });
     }
   }
 
   // No child consent
-  const noConsent = records.filter((r) => !r.child_consent_obtained && r.sharing_arrangement !== "single_room").length;
+  const noConsent = records.filter((r) => r.child_consent_obtained !== true && r.sharing_arrangement !== "single_room").length;
   if (noConsent >= 1) {
     alerts.push({
       type: "no_child_consent",
       severity: "high",
-      message: `${noConsent} room sharing ${noConsent === 1 ? "arrangement has" : "arrangements have"} no child consent obtained — ensure participation`,
+      message: `${noConsent} room sharing ${noConsent === 1 ? "arrangement has" : "arrangements have"} no child consent evidenced — ensure participation`,
       id: "no_child_consent",
     });
   }
 
   // Risk assessment not current
-  const noRiskAssessment = records.filter((r) => !r.risk_assessment_current).length;
+  const noRiskAssessment = records.filter((r) => r.risk_assessment_current !== true).length;
   if (noRiskAssessment >= 1) {
     alerts.push({
       type: "risk_assessment_outdated",
       severity: "high",
-      message: `${noRiskAssessment} ${noRiskAssessment === 1 ? "assessment has" : "assessments have"} risk assessment not current — update assessments`,
+      message: `${noRiskAssessment} ${noRiskAssessment === 1 ? "assessment has" : "assessments have"} no current risk assessment evidenced — update assessments`,
       id: "risk_assessment_outdated",
     });
   }
 
   // Privacy not maintained
-  const noPrivacy = records.filter((r) => !r.privacy_maintained).length;
+  const noPrivacy = records.filter((r) => r.privacy_maintained !== true).length;
   if (noPrivacy >= 2) {
     alerts.push({
       type: "privacy_not_maintained",
       severity: "medium",
-      message: `${noPrivacy} assessments show privacy not maintained — review room arrangements`,
+      message: `${noPrivacy} assessments without evidenced privacy — review room arrangements`,
       id: "privacy_not_maintained",
     });
   }
 
   // Behaviour history not considered
-  const noBehaviour = records.filter((r) => !r.behaviour_history_considered).length;
+  const noBehaviour = records.filter((r) => r.behaviour_history_considered !== true).length;
   if (noBehaviour >= 2) {
     alerts.push({
       type: "behaviour_not_considered",
       severity: "medium",
-      message: `${noBehaviour} assessments without behaviour history considered — strengthen risk assessment`,
+      message: `${noBehaviour} assessments without evidenced behaviour-history consideration — strengthen risk assessment`,
       id: "behaviour_not_considered",
     });
   }
@@ -344,18 +352,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_consent_obtained: payload.childConsentObtained ?? true,
-      child_views_sought: payload.childViewsSought ?? true,
-      safeguarding_check_done: payload.safeguardingCheckDone ?? true,
-      risk_assessment_current: payload.riskAssessmentCurrent ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      gender_appropriate: payload.genderAppropriate ?? true,
-      behaviour_history_considered: payload.behaviourHistoryConsidered ?? true,
-      social_worker_consulted: payload.socialWorkerConsulted ?? true,
+      child_consent_obtained: payload.childConsentObtained ?? null,
+      child_views_sought: payload.childViewsSought ?? null,
+      safeguarding_check_done: payload.safeguardingCheckDone ?? null,
+      risk_assessment_current: payload.riskAssessmentCurrent ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      gender_appropriate: payload.genderAppropriate ?? null,
+      behaviour_history_considered: payload.behaviourHistoryConsidered ?? null,
+      social_worker_consulted: payload.socialWorkerConsulted ?? null,
       parent_informed: payload.parentInformed ?? false,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      privacy_maintained: payload.privacyMaintained ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      privacy_maintained: payload.privacyMaintained ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
