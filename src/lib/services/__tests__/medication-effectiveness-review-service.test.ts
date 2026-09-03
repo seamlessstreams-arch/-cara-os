@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationEffectivenessReviewRecord>): MedicationEffectivenessReviewRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    medication_category: overrides?.medication_category ?? "other",
-    effectiveness_rating: overrides?.effectiveness_rating ?? "effective",
-    adherence_level: overrides?.adherence_level ?? "full_adherence",
-    review_compliance: overrides?.review_compliance ?? "fully_compliant",
-    review_date: overrides?.review_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    medication_category: "other",
+    effectiveness_rating: "effective",
+    adherence_level: "full_adherence",
+    review_compliance: "fully_compliant",
+    review_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    reviewed_by: overrides?.reviewed_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    side_effects_monitored: overrides?.side_effects_monitored ?? true,
-    prescriber_consulted: overrides?.prescriber_consulted ?? true,
-    gp_informed: overrides?.gp_informed ?? true,
-    dosage_appropriate: overrides?.dosage_appropriate ?? true,
-    consent_current: overrides?.consent_current ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    school_aware: overrides?.school_aware ?? true,
-    storage_compliant: overrides?.storage_compliant ?? true,
-    administration_correct: overrides?.administration_correct ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    reviewed_by: "Staff A",
+    child_views_sought: true,
+    side_effects_monitored: true,
+    prescriber_consulted: true,
+    gp_informed: true,
+    dosage_appropriate: true,
+    consent_current: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    school_aware: true,
+    storage_compliant: true,
+    administration_correct: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,22 @@ describe("medication-effectiveness-review-service", () => {
       expect(types).toContain("storage_not_compliant");
       expect(types).toContain("administration_issues");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded side-effect monitoring in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: null })]);
+    const alert = alerts.find((a) => a.type === "side_effects_not_monitored");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no monitoring gap when it is recorded as done", () => {
+    const alerts = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: true })]);
+    expect(alerts.some((a) => a.type === "side_effects_not_monitored")).toBe(false);
+  });
+  it("does not dilute the side-effects rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, side_effects_monitored: v }));
+    expect(computeMedicationEffectivenessMetrics(rows).side_effects_rate).toBe(100);
   });
 });

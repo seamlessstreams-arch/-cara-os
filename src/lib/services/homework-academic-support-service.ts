@@ -67,18 +67,18 @@ export interface HomeworkAcademicSupportRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  homework_completed: boolean;
-  quiet_space_provided: boolean;
-  resources_available: boolean;
-  school_liaison_made: boolean;
-  learning_needs_met: boolean;
-  positive_encouragement: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  pep_updated: boolean;
-  attendance_checked: boolean;
-  recorded_promptly: boolean;
+  homework_completed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  quiet_space_provided: boolean | null;
+  resources_available: boolean | null;
+  school_liaison_made: boolean | null;
+  learning_needs_met: boolean | null;
+  positive_encouragement: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  pep_updated: boolean | null;
+  attendance_checked: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeHomeworkAcademicMetrics(
   const noProgress = records.filter((r) => r.progress_outcome === "no_progress").length;
   const regression = records.filter((r) => r.progress_outcome === "regression").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof HomeworkAcademicSupportRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyHomeworkAcademicAlerts(
   }
 
   // No school liaison
-  const noLiaison = records.filter((r) => !r.school_liaison_made).length;
+  const noLiaison = records.filter((r) => r.school_liaison_made !== true).length;
   if (noLiaison >= 1) {
     alerts.push({
       type: "no_school_liaison",
       severity: "high",
-      message: `${noLiaison} ${noLiaison === 1 ? "session has" : "sessions have"} no school liaison — ensure joined-up educational support`,
+      message: `${noLiaison} ${noLiaison === 1 ? "session has" : "sessions have"} no school liaison evidenced — ensure joined-up educational support`,
       id: "no_school_liaison",
     });
   }
 
   // PEP not updated
-  const noPep = records.filter((r) => !r.pep_updated).length;
+  const noPep = records.filter((r) => r.pep_updated !== true).length;
   if (noPep >= 1) {
     alerts.push({
       type: "pep_not_updated",
       severity: "high",
-      message: `${noPep} ${noPep === 1 ? "session has" : "sessions have"} PEP not updated — Personal Education Plan must reflect progress`,
+      message: `${noPep} ${noPep === 1 ? "session has" : "sessions have"} no PEP update evidenced — Personal Education Plan must reflect progress`,
       id: "pep_not_updated",
     });
   }
 
   // No quiet space
-  const noSpace = records.filter((r) => !r.quiet_space_provided).length;
+  const noSpace = records.filter((r) => r.quiet_space_provided !== true).length;
   if (noSpace >= 2) {
     alerts.push({
       type: "no_quiet_space",
       severity: "medium",
-      message: `${noSpace} sessions without quiet study space — ensure suitable learning environment`,
+      message: `${noSpace} sessions without evidenced quiet study space — ensure suitable learning environment`,
       id: "no_quiet_space",
     });
   }
 
   // No resources
-  const noResources = records.filter((r) => !r.resources_available).length;
+  const noResources = records.filter((r) => r.resources_available !== true).length;
   if (noResources >= 2) {
     alerts.push({
       type: "no_resources",
       severity: "medium",
-      message: `${noResources} sessions without adequate resources — review learning material provision`,
+      message: `${noResources} sessions without evidenced adequate resources — review learning material provision`,
       id: "no_resources",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      homework_completed: payload.homeworkCompleted ?? true,
-      quiet_space_provided: payload.quietSpaceProvided ?? true,
-      resources_available: payload.resourcesAvailable ?? true,
-      school_liaison_made: payload.schoolLiaisonMade ?? true,
-      learning_needs_met: payload.learningNeedsMet ?? true,
-      positive_encouragement: payload.positiveEncouragement ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      pep_updated: payload.pepUpdated ?? true,
-      attendance_checked: payload.attendanceChecked ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      homework_completed: payload.homeworkCompleted ?? null,
+      quiet_space_provided: payload.quietSpaceProvided ?? null,
+      resources_available: payload.resourcesAvailable ?? null,
+      school_liaison_made: payload.schoolLiaisonMade ?? null,
+      learning_needs_met: payload.learningNeedsMet ?? null,
+      positive_encouragement: payload.positiveEncouragement ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      pep_updated: payload.pepUpdated ?? null,
+      attendance_checked: payload.attendanceChecked ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
