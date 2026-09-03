@@ -83,9 +83,11 @@ export interface StaffHandoverNotesRecord {
   acknowledged_by_incoming: boolean;
   manager_informed: boolean;
   time_sensitive: boolean;
-  verbal_handover_given: boolean;
-  written_record_complete: boolean;
-  risk_related: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  verbal_handover_given: boolean | null;
+  written_record_complete: boolean | null;
+  risk_related: boolean | null;
   social_worker_update: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -273,7 +275,7 @@ export function identifyStaffHandoverNotesAlerts(
   }
 
   // Written record not complete
-  const noWritten = records.filter((r) => !r.written_record_complete).length;
+  const noWritten = records.filter((r) => r.written_record_complete === false).length;
   if (noWritten >= 2) {
     alerts.push({
       type: "no_written_record",
@@ -284,7 +286,7 @@ export function identifyStaffHandoverNotesAlerts(
   }
 
   // No verbal handover
-  const noVerbal = records.filter((r) => !r.verbal_handover_given).length;
+  const noVerbal = records.filter((r) => r.verbal_handover_given === false).length;
   if (noVerbal >= 3) {
     alerts.push({
       type: "no_verbal_handover",
@@ -379,9 +381,9 @@ export async function createRecord(
       acknowledged_by_incoming: payload.acknowledgedByIncoming ?? false,
       manager_informed: payload.managerInformed ?? false,
       time_sensitive: payload.timeSensitive ?? false,
-      verbal_handover_given: payload.verbalHandoverGiven ?? true,
-      written_record_complete: payload.writtenRecordComplete ?? true,
-      risk_related: payload.riskRelated ?? false,
+      verbal_handover_given: payload.verbalHandoverGiven ?? null,
+      written_record_complete: payload.writtenRecordComplete ?? null,
+      risk_related: payload.riskRelated ?? null,
       social_worker_update: payload.socialWorkerUpdate ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

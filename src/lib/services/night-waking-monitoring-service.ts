@@ -76,18 +76,20 @@ export interface NightWakingMonitoringRecord {
   child_name: string;
   child_id: string | null;
   staff_on_duty: string;
-  child_comforted: boolean;
-  environment_checked: boolean;
-  temperature_appropriate: boolean;
-  drink_offered: boolean;
-  night_light_available: boolean;
-  door_preference_respected: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_comforted: boolean | null;
+  environment_checked: boolean | null;
+  temperature_appropriate: boolean | null;
+  drink_offered: boolean | null;
+  night_light_available: boolean | null;
+  door_preference_respected: boolean | null;
   gp_referral_considered: boolean;
-  sleep_plan_followed: boolean;
+  sleep_plan_followed: boolean | null;
   pattern_identified: boolean;
   parent_informed: boolean;
   social_worker_informed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   waking_duration_minutes: number;
@@ -244,18 +246,22 @@ export function identifyNightWakingAlerts(
 
   // Distressed child not comforted
   for (const r of records) {
-    if ((r.child_emotional_state === "distressed" || r.child_emotional_state === "angry") && !r.child_comforted) {
+    // A distressed child with the comfort response UNRECORDED must surface as
+    // exactly that — never as "was not comforted", an assertion nobody made.
+    if ((r.child_emotional_state === "distressed" || r.child_emotional_state === "angry") && r.child_comforted !== true) {
       alerts.push({
         type: "distressed_not_comforted",
         severity: "critical",
-        message: `${r.child_name} was ${r.child_emotional_state} during night waking on ${r.waking_date} and was not comforted — review night care practice`,
+        message: r.child_comforted === false
+          ? `${r.child_name} was ${r.child_emotional_state} during night waking on ${r.waking_date} and was not comforted — review night care practice`
+          : `${r.child_name} was ${r.child_emotional_state} during night waking on ${r.waking_date} with no comfort response recorded — evidence the response now`,
         id: r.id,
       });
     }
   }
 
   // Sleep plan not followed
-  const noSleepPlan = records.filter((r) => !r.sleep_plan_followed).length;
+  const noSleepPlan = records.filter((r) => r.sleep_plan_followed === false).length;
   if (noSleepPlan >= 1) {
     alerts.push({
       type: "sleep_plan_not_followed",
@@ -266,7 +272,7 @@ export function identifyNightWakingAlerts(
   }
 
   // Not recorded promptly
-  const notRecorded = records.filter((r) => !r.recorded_promptly).length;
+  const notRecorded = records.filter((r) => r.recorded_promptly === false).length;
   if (notRecorded >= 1) {
     alerts.push({
       type: "not_recorded_promptly",
@@ -277,7 +283,7 @@ export function identifyNightWakingAlerts(
   }
 
   // Environment not checked
-  const noEnvCheck = records.filter((r) => !r.environment_checked).length;
+  const noEnvCheck = records.filter((r) => r.environment_checked === false).length;
   if (noEnvCheck >= 2) {
     alerts.push({
       type: "environment_not_checked",
@@ -378,18 +384,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_on_duty: payload.staffOnDuty,
-      child_comforted: payload.childComforted ?? true,
-      environment_checked: payload.environmentChecked ?? true,
-      temperature_appropriate: payload.temperatureAppropriate ?? true,
-      drink_offered: payload.drinkOffered ?? true,
-      night_light_available: payload.nightLightAvailable ?? true,
-      door_preference_respected: payload.doorPreferenceRespected ?? true,
+      child_comforted: payload.childComforted ?? null,
+      environment_checked: payload.environmentChecked ?? null,
+      temperature_appropriate: payload.temperatureAppropriate ?? null,
+      drink_offered: payload.drinkOffered ?? null,
+      night_light_available: payload.nightLightAvailable ?? null,
+      door_preference_respected: payload.doorPreferenceRespected ?? null,
       gp_referral_considered: payload.gpReferralConsidered ?? false,
-      sleep_plan_followed: payload.sleepPlanFollowed ?? true,
+      sleep_plan_followed: payload.sleepPlanFollowed ?? null,
       pattern_identified: payload.patternIdentified ?? false,
       parent_informed: payload.parentInformed ?? false,
       social_worker_informed: payload.socialWorkerInformed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       waking_duration_minutes: payload.wakingDurationMinutes,

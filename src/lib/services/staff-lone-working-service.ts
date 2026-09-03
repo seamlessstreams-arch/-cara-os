@@ -68,18 +68,20 @@ export interface StaffLoneWorkingRecord {
   authorisation_level: AuthorisationLevel;
   assessment_date: string;
   staff_name: string;
-  risk_assessed: boolean;
-  manager_authorised: boolean;
-  communication_plan: boolean;
-  emergency_contacts_available: boolean;
-  phone_charged: boolean;
-  check_in_protocol_agreed: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  risk_assessed: boolean | null;
+  manager_authorised: boolean | null;
+  communication_plan: boolean | null;
+  emergency_contacts_available: boolean | null;
+  phone_charged: boolean | null;
+  check_in_protocol_agreed: boolean | null;
   buddy_system_available: boolean;
   panic_alarm_available: boolean;
-  first_aid_trained: boolean;
-  medication_trained: boolean;
-  safeguarding_trained: boolean;
-  lone_working_policy_read: boolean;
+  first_aid_trained: boolean | null;
+  medication_trained: boolean | null;
+  safeguarding_trained: boolean | null;
+  lone_working_policy_read: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   assessed_by: string;
@@ -159,7 +161,7 @@ export function computeStaffLoneWorkingMetrics(
   const veryHigh = records.filter((r) => r.risk_level === "very_high").length;
   const high = records.filter((r) => r.risk_level === "high").length;
   const emergencyOnly = records.filter((r) => r.authorisation_level === "emergency_only").length;
-  const notAuthorised = records.filter((r) => !r.manager_authorised).length;
+  const notAuthorised = records.filter((r) => r.manager_authorised === false).length;
 
   const boolRate = (field: keyof StaffLoneWorkingRecord) => {
     const count = records.filter((r) => r[field] === true).length;
@@ -225,18 +227,22 @@ export function identifyStaffLoneWorkingAlerts(
 
   // Very high risk without authorisation
   for (const r of records) {
-    if (r.risk_level === "very_high" && !r.manager_authorised) {
+    // Very-high-risk lone working with authorisation UNRECORDED is itself the
+    // critical gap — worded as a gap, not an asserted refusal.
+    if (r.risk_level === "very_high" && r.manager_authorised !== true) {
       alerts.push({
         type: "very_high_not_authorised",
         severity: "critical",
-        message: `${r.staff_name} lone working in ${r.lone_working_scenario.replace(/_/g, " ")} assessed as very high risk without manager authorisation`,
+        message: r.manager_authorised === false
+          ? `${r.staff_name} lone working in ${r.lone_working_scenario.replace(/_/g, " ")} assessed as very high risk without manager authorisation`
+          : `${r.staff_name} lone working in ${r.lone_working_scenario.replace(/_/g, " ")} is very high risk with no authorisation recorded — obtain and evidence now`,
         id: r.id,
       });
     }
   }
 
   // Not risk assessed
-  const notAssessed = records.filter((r) => !r.risk_assessed).length;
+  const notAssessed = records.filter((r) => r.risk_assessed === false).length;
   if (notAssessed >= 1) {
     alerts.push({
       type: "not_risk_assessed",
@@ -247,7 +253,7 @@ export function identifyStaffLoneWorkingAlerts(
   }
 
   // No communication plan
-  const noPlan = records.filter((r) => !r.communication_plan).length;
+  const noPlan = records.filter((r) => r.communication_plan === false).length;
   if (noPlan >= 1) {
     alerts.push({
       type: "no_communication_plan",
@@ -258,7 +264,7 @@ export function identifyStaffLoneWorkingAlerts(
   }
 
   // No check-in protocol
-  const noCheckIn = records.filter((r) => !r.check_in_protocol_agreed).length;
+  const noCheckIn = records.filter((r) => r.check_in_protocol_agreed === false).length;
   if (noCheckIn >= 2) {
     alerts.push({
       type: "no_check_in_protocol",
@@ -269,7 +275,7 @@ export function identifyStaffLoneWorkingAlerts(
   }
 
   // Policy not read
-  const noPolicyRead = records.filter((r) => !r.lone_working_policy_read).length;
+  const noPolicyRead = records.filter((r) => r.lone_working_policy_read === false).length;
   if (noPolicyRead >= 2) {
     alerts.push({
       type: "policy_not_read",
@@ -353,18 +359,18 @@ export async function createRecord(
       authorisation_level: payload.authorisationLevel,
       assessment_date: payload.assessmentDate,
       staff_name: payload.staffName,
-      risk_assessed: payload.riskAssessed ?? true,
-      manager_authorised: payload.managerAuthorised ?? true,
-      communication_plan: payload.communicationPlan ?? true,
-      emergency_contacts_available: payload.emergencyContactsAvailable ?? true,
-      phone_charged: payload.phoneCharged ?? true,
-      check_in_protocol_agreed: payload.checkInProtocolAgreed ?? true,
+      risk_assessed: payload.riskAssessed ?? null,
+      manager_authorised: payload.managerAuthorised ?? null,
+      communication_plan: payload.communicationPlan ?? null,
+      emergency_contacts_available: payload.emergencyContactsAvailable ?? null,
+      phone_charged: payload.phoneCharged ?? null,
+      check_in_protocol_agreed: payload.checkInProtocolAgreed ?? null,
       buddy_system_available: payload.buddySystemAvailable ?? false,
       panic_alarm_available: payload.panicAlarmAvailable ?? false,
-      first_aid_trained: payload.firstAidTrained ?? true,
-      medication_trained: payload.medicationTrained ?? true,
-      safeguarding_trained: payload.safeguardingTrained ?? true,
-      lone_working_policy_read: payload.loneWorkingPolicyRead ?? true,
+      first_aid_trained: payload.firstAidTrained ?? null,
+      medication_trained: payload.medicationTrained ?? null,
+      safeguarding_trained: payload.safeguardingTrained ?? null,
+      lone_working_policy_read: payload.loneWorkingPolicyRead ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       assessed_by: payload.assessedBy,
