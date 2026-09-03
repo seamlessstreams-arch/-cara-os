@@ -74,17 +74,19 @@ export interface ChildrensProgressTrackingRecord {
   assessment_date: string;
   child_name: string;
   child_id: string | null;
-  baseline_established: boolean;
-  targets_set: boolean;
-  targets_smart: boolean;
-  child_involved: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  evidence_documented: boolean;
-  care_plan_updated: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  baseline_established: boolean | null;
+  targets_set: boolean | null;
+  targets_smart: boolean | null;
+  child_involved: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  evidence_documented: boolean | null;
+  care_plan_updated: boolean | null;
   celebration_planned: boolean;
   barriers_identified: boolean;
-  support_in_place: boolean;
+  support_in_place: boolean | null;
   multi_agency_input: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -259,7 +261,7 @@ export function identifyChildrensProgressAlerts(
   }
 
   // No baseline established
-  const noBaseline = records.filter((r) => !r.baseline_established).length;
+  const noBaseline = records.filter((r) => r.baseline_established === false).length;
   if (noBaseline >= 1) {
     alerts.push({
       type: "no_baseline",
@@ -270,7 +272,7 @@ export function identifyChildrensProgressAlerts(
   }
 
   // Child not involved
-  const notInvolved = records.filter((r) => !r.child_involved).length;
+  const notInvolved = records.filter((r) => r.child_involved === false).length;
   if (notInvolved >= 2) {
     alerts.push({
       type: "child_not_involved",
@@ -281,7 +283,7 @@ export function identifyChildrensProgressAlerts(
   }
 
   // Evidence not documented
-  const noEvidence = records.filter((r) => !r.evidence_documented).length;
+  const noEvidence = records.filter((r) => r.evidence_documented === false).length;
   if (noEvidence >= 2) {
     alerts.push({
       type: "evidence_not_documented",
@@ -292,7 +294,7 @@ export function identifyChildrensProgressAlerts(
   }
 
   // Targets not SMART
-  const notSmart = records.filter((r) => r.targets_set && !r.targets_smart).length;
+  const notSmart = records.filter((r) => r.targets_set && r.targets_smart === false).length;
   if (notSmart >= 3) {
     alerts.push({
       type: "targets_not_smart",
@@ -380,17 +382,17 @@ export async function createRecord(
       assessment_date: payload.assessmentDate,
       child_name: payload.childName,
       child_id: payload.childId ?? null,
-      baseline_established: payload.baselineEstablished ?? true,
-      targets_set: payload.targetsSet ?? true,
-      targets_smart: payload.targetsSmart ?? true,
-      child_involved: payload.childInvolved ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      evidence_documented: payload.evidenceDocumented ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
+      baseline_established: payload.baselineEstablished ?? null,
+      targets_set: payload.targetsSet ?? null,
+      targets_smart: payload.targetsSmart ?? null,
+      child_involved: payload.childInvolved ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      evidence_documented: payload.evidenceDocumented ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
       celebration_planned: payload.celebrationPlanned ?? false,
       barriers_identified: payload.barriersIdentified ?? false,
-      support_in_place: payload.supportInPlace ?? true,
+      support_in_place: payload.supportInPlace ?? null,
       multi_agency_input: payload.multiAgencyInput ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

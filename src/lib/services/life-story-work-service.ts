@@ -70,17 +70,19 @@ export interface LifeStoryWorkRecord {
   child_name: string;
   child_id: string | null;
   facilitator_name: string;
-  age_appropriate: boolean;
-  trauma_informed: boolean;
-  child_led: boolean;
-  consent_obtained: boolean;
-  social_worker_aware: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  age_appropriate: boolean | null;
+  trauma_informed: boolean | null;
+  child_led: boolean | null;
+  consent_obtained: boolean | null;
+  social_worker_aware: boolean | null;
   therapist_consulted: boolean;
   materials_created: boolean;
-  securely_stored: boolean;
+  securely_stored: boolean | null;
   shared_with_child: boolean;
   parent_involvement: boolean;
-  cultural_sensitivity: boolean;
+  cultural_sensitivity: boolean | null;
   follow_up_planned: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -241,7 +243,7 @@ export function identifyLifeStoryWorkAlerts(
   }
 
   // Not trauma informed
-  const notTrauma = records.filter((r) => !r.trauma_informed).length;
+  const notTrauma = records.filter((r) => r.trauma_informed === false).length;
   if (notTrauma >= 1) {
     alerts.push({
       type: "not_trauma_informed",
@@ -252,7 +254,7 @@ export function identifyLifeStoryWorkAlerts(
   }
 
   // Materials not securely stored
-  const notSecure = records.filter((r) => r.materials_created && !r.securely_stored).length;
+  const notSecure = records.filter((r) => r.materials_created && r.securely_stored === false).length;
   if (notSecure >= 1) {
     alerts.push({
       type: "materials_not_secure",
@@ -263,7 +265,7 @@ export function identifyLifeStoryWorkAlerts(
   }
 
   // Consent not obtained
-  const noConsent = records.filter((r) => !r.consent_obtained).length;
+  const noConsent = records.filter((r) => r.consent_obtained === false).length;
   if (noConsent >= 2) {
     alerts.push({
       type: "consent_not_obtained",
@@ -274,7 +276,7 @@ export function identifyLifeStoryWorkAlerts(
   }
 
   // Not culturally sensitive
-  const notCultural = records.filter((r) => !r.cultural_sensitivity).length;
+  const notCultural = records.filter((r) => r.cultural_sensitivity === false).length;
   if (notCultural >= 3) {
     alerts.push({
       type: "not_culturally_sensitive",
@@ -362,17 +364,17 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitator_name: payload.facilitatorName,
-      age_appropriate: payload.ageAppropriate ?? true,
-      trauma_informed: payload.traumaInformed ?? true,
-      child_led: payload.childLed ?? true,
-      consent_obtained: payload.consentObtained ?? true,
-      social_worker_aware: payload.socialWorkerAware ?? true,
+      age_appropriate: payload.ageAppropriate ?? null,
+      trauma_informed: payload.traumaInformed ?? null,
+      child_led: payload.childLed ?? null,
+      consent_obtained: payload.consentObtained ?? null,
+      social_worker_aware: payload.socialWorkerAware ?? null,
       therapist_consulted: payload.therapistConsulted ?? false,
       materials_created: payload.materialsCreated ?? false,
-      securely_stored: payload.securelyStored ?? true,
+      securely_stored: payload.securelyStored ?? null,
       shared_with_child: payload.sharedWithChild ?? false,
       parent_involvement: payload.parentInvolvement ?? false,
-      cultural_sensitivity: payload.culturalSensitivity ?? true,
+      cultural_sensitivity: payload.culturalSensitivity ?? null,
       follow_up_planned: payload.followUpPlanned ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

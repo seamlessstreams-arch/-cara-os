@@ -74,18 +74,20 @@ export interface StaffReflectivePracticeRecord {
   reflection_date: string;
   staff_name: string;
   facilitator_name: string;
-  child_focused: boolean;
-  values_explored: boolean;
-  emotions_acknowledged: boolean;
-  learning_identified: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_focused: boolean | null;
+  values_explored: boolean | null;
+  emotions_acknowledged: boolean | null;
+  learning_identified: boolean | null;
   action_plan_created: boolean;
   practice_changed: boolean;
   shared_with_team: boolean;
   linked_to_supervision: boolean;
   linked_to_training: boolean;
-  evidence_documented: boolean;
+  evidence_documented: boolean | null;
   manager_reviewed: boolean;
-  child_impact_considered: boolean;
+  child_impact_considered: boolean | null;
   ethical_considerations: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -254,7 +256,7 @@ export function identifyStaffReflectiveAlerts(
   }
 
   // Child impact not considered
-  const noImpact = records.filter((r) => !r.child_impact_considered).length;
+  const noImpact = records.filter((r) => r.child_impact_considered === false).length;
   if (noImpact >= 1) {
     alerts.push({
       type: "no_child_impact",
@@ -265,7 +267,7 @@ export function identifyStaffReflectiveAlerts(
   }
 
   // Learning not identified
-  const noLearning = records.filter((r) => !r.learning_identified).length;
+  const noLearning = records.filter((r) => r.learning_identified === false).length;
   if (noLearning >= 2) {
     alerts.push({
       type: "no_learning_identified",
@@ -276,7 +278,7 @@ export function identifyStaffReflectiveAlerts(
   }
 
   // Evidence not documented
-  const noEvidence = records.filter((r) => !r.evidence_documented).length;
+  const noEvidence = records.filter((r) => r.evidence_documented === false).length;
   if (noEvidence >= 2) {
     alerts.push({
       type: "evidence_not_documented",
@@ -374,18 +376,18 @@ export async function createRecord(
       reflection_date: payload.reflectionDate,
       staff_name: payload.staffName,
       facilitator_name: payload.facilitatorName,
-      child_focused: payload.childFocused ?? true,
-      values_explored: payload.valuesExplored ?? true,
-      emotions_acknowledged: payload.emotionsAcknowledged ?? true,
-      learning_identified: payload.learningIdentified ?? true,
+      child_focused: payload.childFocused ?? null,
+      values_explored: payload.valuesExplored ?? null,
+      emotions_acknowledged: payload.emotionsAcknowledged ?? null,
+      learning_identified: payload.learningIdentified ?? null,
       action_plan_created: payload.actionPlanCreated ?? false,
       practice_changed: payload.practiceChanged ?? false,
       shared_with_team: payload.sharedWithTeam ?? false,
       linked_to_supervision: payload.linkedToSupervision ?? false,
       linked_to_training: payload.linkedToTraining ?? false,
-      evidence_documented: payload.evidenceDocumented ?? true,
+      evidence_documented: payload.evidenceDocumented ?? null,
       manager_reviewed: payload.managerReviewed ?? false,
-      child_impact_considered: payload.childImpactConsidered ?? true,
+      child_impact_considered: payload.childImpactConsidered ?? null,
       ethical_considerations: payload.ethicalConsiderations ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
