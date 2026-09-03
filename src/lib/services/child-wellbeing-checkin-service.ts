@@ -67,18 +67,18 @@ export interface ChildWellbeingCheckinRecord {
   child_name: string;
   child_id: string | null;
   staff_name: string;
-  child_engaged: boolean;
-  child_voice_captured: boolean;
-  concerns_identified: boolean;
+  child_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_voice_captured: boolean | null;
+  concerns_identified: boolean | null;
   follow_up_needed: boolean;
-  care_plan_reviewed: boolean;
+  care_plan_reviewed: boolean | null;
   parent_informed: boolean;
   social_worker_informed: boolean;
-  private_time_offered: boolean;
-  physical_health_checked: boolean;
-  eating_well: boolean;
-  sleeping_well: boolean;
-  recorded_promptly: boolean;
+  private_time_offered: boolean | null;
+  physical_health_checked: boolean | null;
+  eating_well: boolean | null;
+  sleeping_well: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   wellbeing_score: number | null;
@@ -159,10 +159,16 @@ export function computeWellbeingCheckinMetrics(
   const concernsCount = records.filter((r) => r.concerns_identified).length;
   const followUpCount = records.filter((r) => r.follow_up_needed).length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildWellbeingCheckinRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -251,34 +257,34 @@ export function identifyWellbeingCheckinAlerts(
   }
 
   // Child voice not captured
-  const noVoice = records.filter((r) => !r.child_voice_captured).length;
+  const noVoice = records.filter((r) => r.child_voice_captured !== true).length;
   if (noVoice >= 1) {
     alerts.push({
       type: "voice_not_captured",
       severity: "high",
-      message: `${noVoice} check-${noVoice === 1 ? "in has" : "ins have"} child voice not captured — ensure child participation`,
+      message: `${noVoice} check-${noVoice === 1 ? "in has" : "ins have"} no child voice evidenced — ensure child participation`,
       id: "voice_not_captured",
     });
   }
 
   // Not eating well
-  const notEating = records.filter((r) => !r.eating_well).length;
+  const notEating = records.filter((r) => r.eating_well !== true).length;
   if (notEating >= 2) {
     alerts.push({
       type: "not_eating_well",
       severity: "medium",
-      message: `${notEating} check-ins show children not eating well — review nutrition and mealtime support`,
+      message: `${notEating} check-ins without evidence the child is eating well — review nutrition and mealtime support`,
       id: "not_eating_well",
     });
   }
 
   // Not sleeping well
-  const notSleeping = records.filter((r) => !r.sleeping_well).length;
+  const notSleeping = records.filter((r) => r.sleeping_well !== true).length;
   if (notSleeping >= 2) {
     alerts.push({
       type: "not_sleeping_well",
       severity: "medium",
-      message: `${notSleeping} check-ins show children not sleeping well — review sleep support`,
+      message: `${notSleeping} check-ins without evidence the child is sleeping well — review sleep support`,
       id: "not_sleeping_well",
     });
   }
@@ -361,18 +367,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_name: payload.staffName,
-      child_engaged: payload.childEngaged ?? true,
-      child_voice_captured: payload.childVoiceCaptured ?? true,
-      concerns_identified: payload.concernsIdentified ?? false,
+      child_engaged: payload.childEngaged ?? null,
+      child_voice_captured: payload.childVoiceCaptured ?? null,
+      concerns_identified: payload.concernsIdentified ?? null,
       follow_up_needed: payload.followUpNeeded ?? false,
-      care_plan_reviewed: payload.carePlanReviewed ?? true,
+      care_plan_reviewed: payload.carePlanReviewed ?? null,
       parent_informed: payload.parentInformed ?? false,
       social_worker_informed: payload.socialWorkerInformed ?? false,
-      private_time_offered: payload.privateTimeOffered ?? true,
-      physical_health_checked: payload.physicalHealthChecked ?? true,
-      eating_well: payload.eatingWell ?? true,
-      sleeping_well: payload.sleepingWell ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      private_time_offered: payload.privateTimeOffered ?? null,
+      physical_health_checked: payload.physicalHealthChecked ?? null,
+      eating_well: payload.eatingWell ?? null,
+      sleeping_well: payload.sleepingWell ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       wellbeing_score: payload.wellbeingScore,

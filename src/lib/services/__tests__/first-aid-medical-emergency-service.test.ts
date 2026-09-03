@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FirstAidMedicalEmergencyRecord>): FirstAidMedicalEmergencyRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    incident_type: overrides?.incident_type ?? "minor_injury",
-    severity_level: overrides?.severity_level ?? "minor",
-    response_quality: overrides?.response_quality ?? "good",
-    outcome_assessment: overrides?.outcome_assessment ?? "full_recovery",
-    incident_date: overrides?.incident_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    incident_type: "minor_injury",
+    severity_level: "minor",
+    response_quality: "good",
+    outcome_assessment: "full_recovery",
+    incident_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    responded_by: overrides?.responded_by ?? "Staff A",
-    first_aid_trained: overrides?.first_aid_trained ?? true,
-    correct_procedure_followed: overrides?.correct_procedure_followed ?? true,
-    equipment_available: overrides?.equipment_available ?? true,
-    ambulance_called: overrides?.ambulance_called ?? true,
-    parent_notified: overrides?.parent_notified ?? true,
-    gp_informed: overrides?.gp_informed ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    incident_recorded: overrides?.incident_recorded ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? true,
-    debrief_completed: overrides?.debrief_completed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    responded_by: "Staff A",
+    first_aid_trained: true,
+    correct_procedure_followed: true,
+    equipment_available: true,
+    ambulance_called: true,
+    parent_notified: true,
+    gp_informed: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    incident_recorded: true,
+    ofsted_notified: true,
+    debrief_completed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -130,5 +133,22 @@ describe("first-aid-medical-emergency-service", () => {
       expect(types).toContain("no_debrief");
       expect(types).toContain("no_equipment");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded responder qualification in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyFirstAidAlerts([makeRecord({ first_aid_trained: null })]);
+    const alert = alerts.find((a) => a.type === "untrained_responder");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("counts only recorded untrained responders in the metric", () => {
+    const rows = [null, null, false].map((v, i) => makeRecord({ id: `r-${i}`, first_aid_trained: v }));
+    expect(computeFirstAidMetrics(rows).untrained_count).toBe(1);
+  });
+  it("does not dilute the trained rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, first_aid_trained: v }));
+    expect(computeFirstAidMetrics(rows).first_aid_trained_rate).toBe(100);
   });
 });
