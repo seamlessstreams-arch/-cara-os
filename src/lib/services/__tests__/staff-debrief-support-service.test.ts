@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffDebriefSupportRecord>): StaffDebriefSupportRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    debrief_type: overrides?.debrief_type ?? "post_incident",
-    incident_severity: overrides?.incident_severity ?? "medium",
-    staff_impact: overrides?.staff_impact ?? "mildly_affected",
-    support_outcome: overrides?.support_outcome ?? "fully_supported",
-    debrief_date: overrides?.debrief_date ?? todayStr(),
-    staff_name: overrides?.staff_name ?? "Staff A",
-    facilitated_by: overrides?.facilitated_by ?? "Manager A",
-    timely_debrief: overrides?.timely_debrief ?? true,
-    safe_space_provided: overrides?.safe_space_provided ?? true,
-    confidentiality_assured: overrides?.confidentiality_assured ?? true,
-    emotional_support_offered: overrides?.emotional_support_offered ?? true,
-    learning_captured: overrides?.learning_captured ?? true,
-    action_plan_agreed: overrides?.action_plan_agreed ?? true,
-    follow_up_scheduled: overrides?.follow_up_scheduled ?? true,
-    supervision_linked: overrides?.supervision_linked ?? true,
-    occupational_health_considered: overrides?.occupational_health_considered ?? true,
-    eap_signposted: overrides?.eap_signposted ?? true,
-    peer_support_offered: overrides?.peer_support_offered ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    debrief_duration_minutes: overrides?.debrief_duration_minutes ?? 30,
+    id: "a-1", home_id: "home-1",
+    debrief_type: "post_incident",
+    incident_severity: "medium",
+    staff_impact: "mildly_affected",
+    support_outcome: "fully_supported",
+    debrief_date: todayStr(),
+    staff_name: "Staff A",
+    facilitated_by: "Manager A",
+    timely_debrief: true,
+    safe_space_provided: true,
+    confidentiality_assured: true,
+    emotional_support_offered: true,
+    learning_captured: true,
+    action_plan_agreed: true,
+    follow_up_scheduled: true,
+    supervision_linked: true,
+    occupational_health_considered: true,
+    eap_signposted: true,
+    peer_support_offered: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    debrief_duration_minutes: 30,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -120,5 +123,22 @@ describe("staff-debrief-support-service", () => {
       expect(types).toContain("no_emotional_support");
       expect(types).toContain("no_safe_space");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded timely debrief in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyStaffDebriefAlerts([makeRecord({ timely_debrief: null })]);
+    const alert = alerts.find((a) => a.type === "not_timely");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no timeliness gap when the debrief is recorded as timely", () => {
+    const alerts = identifyStaffDebriefAlerts([makeRecord({ timely_debrief: true })]);
+    expect(alerts.some((a) => a.type === "not_timely")).toBe(false);
+  });
+  it("does not dilute the timely-debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, timely_debrief: v }));
+    expect(computeStaffDebriefMetrics(rows).timely_debrief_rate).toBe(100);
   });
 });

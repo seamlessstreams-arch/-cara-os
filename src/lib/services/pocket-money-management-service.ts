@@ -72,18 +72,18 @@ export interface PocketMoneyManagementRecord {
   child_name: string;
   child_id: string | null;
   recorded_by: string;
-  receipt_obtained: boolean;
-  child_chose_purchase: boolean;
-  age_appropriate_spend: boolean;
-  budget_discussed: boolean;
-  savings_encouraged: boolean;
-  value_for_money_discussed: boolean;
-  financial_record_updated: boolean;
-  balance_reconciled: boolean;
+  receipt_obtained: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_chose_purchase: boolean | null;
+  age_appropriate_spend: boolean | null;
+  budget_discussed: boolean | null;
+  savings_encouraged: boolean | null;
+  value_for_money_discussed: boolean | null;
+  financial_record_updated: boolean | null;
+  balance_reconciled: boolean | null;
   social_worker_informed: boolean;
   parent_informed: boolean;
-  care_plan_linked: boolean;
-  recorded_promptly: boolean;
+  care_plan_linked: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   amount_pence: number;
@@ -172,10 +172,16 @@ export function computePocketMoneyMetrics(
   const declinedCount = records.filter((r) => r.approval_status === "declined").length;
   const retrospectiveCount = records.filter((r) => r.approval_status === "retrospective").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof PocketMoneyManagementRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -239,56 +245,58 @@ export function identifyPocketMoneyAlerts(
 
   // Retrospective approval without receipt
   for (const r of records) {
-    if (r.approval_status === "retrospective" && !r.receipt_obtained) {
+    if (r.approval_status === "retrospective" && r.receipt_obtained !== true) {
       alerts.push({
         type: "retrospective_no_receipt",
         severity: "critical",
-        message: `${r.child_name} has retrospective ${r.spending_category.replace(/_/g, " ")} transaction without receipt — ensure financial accountability`,
+        message: r.receipt_obtained === false
+          ? `${r.child_name} has retrospective ${r.spending_category.replace(/_/g, " ")} transaction without receipt — ensure financial accountability`
+          : `${r.child_name} has retrospective ${r.spending_category.replace(/_/g, " ")} transaction with no receipt recorded — obtain or evidence the receipt now`,
         id: r.id,
       });
     }
   }
 
   // Balance not reconciled
-  const notReconciled = records.filter((r) => !r.balance_reconciled).length;
+  const notReconciled = records.filter((r) => r.balance_reconciled !== true).length;
   if (notReconciled >= 1) {
     alerts.push({
       type: "balance_not_reconciled",
       severity: "high",
-      message: `${notReconciled} ${notReconciled === 1 ? "transaction has" : "transactions have"} balance not reconciled — reconcile accounts promptly`,
+      message: `${notReconciled} ${notReconciled === 1 ? "transaction has" : "transactions have"} no balance reconciliation evidenced — reconcile accounts promptly`,
       id: "balance_not_reconciled",
     });
   }
 
   // Financial record not updated
-  const noFinancialRecord = records.filter((r) => !r.financial_record_updated).length;
+  const noFinancialRecord = records.filter((r) => r.financial_record_updated !== true).length;
   if (noFinancialRecord >= 1) {
     alerts.push({
       type: "financial_record_not_updated",
       severity: "high",
-      message: `${noFinancialRecord} ${noFinancialRecord === 1 ? "transaction has" : "transactions have"} financial record not updated — maintain accurate records`,
+      message: `${noFinancialRecord} ${noFinancialRecord === 1 ? "transaction has" : "transactions have"} no financial-record update evidenced — maintain accurate records`,
       id: "financial_record_not_updated",
     });
   }
 
   // Budget not discussed
-  const noBudget = records.filter((r) => !r.budget_discussed).length;
+  const noBudget = records.filter((r) => r.budget_discussed !== true).length;
   if (noBudget >= 2) {
     alerts.push({
       type: "budget_not_discussed",
       severity: "medium",
-      message: `${noBudget} transactions without budget discussion — strengthen financial literacy support`,
+      message: `${noBudget} transactions without evidenced budget discussion — strengthen financial literacy support`,
       id: "budget_not_discussed",
     });
   }
 
   // No receipt obtained
-  const noReceipt = records.filter((r) => !r.receipt_obtained).length;
+  const noReceipt = records.filter((r) => r.receipt_obtained !== true).length;
   if (noReceipt >= 3) {
     alerts.push({
       type: "receipts_missing",
       severity: "medium",
-      message: `${noReceipt} transactions without receipts — ensure financial transparency`,
+      message: `${noReceipt} transactions without evidenced receipts — ensure financial transparency`,
       id: "receipts_missing",
     });
   }
@@ -372,18 +380,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       recorded_by: payload.recordedBy,
-      receipt_obtained: payload.receiptObtained ?? true,
-      child_chose_purchase: payload.childChosePurchase ?? true,
-      age_appropriate_spend: payload.ageAppropriateSpend ?? true,
-      budget_discussed: payload.budgetDiscussed ?? true,
-      savings_encouraged: payload.savingsEncouraged ?? true,
-      value_for_money_discussed: payload.valueForMoneyDiscussed ?? true,
-      financial_record_updated: payload.financialRecordUpdated ?? true,
-      balance_reconciled: payload.balanceReconciled ?? true,
+      receipt_obtained: payload.receiptObtained ?? null,
+      child_chose_purchase: payload.childChosePurchase ?? null,
+      age_appropriate_spend: payload.ageAppropriateSpend ?? null,
+      budget_discussed: payload.budgetDiscussed ?? null,
+      savings_encouraged: payload.savingsEncouraged ?? null,
+      value_for_money_discussed: payload.valueForMoneyDiscussed ?? null,
+      financial_record_updated: payload.financialRecordUpdated ?? null,
+      balance_reconciled: payload.balanceReconciled ?? null,
       social_worker_informed: payload.socialWorkerInformed ?? false,
       parent_informed: payload.parentInformed ?? false,
-      care_plan_linked: payload.carePlanLinked ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      care_plan_linked: payload.carePlanLinked ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       amount_pence: payload.amountPence,
