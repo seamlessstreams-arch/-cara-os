@@ -67,18 +67,18 @@ export interface CreativeEnrichmentActivitiesRecord {
   child_name: string;
   child_id: string | null;
   facilitated_by: string;
-  child_choice_offered: boolean;
-  age_appropriate: boolean;
-  therapeutic_value: boolean;
-  peer_interaction: boolean;
-  self_expression_supported: boolean;
-  achievement_recognised: boolean;
-  resources_available: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  family_updated: boolean;
-  continuation_planned: boolean;
-  recorded_promptly: boolean;
+  child_choice_offered: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate: boolean | null;
+  therapeutic_value: boolean | null;
+  peer_interaction: boolean | null;
+  self_expression_supported: boolean | null;
+  achievement_recognised: boolean | null;
+  resources_available: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  family_updated: boolean | null;
+  continuation_planned: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeCreativeEnrichmentMetrics(
   const noProgress = records.filter((r) => r.skill_development === "no_progress").length;
   const noOutput = records.filter((r) => r.creative_output === "no_output").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof CreativeEnrichmentActivitiesRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -221,56 +227,58 @@ export function identifyCreativeEnrichmentAlerts(
 
   // Refused with no self-expression support — per-record
   for (const r of records) {
-    if (r.engagement_level === "refused" && !r.self_expression_supported) {
+    if (r.engagement_level === "refused" && r.self_expression_supported !== true) {
       alerts.push({
         type: "refused_no_expression",
         severity: "critical",
-        message: `${r.child_name} refused ${r.activity_type.replace(/_/g, " ")} without self-expression support — explore alternative creative outlets`,
+        message: r.self_expression_supported === false
+          ? `${r.child_name} refused ${r.activity_type.replace(/_/g, " ")} without self-expression support — explore alternative creative outlets`
+          : `${r.child_name} refused ${r.activity_type.replace(/_/g, " ")} with no self-expression support recorded — offer an alternative outlet and evidence it`,
         id: r.id,
       });
     }
   }
 
   // Achievement not recognised
-  const noAchievement = records.filter((r) => !r.achievement_recognised).length;
+  const noAchievement = records.filter((r) => r.achievement_recognised !== true).length;
   if (noAchievement >= 1) {
     alerts.push({
       type: "achievement_not_recognised",
       severity: "high",
-      message: `${noAchievement} ${noAchievement === 1 ? "activity has" : "activities have"} achievement not recognised — celebrate creative efforts`,
+      message: `${noAchievement} ${noAchievement === 1 ? "activity has" : "activities have"} no achievement recognition evidenced — celebrate creative efforts`,
       id: "achievement_not_recognised",
     });
   }
 
   // No child choice offered
-  const noChoice = records.filter((r) => !r.child_choice_offered).length;
+  const noChoice = records.filter((r) => r.child_choice_offered !== true).length;
   if (noChoice >= 1) {
     alerts.push({
       type: "no_child_choice",
       severity: "high",
-      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} no child choice offered — ensure child-led participation`,
+      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} no child choice evidenced — ensure child-led participation`,
       id: "no_child_choice",
     });
   }
 
   // Continuation not planned
-  const noContinuation = records.filter((r) => !r.continuation_planned).length;
+  const noContinuation = records.filter((r) => r.continuation_planned !== true).length;
   if (noContinuation >= 2) {
     alerts.push({
       type: "continuation_not_planned",
       severity: "medium",
-      message: `${noContinuation} activities without continuation planned — sustain creative engagement`,
+      message: `${noContinuation} activities without an evidenced continuation plan — sustain creative engagement`,
       id: "continuation_not_planned",
     });
   }
 
   // Resources not available
-  const noResources = records.filter((r) => !r.resources_available).length;
+  const noResources = records.filter((r) => r.resources_available !== true).length;
   if (noResources >= 2) {
     alerts.push({
       type: "resources_not_available",
       severity: "medium",
-      message: `${noResources} activities with insufficient resources — review creative provisions`,
+      message: `${noResources} activities without evidenced adequate resources — review creative provisions`,
       id: "resources_not_available",
     });
   }
@@ -344,18 +352,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitated_by: payload.facilitatedBy,
-      child_choice_offered: payload.childChoiceOffered ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      therapeutic_value: payload.therapeuticValue ?? true,
-      peer_interaction: payload.peerInteraction ?? true,
-      self_expression_supported: payload.selfExpressionSupported ?? true,
-      achievement_recognised: payload.achievementRecognised ?? true,
-      resources_available: payload.resourcesAvailable ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      family_updated: payload.familyUpdated ?? true,
-      continuation_planned: payload.continuationPlanned ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_choice_offered: payload.childChoiceOffered ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      therapeutic_value: payload.therapeuticValue ?? null,
+      peer_interaction: payload.peerInteraction ?? null,
+      self_expression_supported: payload.selfExpressionSupported ?? null,
+      achievement_recognised: payload.achievementRecognised ?? null,
+      resources_available: payload.resourcesAvailable ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      family_updated: payload.familyUpdated ?? null,
+      continuation_planned: payload.continuationPlanned ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CreativeEnrichmentActivitiesRecord>): CreativeEnrichmentActivitiesRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    activity_type: overrides?.activity_type ?? "art_drawing",
-    engagement_level: overrides?.engagement_level ?? "engaged",
-    skill_development: overrides?.skill_development ?? "some_progress",
-    creative_output: overrides?.creative_output ?? "work_in_progress",
-    activity_date: overrides?.activity_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    activity_type: "art_drawing",
+    engagement_level: "engaged",
+    skill_development: "some_progress",
+    creative_output: "work_in_progress",
+    activity_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_choice_offered: overrides?.child_choice_offered ?? true,
-    age_appropriate: overrides?.age_appropriate ?? true,
-    therapeutic_value: overrides?.therapeutic_value ?? true,
-    peer_interaction: overrides?.peer_interaction ?? true,
-    self_expression_supported: overrides?.self_expression_supported ?? true,
-    achievement_recognised: overrides?.achievement_recognised ?? true,
-    resources_available: overrides?.resources_available ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    family_updated: overrides?.family_updated ?? true,
-    continuation_planned: overrides?.continuation_planned ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    facilitated_by: "Staff A",
+    child_choice_offered: true,
+    age_appropriate: true,
+    therapeutic_value: true,
+    peer_interaction: true,
+    self_expression_supported: true,
+    achievement_recognised: true,
+    resources_available: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    family_updated: true,
+    continuation_planned: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,29 @@ describe("creative-enrichment-activities-service", () => {
       expect(types).toContain("continuation_not_planned");
       expect(types).toContain("resources_not_available");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the refused-child critical between recorded no-support and unrecorded", () => {
+    const nullAlert = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: null }),
+    ]).find((a) => a.type === "refused_no_expression");
+    const falseAlert = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: false }),
+    ]).find((a) => a.type === "refused_no_expression");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no refused critical when support is recorded", () => {
+    const alerts = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "refused_no_expression")).toBe(false);
+  });
+  it("does not dilute the self-expression rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, self_expression_supported: v }));
+    expect(computeCreativeEnrichmentMetrics(rows).self_expression_rate).toBe(100);
   });
 });

@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<AdvocacyRepresentationRecord>): AdvocacyRepresentationRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    advocacy_type: overrides?.advocacy_type ?? "independent_advocate",
-    representation_quality: overrides?.representation_quality ?? "good",
-    child_satisfaction: overrides?.child_satisfaction ?? "satisfied",
-    outcome_effectiveness: overrides?.outcome_effectiveness ?? "mostly_effective",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    advocacy_type: "independent_advocate",
+    representation_quality: "good",
+    child_satisfaction: "satisfied",
+    outcome_effectiveness: "mostly_effective",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_voice_heard: overrides?.child_voice_heard ?? true,
-    child_understood_rights: overrides?.child_understood_rights ?? true,
-    independent_access: overrides?.independent_access ?? true,
-    confidentiality_maintained: overrides?.confidentiality_maintained ?? true,
-    outcome_communicated: overrides?.outcome_communicated ?? true,
-    follow_up_arranged: overrides?.follow_up_arranged ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    irm_notified: overrides?.irm_notified ?? true,
-    decision_influenced: overrides?.decision_influenced ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    facilitated_by: "Staff A",
+    child_voice_heard: true,
+    child_understood_rights: true,
+    independent_access: true,
+    confidentiality_maintained: true,
+    outcome_communicated: true,
+    follow_up_arranged: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    irm_notified: true,
+    decision_influenced: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -129,5 +132,22 @@ describe("advocacy-representation-service", () => {
       expect(types).toContain("confidentiality_breach");
       expect(types).toContain("rights_not_understood");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded child voice in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: null })]);
+    const alert = alerts.find((a) => a.type === "child_voice_not_heard");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no voice gap when voice is recorded as heard", () => {
+    const alerts = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: true })]);
+    expect(alerts.some((a) => a.type === "child_voice_not_heard")).toBe(false);
+  });
+  it("does not dilute the child-voice rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, child_voice_heard: v }));
+    expect(computeAdvocacyRepresentationMetrics(rows).child_voice_rate).toBe(100);
   });
 });
