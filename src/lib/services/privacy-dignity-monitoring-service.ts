@@ -72,18 +72,18 @@ export interface PrivacyDignityMonitoringRecord {
   child_name: string;
   child_id: string | null;
   monitored_by: string;
-  child_views_sought: boolean;
-  knock_before_entry: boolean;
-  personal_space_respected: boolean;
-  confidentiality_maintained: boolean;
-  complaints_process_explained: boolean;
-  staff_awareness_adequate: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  intimate_care_policy_followed: boolean;
-  cctv_compliant: boolean;
-  dignity_in_language: boolean;
-  recorded_promptly: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  knock_before_entry: boolean | null;
+  personal_space_respected: boolean | null;
+  confidentiality_maintained: boolean | null;
+  complaints_process_explained: boolean | null;
+  staff_awareness_adequate: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  intimate_care_policy_followed: boolean | null;
+  cctv_compliant: boolean | null;
+  dignity_in_language: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -169,10 +169,16 @@ export function computePrivacyDignityMetrics(
   const intrusions = records.filter((r) => r.intrusion_type !== "none").length;
   const noResponse = records.filter((r) => r.response_quality === "no_response").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof PrivacyDignityMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -242,45 +248,45 @@ export function identifyPrivacyDignityAlerts(
   }
 
   // Confidentiality not maintained
-  const noConfidentiality = records.filter((r) => !r.confidentiality_maintained).length;
+  const noConfidentiality = records.filter((r) => r.confidentiality_maintained !== true).length;
   if (noConfidentiality >= 1) {
     alerts.push({
       type: "confidentiality_breach",
       severity: "high",
-      message: `${noConfidentiality} ${noConfidentiality === 1 ? "check shows" : "checks show"} confidentiality not maintained — review information sharing`,
+      message: `${noConfidentiality} ${noConfidentiality === 1 ? "check shows" : "checks show"} no evidence confidentiality was maintained — review information sharing`,
       id: "confidentiality_breach",
     });
   }
 
   // Knock before entry not practiced
-  const noKnock = records.filter((r) => !r.knock_before_entry).length;
+  const noKnock = records.filter((r) => r.knock_before_entry !== true).length;
   if (noKnock >= 1) {
     alerts.push({
       type: "no_knock_before_entry",
       severity: "high",
-      message: `${noKnock} ${noKnock === 1 ? "check shows" : "checks show"} no knock before entry — reinforce privacy practice`,
+      message: `${noKnock} ${noKnock === 1 ? "check shows" : "checks show"} no knock-before-entry evidenced — reinforce privacy practice`,
       id: "no_knock_before_entry",
     });
   }
 
   // Staff awareness not adequate
-  const noAwareness = records.filter((r) => !r.staff_awareness_adequate).length;
+  const noAwareness = records.filter((r) => r.staff_awareness_adequate !== true).length;
   if (noAwareness >= 2) {
     alerts.push({
       type: "staff_awareness_lacking",
       severity: "medium",
-      message: `${noAwareness} checks with inadequate staff awareness — arrange privacy and dignity training`,
+      message: `${noAwareness} checks without evidenced adequate staff awareness — arrange privacy and dignity training`,
       id: "staff_awareness_lacking",
     });
   }
 
   // Intimate care policy not followed
-  const noIntimate = records.filter((r) => !r.intimate_care_policy_followed).length;
+  const noIntimate = records.filter((r) => r.intimate_care_policy_followed !== true).length;
   if (noIntimate >= 2) {
     alerts.push({
       type: "intimate_care_policy_breach",
       severity: "medium",
-      message: `${noIntimate} checks with intimate care policy not followed — review procedures urgently`,
+      message: `${noIntimate} checks with no evidence the intimate care policy was followed — review procedures urgently`,
       id: "intimate_care_policy_breach",
     });
   }
@@ -354,18 +360,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       monitored_by: payload.monitoredBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      knock_before_entry: payload.knockBeforeEntry ?? true,
-      personal_space_respected: payload.personalSpaceRespected ?? true,
-      confidentiality_maintained: payload.confidentialityMaintained ?? true,
-      complaints_process_explained: payload.complaintsProcessExplained ?? true,
-      staff_awareness_adequate: payload.staffAwarenessAdequate ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      intimate_care_policy_followed: payload.intimateCarePolicyFollowed ?? true,
-      cctv_compliant: payload.cctvCompliant ?? true,
-      dignity_in_language: payload.dignityInLanguage ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      knock_before_entry: payload.knockBeforeEntry ?? null,
+      personal_space_respected: payload.personalSpaceRespected ?? null,
+      confidentiality_maintained: payload.confidentialityMaintained ?? null,
+      complaints_process_explained: payload.complaintsProcessExplained ?? null,
+      staff_awareness_adequate: payload.staffAwarenessAdequate ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      intimate_care_policy_followed: payload.intimateCarePolicyFollowed ?? null,
+      cctv_compliant: payload.cctvCompliant ?? null,
+      dignity_in_language: payload.dignityInLanguage ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

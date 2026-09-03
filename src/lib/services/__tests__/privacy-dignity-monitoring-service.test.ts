@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PrivacyDignityMonitoringRecord>): PrivacyDignityMonitoringRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    privacy_area: overrides?.privacy_area ?? "bedroom_privacy",
-    dignity_rating: overrides?.dignity_rating ?? "good",
-    intrusion_type: overrides?.intrusion_type ?? "none",
-    response_quality: overrides?.response_quality ?? "good",
-    monitoring_date: overrides?.monitoring_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    privacy_area: "bedroom_privacy",
+    dignity_rating: "good",
+    intrusion_type: "none",
+    response_quality: "good",
+    monitoring_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    monitored_by: overrides?.monitored_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    knock_before_entry: overrides?.knock_before_entry ?? true,
-    personal_space_respected: overrides?.personal_space_respected ?? true,
-    confidentiality_maintained: overrides?.confidentiality_maintained ?? true,
-    complaints_process_explained: overrides?.complaints_process_explained ?? true,
-    staff_awareness_adequate: overrides?.staff_awareness_adequate ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    intimate_care_policy_followed: overrides?.intimate_care_policy_followed ?? true,
-    cctv_compliant: overrides?.cctv_compliant ?? true,
-    dignity_in_language: overrides?.dignity_in_language ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    monitored_by: "Staff A",
+    child_views_sought: true,
+    knock_before_entry: true,
+    personal_space_respected: true,
+    confidentiality_maintained: true,
+    complaints_process_explained: true,
+    staff_awareness_adequate: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    intimate_care_policy_followed: true,
+    cctv_compliant: true,
+    dignity_in_language: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("privacy-dignity-monitoring-service", () => {
       expect(types).toContain("staff_awareness_lacking");
       expect(types).toContain("intimate_care_policy_breach");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded confidentiality in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: null })]);
+    const alert = alerts.find((a) => a.type === "confidentiality_breach");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no confidentiality gap when it is recorded as maintained", () => {
+    const alerts = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: true })]);
+    expect(alerts.some((a) => a.type === "confidentiality_breach")).toBe(false);
+  });
+  it("does not dilute the confidentiality rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, confidentiality_maintained: v }));
+    expect(computePrivacyDignityMetrics(rows).confidentiality_rate).toBe(100);
   });
 });
