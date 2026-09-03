@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SiblingContactQualityRecord>): SiblingContactQualityRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    contact_type: overrides?.contact_type ?? "face_to_face",
-    contact_quality: overrides?.contact_quality ?? "good",
-    sibling_relationship: overrides?.sibling_relationship ?? "close",
-    barrier_type: overrides?.barrier_type ?? "none",
-    contact_date: overrides?.contact_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    contact_type: "face_to_face",
+    contact_quality: "good",
+    sibling_relationship: "close",
+    barrier_type: "none",
+    contact_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    sibling_name: overrides?.sibling_name ?? "Sibling A",
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    sibling_views_sought: overrides?.sibling_views_sought ?? true,
-    preparation_completed: overrides?.preparation_completed ?? true,
-    debrief_completed: overrides?.debrief_completed ?? true,
-    emotional_support_given: overrides?.emotional_support_given ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    frequency_appropriate: overrides?.frequency_appropriate ?? true,
-    venue_suitable: overrides?.venue_suitable ?? true,
-    safeguarding_considered: overrides?.safeguarding_considered ?? true,
-    life_story_linked: overrides?.life_story_linked ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    sibling_name: "Sibling A",
+    facilitated_by: "Staff A",
+    child_views_sought: true,
+    sibling_views_sought: true,
+    preparation_completed: true,
+    debrief_completed: true,
+    emotional_support_given: true,
+    social_worker_informed: true,
+    care_plan_reflects: true,
+    frequency_appropriate: true,
+    venue_suitable: true,
+    safeguarding_considered: true,
+    life_story_linked: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -128,5 +131,22 @@ describe("sibling-contact-quality-service", () => {
       expect(types).toContain("no_emotional_support");
       expect(types).toContain("life_story_not_linked");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded debrief in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySiblingContactAlerts([makeRecord({ debrief_completed: null })]);
+    const alert = alerts.find((a) => a.type === "debrief_not_completed");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no debrief gap when the debrief is recorded as done", () => {
+    const alerts = identifySiblingContactAlerts([makeRecord({ debrief_completed: true })]);
+    expect(alerts.some((a) => a.type === "debrief_not_completed")).toBe(false);
+  });
+  it("does not dilute the debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `s-${i}`, debrief_completed: v }));
+    expect(computeSiblingContactMetrics(rows).debrief_rate).toBe(100);
   });
 });
