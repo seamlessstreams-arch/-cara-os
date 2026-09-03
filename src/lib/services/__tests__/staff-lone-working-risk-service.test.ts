@@ -1564,3 +1564,19 @@ describe("edge cases", () => {
     expect(m.total_assessments).toBe(5);
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the high-risk assessment critical between recorded incomplete and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ risk_level: "High", risk_assessment_completed: null })])
+      .find((a) => a.type === "high_risk_no_assessment");
+    const falseAlert = computeAlerts([makeRow({ risk_level: "High", risk_assessment_completed: false })])
+      .find((a) => a.type === "high_risk_no_assessment");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when the assessment is recorded as completed", () => {
+    const alerts = computeAlerts([makeRow({ risk_level: "High", risk_assessment_completed: true })]);
+    expect(alerts.some((a) => a.type === "high_risk_no_assessment")).toBe(false);
+  });
+});
