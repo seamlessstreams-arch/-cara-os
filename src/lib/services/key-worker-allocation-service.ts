@@ -68,18 +68,20 @@ export interface KeyWorkerAllocationRecord {
   child_id: string | null;
   key_worker_name: string;
   reviewed_by: string;
-  child_views_sought: boolean;
-  child_choice_considered: boolean;
-  regular_sessions_held: boolean;
-  care_plan_involvement: boolean;
-  advocacy_role_fulfilled: boolean;
-  training_appropriate: boolean;
-  supervision_discussed: boolean;
-  handover_plan_exists: boolean;
-  backup_worker_identified: boolean;
-  social_worker_informed: boolean;
-  relationship_supported: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_views_sought: boolean | null;
+  child_choice_considered: boolean | null;
+  regular_sessions_held: boolean | null;
+  care_plan_involvement: boolean | null;
+  advocacy_role_fulfilled: boolean | null;
+  training_appropriate: boolean | null;
+  supervision_discussed: boolean | null;
+  handover_plan_exists: boolean | null;
+  backup_worker_identified: boolean | null;
+  social_worker_informed: boolean | null;
+  relationship_supported: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -244,7 +246,7 @@ export function identifyKeyWorkerAllocationAlerts(
   }
 
   // No regular sessions
-  const noSessions = records.filter((r) => !r.regular_sessions_held).length;
+  const noSessions = records.filter((r) => r.regular_sessions_held === false).length;
   if (noSessions >= 1) {
     alerts.push({
       type: "no_regular_sessions",
@@ -255,7 +257,7 @@ export function identifyKeyWorkerAllocationAlerts(
   }
 
   // No backup worker
-  const noBackup = records.filter((r) => !r.backup_worker_identified).length;
+  const noBackup = records.filter((r) => r.backup_worker_identified === false).length;
   if (noBackup >= 2) {
     alerts.push({
       type: "no_backup_worker",
@@ -266,7 +268,7 @@ export function identifyKeyWorkerAllocationAlerts(
   }
 
   // Handover plan missing
-  const noHandover = records.filter((r) => !r.handover_plan_exists).length;
+  const noHandover = records.filter((r) => r.handover_plan_exists === false).length;
   if (noHandover >= 2) {
     alerts.push({
       type: "no_handover_plan",
@@ -355,18 +357,18 @@ export async function createRecord(
       child_id: payload.childId ?? null,
       key_worker_name: payload.keyWorkerName,
       reviewed_by: payload.reviewedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      child_choice_considered: payload.childChoiceConsidered ?? true,
-      regular_sessions_held: payload.regularSessionsHeld ?? true,
-      care_plan_involvement: payload.carePlanInvolvement ?? true,
-      advocacy_role_fulfilled: payload.advocacyRoleFulfilled ?? true,
-      training_appropriate: payload.trainingAppropriate ?? true,
-      supervision_discussed: payload.supervisionDiscussed ?? true,
-      handover_plan_exists: payload.handoverPlanExists ?? true,
-      backup_worker_identified: payload.backupWorkerIdentified ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      relationship_supported: payload.relationshipSupported ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      child_choice_considered: payload.childChoiceConsidered ?? null,
+      regular_sessions_held: payload.regularSessionsHeld ?? null,
+      care_plan_involvement: payload.carePlanInvolvement ?? null,
+      advocacy_role_fulfilled: payload.advocacyRoleFulfilled ?? null,
+      training_appropriate: payload.trainingAppropriate ?? null,
+      supervision_discussed: payload.supervisionDiscussed ?? null,
+      handover_plan_exists: payload.handoverPlanExists ?? null,
+      backup_worker_identified: payload.backupWorkerIdentified ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      relationship_supported: payload.relationshipSupported ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

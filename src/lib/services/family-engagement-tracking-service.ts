@@ -68,18 +68,20 @@ export interface FamilyEngagementTrackingRecord {
   child_id: string | null;
   family_member_name: string;
   facilitated_by: string;
-  child_views_sought: boolean;
-  child_prepared: boolean;
-  family_supported: boolean;
-  barriers_identified: boolean;
-  social_worker_informed: boolean;
-  care_plan_updated: boolean;
-  risk_assessment_current: boolean;
-  outcome_recorded: boolean;
-  follow_up_planned: boolean;
-  safeguarding_considered: boolean;
-  court_order_complied: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_views_sought: boolean | null;
+  child_prepared: boolean | null;
+  family_supported: boolean | null;
+  barriers_identified: boolean | null;
+  social_worker_informed: boolean | null;
+  care_plan_updated: boolean | null;
+  risk_assessment_current: boolean | null;
+  outcome_recorded: boolean | null;
+  follow_up_planned: boolean | null;
+  safeguarding_considered: boolean | null;
+  court_order_complied: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -222,11 +224,15 @@ export function identifyFamilyEngagementAlerts(
 
   // Hostile family with no safeguarding consideration — per-record
   for (const r of records) {
-    if (r.family_response === "hostile" && !r.safeguarding_considered) {
+    // A hostile contact with safeguarding consideration UNRECORDED is itself
+    // the critical gap — worded as a gap, not an asserted omission.
+    if (r.family_response === "hostile" && r.safeguarding_considered !== true) {
       alerts.push({
         type: "hostile_no_safeguarding",
         severity: "critical",
-        message: `${r.child_name}'s family member ${r.family_member_name} hostile without safeguarding consideration — review risk immediately`,
+        message: r.safeguarding_considered === false
+          ? `${r.child_name}'s family member ${r.family_member_name} hostile without safeguarding consideration — review risk immediately`
+          : `${r.child_name}'s family member ${r.family_member_name} hostile with no safeguarding consideration recorded — consider and evidence now`,
         id: r.id,
       });
     }
@@ -244,7 +250,7 @@ export function identifyFamilyEngagementAlerts(
   }
 
   // Child not prepared
-  const notPrepared = records.filter((r) => !r.child_prepared).length;
+  const notPrepared = records.filter((r) => r.child_prepared === false).length;
   if (notPrepared >= 1) {
     alerts.push({
       type: "child_not_prepared",
@@ -255,7 +261,7 @@ export function identifyFamilyEngagementAlerts(
   }
 
   // Follow-up not planned
-  const noFollowUp = records.filter((r) => !r.follow_up_planned).length;
+  const noFollowUp = records.filter((r) => r.follow_up_planned === false).length;
   if (noFollowUp >= 2) {
     alerts.push({
       type: "follow_up_not_planned",
@@ -266,7 +272,7 @@ export function identifyFamilyEngagementAlerts(
   }
 
   // Outcome not recorded
-  const noOutcome = records.filter((r) => !r.outcome_recorded).length;
+  const noOutcome = records.filter((r) => r.outcome_recorded === false).length;
   if (noOutcome >= 2) {
     alerts.push({
       type: "outcome_not_recorded",
@@ -355,18 +361,18 @@ export async function createRecord(
       child_id: payload.childId ?? null,
       family_member_name: payload.familyMemberName,
       facilitated_by: payload.facilitatedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      child_prepared: payload.childPrepared ?? true,
-      family_supported: payload.familySupported ?? true,
-      barriers_identified: payload.barriersIdentified ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
-      risk_assessment_current: payload.riskAssessmentCurrent ?? true,
-      outcome_recorded: payload.outcomeRecorded ?? true,
-      follow_up_planned: payload.followUpPlanned ?? true,
-      safeguarding_considered: payload.safeguardingConsidered ?? true,
-      court_order_complied: payload.courtOrderComplied ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      child_prepared: payload.childPrepared ?? null,
+      family_supported: payload.familySupported ?? null,
+      barriers_identified: payload.barriersIdentified ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
+      risk_assessment_current: payload.riskAssessmentCurrent ?? null,
+      outcome_recorded: payload.outcomeRecorded ?? null,
+      follow_up_planned: payload.followUpPlanned ?? null,
+      safeguarding_considered: payload.safeguardingConsidered ?? null,
+      court_order_complied: payload.courtOrderComplied ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

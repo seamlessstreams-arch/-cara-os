@@ -67,18 +67,20 @@ export interface TransitionPlanningReadinessRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_views_included: boolean;
-  life_skills_assessed: boolean;
-  budgeting_skills: boolean;
-  cooking_skills: boolean;
-  housing_identified: boolean;
-  education_employment_plan: boolean;
-  health_needs_addressed: boolean;
-  social_network_mapped: boolean;
-  personal_advisor_allocated: boolean;
-  social_worker_involved: boolean;
-  care_plan_reflects: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_views_included: boolean | null;
+  life_skills_assessed: boolean | null;
+  budgeting_skills: boolean | null;
+  cooking_skills: boolean | null;
+  housing_identified: boolean | null;
+  education_employment_plan: boolean | null;
+  health_needs_addressed: boolean | null;
+  social_network_mapped: boolean | null;
+  personal_advisor_allocated: boolean | null;
+  social_worker_involved: boolean | null;
+  care_plan_reflects: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -243,7 +245,7 @@ export function identifyTransitionPlanningAlerts(
   }
 
   // Housing not identified
-  const noHousing = records.filter((r) => !r.housing_identified).length;
+  const noHousing = records.filter((r) => r.housing_identified === false).length;
   if (noHousing >= 1) {
     alerts.push({
       type: "housing_not_identified",
@@ -254,7 +256,7 @@ export function identifyTransitionPlanningAlerts(
   }
 
   // Life skills not assessed
-  const noLifeSkills = records.filter((r) => !r.life_skills_assessed).length;
+  const noLifeSkills = records.filter((r) => r.life_skills_assessed === false).length;
   if (noLifeSkills >= 2) {
     alerts.push({
       type: "life_skills_not_assessed",
@@ -265,7 +267,7 @@ export function identifyTransitionPlanningAlerts(
   }
 
   // Personal advisor not allocated
-  const noAdvisor = records.filter((r) => !r.personal_advisor_allocated).length;
+  const noAdvisor = records.filter((r) => r.personal_advisor_allocated === false).length;
   if (noAdvisor >= 2) {
     alerts.push({
       type: "no_personal_advisor",
@@ -352,18 +354,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_views_included: payload.childViewsIncluded ?? true,
-      life_skills_assessed: payload.lifeSkillsAssessed ?? true,
-      budgeting_skills: payload.budgetingSkills ?? true,
-      cooking_skills: payload.cookingSkills ?? true,
-      housing_identified: payload.housingIdentified ?? true,
-      education_employment_plan: payload.educationEmploymentPlan ?? true,
-      health_needs_addressed: payload.healthNeedsAddressed ?? true,
-      social_network_mapped: payload.socialNetworkMapped ?? true,
-      personal_advisor_allocated: payload.personalAdvisorAllocated ?? true,
-      social_worker_involved: payload.socialWorkerInvolved ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_included: payload.childViewsIncluded ?? null,
+      life_skills_assessed: payload.lifeSkillsAssessed ?? null,
+      budgeting_skills: payload.budgetingSkills ?? null,
+      cooking_skills: payload.cookingSkills ?? null,
+      housing_identified: payload.housingIdentified ?? null,
+      education_employment_plan: payload.educationEmploymentPlan ?? null,
+      health_needs_addressed: payload.healthNeedsAddressed ?? null,
+      social_network_mapped: payload.socialNetworkMapped ?? null,
+      personal_advisor_allocated: payload.personalAdvisorAllocated ?? null,
+      social_worker_involved: payload.socialWorkerInvolved ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
