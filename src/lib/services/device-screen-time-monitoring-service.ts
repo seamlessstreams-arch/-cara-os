@@ -72,18 +72,18 @@ export interface DeviceScreenTimeMonitoringRecord {
   child_name: string;
   child_id: string | null;
   monitored_by: string;
-  limits_agreed: boolean;
-  age_appropriate_content: boolean;
-  parental_controls_active: boolean;
-  night_time_limits: boolean;
-  social_media_supervised: boolean;
-  privacy_settings_checked: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  online_safety_discussed: boolean;
-  healthy_alternatives_offered: boolean;
-  recorded_promptly: boolean;
+  limits_agreed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate_content: boolean | null;
+  parental_controls_active: boolean | null;
+  night_time_limits: boolean | null;
+  social_media_supervised: boolean | null;
+  privacy_settings_checked: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  online_safety_discussed: boolean | null;
+  healthy_alternatives_offered: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -169,10 +169,16 @@ export function computeDeviceScreenTimeMetrics(
   const inappropriate = records.filter((r) => r.usage_category === "inappropriate").length;
   const significantConcern = records.filter((r) => r.wellbeing_impact === "significant_concern").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof DeviceScreenTimeMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -242,45 +248,45 @@ export function identifyDeviceScreenTimeAlerts(
   }
 
   // No parental controls
-  const noControls = records.filter((r) => !r.parental_controls_active).length;
+  const noControls = records.filter((r) => r.parental_controls_active !== true).length;
   if (noControls >= 1) {
     alerts.push({
       type: "no_parental_controls",
       severity: "high",
-      message: `${noControls} ${noControls === 1 ? "device has" : "devices have"} no parental controls active — essential for child safety`,
+      message: `${noControls} ${noControls === 1 ? "device has" : "devices have"} no active parental controls evidenced — essential for child safety`,
       id: "no_parental_controls",
     });
   }
 
   // No night time limits
-  const noNight = records.filter((r) => !r.night_time_limits).length;
+  const noNight = records.filter((r) => r.night_time_limits !== true).length;
   if (noNight >= 1) {
     alerts.push({
       type: "no_night_limits",
       severity: "high",
-      message: `${noNight} ${noNight === 1 ? "check has" : "checks have"} no night-time limits — protect sleep and wellbeing`,
+      message: `${noNight} ${noNight === 1 ? "check has" : "checks have"} no night-time limits evidenced — protect sleep and wellbeing`,
       id: "no_night_limits",
     });
   }
 
   // No online safety discussion
-  const noSafety = records.filter((r) => !r.online_safety_discussed).length;
+  const noSafety = records.filter((r) => r.online_safety_discussed !== true).length;
   if (noSafety >= 2) {
     alerts.push({
       type: "no_online_safety_discussion",
       severity: "medium",
-      message: `${noSafety} checks without online safety discussion — ensure regular digital literacy conversations`,
+      message: `${noSafety} checks without evidenced online safety discussion — ensure regular digital literacy conversations`,
       id: "no_online_safety_discussion",
     });
   }
 
   // Privacy settings not checked
-  const noPrivacy = records.filter((r) => !r.privacy_settings_checked).length;
+  const noPrivacy = records.filter((r) => r.privacy_settings_checked !== true).length;
   if (noPrivacy >= 2) {
     alerts.push({
       type: "no_privacy_settings",
       severity: "medium",
-      message: `${noPrivacy} checks without privacy settings reviewed — protect children from data exposure`,
+      message: `${noPrivacy} checks without evidenced privacy-settings review — protect children from data exposure`,
       id: "no_privacy_settings",
     });
   }
@@ -354,18 +360,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       monitored_by: payload.monitoredBy,
-      limits_agreed: payload.limitsAgreed ?? true,
-      age_appropriate_content: payload.ageAppropriateContent ?? true,
-      parental_controls_active: payload.parentalControlsActive ?? true,
-      night_time_limits: payload.nightTimeLimits ?? true,
-      social_media_supervised: payload.socialMediaSupervised ?? true,
-      privacy_settings_checked: payload.privacySettingsChecked ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      online_safety_discussed: payload.onlineSafetyDiscussed ?? true,
-      healthy_alternatives_offered: payload.healthyAlternativesOffered ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      limits_agreed: payload.limitsAgreed ?? null,
+      age_appropriate_content: payload.ageAppropriateContent ?? null,
+      parental_controls_active: payload.parentalControlsActive ?? null,
+      night_time_limits: payload.nightTimeLimits ?? null,
+      social_media_supervised: payload.socialMediaSupervised ?? null,
+      privacy_settings_checked: payload.privacySettingsChecked ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      online_safety_discussed: payload.onlineSafetyDiscussed ?? null,
+      healthy_alternatives_offered: payload.healthyAlternativesOffered ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

@@ -67,18 +67,18 @@ export interface ConsentCapacityMonitoringRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_views_sought: boolean;
-  information_provided: boolean;
-  age_appropriate_explanation: boolean;
-  advocacy_offered: boolean;
-  parent_consulted: boolean;
-  social_worker_informed: boolean;
-  best_interest_documented: boolean;
-  decision_respected: boolean;
-  review_date_set: boolean;
-  care_plan_updated: boolean;
-  legal_framework_followed: boolean;
-  recorded_promptly: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  information_provided: boolean | null;
+  age_appropriate_explanation: boolean | null;
+  advocacy_offered: boolean | null;
+  parent_consulted: boolean | null;
+  social_worker_informed: boolean | null;
+  best_interest_documented: boolean | null;
+  decision_respected: boolean | null;
+  review_date_set: boolean | null;
+  care_plan_updated: boolean | null;
+  legal_framework_followed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeConsentCapacityMetrics(
   const refused = records.filter((r) => r.decision_type === "consent_refused").length;
   const bestInterest = records.filter((r) => r.decision_type === "best_interest_decision").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ConsentCapacityMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyConsentCapacityAlerts(
   }
 
   // Decision not respected
-  const notRespected = records.filter((r) => !r.decision_respected).length;
+  const notRespected = records.filter((r) => r.decision_respected !== true).length;
   if (notRespected >= 1) {
     alerts.push({
       type: "decision_not_respected",
       severity: "high",
-      message: `${notRespected} ${notRespected === 1 ? "assessment shows" : "assessments show"} decision not respected — review child's rights`,
+      message: `${notRespected} ${notRespected === 1 ? "assessment shows" : "assessments show"} no evidence the decision was respected — review child's rights`,
       id: "decision_not_respected",
     });
   }
 
   // Advocacy not offered
-  const noAdvocacy = records.filter((r) => !r.advocacy_offered).length;
+  const noAdvocacy = records.filter((r) => r.advocacy_offered !== true).length;
   if (noAdvocacy >= 1) {
     alerts.push({
       type: "advocacy_not_offered",
       severity: "high",
-      message: `${noAdvocacy} ${noAdvocacy === 1 ? "assessment has" : "assessments have"} no advocacy offered — ensure independent support`,
+      message: `${noAdvocacy} ${noAdvocacy === 1 ? "assessment has" : "assessments have"} no advocacy offer evidenced — ensure independent support`,
       id: "advocacy_not_offered",
     });
   }
 
   // Information not provided
-  const noInfo = records.filter((r) => !r.information_provided).length;
+  const noInfo = records.filter((r) => r.information_provided !== true).length;
   if (noInfo >= 2) {
     alerts.push({
       type: "information_not_provided",
       severity: "medium",
-      message: `${noInfo} assessments without information provided — strengthen informed consent`,
+      message: `${noInfo} assessments without evidenced information provision — strengthen informed consent`,
       id: "information_not_provided",
     });
   }
 
   // Review date not set
-  const noReview = records.filter((r) => !r.review_date_set).length;
+  const noReview = records.filter((r) => r.review_date_set !== true).length;
   if (noReview >= 2) {
     alerts.push({
       type: "review_date_not_set",
       severity: "medium",
-      message: `${noReview} assessments without review date — ensure ongoing monitoring`,
+      message: `${noReview} assessments without an evidenced review date — ensure ongoing monitoring`,
       id: "review_date_not_set",
     });
   }
@@ -352,18 +358,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      information_provided: payload.informationProvided ?? true,
-      age_appropriate_explanation: payload.ageAppropriateExplanation ?? true,
-      advocacy_offered: payload.advocacyOffered ?? true,
-      parent_consulted: payload.parentConsulted ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      best_interest_documented: payload.bestInterestDocumented ?? true,
-      decision_respected: payload.decisionRespected ?? true,
-      review_date_set: payload.reviewDateSet ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
-      legal_framework_followed: payload.legalFrameworkFollowed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      information_provided: payload.informationProvided ?? null,
+      age_appropriate_explanation: payload.ageAppropriateExplanation ?? null,
+      advocacy_offered: payload.advocacyOffered ?? null,
+      parent_consulted: payload.parentConsulted ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      best_interest_documented: payload.bestInterestDocumented ?? null,
+      decision_respected: payload.decisionRespected ?? null,
+      review_date_set: payload.reviewDateSet ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
+      legal_framework_followed: payload.legalFrameworkFollowed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

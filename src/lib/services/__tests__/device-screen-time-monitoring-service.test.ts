@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<DeviceScreenTimeMonitoringRecord>): DeviceScreenTimeMonitoringRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    device_type: overrides?.device_type ?? "smartphone",
-    usage_category: overrides?.usage_category ?? "educational",
-    compliance_level: overrides?.compliance_level ?? "fully_compliant",
-    wellbeing_impact: overrides?.wellbeing_impact ?? "neutral",
-    monitoring_date: overrides?.monitoring_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    device_type: "smartphone",
+    usage_category: "educational",
+    compliance_level: "fully_compliant",
+    wellbeing_impact: "neutral",
+    monitoring_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    monitored_by: overrides?.monitored_by ?? "Staff A",
-    limits_agreed: overrides?.limits_agreed ?? true,
-    age_appropriate_content: overrides?.age_appropriate_content ?? true,
-    parental_controls_active: overrides?.parental_controls_active ?? true,
-    night_time_limits: overrides?.night_time_limits ?? true,
-    social_media_supervised: overrides?.social_media_supervised ?? true,
-    privacy_settings_checked: overrides?.privacy_settings_checked ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    online_safety_discussed: overrides?.online_safety_discussed ?? true,
-    healthy_alternatives_offered: overrides?.healthy_alternatives_offered ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    monitored_by: "Staff A",
+    limits_agreed: true,
+    age_appropriate_content: true,
+    parental_controls_active: true,
+    night_time_limits: true,
+    social_media_supervised: true,
+    privacy_settings_checked: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    online_safety_discussed: true,
+    healthy_alternatives_offered: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("device-screen-time-monitoring-service", () => {
       expect(types).toContain("no_online_safety_discussion");
       expect(types).toContain("no_privacy_settings");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded parental controls in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyDeviceScreenTimeAlerts([makeRecord({ parental_controls_active: null })]);
+    const alert = alerts.find((a) => a.type === "no_parental_controls");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no controls gap when controls are recorded as active", () => {
+    const alerts = identifyDeviceScreenTimeAlerts([makeRecord({ parental_controls_active: true })]);
+    expect(alerts.some((a) => a.type === "no_parental_controls")).toBe(false);
+  });
+  it("does not dilute the parental-controls rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, parental_controls_active: v }));
+    expect(computeDeviceScreenTimeMetrics(rows).parental_controls_rate).toBe(100);
   });
 });

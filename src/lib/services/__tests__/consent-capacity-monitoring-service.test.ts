@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ConsentCapacityMonitoringRecord>): ConsentCapacityMonitoringRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    consent_area: overrides?.consent_area ?? "medical_treatment",
-    capacity_level: overrides?.capacity_level ?? "full_capacity",
-    decision_type: overrides?.decision_type ?? "consent_given",
-    competence_assessment: overrides?.competence_assessment ?? "age_appropriate",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    consent_area: "medical_treatment",
+    capacity_level: "full_capacity",
+    decision_type: "consent_given",
+    competence_assessment: "age_appropriate",
+    assessment_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessed_by: overrides?.assessed_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    information_provided: overrides?.information_provided ?? true,
-    age_appropriate_explanation: overrides?.age_appropriate_explanation ?? true,
-    advocacy_offered: overrides?.advocacy_offered ?? true,
-    parent_consulted: overrides?.parent_consulted ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    best_interest_documented: overrides?.best_interest_documented ?? true,
-    decision_respected: overrides?.decision_respected ?? true,
-    review_date_set: overrides?.review_date_set ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    legal_framework_followed: overrides?.legal_framework_followed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    assessed_by: "Staff A",
+    child_views_sought: true,
+    information_provided: true,
+    age_appropriate_explanation: true,
+    advocacy_offered: true,
+    parent_consulted: true,
+    social_worker_informed: true,
+    best_interest_documented: true,
+    decision_respected: true,
+    review_date_set: true,
+    care_plan_updated: true,
+    legal_framework_followed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,22 @@ describe("consent-capacity-monitoring-service", () => {
       expect(types).toContain("information_not_provided");
       expect(types).toContain("review_date_not_set");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded decision-respected judgement in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyConsentCapacityAlerts([makeRecord({ decision_respected: null })]);
+    const alert = alerts.find((a) => a.type === "decision_not_respected");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no decision gap when respect is recorded", () => {
+    const alerts = identifyConsentCapacityAlerts([makeRecord({ decision_respected: true })]);
+    expect(alerts.some((a) => a.type === "decision_not_respected")).toBe(false);
+  });
+  it("does not dilute the decision-respected rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, decision_respected: v }));
+    expect(computeConsentCapacityMetrics(rows).decision_respected_rate).toBe(100);
   });
 });
