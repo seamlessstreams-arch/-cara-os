@@ -79,7 +79,7 @@ export interface ChildRadicalisationPreventionRow {
   online_activity_monitored: boolean;
   channel_referral_made: boolean;
   multi_agency_involved: boolean;
-  child_views_obtained: boolean;
+  child_views_obtained: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   family_engaged: boolean;
   safety_plan_in_place: boolean;
   ideology_challenged: boolean;
@@ -117,10 +117,14 @@ export function computeRadicalisationMetrics(
   const channelActive = rows.filter((r) => r.assessment_status === "channel_active").length;
   const monitoring = rows.filter((r) => r.assessment_status === "monitoring").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildRadicalisationPreventionRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -217,11 +221,13 @@ export function computeRadicalisationAlerts(
 
   // Medium: child views not obtained
   for (const r of rows) {
-    if (!r.child_views_obtained) {
+    if (r.child_views_obtained !== true) {
       alerts.push({
         type: "child_views_not_obtained",
         severity: "medium",
-        message: `Child views not obtained for ${r.child_name} — ensure the child's voice is heard in the assessment`,
+        message: r.child_views_obtained === false
+          ? `Child views not obtained for ${r.child_name} — ensure the child's voice is heard in the assessment`
+          : `No record child views were obtained for ${r.child_name} — seek and evidence the child's voice in the assessment`,
         record_id: r.id,
       });
     }
@@ -346,7 +352,7 @@ export async function createChildRadicalisationPrevention(input: {
       online_activity_monitored: input.onlineActivityMonitored ?? false,
       channel_referral_made: input.channelReferralMade ?? false,
       multi_agency_involved: input.multiAgencyInvolved ?? false,
-      child_views_obtained: input.childViewsObtained ?? true,
+      child_views_obtained: input.childViewsObtained ?? null,
       family_engaged: input.familyEngaged ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,
       ideology_challenged: input.ideologyChallenged ?? false,

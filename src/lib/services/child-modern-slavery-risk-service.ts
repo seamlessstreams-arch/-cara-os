@@ -62,7 +62,7 @@ export interface ChildModernSlaveryRiskRow {
   nrm_referral_made: boolean;
   nrm_decision: NrmDecision | null;
   police_notified: boolean;
-  social_worker_notified: boolean;
+  social_worker_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   multi_agency_referral: boolean;
   safety_plan_in_place: boolean;
   specialist_service_involved: boolean;
@@ -97,10 +97,14 @@ export function computeModernSlaveryRiskMetrics(
   ).length;
   const nrmReferrals = rows.filter((r) => r.nrm_referral_made).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildModernSlaveryRiskRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -300,7 +304,7 @@ export async function createChildModernSlaveryRisk(input: {
       nrm_referral_made: input.nrmReferralMade ?? false,
       nrm_decision: input.nrmDecision ?? null,
       police_notified: input.policeNotified ?? false,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       multi_agency_referral: input.multiAgencyReferral ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,
       specialist_service_involved: input.specialistServiceInvolved ?? false,
