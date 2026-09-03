@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CulturalIdentitySupportRecord>): CulturalIdentitySupportRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    identity_area: overrides?.identity_area ?? "cultural_heritage",
-    support_type: overrides?.support_type ?? "cultural_activity",
-    engagement_level: overrides?.engagement_level ?? "engaged",
-    cultural_competency: overrides?.cultural_competency ?? "competent",
-    support_date: overrides?.support_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    identity_area: "cultural_heritage",
+    support_type: "cultural_activity",
+    engagement_level: "engaged",
+    cultural_competency: "competent",
+    support_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    staff_name: overrides?.staff_name ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    culturally_appropriate: overrides?.culturally_appropriate ?? true,
-    family_consulted: overrides?.family_consulted ?? true,
-    identity_celebrated: overrides?.identity_celebrated ?? true,
-    resources_available: overrides?.resources_available ?? true,
-    staff_trained: overrides?.staff_trained ?? true,
-    care_plan_reflects_identity: overrides?.care_plan_reflects_identity ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    community_links_made: overrides?.community_links_made ?? true,
-    dietary_needs_met: overrides?.dietary_needs_met ?? true,
-    language_supported: overrides?.language_supported ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    staff_name: "Staff A",
+    child_views_sought: true,
+    culturally_appropriate: true,
+    family_consulted: true,
+    identity_celebrated: true,
+    resources_available: true,
+    staff_trained: true,
+    care_plan_reflects_identity: true,
+    social_worker_informed: true,
+    community_links_made: true,
+    dietary_needs_met: true,
+    language_supported: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -124,5 +127,29 @@ describe("cultural-identity-support-service", () => {
       expect(types).toContain("staff_not_trained");
       expect(types).toContain("family_not_consulted");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the declined-support critical between recorded not-sought and unrecorded", () => {
+    const nullAlert = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: null }),
+    ]).find((a) => a.type === "declined_views_not_sought");
+    const falseAlert = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: false }),
+    ]).find((a) => a.type === "declined_views_not_sought");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when views are recorded as sought", () => {
+    const alerts = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "declined_views_not_sought")).toBe(false);
+  });
+  it("does not dilute the staff-trained rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, staff_trained: v }));
+    expect(computeCulturalIdentityMetrics(rows).staff_trained_rate).toBe(100);
   });
 });
