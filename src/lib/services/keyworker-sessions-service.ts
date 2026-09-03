@@ -75,16 +75,18 @@ export interface KeyworkerSessionRecord {
   child_name: string;
   child_id: string | null;
   keyworker_name: string;
-  child_led: boolean;
-  targets_reviewed: boolean;
-  wishes_feelings_recorded: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_led: boolean | null;
+  targets_reviewed: boolean | null;
+  wishes_feelings_recorded: boolean | null;
   advocacy_provided: boolean;
   care_plan_discussed: boolean;
   safety_discussed: boolean;
-  achievements_celebrated: boolean;
-  worries_explored: boolean;
-  next_steps_agreed: boolean;
-  session_recorded: boolean;
+  achievements_celebrated: boolean | null;
+  worries_explored: boolean | null;
+  next_steps_agreed: boolean | null;
+  session_recorded: boolean | null;
   child_signed: boolean;
   social_worker_updated: boolean;
   issues_found: string[];
@@ -254,7 +256,7 @@ export function identifyKeyworkerSessionAlerts(
   }
 
   // Sessions not recorded
-  const notRecorded = records.filter((r) => !r.session_recorded).length;
+  const notRecorded = records.filter((r) => r.session_recorded === false).length;
   if (notRecorded >= 1) {
     alerts.push({
       type: "not_recorded",
@@ -265,7 +267,7 @@ export function identifyKeyworkerSessionAlerts(
   }
 
   // Wishes and feelings not recorded
-  const noWishes = records.filter((r) => !r.wishes_feelings_recorded).length;
+  const noWishes = records.filter((r) => r.wishes_feelings_recorded === false).length;
   if (noWishes >= 2) {
     alerts.push({
       type: "wishes_not_recorded",
@@ -276,7 +278,7 @@ export function identifyKeyworkerSessionAlerts(
   }
 
   // Not child-led
-  const notChildLed = records.filter((r) => !r.child_led).length;
+  const notChildLed = records.filter((r) => r.child_led === false).length;
   if (notChildLed >= 3) {
     alerts.push({
       type: "not_child_led",
@@ -287,7 +289,7 @@ export function identifyKeyworkerSessionAlerts(
   }
 
   // Next steps not agreed
-  const noNextSteps = records.filter((r) => !r.next_steps_agreed).length;
+  const noNextSteps = records.filter((r) => r.next_steps_agreed === false).length;
   if (noNextSteps >= 3) {
     alerts.push({
       type: "no_next_steps",
@@ -375,16 +377,16 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       keyworker_name: payload.keyworkerName,
-      child_led: payload.childLed ?? true,
-      targets_reviewed: payload.targetsReviewed ?? true,
-      wishes_feelings_recorded: payload.wishesFeelingsRecorded ?? true,
+      child_led: payload.childLed ?? null,
+      targets_reviewed: payload.targetsReviewed ?? null,
+      wishes_feelings_recorded: payload.wishesFeelingsRecorded ?? null,
       advocacy_provided: payload.advocacyProvided ?? false,
       care_plan_discussed: payload.carePlanDiscussed ?? false,
       safety_discussed: payload.safetyDiscussed ?? false,
-      achievements_celebrated: payload.achievementsCelebrated ?? true,
-      worries_explored: payload.worriesExplored ?? true,
-      next_steps_agreed: payload.nextStepsAgreed ?? true,
-      session_recorded: payload.sessionRecorded ?? true,
+      achievements_celebrated: payload.achievementsCelebrated ?? null,
+      worries_explored: payload.worriesExplored ?? null,
+      next_steps_agreed: payload.nextStepsAgreed ?? null,
+      session_recorded: payload.sessionRecorded ?? null,
       child_signed: payload.childSigned ?? false,
       social_worker_updated: payload.socialWorkerUpdated ?? false,
       issues_found: payload.issuesFound ?? [],

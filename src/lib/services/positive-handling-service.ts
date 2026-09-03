@@ -74,17 +74,19 @@ export interface PositiveHandlingRecord {
   review_date: string;
   child_name: string;
   child_id: string | null;
-  triggers_identified: boolean;
-  early_warning_signs: boolean;
-  de_escalation_steps: boolean;
-  calming_strategies: boolean;
-  staff_trained: boolean;
-  child_consulted: boolean;
-  parent_informed: boolean;
-  social_worker_informed: boolean;
-  plan_accessible: boolean;
-  regularly_reviewed: boolean;
-  post_incident_support: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  triggers_identified: boolean | null;
+  early_warning_signs: boolean | null;
+  de_escalation_steps: boolean | null;
+  calming_strategies: boolean | null;
+  staff_trained: boolean | null;
+  child_consulted: boolean | null;
+  parent_informed: boolean | null;
+  social_worker_informed: boolean | null;
+  plan_accessible: boolean | null;
+  regularly_reviewed: boolean | null;
+  post_incident_support: boolean | null;
   medication_considered: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -231,18 +233,22 @@ export function identifyPositiveHandlingAlerts(
 
   // Escalation required without staff trained
   for (const r of records) {
-    if (r.review_outcome === "escalation_required" && !r.staff_trained) {
+    // When escalation is required, unrecorded training is itself the critical
+    // gap — worded as a gap, not an asserted failure.
+    if (r.review_outcome === "escalation_required" && r.staff_trained !== true) {
       alerts.push({
         type: "escalation_untrained",
         severity: "critical",
-        message: `Escalation required for ${r.child_name} on ${r.review_date} — staff not trained on plan`,
+        message: r.staff_trained === false
+          ? `Escalation required for ${r.child_name} on ${r.review_date} — staff not trained on plan`
+          : `Escalation required for ${r.child_name} on ${r.review_date} — no training status recorded, evidence it now`,
         id: r.id,
       });
     }
   }
 
   // De-escalation steps not documented
-  const noDeEsc = records.filter((r) => !r.de_escalation_steps).length;
+  const noDeEsc = records.filter((r) => r.de_escalation_steps === false).length;
   if (noDeEsc >= 1) {
     alerts.push({
       type: "no_de_escalation",
@@ -253,7 +259,7 @@ export function identifyPositiveHandlingAlerts(
   }
 
   // Child not consulted
-  const notConsulted = records.filter((r) => !r.child_consulted).length;
+  const notConsulted = records.filter((r) => r.child_consulted === false).length;
   if (notConsulted >= 1) {
     alerts.push({
       type: "child_not_consulted",
@@ -264,7 +270,7 @@ export function identifyPositiveHandlingAlerts(
   }
 
   // Plan not accessible
-  const notAccessible = records.filter((r) => !r.plan_accessible).length;
+  const notAccessible = records.filter((r) => r.plan_accessible === false).length;
   if (notAccessible >= 2) {
     alerts.push({
       type: "plan_not_accessible",
@@ -275,7 +281,7 @@ export function identifyPositiveHandlingAlerts(
   }
 
   // Not regularly reviewed
-  const notReviewed = records.filter((r) => !r.regularly_reviewed).length;
+  const notReviewed = records.filter((r) => r.regularly_reviewed === false).length;
   if (notReviewed >= 2) {
     alerts.push({
       type: "not_regularly_reviewed",
@@ -361,17 +367,17 @@ export async function createRecord(
       review_date: payload.reviewDate,
       child_name: payload.childName,
       child_id: payload.childId ?? null,
-      triggers_identified: payload.triggersIdentified ?? true,
-      early_warning_signs: payload.earlyWarningSigns ?? true,
-      de_escalation_steps: payload.deEscalationSteps ?? true,
-      calming_strategies: payload.calmingStrategies ?? true,
-      staff_trained: payload.staffTrained ?? true,
-      child_consulted: payload.childConsulted ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      plan_accessible: payload.planAccessible ?? true,
-      regularly_reviewed: payload.regularlyReviewed ?? true,
-      post_incident_support: payload.postIncidentSupport ?? true,
+      triggers_identified: payload.triggersIdentified ?? null,
+      early_warning_signs: payload.earlyWarningSigns ?? null,
+      de_escalation_steps: payload.deEscalationSteps ?? null,
+      calming_strategies: payload.calmingStrategies ?? null,
+      staff_trained: payload.staffTrained ?? null,
+      child_consulted: payload.childConsulted ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      plan_accessible: payload.planAccessible ?? null,
+      regularly_reviewed: payload.regularlyReviewed ?? null,
+      post_incident_support: payload.postIncidentSupport ?? null,
       medication_considered: payload.medicationConsidered ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
