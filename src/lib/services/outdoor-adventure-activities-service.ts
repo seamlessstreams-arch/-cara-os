@@ -154,22 +154,22 @@ export interface OutdoorAdventureActivityRow {
   activity_date: string;
   lead_staff: string;
   activity_type: ActivityType;
-  risk_assessment_completed: boolean;
-  parental_consent: boolean;
+  risk_assessment_completed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  parental_consent: boolean | null;
   aala_licence_checked: boolean | null;
-  instructor_qualified: boolean;
-  first_aider_present: boolean;
-  ratio_adequate: boolean;
-  weather_appropriate: boolean;
-  equipment_checked: boolean;
-  young_person_choice: boolean;
+  instructor_qualified: boolean | null;
+  first_aider_present: boolean | null;
+  ratio_adequate: boolean | null;
+  weather_appropriate: boolean | null;
+  equipment_checked: boolean | null;
+  young_person_choice: boolean | null;
   engagement_level: EngagementLevel;
-  physical_benefit: boolean;
+  physical_benefit: boolean | null;
   emotional_benefit: boolean;
   social_benefit: boolean;
   confidence_building: boolean;
   achievement_noted: string | null;
-  injury_occurred: boolean;
+  injury_occurred: boolean | null;
   injury_details: string | null;
   linked_to_care_plan: boolean;
   notes: string | null;
@@ -336,33 +336,27 @@ export function computeMetrics(
   for (const r of rows) byEngagement[r.engagement_level] = (byEngagement[r.engagement_level] || 0) + 1;
 
   // Boolean rates
-  const riskAssessmentRate = total > 0
-    ? Math.round((rows.filter((r) => r.risk_assessment_completed).length / total) * 1000) / 10
-    : null;
+  // Rates divide by the recorded subset — an unrecorded judgement (null) must
+  // not read as a quiet "no", which would dilute rates in exactly the way the
+  // old `?? true` creates padded them in the other direction.
+  const recordedRate = (field: keyof OutdoorAdventureActivityRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+  const riskAssessmentRate = recordedRate("risk_assessment_completed");
 
-  const consentRate = total > 0
-    ? Math.round((rows.filter((r) => r.parental_consent).length / total) * 1000) / 10
-    : null;
+  const consentRate = recordedRate("parental_consent");
 
-  const qualifiedInstructorRate = total > 0
-    ? Math.round((rows.filter((r) => r.instructor_qualified).length / total) * 1000) / 10
-    : null;
+  const qualifiedInstructorRate = recordedRate("instructor_qualified");
 
-  const firstAidRate = total > 0
-    ? Math.round((rows.filter((r) => r.first_aider_present).length / total) * 1000) / 10
-    : null;
+  const firstAidRate = recordedRate("first_aider_present");
 
-  const childChoiceRate = total > 0
-    ? Math.round((rows.filter((r) => r.young_person_choice).length / total) * 1000) / 10
-    : null;
+  const childChoiceRate = recordedRate("young_person_choice");
 
-  const injuryRate = total > 0
-    ? Math.round((rows.filter((r) => r.injury_occurred).length / total) * 1000) / 10
-    : null;
+  const injuryRate = recordedRate("injury_occurred");
 
-  const physicalBenefitRate = total > 0
-    ? Math.round((rows.filter((r) => r.physical_benefit).length / total) * 1000) / 10
-    : null;
+  const physicalBenefitRate = recordedRate("physical_benefit");
 
   const emotionalBenefitRate = total > 0
     ? Math.round((rows.filter((r) => r.emotional_benefit).length / total) * 1000) / 10
@@ -447,11 +441,13 @@ export function computeAlerts(
 
   // Critical: Risk assessment not completed
   for (const r of rows) {
-    if (!r.risk_assessment_completed) {
+    if (r.risk_assessment_completed !== true) {
       alerts.push({
         type: "no_risk_assessment",
         severity: "critical",
-        message: `Risk assessment was not completed for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — OEAP guidance and CHR 2015 Reg 9 require documented risk assessments for all outdoor and adventurous activities. This is a serious safety and compliance failure`,
+        message: r.risk_assessment_completed === false
+          ? `Risk assessment was not completed for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — OEAP guidance and CHR 2015 Reg 9 require documented risk assessments for all outdoor and adventurous activities. This is a serious safety and compliance failure`
+          : `No risk assessment is recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — OEAP guidance and CHR 2015 Reg 9 require documented risk assessments for all outdoor and adventurous activities; record the assessment or complete one now`,
         record_id: r.id,
       });
     }
@@ -461,12 +457,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (AALA_LICENSABLE_TYPES as string[]).includes(r.activity_type) &&
-      r.aala_licence_checked === false
+      r.aala_licence_checked !== true
     ) {
       alerts.push({
         type: "aala_licence_not_checked",
         severity: "critical",
-        message: `AALA licence was not verified for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — the Adventure Activities Licensing Authority requires providers of climbing, water sports, trekking, and caving to hold a valid licence. Operating without verification is a legal compliance failure`,
+        message: r.aala_licence_checked === false
+          ? `AALA licence was not verified for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — the Adventure Activities Licensing Authority requires providers of climbing, water sports, trekking, and caving to hold a valid licence. Operating without verification is a legal compliance failure`
+          : `AALA licence verification is not recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — verify the provider holds a valid Adventure Activities Licensing Authority licence and record the check`,
         record_id: r.id,
       });
     }
@@ -486,11 +484,13 @@ export function computeAlerts(
 
   // Critical: No parental consent
   for (const r of rows) {
-    if (!r.parental_consent) {
+    if (r.parental_consent !== true) {
       alerts.push({
         type: "no_parental_consent",
         severity: "critical",
-        message: `Parental/LA consent was not obtained for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — check placement plan and delegated authority. Outdoor activities, particularly adventurous ones, require explicit consent from the person with parental responsibility`,
+        message: r.parental_consent === false
+          ? `Parental/LA consent was not obtained for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — check placement plan and delegated authority. Outdoor activities, particularly adventurous ones, require explicit consent from the person with parental responsibility`
+          : `No parental/LA consent is recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — check placement plan and delegated authority, and record the consent position now`,
         record_id: r.id,
       });
     }
@@ -500,12 +500,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (HIGH_RISK_TYPES as string[]).includes(r.activity_type) &&
-      !r.instructor_qualified
+      r.instructor_qualified !== true
     ) {
       alerts.push({
         type: "unqualified_instructor_high_risk",
         severity: "critical",
-        message: `${r.activity_type} for ${r.child_name} on ${r.activity_date} was led by an unqualified instructor — OEAP guidance mandates that adventurous activities are led by instructors holding appropriate NGB (National Governing Body) qualifications`,
+        message: r.instructor_qualified === false
+          ? `${r.activity_type} for ${r.child_name} on ${r.activity_date} was led by an unqualified instructor — OEAP guidance mandates that adventurous activities are led by instructors holding appropriate NGB (National Governing Body) qualifications`
+          : `Instructor qualification is not recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — confirm and record the instructor's NGB (National Governing Body) qualification`,
         record_id: r.id,
       });
     }
@@ -513,11 +515,13 @@ export function computeAlerts(
 
   // High: No first aider present
   for (const r of rows) {
-    if (!r.first_aider_present) {
+    if (r.first_aider_present !== true) {
       alerts.push({
         type: "no_first_aider",
         severity: "high",
-        message: `No first aider was present during ${r.activity_type} for ${r.child_name} on ${r.activity_date} — OEAP guidance requires first aid provision for all off-site and outdoor activities`,
+        message: r.first_aider_present === false
+          ? `No first aider was present during ${r.activity_type} for ${r.child_name} on ${r.activity_date} — OEAP guidance requires first aid provision for all off-site and outdoor activities`
+          : `First aid cover is not recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — confirm and record whether a first aider was present`,
         record_id: r.id,
       });
     }
@@ -525,11 +529,13 @@ export function computeAlerts(
 
   // High: Inadequate staff ratio
   for (const r of rows) {
-    if (!r.ratio_adequate) {
+    if (r.ratio_adequate !== true) {
       alerts.push({
         type: "inadequate_ratio",
         severity: "high",
-        message: `Staff-to-child ratio was inadequate for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — review OEAP recommended ratios and ensure sufficient supervision for the activity type and environment`,
+        message: r.ratio_adequate === false
+          ? `Staff-to-child ratio was inadequate for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — review OEAP recommended ratios and ensure sufficient supervision for the activity type and environment`
+          : `Staffing ratio adequacy is not recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — review and record whether supervision met OEAP recommended ratios`,
         record_id: r.id,
       });
     }
@@ -539,12 +545,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (HIGH_RISK_TYPES as string[]).includes(r.activity_type) &&
-      !r.equipment_checked
+      r.equipment_checked !== true
     ) {
       alerts.push({
         type: "equipment_not_checked_high_risk",
         severity: "high",
-        message: `Equipment was not checked before ${r.activity_type} for ${r.child_name} on ${r.activity_date} — safety equipment must be inspected before all high-risk activities to prevent injury`,
+        message: r.equipment_checked === false
+          ? `Equipment was not checked before ${r.activity_type} for ${r.child_name} on ${r.activity_date} — safety equipment must be inspected before all high-risk activities to prevent injury`
+          : `No equipment check is recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — confirm and record the pre-activity safety equipment inspection`,
         record_id: r.id,
       });
     }
@@ -571,11 +579,13 @@ export function computeAlerts(
 
   // High: Weather not appropriate but activity proceeded
   for (const r of rows) {
-    if (!r.weather_appropriate) {
+    if (r.weather_appropriate !== true) {
       alerts.push({
         type: "weather_inappropriate",
         severity: "high",
-        message: `Weather was not appropriate for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — OEAP guidance requires dynamic risk assessment of weather conditions, and activities should be modified or cancelled when conditions are unsafe`,
+        message: r.weather_appropriate === false
+          ? `Weather was not appropriate for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — OEAP guidance requires dynamic risk assessment of weather conditions, and activities should be modified or cancelled when conditions are unsafe`
+          : `Weather suitability is not recorded for ${r.activity_type} with ${r.child_name} on ${r.activity_date} — record the dynamic weather risk assessment for the activity`,
         record_id: r.id,
       });
     }
@@ -592,12 +602,13 @@ export function computeAlerts(
   }
 
   // Medium: Low child choice rate
-  const childChoiceCount = rows.filter((r) => r.young_person_choice).length;
-  if (rows.length >= 5 && childChoiceCount / rows.length < 0.4) {
+  const childChoiceRecorded = rows.filter((r) => r.young_person_choice !== null);
+  const childChoiceCount = childChoiceRecorded.filter((r) => r.young_person_choice === true).length;
+  if (childChoiceRecorded.length >= 5 && childChoiceCount / childChoiceRecorded.length < 0.4) {
     alerts.push({
       type: "low_child_choice",
       severity: "medium",
-      message: `Only ${Math.round((childChoiceCount / rows.length) * 100)}% of outdoor activities were chosen by the young person — CHR 2015 Reg 9 requires that children have choice in activities. Young people should be involved in planning their outdoor and physical activity programme`,
+      message: `Only ${Math.round((childChoiceCount / childChoiceRecorded.length) * 100)}% of outdoor activities were chosen by the young person — CHR 2015 Reg 9 requires that children have choice in activities. Young people should be involved in planning their outdoor and physical activity programme`,
     });
   }
 
@@ -869,22 +880,22 @@ export async function createRecord(input: {
       activity_date: input.activityDate,
       lead_staff: input.leadStaff,
       activity_type: input.activityType,
-      risk_assessment_completed: input.riskAssessmentCompleted ?? true,
-      parental_consent: input.parentalConsent ?? true,
+      risk_assessment_completed: input.riskAssessmentCompleted ?? null,
+      parental_consent: input.parentalConsent ?? null,
       aala_licence_checked: input.aalaLicenceChecked ?? null,
-      instructor_qualified: input.instructorQualified ?? true,
-      first_aider_present: input.firstAiderPresent ?? true,
-      ratio_adequate: input.ratioAdequate ?? true,
-      weather_appropriate: input.weatherAppropriate ?? true,
-      equipment_checked: input.equipmentChecked ?? true,
-      young_person_choice: input.youngPersonChoice ?? true,
+      instructor_qualified: input.instructorQualified ?? null,
+      first_aider_present: input.firstAiderPresent ?? null,
+      ratio_adequate: input.ratioAdequate ?? null,
+      weather_appropriate: input.weatherAppropriate ?? null,
+      equipment_checked: input.equipmentChecked ?? null,
+      young_person_choice: input.youngPersonChoice ?? null,
       engagement_level: input.engagementLevel ?? "Participated",
-      physical_benefit: input.physicalBenefit ?? true,
+      physical_benefit: input.physicalBenefit ?? null,
       emotional_benefit: input.emotionalBenefit ?? false,
       social_benefit: input.socialBenefit ?? false,
       confidence_building: input.confidenceBuilding ?? false,
       achievement_noted: input.achievementNoted ?? null,
-      injury_occurred: input.injuryOccurred ?? false,
+      injury_occurred: input.injuryOccurred ?? null,
       injury_details: input.injuryDetails ?? null,
       linked_to_care_plan: input.linkedToCarePlan ?? false,
       notes: input.notes ?? null,
