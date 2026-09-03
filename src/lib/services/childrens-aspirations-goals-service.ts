@@ -67,18 +67,18 @@ export interface ChildrensAspirationsGoalsRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  child_led_goal: boolean;
-  realistic_timeframe: boolean;
-  resources_identified: boolean;
-  mentor_involved: boolean;
-  progress_celebrated: boolean;
-  barriers_addressed: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  family_aware: boolean;
-  school_linked: boolean;
-  review_scheduled: boolean;
-  recorded_promptly: boolean;
+  child_led_goal: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  realistic_timeframe: boolean | null;
+  resources_identified: boolean | null;
+  mentor_involved: boolean | null;
+  progress_celebrated: boolean | null;
+  barriers_addressed: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  family_aware: boolean | null;
+  school_linked: boolean | null;
+  review_scheduled: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeAspirationsGoalsMetrics(
   const disengaged = records.filter((r) => r.motivation_level === "disengaged").length;
   const noSupport = records.filter((r) => r.support_quality === "no_support").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildrensAspirationsGoalsRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -243,34 +249,34 @@ export function identifyAspirationsGoalsAlerts(
   }
 
   // Progress not celebrated
-  const noCelebration = records.filter((r) => !r.progress_celebrated).length;
+  const noCelebration = records.filter((r) => r.progress_celebrated !== true).length;
   if (noCelebration >= 1) {
     alerts.push({
       type: "progress_not_celebrated",
       severity: "high",
-      message: `${noCelebration} ${noCelebration === 1 ? "goal has" : "goals have"} progress not celebrated — reinforce positive achievement`,
+      message: `${noCelebration} ${noCelebration === 1 ? "goal has" : "goals have"} no progress celebration evidenced — reinforce positive achievement`,
       id: "progress_not_celebrated",
     });
   }
 
   // No mentor involved
-  const noMentor = records.filter((r) => !r.mentor_involved).length;
+  const noMentor = records.filter((r) => r.mentor_involved !== true).length;
   if (noMentor >= 2) {
     alerts.push({
       type: "no_mentor",
       severity: "medium",
-      message: `${noMentor} goals without mentor involvement — consider mentoring support`,
+      message: `${noMentor} goals without evidenced mentor involvement — consider mentoring support`,
       id: "no_mentor",
     });
   }
 
   // Review not scheduled
-  const noReview = records.filter((r) => !r.review_scheduled).length;
+  const noReview = records.filter((r) => r.review_scheduled !== true).length;
   if (noReview >= 2) {
     alerts.push({
       type: "review_not_scheduled",
       severity: "medium",
-      message: `${noReview} goals without review scheduled — ensure ongoing progress tracking`,
+      message: `${noReview} goals without an evidenced scheduled review — ensure ongoing progress tracking`,
       id: "review_not_scheduled",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      child_led_goal: payload.childLedGoal ?? true,
-      realistic_timeframe: payload.realisticTimeframe ?? true,
-      resources_identified: payload.resourcesIdentified ?? true,
-      mentor_involved: payload.mentorInvolved ?? true,
-      progress_celebrated: payload.progressCelebrated ?? true,
-      barriers_addressed: payload.barriersAddressed ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      family_aware: payload.familyAware ?? true,
-      school_linked: payload.schoolLinked ?? true,
-      review_scheduled: payload.reviewScheduled ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_led_goal: payload.childLedGoal ?? null,
+      realistic_timeframe: payload.realisticTimeframe ?? null,
+      resources_identified: payload.resourcesIdentified ?? null,
+      mentor_involved: payload.mentorInvolved ?? null,
+      progress_celebrated: payload.progressCelebrated ?? null,
+      barriers_addressed: payload.barriersAddressed ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      family_aware: payload.familyAware ?? null,
+      school_linked: payload.schoolLinked ?? null,
+      review_scheduled: payload.reviewScheduled ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

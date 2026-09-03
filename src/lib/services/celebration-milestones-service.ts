@@ -67,18 +67,18 @@ export interface CelebrationMilestonesRecord {
   child_name: string;
   child_id: string | null;
   organised_by: string;
-  child_chose_celebration: boolean;
-  culturally_sensitive: boolean;
-  age_appropriate: boolean;
-  photos_consent_obtained: boolean;
-  family_included: boolean;
-  peers_involved: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  budget_approved: boolean;
-  memories_preserved: boolean;
-  recorded_promptly: boolean;
+  child_chose_celebration: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  culturally_sensitive: boolean | null;
+  age_appropriate: boolean | null;
+  photos_consent_obtained: boolean | null;
+  family_included: boolean | null;
+  peers_involved: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  budget_approved: boolean | null;
+  memories_preserved: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -157,12 +157,18 @@ export function computeCelebrationMilestonesMetrics(
   const missed = records.filter((r) => r.recognition_quality === "missed").length;
   const poorQuality = records.filter((r) => r.recognition_quality === "poor" || r.recognition_quality === "missed").length;
   const uncomfortable = records.filter((r) => r.child_response === "uncomfortable" || r.child_response === "upset").length;
-  const noFamily = records.filter((r) => !r.family_included).length;
+  const noFamily = records.filter((r) => r.family_included === false).length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof CelebrationMilestonesRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyCelebrationMilestonesAlerts(
   }
 
   // No child choice
-  const noChoice = records.filter((r) => !r.child_chose_celebration).length;
+  const noChoice = records.filter((r) => r.child_chose_celebration !== true).length;
   if (noChoice >= 1) {
     alerts.push({
       type: "no_child_choice",
       severity: "high",
-      message: `${noChoice} ${noChoice === 1 ? "celebration has" : "celebrations have"} child not choosing — ensure child-led celebrations`,
+      message: `${noChoice} ${noChoice === 1 ? "celebration has" : "celebrations have"} no child choice evidenced — ensure child-led celebrations`,
       id: "no_child_choice",
     });
   }
 
   // Not culturally sensitive
-  const notCultural = records.filter((r) => !r.culturally_sensitive).length;
+  const notCultural = records.filter((r) => r.culturally_sensitive !== true).length;
   if (notCultural >= 1) {
     alerts.push({
       type: "not_culturally_sensitive",
       severity: "high",
-      message: `${notCultural} ${notCultural === 1 ? "event is" : "events are"} not culturally sensitive — review cultural awareness`,
+      message: `${notCultural} ${notCultural === 1 ? "event is" : "events are"} without evidenced cultural sensitivity — review cultural awareness`,
       id: "not_culturally_sensitive",
     });
   }
 
   // No memories preserved
-  const noMemories = records.filter((r) => !r.memories_preserved).length;
+  const noMemories = records.filter((r) => r.memories_preserved !== true).length;
   if (noMemories >= 2) {
     alerts.push({
       type: "no_memories_preserved",
       severity: "medium",
-      message: `${noMemories} events without memories preserved — life story work requires celebration records`,
+      message: `${noMemories} events without evidenced memory preservation — life story work requires celebration records`,
       id: "no_memories_preserved",
     });
   }
 
   // No family included
-  const noFamily = records.filter((r) => !r.family_included).length;
+  const noFamily = records.filter((r) => r.family_included !== true).length;
   if (noFamily >= 2) {
     alerts.push({
       type: "no_family_included",
       severity: "medium",
-      message: `${noFamily} celebrations without family involvement — consider family inclusion where appropriate`,
+      message: `${noFamily} celebrations without evidenced family involvement — consider family inclusion where appropriate`,
       id: "no_family_included",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       organised_by: payload.organisedBy,
-      child_chose_celebration: payload.childChoseCelebration ?? true,
-      culturally_sensitive: payload.culturallySensitive ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      photos_consent_obtained: payload.photosConsentObtained ?? true,
-      family_included: payload.familyIncluded ?? true,
-      peers_involved: payload.peersInvolved ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      budget_approved: payload.budgetApproved ?? true,
-      memories_preserved: payload.memoriesPreserved ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_chose_celebration: payload.childChoseCelebration ?? null,
+      culturally_sensitive: payload.culturallySensitive ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      photos_consent_obtained: payload.photosConsentObtained ?? null,
+      family_included: payload.familyIncluded ?? null,
+      peers_involved: payload.peersInvolved ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      budget_approved: payload.budgetApproved ?? null,
+      memories_preserved: payload.memoriesPreserved ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
