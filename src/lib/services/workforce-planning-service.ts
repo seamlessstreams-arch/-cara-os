@@ -178,7 +178,7 @@ export function computeWorkforceMetrics(
   agency_count: number;
   agency_rate: number | null;
   staff_child_ratio: number;
-  meets_ratio: boolean;
+  meets_ratio: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   open_vacancies: number;
   avg_time_to_fill: number;
   succession_coverage: number | null;
@@ -249,7 +249,7 @@ export function computeWorkforceMetrics(
     agency_count: agencyCount,
     agency_rate: agencyRate,
     staff_child_ratio: latest?.staff_child_ratio ?? 0,
-    meets_ratio: latest?.meets_minimum_ratio ?? true,
+    meets_ratio: latest?.meets_minimum_ratio ?? null,
     open_vacancies: openVacancies,
     avg_time_to_fill: avgTimeToFill,
     succession_coverage: successionCoverage,

@@ -86,7 +86,7 @@ export interface ChildVoiceParticipationTrackingRow {
   child_felt_heard: boolean;
   outcome_fed_back: boolean;
   advocate_present: boolean;
-  age_appropriate_methods: boolean;
+  age_appropriate_methods: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   decision_changed_by_voice: boolean;
   child_satisfied_with_outcome: boolean;
   facilitator_name: string | null;
@@ -123,10 +123,14 @@ export function computeVoiceParticipationMetrics(
   const declined = rows.filter((r) => r.voice_outcome === "child_declined").length;
   const decisionChanged = rows.filter((r) => r.decision_changed_by_voice).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildVoiceParticipationTrackingRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -357,7 +361,7 @@ export async function createChildVoiceParticipation(input: {
       child_felt_heard: input.childFeltHeard ?? false,
       outcome_fed_back: input.outcomeFedBack ?? false,
       advocate_present: input.advocatePresent ?? false,
-      age_appropriate_methods: input.ageAppropriateMethods ?? true,
+      age_appropriate_methods: input.ageAppropriateMethods ?? null,
       decision_changed_by_voice: input.decisionChangedByVoice ?? false,
       child_satisfied_with_outcome: input.childSatisfiedWithOutcome ?? false,
       facilitator_name: input.facilitatorName ?? null,

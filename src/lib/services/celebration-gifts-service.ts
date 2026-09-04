@@ -125,9 +125,9 @@ export interface CelebrationGiftRow {
   gift_type: GiftType;
   gift_value: number;
   budget_limit: number | null;
-  within_budget: boolean;
+  within_budget: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   child_chose: boolean;
-  age_appropriate: boolean;
+  age_appropriate: boolean | null;
   receipt_kept: boolean;
   social_worker_aware: boolean | null;
   cultural_preference_considered: boolean;
@@ -297,9 +297,17 @@ export function computeMetrics(
   const pct = (filter: (r: CelebrationGiftRow) => boolean) =>
     total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
-  const withinBudgetRate = pct((r) => r.within_budget);
+  // Tri-state columns rate over the recorded subset — an unrecorded judgement
+  // must not read as a quiet "no".
+  const recordedRate = (field: keyof CelebrationGiftRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+
+  const withinBudgetRate = recordedRate("within_budget");
   const childChoiceRate = pct((r) => r.child_chose);
-  const ageAppropriateRate = pct((r) => r.age_appropriate);
+  const ageAppropriateRate = recordedRate("age_appropriate");
   const receiptKeptRate = pct((r) => r.receipt_kept);
   const culturalConsiderationRate = pct((r) => r.cultural_preference_considered);
   const celebrationActivityRate = pct((r) => r.celebration_activity_planned);
@@ -732,9 +740,9 @@ export async function createRecord(input: {
       gift_type: input.giftType ?? "Multiple Items",
       gift_value: input.giftValue ?? 0,
       budget_limit: input.budgetLimit ?? null,
-      within_budget: input.withinBudget ?? true,
+      within_budget: input.withinBudget ?? null,
       child_chose: input.childChose ?? false,
-      age_appropriate: input.ageAppropriate ?? true,
+      age_appropriate: input.ageAppropriate ?? null,
       receipt_kept: input.receiptKept ?? false,
       social_worker_aware: input.socialWorkerAware ?? null,
       cultural_preference_considered: input.culturalPreferenceConsidered ?? false,

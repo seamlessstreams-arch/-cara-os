@@ -28,38 +28,41 @@ function makeRow(
   overrides?: Partial<StaffReturnToWorkInterviewRow>,
 ): StaffReturnToWorkInterviewRow {
   return {
-    id: overrides?.id ?? crypto.randomUUID(),
-    home_id: overrides?.home_id ?? crypto.randomUUID(),
-    staff_name: overrides?.staff_name ?? "Staff A",
+    id: crypto.randomUUID(),
+    home_id: crypto.randomUUID(),
+    staff_name: "Staff A",
     interview_date:
-      overrides?.interview_date ?? todayStr(),
-    absence_type: overrides?.absence_type ?? "Short-term Sickness",
-    absence_duration_days: overrides?.absence_duration_days ?? 3,
-    interviewer_name: overrides?.interviewer_name ?? "D. Laville",
-    fit_to_return: overrides?.fit_to_return ?? true,
-    phased_return: overrides?.phased_return ?? false,
-    adjustments_required: overrides?.adjustments_required ?? false,
+      todayStr(),
+    absence_type: "Short-term Sickness",
+    absence_duration_days: 3,
+    interviewer_name: "D. Laville",
+    fit_to_return: true,
+    phased_return: false,
+    adjustments_required: false,
     adjustment_details:
       "adjustment_details" in (overrides ?? {})
         ? (overrides!.adjustment_details ?? null)
         : null,
     occupational_health_referral:
-      overrides?.occupational_health_referral ?? false,
-    support_plan_agreed: overrides?.support_plan_agreed ?? false,
-    trigger_level_reached: overrides?.trigger_level_reached ?? false,
+      false,
+    support_plan_agreed: false,
+    trigger_level_reached: false,
     trigger_level:
       "trigger_level" in (overrides ?? {})
         ? (overrides!.trigger_level ?? null)
         : null,
-    welfare_check_completed: overrides?.welfare_check_completed ?? true,
+    welfare_check_completed: true,
     follow_up_date:
       "follow_up_date" in (overrides ?? {})
         ? (overrides!.follow_up_date ?? null)
         : null,
     notes:
       "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -1163,5 +1166,21 @@ describe("makeRow helper", () => {
   it("respects explicit home_id override", () => {
     const row = makeRow({ home_id: "fixed-home" });
     expect(row.home_id).toBe("fixed-home");
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the fitness critical between recorded not-fit and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ fit_to_return: null, adjustments_required: false })])
+      .find((a) => a.type === "not_fit_no_adjustments");
+    const falseAlert = computeAlerts([makeRow({ fit_to_return: false, adjustments_required: false })])
+      .find((a) => a.type === "not_fit_no_adjustments");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("counts only recorded not-fit outcomes in the metric", () => {
+    const rows = [null, null, false].map((v, i) => makeRow({ id: `r-${i}`, fit_to_return: v }));
+    expect(computeMetrics(rows).not_fit_count).toBe(1);
   });
 });

@@ -85,7 +85,7 @@ export interface StaffBurnoutIndicatorRecord {
   peer_support_arranged: boolean;
   care_plan_reflects: boolean;
   team_informed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -173,10 +173,16 @@ export function computeBurnoutMetrics(
   ).length;
   const escalatedCount = records.filter((r) => r.support_status === "escalated").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffBurnoutIndicatorRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -389,7 +395,7 @@ export async function createBurnoutIndicator(
       peer_support_arranged: payload.peerSupportArranged ?? false,
       care_plan_reflects: payload.carePlanReflects ?? false,
       team_informed: payload.teamInformed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

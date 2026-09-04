@@ -146,7 +146,7 @@ export interface SleepSupportRow {
   disturbance_type: string | null;
   medication_involved: boolean;
   medication_type: string | null;
-  sleep_environment_suitable: boolean;
+  sleep_environment_suitable: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   screen_time_managed: boolean;
   routine_followed: boolean;
   young_person_input: boolean;
@@ -818,7 +818,7 @@ export async function createRecord(input: {
       disturbance_type: input.disturbanceType ?? null,
       medication_involved: input.medicationInvolved ?? false,
       medication_type: input.medicationType ?? null,
-      sleep_environment_suitable: input.sleepEnvironmentSuitable ?? true,
+      sleep_environment_suitable: input.sleepEnvironmentSuitable ?? null,
       screen_time_managed: input.screenTimeManaged ?? false,
       routine_followed: input.routineFollowed ?? false,
       young_person_input: input.youngPersonInput ?? false,

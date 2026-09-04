@@ -1477,3 +1477,15 @@ describe("edge cases", () => {
     expect(insights[1]).toContain("100%");
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the anonymity alert between recorded breach and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ anonymity_maintained: null })])
+      .find((a) => a.type === "anonymity_not_maintained");
+    const falseAlert = computeAlerts([makeRow({ anonymity_maintained: false })])
+      .find((a) => a.type === "anonymity_not_maintained");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+});

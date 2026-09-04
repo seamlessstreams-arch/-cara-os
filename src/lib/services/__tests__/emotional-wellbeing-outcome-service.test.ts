@@ -8,23 +8,26 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<EmotionalWellbeingOutcomeRow>): EmotionalWellbeingOutcomeRow {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    outcome_measure: overrides?.outcome_measure ?? "sdq_total",
-    raw_score: overrides?.raw_score ?? 12,
-    clinical_band: overrides?.clinical_band ?? "normal",
-    trend_direction: overrides?.trend_direction ?? "stable",
-    assessment_context: overrides?.assessment_context ?? "routine_review",
+    assessment_date: todayStr(),
+    outcome_measure: "sdq_total",
+    raw_score: 12,
+    clinical_band: "normal",
+    trend_direction: "stable",
+    assessment_context: "routine_review",
     previous_score: "previous_score" in (overrides ?? {}) ? (overrides!.previous_score ?? null) : null,
     clinician_name: "clinician_name" in (overrides ?? {}) ? (overrides!.clinician_name ?? null) : null,
-    child_self_reported: overrides?.child_self_reported ?? false,
-    discussed_with_child: overrides?.discussed_with_child ?? true,
-    informed_care_plan: overrides?.informed_care_plan ?? true,
-    referral_made: overrides?.referral_made ?? false,
+    child_self_reported: false,
+    discussed_with_child: true,
+    informed_care_plan: true,
+    referral_made: false,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

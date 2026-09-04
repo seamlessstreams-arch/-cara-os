@@ -52,7 +52,7 @@ export interface StaffExitInterviewRow {
   staff_name: string;
   departure_reason: DepartureReason;
   departure_date: string;
-  notice_period_met: boolean;
+  notice_period_met: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   knowledge_transfer_completed: boolean;
   handover_document_provided: boolean;
   equipment_returned: boolean;
@@ -100,9 +100,13 @@ export function computeMetrics(rows: StaffExitInterviewRow[]): {
   const incompleteCount = rows.filter((r) => r.compliance_status === "Incomplete").length;
   const overdueCount = rows.filter((r) => r.compliance_status === "Overdue").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffExitInterviewRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   // avg_satisfaction: average of non-null ratings, 1 decimal
@@ -300,7 +304,7 @@ export async function createStaffExitInterview(input: {
       staff_name: input.staffName,
       departure_reason: input.departureReason,
       departure_date: input.departureDate,
-      notice_period_met: input.noticePeriodMet ?? true,
+      notice_period_met: input.noticePeriodMet ?? null,
       knowledge_transfer_completed: input.knowledgeTransferCompleted ?? false,
       handover_document_provided: input.handoverDocumentProvided ?? false,
       equipment_returned: input.equipmentReturned ?? false,

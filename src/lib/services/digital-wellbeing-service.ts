@@ -151,7 +151,7 @@ export interface DigitalWellbeingRow {
   record_type: RecordType;
   platform_involved: string | null;
   risk_level: RiskLevel;
-  age_appropriate_use: boolean;
+  age_appropriate_use: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   privacy_settings_reviewed: boolean;
   contact_with_strangers_identified: boolean;
   harmful_content_exposure: boolean;
@@ -863,7 +863,7 @@ export async function createRecord(input: {
       record_type: input.recordType,
       platform_involved: input.platformInvolved ?? null,
       risk_level: input.riskLevel ?? "No Identified Risk",
-      age_appropriate_use: input.ageAppropriateUse ?? true,
+      age_appropriate_use: input.ageAppropriateUse ?? null,
       privacy_settings_reviewed: input.privacySettingsReviewed ?? false,
       contact_with_strangers_identified: input.contactWithStrangersIdentified ?? false,
       harmful_content_exposure: input.harmfulContentExposure ?? false,

@@ -127,9 +127,9 @@ export interface PocketMoneySavingsRow {
   savings_balance: number | null;
   junior_isa_balance: number | null;
   receipt_kept: boolean;
-  child_choice: boolean;
+  child_choice: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   budgeting_discussion: boolean;
-  age_appropriate: boolean;
+  age_appropriate: boolean | null;
   parental_consent: boolean | null;
   social_worker_aware: boolean | null;
   notes: string | null;
@@ -763,9 +763,9 @@ export async function createRecord(input: {
       savings_balance: input.savingsBalance ?? null,
       junior_isa_balance: input.juniorIsaBalance ?? null,
       receipt_kept: input.receiptKept ?? false,
-      child_choice: input.childChoice ?? true,
+      child_choice: input.childChoice ?? null,
       budgeting_discussion: input.budgetingDiscussion ?? false,
-      age_appropriate: input.ageAppropriate ?? true,
+      age_appropriate: input.ageAppropriate ?? null,
       parental_consent: input.parentalConsent ?? null,
       social_worker_aware: input.socialWorkerAware ?? null,
       notes: input.notes ?? null,

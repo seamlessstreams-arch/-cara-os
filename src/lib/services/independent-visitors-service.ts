@@ -91,7 +91,7 @@ export interface IndependentVisitorVisit {
   visit_type: VisitType;
   visitor_name: string;
   location: string | null;
-  child_attended: boolean;
+  child_attended: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   child_views: string | null;
   topics_discussed: unknown[];
   concerns_raised: boolean;
@@ -625,7 +625,7 @@ export async function createVisit(
       visit_type: input.visitType,
       visitor_name: input.visitorName,
       location: input.location ?? null,
-      child_attended: input.childAttended ?? true,
+      child_attended: input.childAttended ?? null,
       child_views: input.childViews ?? null,
       topics_discussed: input.topicsDiscussed ?? [],
       concerns_raised: input.concernsRaised ?? false,
