@@ -155,7 +155,7 @@ function evaluateArtifact(artifact: CaraArtifact): QualityCheckResult {
   if (!dignity_language_passed) issues.push("Language that may undermine child's dignity detected — revise wording");
 
   // Check 14: Draft watermark present (or approved)
-  const hasWatermark = content.includes("draft") || content.includes("cara-generated") ||
+  const _hasWatermark = content.includes("draft") || content.includes("cara-generated") ||
     artifact.status === "approved" || artifact.status === "committed";
   // This is checked but doesn't block overall_passed
 

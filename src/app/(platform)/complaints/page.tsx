@@ -20,7 +20,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -525,7 +524,6 @@ function NewComplaintDialog({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ComplaintsPage() {
-  const { currentUser } = useAuthContext();
   const qc = useQueryClient();
   const complaintsQuery = useQuery({
     queryKey: ["complaints", "home_oak", false],

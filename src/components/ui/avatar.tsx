@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 import { cn, initials } from "@/lib/utils";
 
 const COLORS = [
@@ -33,12 +34,17 @@ const sizes = {
   xl: "h-20 w-20 text-xl",
 };
 
+const SIZE_PX = { xs: 24, sm: 32, md: 40, lg: 56, xl: 80 } as const;
+
 export function Avatar({ name, src, size = "md", className }: AvatarProps) {
   if (src) {
     return (
-      <img
+      <Image
         src={src}
         alt={name}
+        width={SIZE_PX[size]}
+        height={SIZE_PX[size]}
+        unoptimized
         className={cn("rounded-full object-cover", sizes[size], className)}
       />
     );

@@ -1,5 +1,6 @@
-import { formatRate } from "@/lib/metrics/rate";
 "use client";
+
+import { formatRate } from "@/lib/metrics/rate";
 
 import { useEffect, useState } from "react";
 

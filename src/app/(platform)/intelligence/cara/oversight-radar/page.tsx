@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — Cara OVERSIGHT RADAR
@@ -200,6 +201,7 @@ function RadarItemCard({
   onMarkReviewed: (id: string) => void;
   onCreateTask: (item: OversightRadarItem) => void;
 }) {
+  const router = useRouter();
   const colours = SEVERITY_COLOURS[item.severity];
   const [reviewed, setReviewed] = useState(item.is_reviewed);
   const [taskCreated, setTaskCreated] = useState(false);
@@ -259,9 +261,7 @@ function RadarItemCard({
             size="sm"
             variant="outline"
             className="h-7 px-2.5 text-xs gap-1 bg-white/80"
-            onClick={() => {
-              window.location.href = "/intelligence/cara/oversight";
-            }}
+            onClick={() => router.push("/intelligence/cara/oversight")}
           >
             <BookOpen className="h-3.5 w-3.5" />Generate Oversight
           </Button>

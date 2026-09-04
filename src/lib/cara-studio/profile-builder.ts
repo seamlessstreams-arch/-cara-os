@@ -101,6 +101,15 @@ export async function buildChildProfile(
     .order("date", { ascending: false })
     .limit(5);
 
+  if (keyWork?.length) {
+    evidenceRefs.push({
+      type: "key_work",
+      id: childId,
+      date: todayStr(),
+      summary: `${keyWork.length} recent key work sessions (latest: ${keyWork[0]?.topics ?? "general"})`,
+    });
+  }
+
   // ── Fetch risk assessment ──────────────────────────────────────────────────
   const { data: riskAssessment } = await (sb.from("risk_assessments") as SB)
     .select("id, strengths, needs, risk_factors, protective_factors, updated_at")

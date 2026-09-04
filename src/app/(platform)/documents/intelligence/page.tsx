@@ -421,7 +421,7 @@ function DocumentCard({ doc }: { doc: UploadedDocument }) {
                       checked={selectedTaskIds.has(task.id)}
                       onChange={() => setSelectedTaskIds((prev) => {
                         const next = new Set(prev);
-                        next.has(task.id) ? next.delete(task.id) : next.add(task.id);
+                        if (next.has(task.id)) next.delete(task.id); else next.add(task.id);
                         return next;
                       })}
                       className="rounded mt-0.5 shrink-0"

@@ -1,5 +1,6 @@
-import type { JSX } from "react";
 "use client";
+
+import type { JSX } from "react";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NIGHT SUPERVISION QUALITY DASHBOARD WIDGET

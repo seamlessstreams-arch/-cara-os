@@ -648,7 +648,7 @@ export function DocumentUploadModal({
                       key={task.id}
                       onClick={() => setApprovedTaskIds((prev) => {
                         const next = new Set(prev);
-                        next.has(task.id) ? next.delete(task.id) : next.add(task.id);
+                        if (next.has(task.id)) next.delete(task.id); else next.add(task.id);
                         return next;
                       })}
                       className={cn(

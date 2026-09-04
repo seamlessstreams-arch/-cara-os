@@ -91,6 +91,12 @@ export async function GET() {
           : undefined,
     },
     {
+      label: "Late arrivals (recent shifts)",
+      value: lateArrivals.length,
+      signal: signal(lateArrivals.length === 0, lateArrivals.length <= 2),
+      note: lateArrivals.length > 2 ? "Repeated late starts can leave handovers short-staffed." : undefined,
+    },
+    {
       label: "Open / uncovered shifts",
       value: openShifts.length,
       signal: signal(openShifts.length === 0, openShifts.length <= 2),

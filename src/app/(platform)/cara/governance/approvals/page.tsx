@@ -66,7 +66,7 @@ export default function CaraApprovalsPage() {
   const [items, setItems] = useState(demoSeed(DEMO_APPROVALS));
   const [selected, setSelected] = useState<CaraApprovalRecord | null>(null);
 
-  const handleApprove = (id: string, notes: string) => {
+  const handleApprove = (id: string, _notes: string) => {
     setItems(prev => prev.map(item =>
       item.id === id ? { ...item, status: "approved" as const, reviewedAt: new Date().toISOString() } : item
     ));
