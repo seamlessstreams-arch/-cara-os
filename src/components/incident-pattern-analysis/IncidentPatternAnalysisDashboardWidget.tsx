@@ -218,7 +218,7 @@ function ChildProfileCard({
         )}
         {profile.deEscalationSuccessRate > 0 && (
           <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-            De-esc {profile.deEscalationSuccessRate}%
+            De-esc {formatRate(profile.deEscalationSuccessRate)}
           </span>
         )}
       </div>

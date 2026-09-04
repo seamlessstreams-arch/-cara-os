@@ -6,6 +6,7 @@
 // Tracks action plan progress, completion rates, and overdue items.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,7 +134,7 @@ export function OfstedActionPlanCard() {
               "text-lg font-bold tabular-nums",
               o.recommendation_completion_rate >= 80 ? "text-[--cs-success]" : o.recommendation_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.recommendation_completion_rate}%
+              {formatRate(o.recommendation_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>

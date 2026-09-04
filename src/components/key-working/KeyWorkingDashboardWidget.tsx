@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildKeyWorkingProfile { childId: string; childName: string; totalRecords: number; childEngagedRate: number; childViewRecordedRate: number; categoriesCovered: string[]; overallScore: number; }
@@ -73,18 +74,18 @@ export default function KeyWorkingDashboardWidget() {
       <Section title="Key-Working Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.keyWorkingQuality.totalRecords} />
-          <Stat label="Child Engaged" value={`${data.keyWorkingQuality.childEngagedRate}%`} />
-          <Stat label="Child View Recorded" value={`${data.keyWorkingQuality.childViewRecordedRate}%`} />
-          <Stat label="Goals Addressed" value={`${data.keyWorkingQuality.goalsAddressedRate}%`} />
+          <Stat label="Child Engaged" value={`${formatRate(data.keyWorkingQuality.childEngagedRate)}`} />
+          <Stat label="Child View Recorded" value={`${formatRate(data.keyWorkingQuality.childViewRecordedRate)}`} />
+          <Stat label="Goals Addressed" value={`${formatRate(data.keyWorkingQuality.goalsAddressedRate)}`} />
           <Stat label="Mood Improved" value={`${data.keyWorkingQuality.moodImprovedRate}%`} />
         </div>
       </Section>
 
       <Section title="Key-Working Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.keyWorkingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.keyWorkingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Child View Recorded" value={`${data.keyWorkingCompliance.childViewRecordedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.keyWorkingCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.keyWorkingCompliance.timelyRecordingRate)}`} />
+          <Stat label="Child View Recorded" value={`${formatRate(data.keyWorkingCompliance.childViewRecordedRate)}`} />
           <Stat label="Category Coverage" value={`${data.keyWorkingCompliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -108,11 +109,11 @@ export default function KeyWorkingDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Relationship Building" value={`${data.staffReadiness.relationshipBuildingRate}%`} />
+          <Stat label="Relationship Building" value={`${formatRate(data.staffReadiness.relationshipBuildingRate)}`} />
           <Stat label="Therapeutic Approaches" value={`${data.staffReadiness.therapeuticApproachesRate}%`} />
-          <Stat label="Child Voice Capture" value={`${data.staffReadiness.childVoiceCaptureRate}%`} />
+          <Stat label="Child Voice Capture" value={`${formatRate(data.staffReadiness.childVoiceCaptureRate)}`} />
           <Stat label="Care Plan Knowledge" value={`${data.staffReadiness.carePlanKnowledgeRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffReadiness.recordKeepingRate)}`} />
           <Stat label="Crisis Support" value={`${data.staffReadiness.crisisSupportRate}%`} />
         </div>
       </Section>
@@ -123,7 +124,7 @@ export default function KeyWorkingDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Engaged: {cp.childEngagedRate}%</span><span>View Recorded: {cp.childViewRecordedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Engaged: {formatRate(cp.childEngagedRate)}</span><span>View Recorded: {formatRate(cp.childViewRecordedRate)}</span></div>
               </div>
             ))}
           </div>

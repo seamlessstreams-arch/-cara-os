@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function ComplaintsAdvocacyAccessIntelligenceWidget() {
       <Section title="Complaints Handling" defaultOpen>
         <ScoreBar label="Handling" value={handling.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Resolved" value={`${handling.resolvedRate}%`} />
-          <Stat label="Within Timescale" value={`${handling.resolvedWithinTimescaleRate}%`} />
-          <Stat label="Advocacy Offered" value={`${handling.advocacyOfferedRate}%`} />
-          <Stat label="Satisfaction" value={`${handling.satisfactionRate}%`} />
+          <Stat label="Resolved" value={`${formatRate(handling.resolvedRate)}`} />
+          <Stat label="Within Timescale" value={`${formatRate(handling.resolvedWithinTimescaleRate)}`} />
+          <Stat label="Advocacy Offered" value={`${formatRate(handling.advocacyOfferedRate)}`} />
+          <Stat label="Satisfaction" value={`${formatRate(handling.satisfactionRate)}`} />
           <Stat label="Avg Days to Resolve" value={handling.averageDaysToResolve} />
         </div>
       </Section>
@@ -88,11 +89,11 @@ export function ComplaintsAdvocacyAccessIntelligenceWidget() {
       <Section title="Advocacy Access">
         <ScoreBar label="Advocacy" value={advocacy.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Contact Made" value={`${advocacy.contactMadeRate}%`} />
-          <Stat label="Independent" value={`${advocacy.independentRate}%`} />
-          <Stat label="Child Informed" value={`${advocacy.childInformedRate}%`} />
-          <Stat label="Timely Access" value={`${advocacy.timelyAccessRate}%`} />
-          <Stat label="Ongoing Support" value={`${advocacy.ongoingSupportRate}%`} />
+          <Stat label="Contact Made" value={`${formatRate(advocacy.contactMadeRate)}`} />
+          <Stat label="Independent" value={`${formatRate(advocacy.independentRate)}`} />
+          <Stat label="Child Informed" value={`${formatRate(advocacy.childInformedRate)}`} />
+          <Stat label="Timely Access" value={`${formatRate(advocacy.timelyAccessRate)}`} />
+          <Stat label="Ongoing Support" value={`${formatRate(advocacy.ongoingSupportRate)}`} />
         </div>
       </Section>
 
@@ -118,12 +119,12 @@ export function ComplaintsAdvocacyAccessIntelligenceWidget() {
       <Section title="Staff Complaints Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Complaints Procedure" value={`${staffReadiness.complaintsProcedureRate}%`} />
-          <Stat label="Advocacy Referral" value={`${staffReadiness.advocacyReferralRate}%`} />
-          <Stat label="Child Rights" value={`${staffReadiness.childRightsRate}%`} />
-          <Stat label="Conflict Resolution" value={`${staffReadiness.conflictResolutionRate}%`} />
-          <Stat label="Record Keeping" value={`${staffReadiness.recordKeepingRate}%`} />
-          <Stat label="Escalation" value={`${staffReadiness.escalationRate}%`} />
+          <Stat label="Complaints Procedure" value={`${formatRate(staffReadiness.complaintsProcedureRate)}`} />
+          <Stat label="Advocacy Referral" value={`${formatRate(staffReadiness.advocacyReferralRate)}`} />
+          <Stat label="Child Rights" value={`${formatRate(staffReadiness.childRightsRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(staffReadiness.conflictResolutionRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staffReadiness.recordKeepingRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(staffReadiness.escalationRate)}`} />
         </div>
       </Section>
 

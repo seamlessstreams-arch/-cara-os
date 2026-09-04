@@ -1,4 +1,5 @@
 "use client";
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -52,10 +53,10 @@ export function EnvironmentalSustainabilityIntelligenceWidget() {
         <ScoreBar label="Activity Engagement" value={activity.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Activities" value={activity.totalActivities} />
-          <Stat label="Engagement" value={`${activity.engagementRate}%`} />
-          <Stat label="Child Initiated" value={`${activity.childInitiatedRate}%`} />
-          <Stat label="Learning Recorded" value={`${activity.learningRecordedRate}%`} />
-          <Stat label="Staff Supported" value={`${activity.staffSupportedRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(activity.engagementRate)}`} />
+          <Stat label="Child Initiated" value={`${formatRate(activity.childInitiatedRate)}`} />
+          <Stat label="Learning Recorded" value={`${formatRate(activity.learningRecordedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(activity.staffSupportedRate)}`} />
         </div>
       </Section>
       <Section title="Environmental Practice">
@@ -64,7 +65,7 @@ export function EnvironmentalSustainabilityIntelligenceWidget() {
           <Stat label="Total Activities" value={practice.totalActivities} />
           <Stat label="Type Diversity" value={practice.activityTypeDiversity} />
           <Stat label="Frequency Score" value={practice.frequencyScore} />
-          <Stat label="Sustained Engagement" value={`${practice.sustainedEngagementRate}%`} />
+          <Stat label="Sustained Engagement" value={`${formatRate(practice.sustainedEngagementRate)}`} />
         </div>
       </Section>
       <Section title="Sustainability Policy">
@@ -79,11 +80,11 @@ export function EnvironmentalSustainabilityIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Environmental Awareness" value={`${staff.environmentalAwarenessRate}%`} />
-          <Stat label="Recycling Procedures" value={`${staff.recyclingProceduresRate}%`} />
-          <Stat label="Energy Conservation" value={`${staff.energyConservationRate}%`} />
-          <Stat label="Sustainable Living" value={`${staff.sustainableLivingRate}%`} />
-          <Stat label="Outdoor Learning" value={`${staff.outdoorLearningRate}%`} />
+          <Stat label="Environmental Awareness" value={`${formatRate(staff.environmentalAwarenessRate)}`} />
+          <Stat label="Recycling Procedures" value={`${formatRate(staff.recyclingProceduresRate)}`} />
+          <Stat label="Energy Conservation" value={`${formatRate(staff.energyConservationRate)}`} />
+          <Stat label="Sustainable Living" value={`${formatRate(staff.sustainableLivingRate)}`} />
+          <Stat label="Outdoor Learning" value={`${formatRate(staff.outdoorLearningRate)}`} />
         </div>
       </Section>
       {profiles.length > 0 && (<Section title={`Child Profiles (${profiles.length})`}>{profiles.map((p) => (<div key={p.childId as string} className="mb-2 p-2 bg-gray-50 rounded"><div className="flex justify-between text-sm font-medium"><span>{p.childName as string}</span><span>{p.overallScore as number}/10</span></div><p className="text-xs text-gray-500 mt-1">{p.totalActivities as number} activities · Engagement {p.engagementScore as number} · Initiated {p.childInitiatedRate as number}% · Types {p.activityTypeDiversity as number}</p></div>))}</Section>)}

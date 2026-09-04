@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
@@ -86,11 +87,11 @@ export function HomeOutcomeStarNeedsIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.needs_addressed_rate ?? 0) >= 85 ? "bg-green-50" : (d.needs_addressed_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.needs_addressed_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.needs_addressed_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.needs_addressed_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.needs_addressed_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.needs_addressed_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.needs_addressed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Needs Met</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.kpi_met_rate ?? 0) >= 80 ? "bg-green-50" : (d.kpi_met_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.kpi_met_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.kpi_met_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.kpi_met_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.kpi_met_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.kpi_met_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.kpi_met_rate)}</p>
               <p className="text-[9px] text-muted-foreground">KPIs Met</p>
             </div>
           </div>

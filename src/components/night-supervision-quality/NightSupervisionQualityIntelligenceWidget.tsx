@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function NightSupervisionQualityIntelligenceWidget() {
       <Section title="Check Quality" defaultOpen>
         <ScoreBar label="Check Quality" value={checkQuality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Satisfactory" value={`${checkQuality.satisfactoryRate}%`} />
-          <Stat label="Children Accounted" value={`${checkQuality.childrenAccountedForRate}%`} />
-          <Stat label="Documented" value={`${checkQuality.documentedRate}%`} />
-          <Stat label="Environment Safe" value={`${checkQuality.environmentSafeRate}%`} />
+          <Stat label="Satisfactory" value={`${formatRate(checkQuality.satisfactoryRate)}`} />
+          <Stat label="Children Accounted" value={`${formatRate(checkQuality.childrenAccountedForRate)}`} />
+          <Stat label="Documented" value={`${formatRate(checkQuality.documentedRate)}`} />
+          <Stat label="Environment Safe" value={`${formatRate(checkQuality.environmentSafeRate)}`} />
         </div>
       </Section>
 
       <Section title="Night Compliance">
         <ScoreBar label="Compliance" value={nightCompliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Response Time" value={`${nightCompliance.responseTimeAdequateRate}%`} />
-          <Stat label="Handover" value={`${nightCompliance.handoverRate}%`} />
-          <Stat label="Incident Report" value={`${nightCompliance.incidentReportRate}%`} />
+          <Stat label="Response Time" value={`${formatRate(nightCompliance.responseTimeAdequateRate)}`} />
+          <Stat label="Handover" value={`${formatRate(nightCompliance.handoverRate)}`} />
+          <Stat label="Incident Report" value={`${formatRate(nightCompliance.incidentReportRate)}`} />
           <Stat label="Check Types" value={`${nightCompliance.uniqueCheckTypes}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function NightSupervisionQualityIntelligenceWidget() {
       <Section title="Staff Night Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Night Supervision" value={`${staffReadiness.nightSupervisionSkillsRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingAtNightRate}%`} />
-          <Stat label="First Aid" value={`${staffReadiness.emergencyFirstAidRate}%`} />
-          <Stat label="Fire Evacuation" value={`${staffReadiness.fireEvacuationRate}%`} />
-          <Stat label="Child Protocol" value={`${staffReadiness.childProtocolRate}%`} />
-          <Stat label="Documentation" value={`${staffReadiness.documentationSkillsRate}%`} />
+          <Stat label="Night Supervision" value={`${formatRate(staffReadiness.nightSupervisionSkillsRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staffReadiness.safeguardingAtNightRate)}`} />
+          <Stat label="First Aid" value={`${formatRate(staffReadiness.emergencyFirstAidRate)}`} />
+          <Stat label="Fire Evacuation" value={`${formatRate(staffReadiness.fireEvacuationRate)}`} />
+          <Stat label="Child Protocol" value={`${formatRate(staffReadiness.childProtocolRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staffReadiness.documentationSkillsRate)}`} />
         </div>
       </Section>
 

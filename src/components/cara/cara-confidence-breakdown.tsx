@@ -8,6 +8,7 @@
 // outputs or needs configuration adjustment.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -185,7 +186,7 @@ export function CaraConfidenceBreakdown({
                 : "text-red-600",
           )}
         >
-          {stats.approvalRate}%
+          {formatRate(stats.approvalRate)}
         </span>
       </div>
     </div>

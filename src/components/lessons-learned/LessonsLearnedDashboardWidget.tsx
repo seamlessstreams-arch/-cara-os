@@ -11,6 +11,7 @@
 // - Immediate actions for improvement
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ReviewCompliance {
@@ -270,7 +271,7 @@ export function LessonsLearnedDashboardWidget() {
         </div>
         <div className="text-center p-2 bg-gray-50 rounded">
           <div className="text-lg font-bold text-red-600">
-            {data.repeatIncidentRate}%
+            {formatRate(data.repeatIncidentRate)}
           </div>
           <div className="text-[10px] text-gray-500 uppercase">Repeat Rate</div>
         </div>

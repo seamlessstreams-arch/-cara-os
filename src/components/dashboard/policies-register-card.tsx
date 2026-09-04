@@ -6,6 +6,7 @@
 // Reg 38 (policies and procedures), Reg 13 (leadership & management).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,7 @@ export function PoliciesRegisterCard() {
               "text-lg font-bold tabular-nums",
               (o.acknowledgement_rate ?? 0) >= 95 ? "text-[--cs-success]" : (o.acknowledgement_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.acknowledgement_rate}%
+              {formatRate(o.acknowledgement_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Acknowledged</p>
           </div>

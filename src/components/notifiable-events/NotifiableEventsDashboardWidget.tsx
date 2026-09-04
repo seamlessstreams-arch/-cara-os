@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface EventMetrics {
@@ -112,7 +113,7 @@ export function NotifiableEventsDashboardWidget({ homeId = "home-oak" }: Props) 
             data.complianceRate >= 70 ? "bg-amber-100 text-amber-800" :
             "bg-red-100 text-red-800"
           }`}>
-            {data.complianceRate}% compliant
+            {formatRate(data.complianceRate)} compliant
           </span>
         </div>
       </div>

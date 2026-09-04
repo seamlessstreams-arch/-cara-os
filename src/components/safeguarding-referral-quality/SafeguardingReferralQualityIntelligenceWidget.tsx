@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -70,8 +71,8 @@ export function SafeguardingReferralQualityIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Total Referrals" value={referralQuality.totalReferrals as number} />
-        <Stat label="Timely Response" value={`${referralQuality.timelyResponseRate}%`} />
-        <Stat label="Multi-Agency" value={`${referralQuality.multiAgencyRate}%`} />
+        <Stat label="Timely Response" value={`${formatRateLoose(referralQuality.timelyResponseRate)}`} />
+        <Stat label="Multi-Agency" value={`${formatRateLoose(referralQuality.multiAgencyRate)}`} />
       </div>
 
       <Section title="Component Scores" defaultOpen>
@@ -83,16 +84,16 @@ export function SafeguardingReferralQualityIntelligenceWidget() {
 
       <Section title="Referral Quality Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Appropriate Outcome" value={`${referralQuality.appropriateOutcomeRate}%`} />
-          <Stat label="Child Informed" value={`${referralQuality.childInformedRate}%`} />
+          <Stat label="Appropriate Outcome" value={`${formatRateLoose(referralQuality.appropriateOutcomeRate)}`} />
+          <Stat label="Child Informed" value={`${formatRateLoose(referralQuality.childInformedRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Documented Rate" value={`${referralCompliance.documentedRate}%`} />
-          <Stat label="Management Oversight" value={`${referralCompliance.managementOversightRate}%`} />
-          <Stat label="Lessons Learned" value={`${referralCompliance.lessonsLearnedRate}%`} />
+          <Stat label="Documented Rate" value={`${formatRateLoose(referralCompliance.documentedRate)}`} />
+          <Stat label="Management Oversight" value={`${formatRateLoose(referralCompliance.managementOversightRate)}`} />
+          <Stat label="Lessons Learned" value={`${formatRateLoose(referralCompliance.lessonsLearnedRate)}`} />
           <Stat label="Type Diversity" value={`${referralCompliance.referralTypeDiversityRatio}%`} />
         </div>
       </Section>

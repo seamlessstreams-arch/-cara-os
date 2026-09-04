@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, ArrowRight } from "lucide-react";
@@ -53,7 +54,7 @@ export function PremisesComplianceCard() {
             </div>
             <p className="mt-0.5 text-xs text-slate-600">
               {s
-                ? `${breaches > 0 ? `${breaches} overdue/failed safety check${breaches === 1 ? "" : "s"}` : "All recorded checks in date"}${s.compliance_rate != null ? ` — ${s.compliance_rate}% current` : ""}.`
+                ? `${breaches > 0 ? `${breaches} overdue/failed safety check${breaches === 1 ? "" : "s"}` : "All recorded checks in date"}${s.compliance_rate != null ? ` — ${formatRate(s.compliance_rate)} current` : ""}.`
                 : "Are all statutory building-safety checks and certificates in date?"}
             </p>
           </div>

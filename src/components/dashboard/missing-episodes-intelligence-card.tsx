@@ -6,6 +6,7 @@
 // CHR 2015 Reg 12/34. SCCIF: Helped & Protected — Missing from care.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -101,7 +102,7 @@ export function MissingEpisodesIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (p.return_interview_completion_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (p.return_interview_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{p.return_interview_completion_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (p.return_interview_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(p.return_interview_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">RHI Done</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", p.contextual_safeguarding_flagged === 0 ? "bg-green-50" : "bg-amber-50")}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,20 +82,20 @@ export function KeyWorkingEffectivenessIntelligenceWidget() {
 
       <Section title="Session Effectiveness" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Excellent/Good Rate" value={`${se.excellentGoodRate}%`} />
-          <Stat label="Child Engagement" value={`${se.childEngagementRate}%`} />
-          <Stat label="Child Voice" value={`${se.childVoiceRate}%`} />
-          <Stat label="Recording Compliance" value={`${se.recordingComplianceRate}%`} />
+          <Stat label="Excellent/Good Rate" value={`${formatRate(se.excellentGoodRate)}`} />
+          <Stat label="Child Engagement" value={`${formatRate(se.childEngagementRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(se.childVoiceRate)}`} />
+          <Stat label="Recording Compliance" value={`${formatRate(se.recordingComplianceRate)}`} />
           <Stat label="Avg Duration" value={`${se.averageDurationMinutes} min`} />
-          <Stat label="Actions Completion" value={`${se.actionsCompletionRate}%`} />
+          <Stat label="Actions Completion" value={`${formatRate(se.actionsCompletionRate)}`} />
         </div>
       </Section>
 
       <Section title="Relationship Quality">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Strong/Developing" value={`${rq.strongDevelopingRate}%`} />
-          <Stat label="Child Feels Listened" value={`${rq.childFeelsListenedRate}%`} />
-          <Stat label="Child Trusts KW" value={`${rq.childTrustsRate}%`} />
+          <Stat label="Strong/Developing" value={`${formatRateLoose(rq.strongDevelopingRate)}`} />
+          <Stat label="Child Feels Listened" value={`${formatRateLoose(rq.childFeelsListenedRate)}`} />
+          <Stat label="Child Trusts KW" value={`${formatRateLoose(rq.childTrustsRate)}`} />
           <Stat label="Avg Consistency" value={rq.averageConsistencyRating} />
           <Stat label="High Turnover" value={rq.highTurnoverCount} />
         </div>
@@ -102,21 +103,21 @@ export function KeyWorkingEffectivenessIntelligenceWidget() {
 
       <Section title="Care Plan Integration">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Comprehensive/Partial" value={`${cpi.comprehensivePartialRate}%`} />
-          <Stat label="Review Attendance" value={`${cpi.reviewAttendanceRate}%`} />
-          <Stat label="Reports Timely" value={`${cpi.reportsTimelyRate}%`} />
-          <Stat label="Child Views Represented" value={`${cpi.childViewsRepresentedRate}%`} />
-          <Stat label="Outcomes Focused" value={`${cpi.outcomesFocusedRate}%`} />
+          <Stat label="Comprehensive/Partial" value={`${formatRateLoose(cpi.comprehensivePartialRate)}`} />
+          <Stat label="Review Attendance" value={`${formatRateLoose(cpi.reviewAttendanceRate)}`} />
+          <Stat label="Reports Timely" value={`${formatRateLoose(cpi.reportsTimelyRate)}`} />
+          <Stat label="Child Views Represented" value={`${formatRateLoose(cpi.childViewsRepresentedRate)}`} />
+          <Stat label="Outcomes Focused" value={`${formatRateLoose(cpi.outcomesFocusedRate)}`} />
         </div>
       </Section>
 
       <Section title="Professional Development">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Training Compliance" value={`${pd.trainingComplianceRate}%`} />
-          <Stat label="Regular Supervision" value={`${pd.supervisionRegularRate}%`} />
-          <Stat label="Reflective Practice" value={`${pd.reflectivePracticeRate}%`} />
-          <Stat label="Manageable Caseload" value={`${pd.managableCaseloadRate}%`} />
-          <Stat label="Peer Support" value={`${pd.peerSupportRate}%`} />
+          <Stat label="Training Compliance" value={`${formatRate(pd.trainingComplianceRate)}`} />
+          <Stat label="Regular Supervision" value={`${formatRateLoose(pd.supervisionRegularRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(pd.reflectivePracticeRate)}`} />
+          <Stat label="Manageable Caseload" value={`${formatRateLoose(pd.managableCaseloadRate)}`} />
+          <Stat label="Peer Support" value={`${formatRateLoose(pd.peerSupportRate)}`} />
         </div>
       </Section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,21 +78,21 @@ export function AnnualDevelopmentReviewIntelligenceWidget() {
       <Section title="Review Timeliness" defaultOpen>
         <ScoreBar label="Timeliness Score" value={timeliness.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Held On Time" value={`${timeliness.heldOnTimeRate}%`} />
-          <Stat label="IRO Present" value={`${timeliness.iroPresenceRate}%`} />
-          <Stat label="Minutes Distributed" value={`${timeliness.minutesDistributedRate}%`} />
-          <Stat label="Action Plan Created" value={`${timeliness.actionPlanCreatedRate}%`} />
+          <Stat label="Held On Time" value={`${formatRateLoose(timeliness.heldOnTimeRate)}`} />
+          <Stat label="IRO Present" value={`${formatRateLoose(timeliness.iroPresenceRate)}`} />
+          <Stat label="Minutes Distributed" value={`${formatRateLoose(timeliness.minutesDistributedRate)}`} />
+          <Stat label="Action Plan Created" value={`${formatRateLoose(timeliness.actionPlanCreatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Child Participation">
         <ScoreBar label="Participation Score" value={participation.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Fully Participated" value={`${participation.fullyParticipatedRate}%`} />
-          <Stat label="Views Submitted+" value={`${participation.viewsSubmittedPlusRate}%`} />
-          <Stat label="Multi-Agency" value={`${participation.multiAgencyAttendanceRate}%`} />
+          <Stat label="Fully Participated" value={`${formatRateLoose(participation.fullyParticipatedRate)}`} />
+          <Stat label="Views Submitted+" value={`${formatRateLoose(participation.viewsSubmittedPlusRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRateLoose(participation.multiAgencyAttendanceRate)}`} />
           <Stat label="Avg Attendees" value={participation.averageAttendeesPerReview as number} />
-          <Stat label="Prev Goals Reviewed" value={`${participation.previousGoalsReviewedRate}%`} />
+          <Stat label="Prev Goals Reviewed" value={`${formatRateLoose(participation.previousGoalsReviewedRate)}`} />
         </div>
       </Section>
 
@@ -99,9 +100,9 @@ export function AnnualDevelopmentReviewIntelligenceWidget() {
         <ScoreBar label="Goal Achievement Score" value={goals.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Goals" value={goals.totalGoals as number} />
-          <Stat label="Achieved" value={`${goals.achievedRate}%`} />
-          <Stat label="On Track+" value={`${goals.onTrackPlusRate}%`} />
-          <Stat label="Not Met" value={`${goals.notMetRate}%`} />
+          <Stat label="Achieved" value={`${formatRateLoose(goals.achievedRate)}`} />
+          <Stat label="On Track+" value={`${formatRateLoose(goals.onTrackPlusRate)}`} />
+          <Stat label="Not Met" value={`${formatRateLoose(goals.notMetRate)}`} />
           <Stat label="Goals / Child" value={goals.goalsPerChild as number} />
           <Stat label="Unique Children" value={goals.uniqueChildren as number} />
         </div>
@@ -111,11 +112,11 @@ export function AnnualDevelopmentReviewIntelligenceWidget() {
         <ScoreBar label="Staff Readiness Score" value={staffReadiness.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staffReadiness.totalStaff as number} />
-          <Stat label="Review Process" value={`${staffReadiness.reviewProcessRate}%`} />
-          <Stat label="Child Participation" value={`${staffReadiness.childParticipationRate}%`} />
-          <Stat label="Goal Setting" value={`${staffReadiness.goalSettingRate}%`} />
-          <Stat label="Multi-Agency Working" value={`${staffReadiness.multiAgencyWorkingRate}%`} />
-          <Stat label="Overall Ready" value={`${staffReadiness.overallReadyRate}%`} />
+          <Stat label="Review Process" value={`${formatRateLoose(staffReadiness.reviewProcessRate)}`} />
+          <Stat label="Child Participation" value={`${formatRateLoose(staffReadiness.childParticipationRate)}`} />
+          <Stat label="Goal Setting" value={`${formatRateLoose(staffReadiness.goalSettingRate)}`} />
+          <Stat label="Multi-Agency Working" value={`${formatRateLoose(staffReadiness.multiAgencyWorkingRate)}`} />
+          <Stat label="Overall Ready" value={`${formatRateLoose(staffReadiness.overallReadyRate)}`} />
         </div>
       </Section>
 

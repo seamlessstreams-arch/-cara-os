@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/ui/print-button";
@@ -982,7 +983,7 @@ export default function OfstedEvidenceRoomPage() {
                   <p className="text-xs text-muted-foreground">Evidence Items</p>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-[var(--cs-navy)]">{generatedPack.coveragePercent}%</p>
+                  <p className="text-2xl font-bold text-[var(--cs-navy)]">{formatRate(generatedPack.coveragePercent)}</p>
                   <p className="text-xs text-muted-foreground">Category Coverage</p>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-3 text-center">

@@ -12,6 +12,7 @@
 // - Regulatory framework references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local Type Definitions ────────────────────────────────────────────────
@@ -292,10 +293,10 @@ export function TransportSafetyComplianceDashboardWidget() {
           {/* Vehicle Safety */}
           <Section title="Vehicle Safety" defaultOpen>
             <StatRow label="Total vehicles" value={data.vehicleSafety.totalVehicles} />
-            <StatRow label="Check passed rate" value={`${data.vehicleSafety.checkPassedRate}%`} />
-            <StatRow label="Service current" value={`${data.vehicleSafety.serviceCurrentRate}%`} />
-            <StatRow label="MOT valid" value={`${data.vehicleSafety.motValidRate}%`} />
-            <StatRow label="Insurance valid" value={`${data.vehicleSafety.insuranceValidRate}%`} />
+            <StatRow label="Check passed rate" value={`${formatRate(data.vehicleSafety.checkPassedRate)}`} />
+            <StatRow label="Service current" value={`${formatRate(data.vehicleSafety.serviceCurrentRate)}`} />
+            <StatRow label="MOT valid" value={`${formatRate(data.vehicleSafety.motValidRate)}`} />
+            <StatRow label="Insurance valid" value={`${formatRate(data.vehicleSafety.insuranceValidRate)}`} />
             <StatRow label="Failed checks" value={data.vehicleSafety.failedCount} />
             <StatRow label="Overdue checks" value={data.vehicleSafety.overdueCount} />
             <StatRow label="Score" value={`${data.vehicleSafety.vehicleSafetyScore}/25`} />
@@ -304,11 +305,11 @@ export function TransportSafetyComplianceDashboardWidget() {
           {/* Journey Compliance */}
           <Section title="Journey Compliance">
             <StatRow label="Total journeys" value={data.journeyCompliance.totalJourneys} />
-            <StatRow label="Risk assessment rate" value={`${data.journeyCompliance.riskAssessmentRate}%`} />
-            <StatRow label="Seatbelt check rate" value={`${data.journeyCompliance.seatbeltCheckRate}%`} />
-            <StatRow label="Journey log rate" value={`${data.journeyCompliance.journeyLogRate}%`} />
-            <StatRow label="Incident rate" value={`${data.journeyCompliance.incidentRate}%`} />
-            <StatRow label="Full compliance rate" value={`${data.journeyCompliance.completionRate}%`} />
+            <StatRow label="Risk assessment rate" value={`${formatRate(data.journeyCompliance.riskAssessmentRate)}`} />
+            <StatRow label="Seatbelt check rate" value={`${formatRate(data.journeyCompliance.seatbeltCheckRate)}`} />
+            <StatRow label="Journey log rate" value={`${formatRate(data.journeyCompliance.journeyLogRate)}`} />
+            <StatRow label="Incident rate" value={`${formatRate(data.journeyCompliance.incidentRate)}`} />
+            <StatRow label="Full compliance rate" value={`${formatRate(data.journeyCompliance.completionRate)}`} />
             <StatRow label="Score" value={`${data.journeyCompliance.journeyComplianceScore}/25`} />
             {Object.keys(data.journeyCompliance.journeysByPurpose).length > 0 && (
               <div className="text-xs text-gray-500 mt-1">
@@ -322,11 +323,11 @@ export function TransportSafetyComplianceDashboardWidget() {
           {/* Driver Competence */}
           <Section title="Driver Competence">
             <StatRow label="Total drivers" value={data.driverCompetence.totalDrivers} />
-            <StatRow label="Licence valid" value={`${data.driverCompetence.licenceValidRate}%`} />
-            <StatRow label="DBS checked" value={`${data.driverCompetence.dbsCheckedRate}%`} />
-            <StatRow label="Training completed" value={`${data.driverCompetence.trainingCompletedRate}%`} />
-            <StatRow label="First aid trained" value={`${data.driverCompetence.firstAidRate}%`} />
-            <StatRow label="Assessment current" value={`${data.driverCompetence.assessmentCurrentRate}%`} />
+            <StatRow label="Licence valid" value={`${formatRate(data.driverCompetence.licenceValidRate)}`} />
+            <StatRow label="DBS checked" value={`${formatRate(data.driverCompetence.dbsCheckedRate)}`} />
+            <StatRow label="Training completed" value={`${formatRate(data.driverCompetence.trainingCompletedRate)}`} />
+            <StatRow label="First aid trained" value={`${formatRate(data.driverCompetence.firstAidRate)}`} />
+            <StatRow label="Assessment current" value={`${formatRate(data.driverCompetence.assessmentCurrentRate)}`} />
             <StatRow label="Score" value={`${data.driverCompetence.driverCompetenceScore}/25`} />
           </Section>
 
@@ -335,9 +336,9 @@ export function TransportSafetyComplianceDashboardWidget() {
             <StatRow label="Total incidents" value={data.incidentResponse.totalIncidents} />
             {data.incidentResponse.totalIncidents > 0 ? (
               <>
-                <StatRow label="Reported timely" value={`${data.incidentResponse.reportedTimelyRate}%`} />
-                <StatRow label="Investigation completed" value={`${data.incidentResponse.investigationCompletedRate}%`} />
-                <StatRow label="Preventive measures" value={`${data.incidentResponse.preventiveMeasuresRate}%`} />
+                <StatRow label="Reported timely" value={`${formatRate(data.incidentResponse.reportedTimelyRate)}`} />
+                <StatRow label="Investigation completed" value={`${formatRate(data.incidentResponse.investigationCompletedRate)}`} />
+                <StatRow label="Preventive measures" value={`${formatRate(data.incidentResponse.preventiveMeasuresRate)}`} />
                 <StatRow label="Serious incidents" value={data.incidentResponse.seriousIncidentCount} />
                 {Object.keys(data.incidentResponse.bySeverity).length > 0 && (
                   <div className="text-xs text-gray-500 mt-1">

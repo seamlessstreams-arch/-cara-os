@@ -7,6 +7,7 @@
 // CHR 2015 Reg 5, 6, 13. SCCIF: "Progress and outcomes."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -179,7 +180,7 @@ export function ChildOutcomeIntelligenceCard({ childId }: { childId: string }) {
               <div className="flex items-center justify-center gap-1">
                 <BarChart3 className={cn("h-3.5 w-3.5", (d.progress_summary.yp_voice_rate ?? 0) >= 80 ? "text-green-500" : (d.progress_summary.yp_voice_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", (d.progress_summary.yp_voice_rate ?? 0) >= 80 ? "text-green-600" : (d.progress_summary.yp_voice_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
-                  {d.progress_summary.yp_voice_rate}%
+                  {formatRate(d.progress_summary.yp_voice_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">YP Voice</p>
@@ -212,7 +213,7 @@ export function ChildOutcomeIntelligenceCard({ childId }: { childId: string }) {
               <p className="font-medium text-slate-700 mb-1">Review Activity</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Total reviews: <span className="font-medium text-slate-600">{d.review_compliance.total_reviews}</span></p>
-                <p>YP participated: <span className={d.review_compliance.yp_participation_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.review_compliance.yp_participation_rate}%</span></p>
+                <p>YP participated: <span className={d.review_compliance.yp_participation_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.review_compliance.yp_participation_rate)}</span></p>
                 {d.review_compliance.overdue_reviews > 0 && (
                   <p className="text-red-600 font-medium">{d.review_compliance.overdue_reviews} reviews overdue</p>
                 )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function IncidentsIntelligenceWidget() {
       <Section title="Incident Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="De-escalation Attempted" value={`${quality.deEscalationAttemptedRate}%`} />
-          <Stat label="Child View Recorded" value={`${quality.childViewRecordedRate}%`} />
-          <Stat label="Debrief Conducted" value={`${quality.debriefConductedRate}%`} />
-          <Stat label="Lessons Identified" value={`${quality.lessonsIdentifiedRate}%`} />
+          <Stat label="De-escalation Attempted" value={`${formatRate(quality.deEscalationAttemptedRate)}`} />
+          <Stat label="Child View Recorded" value={`${formatRate(quality.childViewRecordedRate)}`} />
+          <Stat label="Debrief Conducted" value={`${formatRate(quality.debriefConductedRate)}`} />
+          <Stat label="Lessons Identified" value={`${formatRate(quality.lessonsIdentifiedRate)}`} />
         </div>
       </Section>
 
       <Section title="Incident Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="De-escalation Attempted" value={`${compliance.deEscalationAttemptedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="De-escalation Attempted" value={`${formatRate(compliance.deEscalationAttemptedRate)}`} />
           <Stat label="Categories Covered" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function IncidentsIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="De-escalation Skills" value={`${staff.deEscalationSkillsRate}%`} />
-          <Stat label="Incident Recording" value={`${staff.incidentRecordingRate}%`} />
-          <Stat label="Restraint Certification" value={`${staff.restraintCertificationRate}%`} />
-          <Stat label="Post-Incident Support" value={`${staff.postIncidentSupportRate}%`} />
-          <Stat label="Child Protection" value={`${staff.childProtectionAwarenessRate}%`} />
-          <Stat label="Conflict Resolution" value={`${staff.conflictResolutionRate}%`} />
+          <Stat label="De-escalation Skills" value={`${formatRate(staff.deEscalationSkillsRate)}`} />
+          <Stat label="Incident Recording" value={`${formatRate(staff.incidentRecordingRate)}`} />
+          <Stat label="Restraint Certification" value={`${formatRate(staff.restraintCertificationRate)}`} />
+          <Stat label="Post-Incident Support" value={`${formatRate(staff.postIncidentSupportRate)}`} />
+          <Stat label="Child Protection" value={`${formatRate(staff.childProtectionAwarenessRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(staff.conflictResolutionRate)}`} />
         </div>
       </Section>
 

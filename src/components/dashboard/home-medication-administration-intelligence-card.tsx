@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -72,19 +73,19 @@ export function HomeMedicationAdministrationIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Given</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.administration_rate >= 98 ? "bg-green-50" : d.administration_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.administration_rate >= 98 ? "text-[--cs-success]" : d.administration_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.administration_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.administration_rate >= 98 ? "text-[--cs-success]" : d.administration_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.administration_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Compliance</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.on_time_rate >= 95 ? "bg-green-50" : d.on_time_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.on_time_rate >= 95 ? "text-[--cs-success]" : d.on_time_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.on_time_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.on_time_rate >= 95 ? "text-[--cs-success]" : d.on_time_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.on_time_rate)}</p>
               <p className="text-[9px] text-muted-foreground">On Time</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.witness_rate >= 95 ? "bg-green-50" : d.witness_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.witness_rate >= 95 ? "text-[--cs-success]" : d.witness_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.witness_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.witness_rate >= 95 ? "text-[--cs-success]" : d.witness_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.witness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Witnessed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.refusal_rate <= 5 ? "bg-green-50" : d.refusal_rate <= 15 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.refusal_rate <= 5 ? "text-[--cs-success]" : d.refusal_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.refusal_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.refusal_rate <= 5 ? "text-[--cs-success]" : d.refusal_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.refusal_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Refusals</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.children_on_medication > 0 ? "bg-blue-50" : "bg-slate-50")}>

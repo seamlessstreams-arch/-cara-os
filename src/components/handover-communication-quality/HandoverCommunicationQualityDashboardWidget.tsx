@@ -186,7 +186,7 @@ export function HandoverCommunicationQualityDashboardWidget() {
                   </div>
                   <div>
                     <span className="text-gray-400">Thorough Rate:</span>{" "}
-                    <span className="font-medium">{profile.thoroughRate}%</span>
+                    <span className="font-medium">{formatRate(profile.thoroughRate)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Comms Sent:</span>{" "}
@@ -194,7 +194,7 @@ export function HandoverCommunicationQualityDashboardWidget() {
                   </div>
                   <div>
                     <span className="text-gray-400">Acknowledged:</span>{" "}
-                    <span className="font-medium">{profile.acknowledgedRate}%</span>
+                    <span className="font-medium">{formatRate(profile.acknowledgedRate)}</span>
                   </div>
                 </div>
               </div>

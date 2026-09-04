@@ -6,6 +6,7 @@
 // CHR 2015 Reg 23/33. SCCIF: Health & Wellbeing.
 // ════════════════════════════════════════════════════════���═════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +83,7 @@ export function ChildSubstanceMisuseScreeningCard() {
             <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (compliance.overall_compliance_rate ?? 0) >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (compliance.overall_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{compliance.overall_compliance_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (compliance.overall_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(compliance.overall_compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", declining === 0 ? "bg-green-50" : "bg-red-50")}>

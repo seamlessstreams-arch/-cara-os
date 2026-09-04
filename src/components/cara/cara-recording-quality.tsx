@@ -13,6 +13,7 @@
 //   - Top strengths across the team
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useEffect, useState } from "react";
 import {
   Loader2, PenLine, Quote, Lightbulb, TrendingUp,
@@ -173,7 +174,7 @@ export function CaraRecordingQuality({ homeId = "home_oak", days = 7 }: { homeId
         <div className="flex items-center gap-2">
           <Quote className="h-3.5 w-3.5 text-purple-500" />
           <div>
-            <div className="text-xs font-semibold text-[var(--cs-navy)]">{batch.childVoicePercent}%</div>
+            <div className="text-xs font-semibold text-[var(--cs-navy)]">{formatRate(batch.childVoicePercent)}</div>
             <div className="text-[10px] text-[var(--cs-text-muted)]">Child voice present</div>
           </div>
         </div>

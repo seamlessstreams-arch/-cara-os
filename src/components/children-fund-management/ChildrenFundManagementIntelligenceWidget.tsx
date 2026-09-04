@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function ChildrenFundManagementIntelligenceWidget() {
       <Section title="Account Management" defaultOpen>
         <ScoreBar label="Account Management Score" value={account.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Active Rate" value={`${account.activeRate}%`} />
-          <Stat label="Reconciled" value={`${account.reconciledRate}%`} />
-          <Stat label="Child Access" value={`${account.childAccessRate}%`} />
-          <Stat label="Signed Agreement" value={`${account.signedAgreementRate}%`} />
+          <Stat label="Active Rate" value={`${formatRate(account.activeRate)}`} />
+          <Stat label="Reconciled" value={`${formatRate(account.reconciledRate)}`} />
+          <Stat label="Child Access" value={`${formatRate(account.childAccessRate)}`} />
+          <Stat label="Signed Agreement" value={`${formatRate(account.signedAgreementRate)}`} />
           <Stat label="Overdue" value={account.overdueCount} />
           <Stat label="Total Savings" value={`£${account.totalSavings}`} />
         </div>
@@ -90,9 +91,9 @@ export function ChildrenFundManagementIntelligenceWidget() {
         <ScoreBar label="Transaction Integrity Score" value={transaction.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Transactions" value={transaction.totalTransactions} />
-          <Stat label="Receipt Rate" value={`${transaction.receiptRate}%`} />
-          <Stat label="Consent Rate" value={`${transaction.consentRate}%`} />
-          <Stat label="Two Signatures" value={`${transaction.twoSignatureRate}%`} />
+          <Stat label="Receipt Rate" value={`${formatRate(transaction.receiptRate)}`} />
+          <Stat label="Consent Rate" value={`${formatRate(transaction.consentRate)}`} />
+          <Stat label="Two Signatures" value={`${formatRate(transaction.twoSignatureRate)}`} />
           <Stat label="Avg Transaction" value={`£${transaction.averageTransaction}`} />
         </div>
       </Section>
@@ -101,9 +102,9 @@ export function ChildrenFundManagementIntelligenceWidget() {
         <ScoreBar label="Financial Literacy Score" value={literacy.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Sessions" value={literacy.totalSessions} />
-          <Stat label="Engagement" value={`${literacy.engagementRate}%`} />
-          <Stat label="Practical" value={`${literacy.practicalRate}%`} />
-          <Stat label="Age Appropriate" value={`${literacy.ageAppropriateRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(literacy.engagementRate)}`} />
+          <Stat label="Practical" value={`${formatRate(literacy.practicalRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(literacy.ageAppropriateRate)}`} />
           <Stat label="Topic Coverage" value={`${literacy.topicCoverage}%`} />
         </div>
       </Section>
@@ -112,11 +113,11 @@ export function ChildrenFundManagementIntelligenceWidget() {
         <ScoreBar label="Audit Compliance Score" value={audit.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Audits" value={audit.totalAudits} />
-          <Stat label="All Reconciled" value={`${audit.allReconciledRate}%`} />
-          <Stat label="Receipt Compliant" value={`${audit.receiptCompliantRate}%`} />
-          <Stat label="Two-Sig Compliant" value={`${audit.twoSigCompliantRate}%`} />
-          <Stat label="Discrepancy Resolved" value={`${audit.discrepancyRate}%`} />
-          <Stat label="Policy Compliant" value={`${audit.policyCompliantRate}%`} />
+          <Stat label="All Reconciled" value={`${formatRate(audit.allReconciledRate)}`} />
+          <Stat label="Receipt Compliant" value={`${formatRate(audit.receiptCompliantRate)}`} />
+          <Stat label="Two-Sig Compliant" value={`${formatRate(audit.twoSigCompliantRate)}`} />
+          <Stat label="Discrepancy Resolved" value={`${formatRate(audit.discrepancyRate)}`} />
+          <Stat label="Policy Compliant" value={`${formatRate(audit.policyCompliantRate)}`} />
         </div>
       </Section>
 

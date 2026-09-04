@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function SaferRecruitmentIntelligenceWidget() {
       <Section title="Recruitment Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="DBS Check Completed" value={`${quality.dbsCheckCompletedRate}%`} />
-          <Stat label="References Verified" value={`${quality.referencesVerifiedRate}%`} />
-          <Stat label="Interview Conducted" value={`${quality.interviewConductedRate}%`} />
-          <Stat label="Identity Confirmed" value={`${quality.identityConfirmedRate}%`} />
+          <Stat label="DBS Check Completed" value={`${formatRate(quality.dbsCheckCompletedRate)}`} />
+          <Stat label="References Verified" value={`${formatRate(quality.referencesVerifiedRate)}`} />
+          <Stat label="Interview Conducted" value={`${formatRate(quality.interviewConductedRate)}`} />
+          <Stat label="Identity Confirmed" value={`${formatRate(quality.identityConfirmedRate)}`} />
         </div>
       </Section>
 
       <Section title="Recruitment Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="DBS Check Completed" value={`${compliance.dbsCheckCompletedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="DBS Check Completed" value={`${formatRate(compliance.dbsCheckCompletedRate)}`} />
           <Stat label="Unique Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function SaferRecruitmentIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Safeguarding Recruitment" value={`${staffReadiness.safeguardingRecruitmentRate}%`} />
-          <Stat label="DBS Process Knowledge" value={`${staffReadiness.dbsProcessKnowledgeRate}%`} />
-          <Stat label="Interview Techniques" value={`${staffReadiness.interviewTechniquesRate}%`} />
-          <Stat label="Reference Verification" value={`${staffReadiness.referenceVerificationRate}%`} />
-          <Stat label="Disqualification Awareness" value={`${staffReadiness.disqualificationAwarenessRate}%`} />
-          <Stat label="Whistleblowing Awareness" value={`${staffReadiness.whistleblowingAwarenessRate}%`} />
+          <Stat label="Safeguarding Recruitment" value={`${formatRate(staffReadiness.safeguardingRecruitmentRate)}`} />
+          <Stat label="DBS Process Knowledge" value={`${formatRate(staffReadiness.dbsProcessKnowledgeRate)}`} />
+          <Stat label="Interview Techniques" value={`${formatRate(staffReadiness.interviewTechniquesRate)}`} />
+          <Stat label="Reference Verification" value={`${formatRate(staffReadiness.referenceVerificationRate)}`} />
+          <Stat label="Disqualification Awareness" value={`${formatRate(staffReadiness.disqualificationAwarenessRate)}`} />
+          <Stat label="Whistleblowing Awareness" value={`${formatRate(staffReadiness.whistleblowingAwarenessRate)}`} />
         </div>
       </Section>
 

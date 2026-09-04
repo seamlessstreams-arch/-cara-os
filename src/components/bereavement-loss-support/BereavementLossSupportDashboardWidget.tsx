@@ -150,8 +150,8 @@ export function BereavementLossSupportDashboardWidget() {
               <div>Support Plan: {child.supportPlanInPlace ? "Yes" : "No"}</div>
               {child.totalInterventions > 0 && (
                 <>
-                  <div>Engagement: {child.engagementRate}%</div>
-                  <div>Positive Outcomes: {child.positiveOutcomeRate}%</div>
+                  <div>Engagement: {formatRate(child.engagementRate)}</div>
+                  <div>Positive Outcomes: {formatRate(child.positiveOutcomeRate)}</div>
                 </>
               )}
             </div>

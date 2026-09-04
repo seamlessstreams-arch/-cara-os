@@ -7,6 +7,7 @@
 // Powered by the Admission & Referral Intelligence Engine — live data (Reg 11/12).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,12 +107,12 @@ export function MatchingReferralCard() {
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.impact_assessment_completion_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
             <p className={cn("text-lg font-bold tabular-nums", o.impact_assessment_completion_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.impact_assessment_completion_rate}%
+              {formatRate(o.impact_assessment_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">IA Done</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums">{o.occupancy_rate}%</p>
+            <p className="text-lg font-bold tabular-nums">{formatRate(o.occupancy_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Occupied</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.available_beds > 0 ? "bg-green-50" : "bg-red-50")}>

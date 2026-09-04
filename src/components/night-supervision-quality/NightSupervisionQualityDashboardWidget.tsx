@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import type { JSX } from "react";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -329,8 +330,8 @@ export default function NightSupervisionQualityDashboardWidget() {
                   <span className="font-medium text-sm truncate">{profile.staffName}</span>
                   <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                     <span>Checks: {profile.totalChecks}</span>
-                    <span>Sat: {profile.satisfactoryRate}%</span>
-                    <span>Doc: {profile.documentedRate}%</span>
+                    <span>Sat: {formatRate(profile.satisfactoryRate)}</span>
+                    <span>Doc: {formatRate(profile.documentedRate)}</span>
                     <span>Types: {profile.uniqueCheckTypes}</span>
                   </div>
                 </div>

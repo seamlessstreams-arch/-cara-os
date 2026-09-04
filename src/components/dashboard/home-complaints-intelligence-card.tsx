@@ -7,6 +7,7 @@
 // CHR 2015 Reg 39. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -136,7 +137,7 @@ export function HomeComplaintsIntelligenceCard() {
                   (d.outcome_profile.satisfaction_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.outcome_profile.satisfaction_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.outcome_profile.satisfaction_rate}%
+                  {formatRate(d.outcome_profile.satisfaction_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Satisfied</p>
@@ -150,7 +151,7 @@ export function HomeComplaintsIntelligenceCard() {
                   (d.learning_profile.findings_documented_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.learning_profile.findings_documented_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.learning_profile.findings_documented_rate}%
+                  {formatRate(d.learning_profile.findings_documented_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Findings</p>
@@ -164,7 +165,7 @@ export function HomeComplaintsIntelligenceCard() {
                   (d.learning_profile.lessons_learned_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.learning_profile.lessons_learned_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.learning_profile.lessons_learned_rate}%
+                  {formatRate(d.learning_profile.lessons_learned_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Lessons</p>

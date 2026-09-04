@@ -140,8 +140,8 @@ export function VisitorPartnershipQualityDashboardWidget() {
                     <div>Total Visits: <span className="font-medium">{child.totalVisits}</span></div>
                     <div>SW Visits: <span className="font-medium">{child.socialWorkerVisits}</span></div>
                     <div>Therapy Visits: <span className="font-medium">{child.therapistVisits}</span></div>
-                    <div>Child Seen: <span className="font-medium">{child.childSeenRate}%</span></div>
-                    <div>Positive Outcomes: <span className="font-medium">{child.positiveOutcomeRate}%</span></div>
+                    <div>Child Seen: <span className="font-medium">{formatRate(child.childSeenRate)}</span></div>
+                    <div>Positive Outcomes: <span className="font-medium">{formatRate(child.positiveOutcomeRate)}</span></div>
                   </div>
                 </div>
               ))}

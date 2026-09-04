@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,7 +78,7 @@ export function TraumaInformedIntelligenceWidget() {
       <Section title="Staff Competency" defaultOpen>
         <ScoreBar label="Staff Competency" value={staffCompetency.score as number} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Training Coverage" value={`${staffCompetency.trainingCoverageRate}%`} />
+          <Stat label="Training Coverage" value={`${formatRateLoose(staffCompetency.trainingCoverageRate)}`} />
           <Stat label="Avg Level" value={String(staffCompetency.averageCompetencyLevel).replace(/_/g, " ")} />
           <Stat label="Specialists" value={staffCompetency.specialistCount as number} />
           <Stat label="Expired Training" value={staffCompetency.expiredTrainingCount as number} />
@@ -89,7 +90,7 @@ export function TraumaInformedIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Principle Coverage" value={`${practiceQuality.principleCoverage}%`} />
           <Stat label="Indicator Coverage" value={`${practiceQuality.indicatorCoverage}%`} />
-          <Stat label="Positive Response" value={`${practiceQuality.positiveResponseRate}%`} />
+          <Stat label="Positive Response" value={`${formatRateLoose(practiceQuality.positiveResponseRate)}`} />
           <Stat label="Intervention Types" value={practiceQuality.interventionVariety as number} />
         </div>
       </Section>
@@ -110,7 +111,7 @@ export function TraumaInformedIntelligenceWidget() {
         <ScoreBar label="Consultation" value={consultation.score as number} max={15} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Frequency/Month" value={consultation.consultationFrequencyPerMonth as number} />
-          <Stat label="Action Completion" value={`${consultation.actionCompletionRate}%`} />
+          <Stat label="Action Completion" value={`${formatRateLoose(consultation.actionCompletionRate)}`} />
           <Stat label="Children Coverage" value={`${consultation.childrenCoverage}%`} />
           <Stat label="Specialist Variety" value={consultation.specialistVariety as number} />
         </div>
@@ -120,10 +121,10 @@ export function TraumaInformedIntelligenceWidget() {
         <ScoreBar label="Screening" value={traumaScreening.score as number} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Screening Coverage" value={`${traumaScreening.screeningCoverage}%`} />
-          <Stat label="Trigger Documentation" value={`${traumaScreening.triggerDocumentationRate}%`} />
-          <Stat label="Coping Strategies" value={`${traumaScreening.copingStrategyRate}%`} />
-          <Stat label="Needs Assessed" value={`${traumaScreening.therapeuticNeedsAssessedRate}%`} />
-          <Stat label="Referral Rate" value={`${traumaScreening.referralRate}%`} />
+          <Stat label="Trigger Documentation" value={`${formatRateLoose(traumaScreening.triggerDocumentationRate)}`} />
+          <Stat label="Coping Strategies" value={`${formatRateLoose(traumaScreening.copingStrategyRate)}`} />
+          <Stat label="Needs Assessed" value={`${formatRateLoose(traumaScreening.therapeuticNeedsAssessedRate)}`} />
+          <Stat label="Referral Rate" value={`${formatRateLoose(traumaScreening.referralRate)}`} />
           <Stat label="Overdue Reviews" value={traumaScreening.overdueReviews as number} />
         </div>
       </Section>

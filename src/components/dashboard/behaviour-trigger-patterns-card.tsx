@@ -6,6 +6,7 @@
 // the Behaviour Trigger Pattern Engine (Reg 11 — behaviour management).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,7 +138,7 @@ export function BehaviourTriggerPatternsCard() {
                     <Badge className={cn("text-[10px] shrink-0", lvl.bg, lvl.text)}>{c.concern_level}</Badge>
                   </div>
                   <div className="mt-1 text-[10px] text-muted-foreground">
-                    {c.concerning_90d} concern{c.concerning_90d === 1 ? "" : "s"} · strategy {c.strategy_coverage_pct}%
+                    {c.concerning_90d} concern{c.concerning_90d === 1 ? "" : "s"} · strategy {formatRate(c.strategy_coverage_pct)}
                     {c.top_triggers[0] && <span> · trigger: {c.top_triggers[0].trigger}</span>}
                   </div>
                   {c.flags[0] && <p className="text-[10px] text-amber-700 mt-0.5 truncate">⚠ {c.flags[0]}</p>}

@@ -141,7 +141,7 @@ export function MenuPlanningNutritionDashboardWidget() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Avg Enjoyment: <span className="font-medium">{child.averageEnjoyment}/5</span></div>
                     <div>Feedback Given: <span className="font-medium">{child.feedbackCount}</span></div>
-                    <div>Portions OK: <span className="font-medium">{child.portionSatisfactoryRate}%</span></div>
+                    <div>Portions OK: <span className="font-medium">{formatRate(child.portionSatisfactoryRate)}</span></div>
                     <div>Participation: <span className="font-medium">{child.participationCount} activities</span></div>
                   </div>
                 </div>

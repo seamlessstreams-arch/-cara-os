@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -42,44 +43,44 @@ export function TransportTravelArrangementsIntelligenceWidget() {
       <Section title="Journey Quality" defaultOpen>
         <ScoreBar label="Journey Quality" value={jq.journeyQualityScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="On Time" value={`${jq.onTimeRate}%`} />
-          <Stat label="Risk Assessment" value={`${jq.riskAssessmentRate}%`} />
-          <Stat label="Seatbelt Use" value={`${jq.seatbeltRate}%`} />
-          <Stat label="Child Comfortable" value={`${jq.childComfortableRate}%`} />
+          <Stat label="On Time" value={`${formatRateLoose(jq.onTimeRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRateLoose(jq.riskAssessmentRate)}`} />
+          <Stat label="Seatbelt Use" value={`${formatRateLoose(jq.seatbeltRate)}`} />
+          <Stat label="Child Comfortable" value={`${formatRateLoose(jq.childComfortableRate)}`} />
         </div>
       </Section>
       <Section title="Vehicle Safety">
         <ScoreBar label="Vehicle Safety" value={vs.vehicleSafetyScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="MOT Current" value={`${vs.motCurrentRate}%`} />
-          <Stat label="Insurance Current" value={`${vs.insuranceCurrentRate}%`} />
-          <Stat label="Roadworthy" value={`${vs.roadworthyRate}%`} />
-          <Stat label="First Aid Kit" value={`${vs.firstAidKitRate}%`} />
-          <Stat label="Child Lock" value={`${vs.childLockRate}%`} />
-          <Stat label="Clean & Tidy" value={`${vs.cleanAndTidyRate}%`} />
+          <Stat label="MOT Current" value={`${formatRateLoose(vs.motCurrentRate)}`} />
+          <Stat label="Insurance Current" value={`${formatRateLoose(vs.insuranceCurrentRate)}`} />
+          <Stat label="Roadworthy" value={`${formatRateLoose(vs.roadworthyRate)}`} />
+          <Stat label="First Aid Kit" value={`${formatRateLoose(vs.firstAidKitRate)}`} />
+          <Stat label="Child Lock" value={`${formatRateLoose(vs.childLockRate)}`} />
+          <Stat label="Clean & Tidy" value={`${formatRateLoose(vs.cleanAndTidyRate)}`} />
         </div>
       </Section>
       <Section title="Travel Policy">
         <ScoreBar label="Travel Policy" value={tp.travelPolicyScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Driver Checks" value={`${tp.driverChecksRate}%`} />
-          <Stat label="Insurance Verified" value={`${tp.insuranceVerifiedRate}%`} />
-          <Stat label="Risk Protocol" value={`${tp.riskAssessmentProtocolRate}%`} />
-          <Stat label="Lone Driving" value={`${tp.loneDrivingPolicyRate}%`} />
-          <Stat label="Breakdown Procedure" value={`${tp.breakdownProcedureRate}%`} />
-          <Stat label="Child Consent" value={`${tp.childConsentRate}%`} />
-          <Stat label="Route Planning" value={`${tp.routePlanningRate}%`} />
+          <Stat label="Driver Checks" value={`${formatRateLoose(tp.driverChecksRate)}`} />
+          <Stat label="Insurance Verified" value={`${formatRateLoose(tp.insuranceVerifiedRate)}`} />
+          <Stat label="Risk Protocol" value={`${formatRateLoose(tp.riskAssessmentProtocolRate)}`} />
+          <Stat label="Lone Driving" value={`${formatRateLoose(tp.loneDrivingPolicyRate)}`} />
+          <Stat label="Breakdown Procedure" value={`${formatRateLoose(tp.breakdownProcedureRate)}`} />
+          <Stat label="Child Consent" value={`${formatRateLoose(tp.childConsentRate)}`} />
+          <Stat label="Route Planning" value={`${formatRateLoose(tp.routePlanningRate)}`} />
         </div>
       </Section>
       <Section title="Staff Travel Readiness">
         <ScoreBar label="Staff Readiness" value={sr.staffTravelReadinessScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Driving Assessment" value={`${sr.drivingAssessmentRate}%`} />
-          <Stat label="Child Transport Safety" value={`${sr.childTransportSafetyRate}%`} />
-          <Stat label="First Aid" value={`${sr.firstAidTrainingRate}%`} />
-          <Stat label="Risk Assessment" value={`${sr.riskAssessmentRate}%`} />
-          <Stat label="Breakdown Procedure" value={`${sr.breakdownProcedureRate}%`} />
-          <Stat label="Child Comfort" value={`${sr.childComfortAwarenessRate}%`} />
+          <Stat label="Driving Assessment" value={`${formatRateLoose(sr.drivingAssessmentRate)}`} />
+          <Stat label="Child Transport Safety" value={`${formatRateLoose(sr.childTransportSafetyRate)}`} />
+          <Stat label="First Aid" value={`${formatRateLoose(sr.firstAidTrainingRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRateLoose(sr.riskAssessmentRate)}`} />
+          <Stat label="Breakdown Procedure" value={`${formatRateLoose(sr.breakdownProcedureRate)}`} />
+          <Stat label="Child Comfort" value={`${formatRateLoose(sr.childComfortAwarenessRate)}`} />
         </div>
       </Section>
       {childProfiles.length > 0 && <Section title={`Child Travel Profiles (${childProfiles.length})`}>

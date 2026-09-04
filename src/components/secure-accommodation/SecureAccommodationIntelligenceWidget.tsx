@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -84,7 +85,7 @@ export function SecureAccommodationIntelligenceWidget() {
       <Section title="Order Compliance Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <Stat label="s25 Criteria Rate" value={`${orderCompliance.s25CriteriaRate}%`} />
-          <Stat label="Least Restrictive Rate" value={`${orderCompliance.leastRestrictiveRate}%`} />
+          <Stat label="Least Restrictive Rate" value={`${formatRateLoose(orderCompliance.leastRestrictiveRate)}`} />
           <Stat label="Expired w/o Renewal" value={orderCompliance.expiredWithoutRenewal as number} />
           <Stat label="Refused Orders" value={orderCompliance.refusedOrders as number} />
         </div>
@@ -92,10 +93,10 @@ export function SecureAccommodationIntelligenceWidget() {
 
       <Section title="Child Welfare Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Education Rate" value={`${childWelfare.educationRate}%`} />
-          <Stat label="Therapeutic Support" value={`${childWelfare.therapeuticSupportRate}%`} />
-          <Stat label="Family Contact" value={`${childWelfare.familyContactRate}%`} />
-          <Stat label="Outside Time Adequate" value={`${childWelfare.outsideTimeAdequateRate}%`} />
+          <Stat label="Education Rate" value={`${formatRateLoose(childWelfare.educationRate)}`} />
+          <Stat label="Therapeutic Support" value={`${formatRateLoose(childWelfare.therapeuticSupportRate)}`} />
+          <Stat label="Family Contact" value={`${formatRateLoose(childWelfare.familyContactRate)}`} />
+          <Stat label="Outside Time Adequate" value={`${formatRateLoose(childWelfare.outsideTimeAdequateRate)}`} />
         </div>
       </Section>
 

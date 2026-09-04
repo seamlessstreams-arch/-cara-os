@@ -351,10 +351,10 @@ export default function VisitorManagementQualityDashboardWidget() {
                       Visits: <span className="font-medium">{child.totalVisits}</span>
                     </div>
                     <div>
-                      Quality: <span className="font-medium">{child.qualityRate}%</span>
+                      Quality: <span className="font-medium">{formatRate(child.qualityRate)}</span>
                     </div>
                     <div>
-                      Consulted: <span className="font-medium">{child.consultedRate}%</span>
+                      Consulted: <span className="font-medium">{formatRate(child.consultedRate)}</span>
                     </div>
                   </div>
                 </div>

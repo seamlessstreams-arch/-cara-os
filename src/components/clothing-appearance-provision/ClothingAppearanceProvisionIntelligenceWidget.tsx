@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function ClothingAppearanceProvisionIntelligenceWidget() {
       <Section title="Quality" defaultOpen>
         <ScoreBar label="Quality Score" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Quality Rate" value={`${quality.qualityRate}%`} />
-          <Stat label="Child Choice" value={`${quality.childChoiceRate}%`} />
-          <Stat label="Age Appropriate" value={`${quality.ageAppropriateRate}%`} />
-          <Stat label="Cultural Needs Met" value={`${quality.culturalRate}%`} />
+          <Stat label="Quality Rate" value={`${formatRate(quality.qualityRate)}`} />
+          <Stat label="Child Choice" value={`${formatRate(quality.childChoiceRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(quality.ageAppropriateRate)}`} />
+          <Stat label="Cultural Needs Met" value={`${formatRate(quality.culturalRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance">
         <ScoreBar label="Compliance Score" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Assessed" value={`${compliance.staffAssessedRate}%`} />
-          <Stat label="Feedback Given" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Assessed" value={`${formatRate(compliance.staffAssessedRate)}`} />
+          <Stat label="Feedback Given" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -97,25 +98,25 @@ export function ClothingAppearanceProvisionIntelligenceWidget() {
       <Section title="Policy">
         <ScoreBar label="Policy Score" value={policy.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Provision Strategy" value={`${policy.clothingProvisionStrategyRate}%`} />
-          <Stat label="Budget Framework" value={`${policy.clothingBudgetFrameworkRate}%`} />
-          <Stat label="Seasonal Review" value={`${policy.seasonalReviewProcedureRate}%`} />
-          <Stat label="Child Choice Guidance" value={`${policy.childChoiceGuidanceRate}%`} />
-          <Stat label="Cultural Accommodation" value={`${policy.culturalAndReligiousAccommodationRate}%`} />
-          <Stat label="Laundry & Maintenance" value={`${policy.laundryAndMaintenancePlanRate}%`} />
-          <Stat label="Regular Review" value={`${policy.regularReviewRate}%`} />
+          <Stat label="Provision Strategy" value={`${formatRate(policy.clothingProvisionStrategyRate)}`} />
+          <Stat label="Budget Framework" value={`${formatRate(policy.clothingBudgetFrameworkRate)}`} />
+          <Stat label="Seasonal Review" value={`${formatRate(policy.seasonalReviewProcedureRate)}`} />
+          <Stat label="Child Choice Guidance" value={`${formatRate(policy.childChoiceGuidanceRate)}`} />
+          <Stat label="Cultural Accommodation" value={`${formatRate(policy.culturalAndReligiousAccommodationRate)}`} />
+          <Stat label="Laundry & Maintenance" value={`${formatRate(policy.laundryAndMaintenancePlanRate)}`} />
+          <Stat label="Regular Review" value={`${formatRate(policy.regularReviewRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness Score" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Clothing Assessment" value={`${staffReadiness.clothingAssessmentRate}%`} />
-          <Stat label="Child Choice Facilitation" value={`${staffReadiness.childChoiceFacilitationRate}%`} />
-          <Stat label="Budget Management" value={`${staffReadiness.budgetManagementRate}%`} />
-          <Stat label="Cultural Awareness" value={`${staffReadiness.culturalAwarenessRate}%`} />
-          <Stat label="Age Appropriate Guidance" value={`${staffReadiness.ageAppropriateGuidanceRate}%`} />
-          <Stat label="Record Keeping" value={`${staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Clothing Assessment" value={`${formatRate(staffReadiness.clothingAssessmentRate)}`} />
+          <Stat label="Child Choice Facilitation" value={`${formatRate(staffReadiness.childChoiceFacilitationRate)}`} />
+          <Stat label="Budget Management" value={`${formatRate(staffReadiness.budgetManagementRate)}`} />
+          <Stat label="Cultural Awareness" value={`${formatRate(staffReadiness.culturalAwarenessRate)}`} />
+          <Stat label="Age Appropriate Guidance" value={`${formatRate(staffReadiness.ageAppropriateGuidanceRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staffReadiness.recordKeepingRate)}`} />
         </div>
       </Section>
 

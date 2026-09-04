@@ -136,7 +136,7 @@ export default function CreativeArtsExpressionDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Expression: {cp.expressionRate}%</span><span>Creativity: {cp.creativityRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Expression: {formatRate(cp.expressionRate)}</span><span>Creativity: {formatRate(cp.creativityRate)}</span></div>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function CarePlanningIntelligenceWidget() {
       <Section title="Planning Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child View" value={`${quality.childViewIncorporatedRate}%`} />
-          <Stat label="Measurable Outcomes" value={`${quality.measurableOutcomesSetRate}%`} />
-          <Stat label="Multi-Agency Input" value={`${quality.multiAgencyInputIncludedRate}%`} />
-          <Stat label="Review Date Set" value={`${quality.reviewDateSetRate}%`} />
+          <Stat label="Child View" value={`${formatRate(quality.childViewIncorporatedRate)}`} />
+          <Stat label="Measurable Outcomes" value={`${formatRate(quality.measurableOutcomesSetRate)}`} />
+          <Stat label="Multi-Agency Input" value={`${formatRate(quality.multiAgencyInputIncludedRate)}`} />
+          <Stat label="Review Date Set" value={`${formatRate(quality.reviewDateSetRate)}`} />
         </div>
       </Section>
 
       <Section title="Care Planning Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Child View" value={`${compliance.childViewIncorporatedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Child View" value={`${formatRate(compliance.childViewIncorporatedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function CarePlanningIntelligenceWidget() {
       <Section title="Staff Competency">
         <ScoreBar label="Staff Competency" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Plan Writing" value={`${staff.carePlanWritingSkillsRate}%`} />
-          <Stat label="Outcome Focus" value={`${staff.outcomeFocusedPlanningRate}%`} />
-          <Stat label="Multi-Agency" value={`${staff.multiAgencyCoordinationRate}%`} />
-          <Stat label="Child Participation" value={`${staff.childParticipationSkillsRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentIntegrationRate}%`} />
-          <Stat label="Review Facilitation" value={`${staff.reviewFacilitationSkillsRate}%`} />
+          <Stat label="Plan Writing" value={`${formatRate(staff.carePlanWritingSkillsRate)}`} />
+          <Stat label="Outcome Focus" value={`${formatRate(staff.outcomeFocusedPlanningRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(staff.multiAgencyCoordinationRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(staff.childParticipationSkillsRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(staff.riskAssessmentIntegrationRate)}`} />
+          <Stat label="Review Facilitation" value={`${formatRate(staff.reviewFacilitationSkillsRate)}`} />
         </div>
       </Section>
 

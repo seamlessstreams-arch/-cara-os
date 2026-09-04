@@ -5,6 +5,7 @@
 // Coverage across the 14 Ofsted evidence categories, built from the event stream.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,7 +64,7 @@ export default function EvidenceBankPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <OverviewStat label="Coverage" value={`${intel.overview.coverage_rate}%`} tone={intel.overview.coverage_rate >= 80 ? "green" : "amber"} />
+            <OverviewStat label="Coverage" value={`${formatRate(intel.overview.coverage_rate)}`} tone={intel.overview.coverage_rate >= 80 ? "green" : "amber"} />
             <OverviewStat label="Well evidenced" value={intel.overview.well_evidenced} tone="green" />
             <OverviewStat label="Thin" value={intel.overview.thin} tone={intel.overview.thin > 0 ? "amber" : "green"} />
             <OverviewStat label="Gaps" value={intel.overview.gaps} tone={intel.overview.gaps > 0 ? "red" : "green"} />

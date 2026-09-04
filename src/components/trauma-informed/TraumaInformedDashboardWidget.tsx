@@ -6,6 +6,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -309,7 +310,7 @@ export function TraumaInformedDashboardWidget() {
         <MetricTile
           label="Staff Competency"
           value={`${data.staffCompetency.score}/20`}
-          sub={`${data.staffCompetency.trainingCoverageRate}% trained`}
+          sub={`${formatRate(data.staffCompetency.trainingCoverageRate)} trained`}
           score={(data.staffCompetency.score / 20) * 100}
         />
         <MetricTile
@@ -414,7 +415,7 @@ export function TraumaInformedDashboardWidget() {
               <div>
                 <p className="text-slate-500">Positive Responses</p>
                 <p className={`font-semibold ${getScoreColour(data.practiceQuality.positiveResponseRate)}`}>
-                  {data.practiceQuality.positiveResponseRate}%
+                  {formatRate(data.practiceQuality.positiveResponseRate)}
                 </p>
               </div>
               <div>
@@ -462,7 +463,7 @@ export function TraumaInformedDashboardWidget() {
                       <div className="flex gap-3">
                         <span>{child.interventionCount} interventions</span>
                         <span className={getScoreColour(child.positiveResponseRate)}>
-                          {child.positiveResponseRate}% positive
+                          {formatRate(child.positiveResponseRate)} positive
                         </span>
                         {child.principleGaps.length > 0 && (
                           <span className="text-amber-600">
@@ -554,7 +555,7 @@ export function TraumaInformedDashboardWidget() {
               <div>
                 <p className="text-slate-500">Action Completion</p>
                 <p className={`font-semibold ${getScoreColour(data.consultation.actionCompletionRate)}`}>
-                  {data.consultation.actionCompletionRate}%
+                  {formatRate(data.consultation.actionCompletionRate)}
                 </p>
               </div>
               <div>
@@ -597,15 +598,15 @@ export function TraumaInformedDashboardWidget() {
               </div>
               <div>
                 <p className="text-slate-500">Triggers Documented</p>
-                <p className="font-semibold">{data.traumaScreening.triggerDocumentationRate}%</p>
+                <p className="font-semibold">{formatRate(data.traumaScreening.triggerDocumentationRate)}</p>
               </div>
               <div>
                 <p className="text-slate-500">Coping Strategies</p>
-                <p className="font-semibold">{data.traumaScreening.copingStrategyRate}%</p>
+                <p className="font-semibold">{formatRate(data.traumaScreening.copingStrategyRate)}</p>
               </div>
               <div>
                 <p className="text-slate-500">Referral Rate</p>
-                <p className="font-semibold">{data.traumaScreening.referralRate}%</p>
+                <p className="font-semibold">{formatRate(data.traumaScreening.referralRate)}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">

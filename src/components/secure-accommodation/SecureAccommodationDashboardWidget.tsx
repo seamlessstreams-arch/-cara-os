@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { SecureAccommodationIntelligence } from "@/lib/secure-accommodation";
 
@@ -169,9 +170,9 @@ export function SecureAccommodationDashboardWidget() {
             <div><span className="text-gray-500">Total Orders:</span> <span className="font-medium">{data.orderCompliance.totalOrders}</span></div>
             <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.orderCompliance.activeOrders}</span></div>
             <div><span className="text-gray-500">s25 Documented:</span> <span className="font-medium">{data.orderCompliance.s25CriteriaRate}%</span></div>
-            <div><span className="text-gray-500">Least Restrictive:</span> <span className="font-medium">{data.orderCompliance.leastRestrictiveRate}%</span></div>
+            <div><span className="text-gray-500">Least Restrictive:</span> <span className="font-medium">{formatRate(data.orderCompliance.leastRestrictiveRate)}</span></div>
             <div><span className="text-gray-500">Expired:</span> <span className={`font-medium ${data.orderCompliance.expiredWithoutRenewal > 0 ? "text-red-600" : "text-green-600"}`}>{data.orderCompliance.expiredWithoutRenewal}</span></div>
-            <div><span className="text-gray-500">Justifications:</span> <span className="font-medium">{data.orderCompliance.justificationsDocumentedRate}%</span></div>
+            <div><span className="text-gray-500">Justifications:</span> <span className="font-medium">{formatRate(data.orderCompliance.justificationsDocumentedRate)}</span></div>
             <div><span className="text-gray-500">Refused:</span> <span className={`font-medium ${data.orderCompliance.refusedOrders > 0 ? "text-red-600" : "text-green-600"}`}>{data.orderCompliance.refusedOrders}</span></div>
           </div>
         </Section>
@@ -179,36 +180,36 @@ export function SecureAccommodationDashboardWidget() {
         <Section title="Welfare Review Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Reviews:</span> <span className="font-medium">{data.welfareReviewQuality.totalReviews}</span></div>
-            <div><span className="text-gray-500">Timeliness:</span> <span className="font-medium">{data.welfareReviewQuality.timelinessRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.welfareReviewQuality.childViewsRate}%</span></div>
-            <div><span className="text-gray-500">Child Attendance:</span> <span className="font-medium">{data.welfareReviewQuality.childAttendanceRate}%</span></div>
-            <div><span className="text-gray-500">Alternatives Considered:</span> <span className="font-medium">{data.welfareReviewQuality.alternativesConsideredRate}%</span></div>
-            <div><span className="text-gray-500">Recs Actioned:</span> <span className="font-medium">{data.welfareReviewQuality.recommendationsActionedRate}%</span></div>
+            <div><span className="text-gray-500">Timeliness:</span> <span className="font-medium">{formatRate(data.welfareReviewQuality.timelinessRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.welfareReviewQuality.childViewsRate)}</span></div>
+            <div><span className="text-gray-500">Child Attendance:</span> <span className="font-medium">{formatRate(data.welfareReviewQuality.childAttendanceRate)}</span></div>
+            <div><span className="text-gray-500">Alternatives Considered:</span> <span className="font-medium">{formatRate(data.welfareReviewQuality.alternativesConsideredRate)}</span></div>
+            <div><span className="text-gray-500">Recs Actioned:</span> <span className="font-medium">{formatRate(data.welfareReviewQuality.recommendationsActionedRate)}</span></div>
             <div><span className="text-gray-500">Avg Participants:</span> <span className="font-medium">{data.welfareReviewQuality.averageParticipantTypes}</span></div>
           </div>
         </Section>
 
         <Section title="Child Welfare">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Education:</span> <span className="font-medium">{data.childWelfare.educationRate}%</span></div>
-            <div><span className="text-gray-500">Education Hours:</span> <span className="font-medium">{data.childWelfare.educationHoursAdequateRate}%</span></div>
-            <div><span className="text-gray-500">Therapeutic:</span> <span className="font-medium">{data.childWelfare.therapeuticSupportRate}%</span></div>
-            <div><span className="text-gray-500">Family Contact:</span> <span className="font-medium">{data.childWelfare.familyContactRate}%</span></div>
-            <div><span className="text-gray-500">Health Needs:</span> <span className="font-medium">{data.childWelfare.healthNeedsRate}%</span></div>
-            <div><span className="text-gray-500">Outside Time:</span> <span className="font-medium">{data.childWelfare.outsideTimeAdequateRate}%</span></div>
-            <div><span className="text-gray-500">Privacy:</span> <span className="font-medium">{data.childWelfare.privacyRate}%</span></div>
-            <div><span className="text-gray-500">Complaints:</span> <span className="font-medium">{data.childWelfare.complaintsAvailableRate}%</span></div>
+            <div><span className="text-gray-500">Education:</span> <span className="font-medium">{formatRate(data.childWelfare.educationRate)}</span></div>
+            <div><span className="text-gray-500">Education Hours:</span> <span className="font-medium">{formatRate(data.childWelfare.educationHoursAdequateRate)}</span></div>
+            <div><span className="text-gray-500">Therapeutic:</span> <span className="font-medium">{formatRate(data.childWelfare.therapeuticSupportRate)}</span></div>
+            <div><span className="text-gray-500">Family Contact:</span> <span className="font-medium">{formatRate(data.childWelfare.familyContactRate)}</span></div>
+            <div><span className="text-gray-500">Health Needs:</span> <span className="font-medium">{formatRate(data.childWelfare.healthNeedsRate)}</span></div>
+            <div><span className="text-gray-500">Outside Time:</span> <span className="font-medium">{formatRate(data.childWelfare.outsideTimeAdequateRate)}</span></div>
+            <div><span className="text-gray-500">Privacy:</span> <span className="font-medium">{formatRate(data.childWelfare.privacyRate)}</span></div>
+            <div><span className="text-gray-500">Complaints:</span> <span className="font-medium">{formatRate(data.childWelfare.complaintsAvailableRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Discharge Preparedness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Assessments:</span> <span className="font-medium">{data.dischargePreparedness.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Transition Plans:</span> <span className="font-medium">{data.dischargePreparedness.transitionPlanRate}%</span></div>
-            <div><span className="text-gray-500">Receiving Placement:</span> <span className="font-medium">{data.dischargePreparedness.receivingPlacementRate}%</span></div>
-            <div><span className="text-gray-500">Support Network:</span> <span className="font-medium">{data.dischargePreparedness.supportNetworkRate}%</span></div>
-            <div><span className="text-gray-500">Risk Management:</span> <span className="font-medium">{data.dischargePreparedness.riskManagementRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.dischargePreparedness.childViewsRate}%</span></div>
+            <div><span className="text-gray-500">Transition Plans:</span> <span className="font-medium">{formatRate(data.dischargePreparedness.transitionPlanRate)}</span></div>
+            <div><span className="text-gray-500">Receiving Placement:</span> <span className="font-medium">{formatRate(data.dischargePreparedness.receivingPlacementRate)}</span></div>
+            <div><span className="text-gray-500">Support Network:</span> <span className="font-medium">{formatRate(data.dischargePreparedness.supportNetworkRate)}</span></div>
+            <div><span className="text-gray-500">Risk Management:</span> <span className="font-medium">{formatRate(data.dischargePreparedness.riskManagementRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.dischargePreparedness.childViewsRate)}</span></div>
           </div>
         </Section>
 

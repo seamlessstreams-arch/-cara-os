@@ -7,6 +7,7 @@
 // CHR 2015 Reg 35, Reg 16. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -155,7 +156,7 @@ export function HomePolicyComplianceIntelligenceCard() {
                   (d.acknowledgement_profile.avg_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.acknowledgement_profile.avg_acknowledgement_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.acknowledgement_profile.avg_acknowledgement_rate}%
+                  {formatRate(d.acknowledgement_profile.avg_acknowledgement_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Ack Rate</p>
@@ -201,11 +202,11 @@ export function HomePolicyComplianceIntelligenceCard() {
                 <p>Statutory basis: <span className={cn("font-medium",
                   (d.governance_profile.statutory_basis_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.governance_profile.statutory_basis_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.governance_profile.statutory_basis_rate}%</span></p>
+                )}>{formatRate(d.governance_profile.statutory_basis_rate)}</span></p>
                 <p>Key points: <span className={cn("font-medium",
                   (d.governance_profile.key_points_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.governance_profile.key_points_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.governance_profile.key_points_rate}%</span></p>
+                )}>{formatRate(d.governance_profile.key_points_rate)}</span></p>
                 <p>Fully read: <span className="font-medium text-slate-600">
                   {d.acknowledgement_profile.fully_acknowledged_count}/{d.compliance_profile.active_count}
                 </span></p>

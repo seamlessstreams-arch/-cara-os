@@ -7,6 +7,7 @@
 // CHR 2015 Reg 45, Reg 5. IRO Handbook. SCCIF: "Impact of leaders."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -122,7 +123,7 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
               <div className="flex items-center justify-center gap-1">
                 <UserCheck className={cn("h-3.5 w-3.5", (d.participation.attended_rate ?? 0) >= 80 ? "text-green-500" : (d.participation.attended_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", (d.participation.attended_rate ?? 0) >= 80 ? "text-green-600" : (d.participation.attended_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
-                  {d.participation.attended_rate}%
+                  {formatRate(d.participation.attended_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attended</p>
@@ -131,7 +132,7 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className={cn("h-3.5 w-3.5", (d.action_completion.completion_rate ?? 0) >= 80 ? "text-green-500" : (d.action_completion.completion_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", (d.action_completion.completion_rate ?? 0) >= 80 ? "text-green-600" : (d.action_completion.completion_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
-                  {d.action_completion.completion_rate}%
+                  {formatRate(d.action_completion.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions Done</p>
@@ -140,7 +141,7 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className={cn("h-3.5 w-3.5", d.care_plan_update_rate === 100 ? "text-green-500" : "text-amber-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", d.care_plan_update_rate === 100 ? "text-green-600" : "text-amber-600")}>
-                  {d.care_plan_update_rate}%
+                  {formatRate(d.care_plan_update_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Care Plan</p>
@@ -154,19 +155,19 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Participation</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Attended: <span className="font-medium text-slate-600">{d.participation.attended_rate}%</span></p>
-                <p>Views submitted: <span className="font-medium text-slate-600">{d.participation.views_submitted_rate}%</span></p>
+                <p>Attended: <span className="font-medium text-slate-600">{formatRate(d.participation.attended_rate)}</span></p>
+                <p>Views submitted: <span className="font-medium text-slate-600">{formatRate(d.participation.views_submitted_rate)}</span></p>
                 {(d.participation.advocate_rate ?? 0) > 0 && (
-                  <p>Advocate: <span className="font-medium text-slate-600">{d.participation.advocate_rate}%</span></p>
+                  <p>Advocate: <span className="font-medium text-slate-600">{formatRate(d.participation.advocate_rate)}</span></p>
                 )}
-                <p>Views recorded: <span className={d.participation.views_recorded_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.participation.views_recorded_rate}%</span></p>
+                <p>Views recorded: <span className={d.participation.views_recorded_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.participation.views_recorded_rate)}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Review Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Total reviews: <span className="font-medium text-slate-600">{d.iro.total_reviews}</span></p>
-                <p>On-time rate: <span className={d.timeliness.reviews_on_time_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.timeliness.reviews_on_time_rate}%</span></p>
+                <p>On-time rate: <span className={d.timeliness.reviews_on_time_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.timeliness.reviews_on_time_rate)}</span></p>
                 <p>IRO: <span className={d.iro.iro_consistency ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.iro.iro_names.join(", ")}</span></p>
                 <p>Stability: <span className={cn("font-medium capitalize", d.placement_stability_current === "stable" ? "text-green-600" : d.placement_stability_current === "at_risk" ? "text-red-600" : "text-amber-600")}>{d.placement_stability_current.replace(/_/g, " ")}</span></p>
               </div>

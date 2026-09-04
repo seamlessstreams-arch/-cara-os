@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -42,10 +43,10 @@ export function TransportSafetyComplianceIntelligenceWidget() {
       <Section title="Vehicle Safety" defaultOpen>
         <ScoreBar label="Vehicle Safety" value={vehicle.vehicleSafetyScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Check Passed" value={`${vehicle.checkPassedRate}%`} />
-          <Stat label="Service Current" value={`${vehicle.serviceCurrentRate}%`} />
-          <Stat label="MOT Valid" value={`${vehicle.motValidRate}%`} />
-          <Stat label="Insurance Valid" value={`${vehicle.insuranceValidRate}%`} />
+          <Stat label="Check Passed" value={`${formatRateLoose(vehicle.checkPassedRate)}`} />
+          <Stat label="Service Current" value={`${formatRateLoose(vehicle.serviceCurrentRate)}`} />
+          <Stat label="MOT Valid" value={`${formatRateLoose(vehicle.motValidRate)}`} />
+          <Stat label="Insurance Valid" value={`${formatRateLoose(vehicle.insuranceValidRate)}`} />
           <Stat label="Failed Vehicles" value={vehicle.failedCount as number} />
           <Stat label="Overdue Checks" value={vehicle.overdueCount as number} />
         </div>
@@ -53,30 +54,30 @@ export function TransportSafetyComplianceIntelligenceWidget() {
       <Section title="Journey Compliance">
         <ScoreBar label="Journey Compliance" value={journey.journeyComplianceScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Risk Assessment" value={`${journey.riskAssessmentRate}%`} />
-          <Stat label="Seatbelt Check" value={`${journey.seatbeltCheckRate}%`} />
-          <Stat label="Journey Log" value={`${journey.journeyLogRate}%`} />
-          <Stat label="Incident Rate" value={`${journey.incidentRate}%`} />
-          <Stat label="Completion Rate" value={`${journey.completionRate}%`} />
+          <Stat label="Risk Assessment" value={`${formatRateLoose(journey.riskAssessmentRate)}`} />
+          <Stat label="Seatbelt Check" value={`${formatRateLoose(journey.seatbeltCheckRate)}`} />
+          <Stat label="Journey Log" value={`${formatRateLoose(journey.journeyLogRate)}`} />
+          <Stat label="Incident Rate" value={`${formatRateLoose(journey.incidentRate)}`} />
+          <Stat label="Completion Rate" value={`${formatRateLoose(journey.completionRate)}`} />
         </div>
       </Section>
       <Section title="Driver Competence">
         <ScoreBar label="Driver Competence" value={driver.driverCompetenceScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Drivers" value={driver.totalDrivers as number} />
-          <Stat label="Licence Valid" value={`${driver.licenceValidRate}%`} />
-          <Stat label="DBS Checked" value={`${driver.dbsCheckedRate}%`} />
-          <Stat label="Training Done" value={`${driver.trainingCompletedRate}%`} />
-          <Stat label="First Aid" value={`${driver.firstAidRate}%`} />
-          <Stat label="Assessment Current" value={`${driver.assessmentCurrentRate}%`} />
+          <Stat label="Licence Valid" value={`${formatRateLoose(driver.licenceValidRate)}`} />
+          <Stat label="DBS Checked" value={`${formatRateLoose(driver.dbsCheckedRate)}`} />
+          <Stat label="Training Done" value={`${formatRateLoose(driver.trainingCompletedRate)}`} />
+          <Stat label="First Aid" value={`${formatRateLoose(driver.firstAidRate)}`} />
+          <Stat label="Assessment Current" value={`${formatRateLoose(driver.assessmentCurrentRate)}`} />
         </div>
       </Section>
       <Section title="Incident Response">
         <ScoreBar label="Incident Response" value={incident.incidentResponseScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Reported Timely" value={`${incident.reportedTimelyRate}%`} />
-          <Stat label="Investigation Done" value={`${incident.investigationCompletedRate}%`} />
-          <Stat label="Preventive Measures" value={`${incident.preventiveMeasuresRate}%`} />
+          <Stat label="Reported Timely" value={`${formatRateLoose(incident.reportedTimelyRate)}`} />
+          <Stat label="Investigation Done" value={`${formatRateLoose(incident.investigationCompletedRate)}`} />
+          <Stat label="Preventive Measures" value={`${formatRateLoose(incident.preventiveMeasuresRate)}`} />
           <Stat label="Serious Incidents" value={incident.seriousIncidentCount as number} />
         </div>
       </Section>

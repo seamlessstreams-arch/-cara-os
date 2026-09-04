@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -125,7 +126,7 @@ export default function ComplaintsClockPage() {
                   <Stat value={s.open} label="Open" tone="bg-[var(--cs-bg)] border-[var(--cs-border)] text-[var(--cs-navy)]" Icon={Circle} />
                   <Stat value={s.breached} label="Past deadline" tone="bg-red-50 border-red-200 text-red-800" Icon={AlertOctagon} />
                   <Stat value={s.due_soon} label="Due within 3 days" tone="bg-amber-50 border-amber-200 text-amber-800" Icon={Hourglass} />
-                  <Stat value={`${s.response_compliance_rate}%`} label="Responded on time" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
+                  <Stat value={`${formatRate(s.response_compliance_rate)}`} label="Responded on time" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
                 </div>
               </CardContent>
             </Card>

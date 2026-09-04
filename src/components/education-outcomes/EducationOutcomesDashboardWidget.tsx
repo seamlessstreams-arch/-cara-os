@@ -7,6 +7,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 /** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
@@ -334,7 +335,7 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
         <MetricCard
           label="Achievements"
           value={String(data.achievements.totalAchievements)}
-          sub={`${data.achievements.celebrationRate}% celebrated`}
+          sub={`${formatRate(data.achievements.celebrationRate)} celebrated`}
           accent={data.achievements.totalAchievements > 0 ? "emerald" : "slate"}
         />
       </div>
@@ -567,7 +568,7 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
                   <span className="text-foreground">{c.childName}</span>
                   <div className="flex items-center gap-3 text-muted-foreground">
                     <span>{c.achievementCount} achievements</span>
-                    <span>{c.celebrationRate}% celebrated</span>
+                    <span>{formatRate(c.celebrationRate)} celebrated</span>
                   </div>
                 </div>
               ))}

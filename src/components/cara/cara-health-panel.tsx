@@ -11,6 +11,7 @@
 // this component is the UI layer.
 // ═════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -660,7 +661,7 @@ export function CaraHealthPanel({
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-slate-500">Platform coverage</span>
                         <span className="text-xs font-semibold text-slate-700">
-                          {health.moduleCoverage.coveragePercent}%
+                          {formatRate(health.moduleCoverage.coveragePercent)}
                         </span>
                       </div>
                       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -670,7 +671,7 @@ export function CaraHealthPanel({
                             health.moduleCoverage.coveragePercent >= 90 ? "bg-emerald-500" :
                             health.moduleCoverage.coveragePercent >= 60 ? "bg-amber-500" : "bg-red-500",
                           )}
-                          style={{ width: `${health.moduleCoverage.coveragePercent}%` }}
+                          style={{ width: `${formatRate(health.moduleCoverage.coveragePercent)}` }}
                         />
                       </div>
                       <p className="text-xs text-slate-400 mt-1">

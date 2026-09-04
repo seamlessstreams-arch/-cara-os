@@ -11,6 +11,7 @@
 // - Regulatory references
 // ==============================================================================
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // -- Local interfaces (mirrors API shape) -------------------------------------
@@ -196,7 +197,7 @@ function ChildProfileRow({ profile }: { profile: ChildProfile }) {
           )}
         </div>
         <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
-          <span>HW: {profile.completionRate}%</span>
+          <span>HW: {formatRate(profile.completionRate)}</span>
           {profile.interventionCount > 0 && (
             <span>Interventions: {profile.interventionCount}</span>
           )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 /* ── tiny helpers (React + Tailwind only — no external libs) ────────── */
@@ -139,10 +140,10 @@ export function TherapeuticIntelligenceWidget() {
       <Section title="Therapeutic Quality" defaultOpen>
         <ScoreBar label="Therapeutic Goal Aligned" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Goal Aligned" value={`${quality.therapeuticGoalAlignedRate}%`} />
-          <Stat label="Voice of Child" value={`${quality.voiceOfChildIncludedRate}%`} />
-          <Stat label="Evidence-Based" value={`${quality.evidenceBasedApproachRate}%`} />
-          <Stat label="Wellbeing Impact" value={`${quality.wellbeingImpactRecordedRate}%`} />
+          <Stat label="Goal Aligned" value={`${formatRate(quality.therapeuticGoalAlignedRate)}`} />
+          <Stat label="Voice of Child" value={`${formatRate(quality.voiceOfChildIncludedRate)}`} />
+          <Stat label="Evidence-Based" value={`${formatRate(quality.evidenceBasedApproachRate)}`} />
+          <Stat label="Wellbeing Impact" value={`${formatRate(quality.wellbeingImpactRecordedRate)}`} />
         </div>
       </Section>
 
@@ -150,9 +151,9 @@ export function TherapeuticIntelligenceWidget() {
       <Section title="Therapeutic Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Goal Aligned" value={`${compliance.therapeuticGoalAlignedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Goal Aligned" value={`${formatRate(compliance.therapeuticGoalAlignedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -182,12 +183,12 @@ export function TherapeuticIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Care Knowledge" value={`${staff.therapeuticCareKnowledgeRate}%`} />
-          <Stat label="Trauma-Informed" value={`${staff.traumaInformedPracticeRate}%`} />
-          <Stat label="Emotion Regulation" value={`${staff.emotionalRegulationSkillsRate}%`} />
-          <Stat label="Mental Health" value={`${staff.mentalHealthAwarenessRate}%`} />
-          <Stat label="Crisis De-escalation" value={`${staff.crisisDeEscalationRate}%`} />
-          <Stat label="Relationship Building" value={`${staff.therapeuticRelationshipBuildingRate}%`} />
+          <Stat label="Care Knowledge" value={`${formatRate(staff.therapeuticCareKnowledgeRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(staff.traumaInformedPracticeRate)}`} />
+          <Stat label="Emotion Regulation" value={`${formatRate(staff.emotionalRegulationSkillsRate)}`} />
+          <Stat label="Mental Health" value={`${formatRate(staff.mentalHealthAwarenessRate)}`} />
+          <Stat label="Crisis De-escalation" value={`${formatRate(staff.crisisDeEscalationRate)}`} />
+          <Stat label="Relationship Building" value={`${formatRate(staff.therapeuticRelationshipBuildingRate)}`} />
         </div>
       </Section>
 

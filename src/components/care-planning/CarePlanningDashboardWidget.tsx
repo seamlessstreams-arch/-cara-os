@@ -12,6 +12,7 @@
 // - Participation rates
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ReviewTypeData {
@@ -108,9 +109,9 @@ function ReviewTypeRow({ type }: { type: ReviewTypeData }) {
     <div className="flex items-center gap-3">
       <span className="text-xs text-gray-600 w-32 truncate">{type.reviewTypeLabel ?? type.reviewType.replace(/_/g, " ")}</span>
       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${type.onTimeRate}%` }} />
+        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${formatRate(type.onTimeRate)}` }} />
       </div>
-      <span className="text-xs font-semibold w-12 text-right">{type.onTimeRate}%</span>
+      <span className="text-xs font-semibold w-12 text-right">{formatRate(type.onTimeRate)}</span>
       {type.overdue > 0 && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded">{type.overdue} overdue</span>}
     </div>
   );
@@ -137,7 +138,7 @@ function ChildPlanningCard({ child }: { child: ChildProfileData }) {
         </div>
         <div>
           <div className="text-xs text-gray-500">Actions</div>
-          <div className={`text-sm font-bold ${rateColor(child.actionCompletionRate)}`}>{child.actionCompletionRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.actionCompletionRate)}`}>{formatRate(child.actionCompletionRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Docs</div>
@@ -211,19 +212,19 @@ export function CarePlanningDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.reviewCompliance.onTimeRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.reviewCompliance.onTimeRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Reviews On Time</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.actionCompliance.completionRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.actionCompliance.completionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Actions Complete</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.documentCurrencyRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.documentCurrencyRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Docs Up-to-Date</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.childParticipationRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.childParticipationRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Child Participation</div>
         </div>
       </div>
@@ -294,15 +295,15 @@ export function CarePlanningDashboardWidget() {
           {/* Participation */}
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-2 bg-green-50 rounded">
-              <div className="text-lg font-bold text-green-700">{data.childParticipationRate}%</div>
+              <div className="text-lg font-bold text-green-700">{formatRate(data.childParticipationRate)}</div>
               <div className="text-[10px] text-gray-500">Child Participation</div>
             </div>
             <div className="text-center p-2 bg-blue-50 rounded">
-              <div className="text-lg font-bold text-blue-700">{data.parentParticipationRate}%</div>
+              <div className="text-lg font-bold text-blue-700">{formatRate(data.parentParticipationRate)}</div>
               <div className="text-[10px] text-gray-500">Parent Participation</div>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded">
-              <div className="text-lg font-bold text-purple-700">{data.socialWorkerAttendanceRate}%</div>
+              <div className="text-lg font-bold text-purple-700">{formatRate(data.socialWorkerAttendanceRate)}</div>
               <div className="text-[10px] text-gray-500">SW Attendance</div>
             </div>
           </div>

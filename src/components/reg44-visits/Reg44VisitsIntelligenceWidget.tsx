@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -82,25 +83,25 @@ export function Reg44VisitsIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Total Records" value={visitQuality.totalRecords as number} />
-        <Stat label="Children Interviewed" value={`${visitQuality.childrenInterviewedRate}%`} />
-        <Stat label="Documentation" value={`${visitCompliance.documentationRate}%`} />
+        <Stat label="Children Interviewed" value={`${formatRateLoose(visitQuality.childrenInterviewedRate)}`} />
+        <Stat label="Documentation" value={`${formatRateLoose(visitCompliance.documentationRate)}`} />
       </div>
 
       <Section title="Visit Quality" defaultOpen>
         <ScoreBar label="Quality Score" value={visitQuality.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Children Interviewed" value={`${visitQuality.childrenInterviewedRate}%`} />
-          <Stat label="Staff Interviewed" value={`${visitQuality.staffInterviewedRate}%`} />
-          <Stat label="Records Reviewed" value={`${visitQuality.recordsReviewedRate}%`} />
-          <Stat label="Premises Inspected" value={`${visitQuality.premisesInspectedRate}%`} />
+          <Stat label="Children Interviewed" value={`${formatRateLoose(visitQuality.childrenInterviewedRate)}`} />
+          <Stat label="Staff Interviewed" value={`${formatRateLoose(visitQuality.staffInterviewedRate)}`} />
+          <Stat label="Records Reviewed" value={`${formatRateLoose(visitQuality.recordsReviewedRate)}`} />
+          <Stat label="Premises Inspected" value={`${formatRateLoose(visitQuality.premisesInspectedRate)}`} />
         </div>
       </Section>
 
       <Section title="Visit Compliance">
         <ScoreBar label="Compliance Score" value={visitCompliance.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Documentation" value={`${visitCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${visitCompliance.timelyRecordingRate}%`} />
+          <Stat label="Documentation" value={`${formatRateLoose(visitCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRateLoose(visitCompliance.timelyRecordingRate)}`} />
           <Stat label="Unique Categories" value={visitCompliance.uniqueCategories as number} />
         </div>
       </Section>
@@ -129,9 +130,9 @@ export function Reg44VisitsIntelligenceWidget() {
         <ScoreBar label="Readiness Score" value={staffReadiness.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
           <Stat label="Reg 44 Requirements" value={`${staffReadiness.reg44RequirementsRate}%`} />
-          <Stat label="Child Interview Skills" value={`${staffReadiness.childInterviewSkillsRate}%`} />
-          <Stat label="Report Writing" value={`${staffReadiness.reportWritingRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${staffReadiness.regulatoryKnowledgeRate}%`} />
+          <Stat label="Child Interview Skills" value={`${formatRateLoose(staffReadiness.childInterviewSkillsRate)}`} />
+          <Stat label="Report Writing" value={`${formatRateLoose(staffReadiness.reportWritingRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRateLoose(staffReadiness.regulatoryKnowledgeRate)}`} />
         </div>
       </Section>
 

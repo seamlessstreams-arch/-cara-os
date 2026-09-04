@@ -13,6 +13,7 @@
 // Dependencies: React + Tailwind CSS only. No lucide-react, no Card/Badge, no cn().
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -307,7 +308,7 @@ export default function RestraintDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalRecords} record{child.totalRecords !== 1 ? "s" : ""}, {child.deEscalationAttemptedRate}% de-escalation, {child.debriefCompletedRate}% debrief, {child.categoriesCovered.length} categor{child.categoriesCovered.length !== 1 ? "ies" : "y"}
+                    {child.totalRecords} record{child.totalRecords !== 1 ? "s" : ""}, {formatRate(child.deEscalationAttemptedRate)} de-escalation, {formatRate(child.debriefCompletedRate)} debrief, {child.categoriesCovered.length} categor{child.categoriesCovered.length !== 1 ? "ies" : "y"}
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.overallScore, 10)}`}>

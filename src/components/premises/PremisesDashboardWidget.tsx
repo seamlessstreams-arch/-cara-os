@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 import type { PremisesIntelligenceResult } from "@/lib/premises/premises-engine";
 
@@ -106,7 +107,7 @@ export function PremisesDashboardWidget() {
         />
         <MetricCard
           label="Compliance Rate"
-          value={`${compliance.complianceRate}%`}
+          value={`${formatRate(compliance.complianceRate)}`}
           sub={`${compliance.passed + compliance.notDue}/${compliance.totalChecks} compliant`}
         />
         <MetricCard
@@ -207,8 +208,8 @@ export function PremisesDashboardWidget() {
             <div className="grid grid-cols-4 gap-4 text-center text-sm">
               <div><div className="text-lg font-bold">{fireDrills.drillsInPeriod}</div><div className="text-gray-500">Drills Conducted</div></div>
               <div><div className="text-lg font-bold">{fireDrills.avgEvacuationTime}m</div><div className="text-gray-500">Avg Evacuation</div></div>
-              <div><div className="text-lg font-bold">{fireDrills.allChildrenAccountedForRate}%</div><div className="text-gray-500">Children Accounted For</div></div>
-              <div><div className="text-lg font-bold">{fireDrills.allStaffParticipatedRate}%</div><div className="text-gray-500">Full Staff Participation</div></div>
+              <div><div className="text-lg font-bold">{formatRate(fireDrills.allChildrenAccountedForRate)}</div><div className="text-gray-500">Children Accounted For</div></div>
+              <div><div className="text-lg font-bold">{formatRate(fireDrills.allStaffParticipatedRate)}</div><div className="text-gray-500">Full Staff Participation</div></div>
             </div>
             <div className="mt-3 space-y-2">
               <h4 className="text-xs font-semibold uppercase text-gray-500">Drills by Time of Day</h4>
@@ -238,7 +239,7 @@ export function PremisesDashboardWidget() {
               <div><div className="text-lg font-bold">{environmentalRisks.openRisks}</div><div className="text-gray-500">Open</div></div>
               <div><div className="text-lg font-bold">{environmentalRisks.mitigatedRisks}</div><div className="text-gray-500">Mitigated</div></div>
               <div><div className="text-lg font-bold">{environmentalRisks.closedRisks}</div><div className="text-gray-500">Closed</div></div>
-              <div><div className="text-lg font-bold">{environmentalRisks.mitigationRate}%</div><div className="text-gray-500">Mitigation Rate</div></div>
+              <div><div className="text-lg font-bold">{formatRate(environmentalRisks.mitigationRate)}</div><div className="text-gray-500">Mitigation Rate</div></div>
             </div>
             {environmentalRisks.risksByLevel.length > 0 && (
               <div className="mt-3 space-y-2">
