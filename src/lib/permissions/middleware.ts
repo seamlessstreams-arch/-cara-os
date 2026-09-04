@@ -27,7 +27,7 @@ import type { SB } from "@/lib/supabase/loose-client";
 
 export interface PermissionContext {
   user: UserContext;
-  supabase: any;
+  supabase: SB;
   rawUser: { id: string; email: string };
 }
 
@@ -139,7 +139,7 @@ export function withPermission(
 
 // ── User Context Loader ────────────────────────────────────────────────────
 
-async function loadUserContext(sb: any, userId: string): Promise<UserContext | null> {
+async function loadUserContext(sb: SB, userId: string): Promise<UserContext | null> {
   const { data: profile, error } = await (sb.from("staff_profiles") as SB)
     .select(`
       user_id,
@@ -210,7 +210,7 @@ async function loadUserContext(sb: any, userId: string): Promise<UserContext | n
 // ── Audit Logging ──────────────────────────────────────────────────────────
 
 async function logAccessAttempt(
-  sb: any,
+  sb: SB,
   userId: string,
   resourceType: ResourceType,
   action: Action,
