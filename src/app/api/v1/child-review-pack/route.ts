@@ -167,12 +167,12 @@ export async function GET(request: NextRequest) {
           strengths: Array.isArray(d.strengths) ? d.strengths.filter((x: unknown) => typeof x === "string") : [],
           concerns: Array.isArray(d.concerns) ? d.concerns.filter((x: unknown) => typeof x === "string") : [],
           priority_actions: Array.isArray(d.priority_actions)
-            ? d.priority_actions.map((a: Record<string, unknown>) => ({ action: String(a?.action ?? ""), severity: String(a?.severity ?? "medium") })).filter((a: any) => a.action)
+            ? d.priority_actions.map((a: Record<string, unknown>) => ({ action: String(a?.action ?? ""), severity: String(a?.severity ?? "medium") })).filter((a) => a.action)
             : [],
           key_dates: Array.isArray(d.key_dates)
             ? d.key_dates
-                .map((k: any) => ({ label: String(k?.label ?? k?.title ?? k?.description ?? ""), date: String(k?.date ?? k?.due_date ?? "") }))
-                .filter((k: any) => k.label && k.date)
+                .map((k) => ({ label: String(k?.label ?? k?.title ?? k?.description ?? ""), date: String(k?.date ?? k?.due_date ?? "") }))
+                .filter((k) => k.label && k.date)
             : [],
           today,
         };
