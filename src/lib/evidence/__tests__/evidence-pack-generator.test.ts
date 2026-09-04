@@ -444,3 +444,47 @@ describe("typed collections (sweep 4)", () => {
     expect(item!.date).toBe("2026-06-02");
   });
 });
+
+describe("typed collections (sweep 5)", () => {
+  it("summarises family time from the real supervision and safety fields", () => {
+    const input = emptyInput();
+    input.familyTimeSessions = [
+      {
+        id: "ft-1",
+        child_id: "yp-1",
+        date: "2026-06-03",
+        time: "14:00",
+        duration_minutes: 60,
+        location: "Contact centre",
+        family_member: "mother" as never,
+        family_member_name: "Sam",
+        supervised_by: "Alex Morgan",
+        supervision_level: "supervised" as never,
+        child_presentation_before: "settled",
+        child_presentation_during: "engaged",
+        child_presentation_after: "settled",
+        interactions_observed: "",
+        warmth_affection_shown: "",
+        boundary_issues: "",
+        concerns_raised: "",
+        positive_observations: "",
+        child_voice_after: "",
+        parent_engagement: "",
+        gifts_exchanged: "",
+        food_shared_who: "",
+        was_it_safe: "yes" as never,
+        incidents_during: "",
+        recommendations_for_next: "",
+        report_sent_to_sw: false,
+        report_sent_date: "",
+        created_at: "2026-06-03T15:00:00Z",
+      } as never,
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const item = pack.sections.flatMap((s) => s.items).find((i) => i.linked_record_id === "ft-1");
+    expect(item).toBeTruthy();
+    expect(item!.title).toContain("Sam");
+    expect(item!.summary).toContain("supervised");
+    expect(item!.summary).not.toContain("not assessed");
+  });
+});
