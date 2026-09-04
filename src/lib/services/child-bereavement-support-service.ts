@@ -69,8 +69,8 @@ export interface ChildBereavementSupportRow {
   specialist_referral_made: boolean;
   specialist_service: string | null;
   camhs_involvement: boolean;
-  school_notified: boolean;
-  social_worker_notified: boolean;
+  school_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  social_worker_notified: boolean | null;
   memorial_activity_planned: boolean;
   ongoing_support_needed: boolean;
   review_date: string | null;
@@ -110,8 +110,16 @@ export function computeMetrics(
       : null;
   };
 
-  const schoolNotificationRate = boolRate((r) => r.school_notified);
-  const socialWorkerRate = boolRate((r) => r.social_worker_notified);
+  // Tri-state columns rate over the recorded subset — an unrecorded judgement
+  // must not read as a quiet "no".
+  const recordedRate = (field: keyof ChildBereavementSupportRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+
+  const schoolNotificationRate = recordedRate("school_notified");
+  const socialWorkerRate = recordedRate("social_worker_notified");
   const memorialActivityRate = boolRate((r) => r.memorial_activity_planned);
   const reviewScheduledRate = boolRate((r) => r.review_date !== null);
 
@@ -185,11 +193,13 @@ export function computeAlerts(
 
   // Medium: school not notified
   for (const r of rows) {
-    if (!r.school_notified) {
+    if (r.school_notified !== true) {
       alerts.push({
         type: "school_not_notified",
         severity: "medium",
-        message: `School not notified of bereavement for ${r.child_name} — notify school to ensure appropriate support in educational setting`,
+        message: r.school_notified === false
+          ? `School not notified of bereavement for ${r.child_name} — notify school to ensure appropriate support in educational setting`
+          : `No record the school was notified of bereavement for ${r.child_name} — notify and evidence it to ensure support in the educational setting`,
         record_id: r.id,
       });
     }
@@ -197,11 +207,13 @@ export function computeAlerts(
 
   // Medium: social worker not notified
   for (const r of rows) {
-    if (!r.social_worker_notified) {
+    if (r.social_worker_notified !== true) {
       alerts.push({
         type: "social_worker_not_notified",
         severity: "medium",
-        message: `Social worker not notified of bereavement for ${r.child_name} — notify social worker as part of multi-agency support`,
+        message: r.social_worker_notified === false
+          ? `Social worker not notified of bereavement for ${r.child_name} — notify social worker as part of multi-agency support`
+          : `No record the social worker was notified of bereavement for ${r.child_name} — notify and evidence it as part of multi-agency support`,
         record_id: r.id,
       });
     }
@@ -304,9 +316,10 @@ export async function createChildBereavementSupport(input: {
       specialist_referral_made: input.specialistReferralMade ?? false,
       specialist_service: input.specialistService ?? null,
       camhs_involvement: input.camhsInvolvement ?? false,
-      school_notified: input.schoolNotified ?? true,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      school_notified: input.schoolNotified ?? null,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       memorial_activity_planned: input.memorialActivityPlanned ?? false,
+      // absence-ok: presuming ongoing support is needed until assessed otherwise is the protective direction
       ongoing_support_needed: input.ongoingSupportNeeded ?? true,
       review_date: input.reviewDate ?? null,
       key_worker_name: input.keyWorkerName,
