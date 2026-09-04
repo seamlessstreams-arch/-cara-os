@@ -12,10 +12,12 @@ import { cn } from "@/lib/utils";
 import { Loader2, Brain, Check, Sparkles, ListChecks } from "lucide-react";
 import { EntryAssist } from "@/components/forms/entry-assist";
 
+import type { PostIncidentReflectionRecord, RestorativeConversationRecord } from "@/lib/cara-incident/post-incident-engine";
+
 // ── Inlined from the former use-cara-incident hook ────────────────────────────
 interface PostIncidentData {
-  restorative: any[];
-  reflections: any[];
+  restorative: RestorativeConversationRecord[];
+  reflections: PostIncidentReflectionRecord[];
   templates: {
     restorative_questions: { key: string; label: string }[];
     readiness_checks: string[];
@@ -79,8 +81,8 @@ export function PostIncidentReflectionForm({ sessionId }: { sessionId: string })
               <Check className="h-3 w-3" /> Completed{existing.manager_review_required ? " · manager review" : ""}
             </p>
             {data.templates.reflection_questions
-              .map((q) => [q.label, existing[q.key]] as const)
-              .filter(([, v]) => v)
+              .map((q) => [q.label, (existing as unknown as Record<string, unknown>)[q.key]] as const)
+              .filter((e): e is readonly [string, string] => typeof e[1] === "string" && e[1].length > 0)
               .map(([label, v]) => (
                 <div key={label}>
                   <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--cs-teal-strong)]">{label}</p>
