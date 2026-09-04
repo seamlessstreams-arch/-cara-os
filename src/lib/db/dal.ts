@@ -83,16 +83,14 @@ export const dal = {
       if (c) return sq.getStaff(c, homeId(), { status: "active" });
       return db.staff.findActive();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.staff.create>[0]) {
       const c = sb();
       if (c) return sq.createStaffMember(c, { ...data, home_id: homeId() });
       return db.staff.create(data);
     },
     /** Pre-employment checks only — the allowlist lives in queries.ts so both
      *  modes write exactly the same set of columns. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async updateSaferRecruitment(id: string, data: any) {
+    async updateSaferRecruitment(id: string, data: Parameters<typeof db.staff.update>[1]) {
       const c = sb();
       if (c) return sq.updateStaffSaferRecruitment(c, id, data);
       return db.staff.update(id, sq.saferRecruitmentColumns(data));
@@ -116,14 +114,12 @@ export const dal = {
       if (c) return sq.getYoungPeople(c, homeId(), "current");
       return db.youngPeople.findCurrent();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.youngPeople.create>[0]) {
       const c = sb();
       if (c) return sq.createYoungPerson(c, { ...data, home_id: homeId() });
       return db.youngPeople.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.youngPeople.update>[1]) {
       const c = sb();
       if (c) return sq.updateYoungPerson(c, id, data);
       return db.youngPeople.update(id, data);
@@ -152,18 +148,16 @@ export const dal = {
       if (c) return sq.getTasks(c, homeId(), { overdue: true });
       return db.tasks.findOverdue();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.tasks.create>[0]) {
       const c = sb();
-      if (c) return sq.createTask(c, { ...data, home_id: homeId() });
+      if (c) return sq.createTask(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createTask>[1]);
       return db.tasks.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.tasks.update>[1]) {
       const c = sb();
       if (c) return sq.updateTask(c, id, data);
       // In-memory fallback: status→completed uses the richer complete(); else generic update.
-      if (data.status === "completed") return db.tasks.complete(id, data.completed_by ?? "system", data.evidence_note);
+      if (data.status === "completed") return db.tasks.complete(id, data.completed_by ?? "system", data.evidence_note ?? undefined);
       return db.tasks.update(id, data);
     },
   },
@@ -180,16 +174,14 @@ export const dal = {
       if (c) return sq.getIncidentById(c, id);
       return db.incidents.findById(id) ?? null;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.incidents.create>[0]) {
       const c = sb();
-      if (c) return sq.createIncident(c, { ...data, home_id: homeId() });
+      if (c) return sq.createIncident(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createIncident>[1]);
       return db.incidents.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.incidents.update>[1]) {
       const c = sb();
-      if (c) return sq.updateIncident(c, id, data);
+      if (c) return sq.updateIncident(c, id, data as Parameters<typeof sq.updateIncident>[2]);
       return db.incidents.update(id, data);
     },
     async addOversight(id: string, note: string, by: string) {
@@ -206,14 +198,12 @@ export const dal = {
       if (c) return sq.getMissingEpisodes(c, homeId(), filters);
       return db.missingEpisodes.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.missingEpisodes.create>[0]) {
       const c = sb();
-      if (c) return sq.createMissingEpisode(c, { ...data, home_id: homeId() });
+      if (c) return sq.createMissingEpisode(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createMissingEpisode>[1]);
       return db.missingEpisodes.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async patch(id: string, data: any) {
+    async patch(id: string, data: Parameters<typeof db.missingEpisodes.patch>[1]) {
       const c = sb();
       if (c) {
         // Supabase doesn't have a specific patch — use generic update
@@ -246,14 +236,12 @@ export const dal = {
       if (c) return sq.getShiftsByStaff(c, homeId(), staffId);
       return db.shifts.findByStaff(staffId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.shifts.create>[0]) {
       const c = sb();
-      if (c) return sq.createShift(c, { ...data, home_id: homeId() });
+      if (c) return sq.createShift(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createShift>[1]);
       return db.shifts.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.shifts.update>[1]) {
       const c = sb();
       if (c) {
         return (await c.from("shifts").update(data as never).eq("id", id).select().single()).data;
@@ -279,8 +267,7 @@ export const dal = {
       if (c) return sq.getLeaveOnDate(c, homeId(), todayStr());
       return db.leave.findOnLeaveToday();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.leave.create>[0]) {
       const c = sb();
       if (c) return sq.createLeaveRequest(c, { ...data, home_id: homeId() });
       return db.leave.create(data);
@@ -299,16 +286,14 @@ export const dal = {
       if (c) return sq.getTrainingRecords(c, homeId(), { staff_id: staffId });
       return db.training.findByStaff(staffId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.training.create>[0]) {
       const c = sb();
       if (c) {
-        return (await c.from("training_records").insert({ ...data, home_id: homeId() }).select().single()).data;
+        return (await c.from("training_records").insert({ ...data, home_id: homeId() } as never).select().single()).data;
       }
       return db.training.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async patch(id: string, data: any) {
+    async patch(id: string, data: Parameters<typeof db.training.patch>[1]) {
       const c = sb();
       if (c) {
         return (await c.from("training_records").update(data as never).eq("id", id).select().single()).data;
@@ -329,8 +314,7 @@ export const dal = {
       if (c) return sq.getMedications(c, homeId(), childId);
       return db.medications.findByChild(childId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.medications.create>[0]) {
       const c = sb();
       if (c) return sq.createMedication(c, { ...data, home_id: homeId() });
       return db.medications.create(data);
@@ -343,16 +327,14 @@ export const dal = {
       if (c) return sq.getMedicationAdministrations(c, homeId(), filters);
       return db.medicationAdministrations.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Partial<Parameters<typeof sq.createMedicationAdministration>[1]>) {
       const c = sb();
-      if (c) return sq.createMedicationAdministration(c, { ...data, home_id: homeId() });
+      if (c) return sq.createMedicationAdministration(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createMedicationAdministration>[1]);
       return null; // in-memory doesn't have a generic create
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.medicationAdministrations.administer>[1]) {
       const c = sb();
-      if (c) return sq.updateMedicationAdministration(c, id, data);
+      if (c) return sq.updateMedicationAdministration(c, id, data as unknown as Parameters<typeof sq.updateMedicationAdministration>[2]);
       return db.medicationAdministrations.administer(id, data);
     },
   },
@@ -369,10 +351,9 @@ export const dal = {
       if (c) return sq.getDailyLog(c, homeId(), { child_id: childId });
       return db.dailyLog.findByChild(childId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.dailyLog.create>[0]) {
       const c = sb();
-      if (c) return sq.createDailyLogEntry(c, { ...data, home_id: homeId() });
+      if (c) return sq.createDailyLogEntry(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createDailyLogEntry>[1]);
       return db.dailyLog.create(data);
     },
   },
@@ -401,16 +382,14 @@ export const dal = {
       if (c) return sq.getSupervisionById(c, id);
       return db.supervisions.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.supervisions.create>[0]) {
       const c = sb();
-      if (c) return sq.createSupervision(c, { ...data, home_id: homeId() });
+      if (c) return sq.createSupervision(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createSupervision>[1]);
       return db.supervisions.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.supervisions.update>[1]) {
       const c = sb();
-      if (c) return sq.updateSupervision(c, id, data);
+      if (c) return sq.updateSupervision(c, id, data as Parameters<typeof sq.updateSupervision>[2]);
       return db.supervisions.update(id, data);
     },
   },
@@ -429,8 +408,7 @@ export const dal = {
       }
       return db.documents.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.documents.create>[0]) {
       const c = sb();
       if (c) return sq.createDocument(c, { ...data, home_id: homeId() });
       return db.documents.create(data);
@@ -462,14 +440,12 @@ export const dal = {
       if (c) return sq.getExpenses(c, homeId(), filters);
       return db.expenses.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.expenses.create>[0]) {
       const c = sb();
-      if (c) return sq.createExpense(c, { ...data, home_id: homeId() });
+      if (c) return sq.createExpense(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createExpense>[1]);
       return db.expenses.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.expenses.update>[1]) {
       const c = sb();
       if (c) return sq.updateExpense(c, id, data);
       return db.expenses.update(id, data);
@@ -488,16 +464,14 @@ export const dal = {
       if (c) return sq.getCareFormById(c, id);
       return db.careForms.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.careForms.create>[0]) {
       const c = sb();
-      if (c) return sq.createCareForm(c, { ...data, home_id: homeId() });
+      if (c) return sq.createCareForm(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createCareForm>[1]);
       return db.careForms.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.careForms.update>[1]) {
       const c = sb();
-      if (c) return sq.updateCareForm(c, id, data);
+      if (c) return sq.updateCareForm(c, id, data as Parameters<typeof sq.updateCareForm>[2]);
       return db.careForms.update(id, data);
     },
     async submit(id: string, by: string) {
@@ -519,16 +493,14 @@ export const dal = {
       if (c) return sq.getQaAudits(c, homeId(), filters);
       return db.audits.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.audits.create>[0]) {
       const c = sb();
-      if (c) return sq.createQaAudit(c, { ...data, home_id: homeId() });
+      if (c) return sq.createQaAudit(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createQaAudit>[1]);
       return db.audits.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.audits.update>[1]) {
       const c = sb();
-      if (c) return sq.updateQaAudit(c, id, data);
+      if (c) return sq.updateQaAudit(c, id, data as unknown as Parameters<typeof sq.updateQaAudit>[2]);
       return db.audits.update(id, data);
     },
   },
@@ -547,14 +519,12 @@ export const dal = {
       }
       return db.maintenance.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.maintenance.create>[0]) {
       const c = sb();
-      if (c) return sq.createMaintenanceItem(c, { ...data, home_id: homeId() });
+      if (c) return sq.createMaintenanceItem(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createMaintenanceItem>[1]);
       return db.maintenance.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.maintenance.update>[1]) {
       const c = sb();
       if (c) return sq.updateMaintenanceItem(c, id, data);
       return db.maintenance.update(id, data);
@@ -573,10 +543,9 @@ export const dal = {
       if (c) return sq.getChronologyEntries(c, homeId(), childId);
       return db.chronology.findByChild(childId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.chronology.create>[0]) {
       const c = sb();
-      if (c) return sq.createChronologyEntry(c, { ...data, home_id: homeId() });
+      if (c) return sq.createChronologyEntry(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createChronologyEntry>[1]);
       return db.chronology.create(data);
     },
   },
@@ -595,10 +564,9 @@ export const dal = {
       }
       return db.handovers.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.handovers.create>[0]) {
       const c = sb();
-      if (c) return sq.createHandover(c, { ...data, home_id: homeId() });
+      if (c) return sq.createHandover(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createHandover>[1]);
       return db.handovers.create(data);
     },
   },
@@ -617,8 +585,7 @@ export const dal = {
       }
       return facilityStore.buildings.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Partial<Parameters<typeof sq.createBuilding>[1]>) {
       const c = sb();
       if (c) return sq.createBuilding(c, { ...data, home_id: homeId() });
       return facilityStore.buildings.create(data);
@@ -631,10 +598,9 @@ export const dal = {
       if (c) return sq.getBuildingChecks(c, homeId(), buildingId);
       return facilityStore.buildingChecks.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof facilityStore.buildingChecks.create>[0]) {
       const c = sb();
-      if (c) return sq.createBuildingCheck(c, { ...data, home_id: homeId() });
+      if (c) return sq.createBuildingCheck(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createBuildingCheck>[1]);
       return facilityStore.buildingChecks.create(data);
     },
   },
@@ -653,8 +619,7 @@ export const dal = {
       }
       return facilityStore.vehicles.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Partial<Parameters<typeof sq.createVehicle>[1]>) {
       const c = sb();
       if (c) return sq.createVehicle(c, { ...data, home_id: homeId() });
       return facilityStore.vehicles.create(data);
@@ -667,10 +632,9 @@ export const dal = {
       if (c) return sq.getVehicleChecks(c, homeId(), vehicleId);
       return facilityStore.vehicleChecks.findAll();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof facilityStore.vehicleChecks.create>[0]) {
       const c = sb();
-      if (c) return sq.createVehicleCheck(c, { ...data, home_id: homeId() });
+      if (c) return sq.createVehicleCheck(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createVehicleCheck>[1]);
       return facilityStore.vehicleChecks.create(data);
     },
   },
@@ -682,10 +646,9 @@ export const dal = {
       if (c) return sq.getNotifications(c, homeId(), userId);
       return db.notifications.findForUser(userId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.notifications.create>[0]) {
       const c = sb();
-      if (c) return sq.createNotification(c, { ...data, home_id: homeId() });
+      if (c) return sq.createNotification(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createNotification>[1]);
       return db.notifications.create(data);
     },
   },
@@ -717,14 +680,12 @@ export const dal = {
       if (c) return sq.getCandidateById(c, id);
       return db.candidateProfiles.findById(id);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.candidateProfiles.create>[0]) {
       const c = sb();
-      if (c) return sq.createCandidateProfile(c, { ...data, home_id: homeId() });
+      if (c) return sq.createCandidateProfile(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createCandidateProfile>[1]);
       return db.candidateProfiles.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.candidateProfiles.update>[1]) {
       const c = sb();
       if (c) return sq.updateCandidateProfile(c, id, data);
       return db.candidateProfiles.update(id, data);
@@ -742,10 +703,9 @@ export const dal = {
       if (c) return sq.getCandidateChecks(c, candidateId);
       return db.candidateChecks.findByCandidate(candidateId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.candidateChecks.update>[1]) {
       const c = sb();
-      if (c) return sq.updateCandidateCheck(c, id, data);
+      if (c) return sq.updateCandidateCheck(c, id, data as Parameters<typeof sq.updateCandidateCheck>[2]);
       return db.candidateChecks.update(id, data);
     },
   },
@@ -756,16 +716,14 @@ export const dal = {
       if (c) return sq.getCandidateReferences(c, candidateId);
       return db.candidateReferences.findByCandidate(candidateId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.candidateReferences.create>[0]) {
       const c = sb();
-      if (c) return sq.createCandidateReference(c, { ...data });
+      if (c) return sq.createCandidateReference(c, { ...data } as Parameters<typeof sq.createCandidateReference>[1]);
       return db.candidateReferences.create(data);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.candidateReferences.update>[1]) {
       const c = sb();
-      if (c) return sq.updateCandidateReference(c, id, data);
+      if (c) return sq.updateCandidateReference(c, id, data as Parameters<typeof sq.updateCandidateReference>[2]);
       return db.candidateReferences.update(id, data);
     },
   },
@@ -821,10 +779,8 @@ export const dal = {
     },
     async findById(id: string) { return db.keyWorkingSessions.findById(id) ?? null; },
     async findByChild(childId: string) { return db.keyWorkingSessions.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.keyWorkingSessions.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.keyWorkingSessions.update(id, data); },
+    async create(data: Parameters<typeof db.keyWorkingSessions.create>[0]) { return db.keyWorkingSessions.create(data); },
+    async update(id: string, data: Parameters<typeof db.keyWorkingSessions.update>[1]) { return db.keyWorkingSessions.update(id, data); },
   },
 
   behaviourLog: {
@@ -835,10 +791,8 @@ export const dal = {
     },
     async findById(id: string) { return db.behaviourLog.findById(id) ?? null; },
     async findByChild(childId: string) { return db.behaviourLog.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.behaviourLog.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.behaviourLog.update(id, data); },
+    async create(data: Parameters<typeof db.behaviourLog.create>[0]) { return db.behaviourLog.create(data); },
+    async update(id: string, data: Parameters<typeof db.behaviourLog.update>[1]) { return db.behaviourLog.update(id, data); },
   },
 
   riskAssessments: {
@@ -849,10 +803,8 @@ export const dal = {
     },
     async findById(id: string) { return db.riskAssessments.findById(id) ?? null; },
     async findByChild(childId: string) { return db.riskAssessments.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.riskAssessments.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.riskAssessments.update(id, data); },
+    async create(data: Parameters<typeof db.riskAssessments.create>[0]) { return db.riskAssessments.create(data); },
+    async update(id: string, data: Parameters<typeof db.riskAssessments.update>[1]) { return db.riskAssessments.update(id, data); },
   },
 
   lacReviews: {
@@ -863,8 +815,7 @@ export const dal = {
     },
     async findById(id: string) { return db.lacReviews.findById(id) ?? null; },
     async findByChild(childId: string) { return db.lacReviews.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.lacReviews.create(data); },
+    async create(data: Parameters<typeof db.lacReviews.create>[0]) { return db.lacReviews.create(data); },
   },
 
   educationRecords: {
@@ -875,10 +826,8 @@ export const dal = {
     },
     async findById(id: string) { return db.educationRecords.findById(id) ?? null; },
     async findByChild(childId: string) { return db.educationRecords.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.educationRecords.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.educationRecords.update(id, data); },
+    async create(data: Parameters<typeof db.educationRecords.create>[0]) { return db.educationRecords.create(data); },
+    async update(id: string, data: Parameters<typeof db.educationRecords.update>[1]) { return db.educationRecords.update(id, data); },
   },
 
   trainingRecords: {
@@ -899,8 +848,7 @@ export const dal = {
     },
     async findById(id: string) { return db.restraints.findById(id) ?? null; },
     async findByChild(childId: string) { return db.restraints.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.restraints.create(data); },
+    async create(data: Parameters<typeof db.restraints.create>[0]) { return db.restraints.create(data); },
   },
 
   reflectiveSupervisions: {
@@ -913,8 +861,7 @@ export const dal = {
     async findByStaff(staffId: string) { return getStore().reflectiveSupervisions.filter((r) => r.staff_id === staffId); },
     // DEMO-ONLY append (mirrors the in-memory copy). Real persistence is the
     // persistReflectiveSupervision side-channel the route still calls.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(record: any) {
+    async create(record: NonNullable<ReturnType<typeof getStore>["reflectiveSupervisions"]>[number]) {
       const s = (getStore());
       s.reflectiveSupervisions = s.reflectiveSupervisions ?? [];
       s.reflectiveSupervisions.push(record);
@@ -933,8 +880,7 @@ export const dal = {
     async findById(id: string) { return db.outcomeTargets.findById(id) ?? null; },
     async findByChild(childId: string) { return db.outcomeTargets.findByChild(childId); },
     async findActive() { return db.outcomeTargets.findActive(); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.outcomeTargets.create(data); },
+    async create(data: Parameters<typeof db.outcomeTargets.create>[0]) { return db.outcomeTargets.create(data); },
   },
 
   debriefRecords: {
@@ -945,8 +891,7 @@ export const dal = {
     },
     async findById(id: string) { return db.debriefRecords.findById(id) ?? null; },
     async findByChild(childId: string) { return db.debriefRecords.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.debriefRecords.create(data); },
+    async create(data: Parameters<typeof db.debriefRecords.create>[0]) { return db.debriefRecords.create(data); },
   },
 
   familyTimeSessions: {
@@ -957,8 +902,7 @@ export const dal = {
     },
     async findById(id: string) { return db.familyTimeSessions.findById(id) ?? null; },
     async findByChild(childId: string) { return db.familyTimeSessions.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.familyTimeSessions.create(data); },
+    async create(data: Parameters<typeof db.familyTimeSessions.create>[0]) { return db.familyTimeSessions.create(data); },
   },
 
   sanctionRewards: {
@@ -969,8 +913,7 @@ export const dal = {
     },
     async findById(id: string) { return db.sanctionRewards.findById(id) ?? null; },
     async findByChild(childId: string) { return db.sanctionRewards.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.sanctionRewards.create(data); },
+    async create(data: Parameters<typeof db.sanctionRewards.create>[0]) { return db.sanctionRewards.create(data); },
   },
 
   returnInterviews: {
@@ -981,8 +924,7 @@ export const dal = {
     },
     async findById(id: string) { return db.returnInterviews.findById(id) ?? null; },
     async findByChild(childId: string) { return db.returnInterviews.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.returnInterviews.create(data); },
+    async create(data: Parameters<typeof db.returnInterviews.create>[0]) { return db.returnInterviews.create(data); },
   },
 
   positiveAchievements: {
@@ -993,10 +935,8 @@ export const dal = {
     },
     async findById(id: string) { return db.positiveAchievements.getAll().find((r) => r.id === id) ?? null; },
     async findByChild(childId: string) { return db.positiveAchievements.getAll().filter((r) => r.child_id === childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.positiveAchievements.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.positiveAchievements.update(id, data); },
+    async create(data: Parameters<typeof db.positiveAchievements.create>[0]) { return db.positiveAchievements.create(data); },
+    async update(id: string, data: Parameters<typeof db.positiveAchievements.update>[1]) { return db.positiveAchievements.update(id, data); },
   },
 
   caraRecordingReviews: {
@@ -1010,16 +950,14 @@ export const dal = {
     // DEMO-ONLY append (mirrors the in-memory copy the routes kept). The real
     // Supabase persistence is a side-channel (persistRecordingReview) the routes
     // still call directly. When a table lands, add `if (sb()) return sq...` here.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(review: any) {
+    async create(review: NonNullable<ReturnType<typeof getStore>["caraRecordingReviews"]>[number]) {
       const s = (getStore());
       s.caraRecordingReviews = s.caraRecordingReviews ?? [];
       s.caraRecordingReviews.push(review);
       return review;
     },
     /** DEMO-ONLY patch-in-place (2026-08-05); returns null if unknown. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, patch: any) {
+    async update(id: string, patch: Partial<NonNullable<ReturnType<typeof getStore>["caraRecordingReviews"]>[number]>) {
       const review = getStore().caraRecordingReviews.find((r) => r.id === id);
       if (!review) return null;
       Object.assign(review, patch);
@@ -1051,8 +989,7 @@ export const dal = {
     },
     async findById(id: string) { return db.ypFeedback.findById(id) ?? null; },
     async findByChild(childId: string) { return db.ypFeedback.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.ypFeedback.create(data); },
+    async create(data: Parameters<typeof db.ypFeedback.create>[0]) { return db.ypFeedback.create(data); },
   },
 
   healthAssessments: {
@@ -1063,8 +1000,7 @@ export const dal = {
     },
     async findById(id: string) { return db.healthAssessments.findById(id) ?? null; },
     async findByChild(childId: string) { return db.healthAssessments.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.healthAssessments.create(data); },
+    async create(data: Parameters<typeof db.healthAssessments.create>[0]) { return db.healthAssessments.create(data); },
   },
 
   notifiableEvents: {
@@ -1074,8 +1010,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.notifiableEvents.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.notifiableEvents.create(data); },
+    async create(data: Parameters<typeof db.notifiableEvents.create>[0]) { return db.notifiableEvents.create(data); },
   },
 
   employerValuesProfiles: {
@@ -1083,8 +1018,7 @@ export const dal = {
     async findById(id: string) { return getStore().employerValuesProfiles.find((r) => r.id === id) ?? null; },
     // DEMO-ONLY single-profile upsert (there is one profile per home). Mirrors
     // the route's list[0]-replace mutation exactly.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async upsert(updated: any) {
+    async upsert(updated: NonNullable<ReturnType<typeof getStore>["employerValuesProfiles"]>[number]) {
       const s = (getStore());
       const list = s.employerValuesProfiles ?? [];
       if (list[0]) list[0] = updated; else list.push(updated);
@@ -1100,8 +1034,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.reg44VisitReports.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.reg44VisitReports.create(data); },
+    async create(data: Parameters<typeof db.reg44VisitReports.create>[0]) { return db.reg44VisitReports.create(data); },
   },
 
   mentalHealthCheckIns: {
@@ -1111,8 +1044,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.mentalHealthCheckIns.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.mentalHealthCheckIns.create(data); },
+    async create(data: Parameters<typeof db.mentalHealthCheckIns.create>[0]) { return db.mentalHealthCheckIns.create(data); },
   },
 
   childPaceProfiles: {
@@ -1140,8 +1072,7 @@ export const dal = {
       return list;
     },
     async findByChild(childId: string) { return db.welfareChecks.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.welfareChecks.create(data); },
+    async create(data: Parameters<typeof db.welfareChecks.create>[0]) { return db.welfareChecks.create(data); },
   },
 
   medicationErrors: {
@@ -1151,8 +1082,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.medicationErrors.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.medicationErrors.create(data); },
+    async create(data: Parameters<typeof db.medicationErrors.create>[0]) { return db.medicationErrors.create(data); },
   },
 
   outcomeReviews: {
@@ -1162,8 +1092,7 @@ export const dal = {
       return list;
     },
     async findByChild(childId: string) { return db.outcomeReviews.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.outcomeReviews.create(data); },
+    async create(data: Parameters<typeof db.outcomeReviews.create>[0]) { return db.outcomeReviews.create(data); },
   },
 
   advocacyRecords: {
@@ -1177,10 +1106,8 @@ export const dal = {
 
   qaAuditRecords: {
     async findAll() { return db.qaAuditRecords.getAll(); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.qaAuditRecords.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.qaAuditRecords.update(id, data); },
+    async create(data: Parameters<typeof db.qaAuditRecords.create>[0]) { return db.qaAuditRecords.create(data); },
+    async update(id: string, data: Parameters<typeof db.qaAuditRecords.update>[1]) { return db.qaAuditRecords.update(id, data); },
   },
 
   candidateValuesProfiles: {
@@ -1199,8 +1126,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.appointments.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.appointments.create(data); },
+    async create(data: Parameters<typeof db.appointments.create>[0]) { return db.appointments.create(data); },
   },
 
   staffSicknessRecords: {
@@ -1209,10 +1135,8 @@ export const dal = {
       if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
       return list;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.staffSicknessRecords.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.staffSicknessRecords.update(id, data); },
+    async create(data: Parameters<typeof db.staffSicknessRecords.create>[0]) { return db.staffSicknessRecords.create(data); },
+    async update(id: string, data: Parameters<typeof db.staffSicknessRecords.update>[1]) { return db.staffSicknessRecords.update(id, data); },
   },
 
   complaintOutcomeRecords: {
@@ -1232,8 +1156,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.exploitationScreenings.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.exploitationScreenings.create(data); },
+    async create(data: Parameters<typeof db.exploitationScreenings.create>[0]) { return db.exploitationScreenings.create(data); },
   },
 
   independenceSkillsRecords: {
@@ -1244,8 +1167,7 @@ export const dal = {
     },
     async findById(id: string) { return db.independenceSkillsRecords.findById(id) ?? null; },
     async findByChild(childId: string) { return db.independenceSkillsRecords.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.independenceSkillsRecords.create(data); },
+    async create(data: Parameters<typeof db.independenceSkillsRecords.create>[0]) { return db.independenceSkillsRecords.create(data); },
   },
 
   postIncidentReflections: {
@@ -1257,8 +1179,7 @@ export const dal = {
     async findById(id: string) { return db.postIncidentReflections.findById(id) ?? null; },
     async findByChild(childId: string) { return db.postIncidentReflections.findByChild(childId); },
     async findByIncident(incidentId: string) { return db.postIncidentReflections.findByIncident(incidentId) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async append(r: any) { return db.postIncidentReflections.append(r); },
+    async append(r: Parameters<typeof db.postIncidentReflections.append>[0]) { return db.postIncidentReflections.append(r); },
   },
 
   dentalRecords: {
@@ -1269,8 +1190,7 @@ export const dal = {
     },
     async findById(id: string) { return db.dentalRecords.findById(id) ?? null; },
     async findByChild(childId: string) { return db.dentalRecords.findByChild(childId); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.dentalRecords.create(data); },
+    async create(data: Parameters<typeof db.dentalRecords.create>[0]) { return db.dentalRecords.create(data); },
   },
 
   // Dual-mode as of the behaviour_support_plans migration: the real table when
@@ -1296,20 +1216,18 @@ export const dal = {
       if (c) return (await sq.getBehaviourSupportPlans(c, { childId })) as unknown as BehaviourSupportPlan[];
       return db.behaviourSupportPlans.findByChild(childId);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: Parameters<typeof db.behaviourSupportPlans.create>[0]) {
       const c = sb();
-      if (c) return (await sq.createBehaviourSupportPlan(c, data)) as unknown as BehaviourSupportPlan;
+      if (c) return (await sq.createBehaviourSupportPlan(c, data as unknown as Parameters<typeof sq.createBehaviourSupportPlan>[1])) as unknown as BehaviourSupportPlan;
       return db.behaviourSupportPlans.create(data);
     },
     // Amending a plan has to be possible: the clinical sections (behaviours,
     // triggers, de-escalation, strategies, safety plan) are recorded after
     // creation, because each item needs judgement the create step cannot ask
     // for.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) {
+    async update(id: string, data: Parameters<typeof db.behaviourSupportPlans.update>[1]) {
       const c = sb();
-      if (c) return (await sq.updateBehaviourSupportPlan(c, id, data)) as unknown as BehaviourSupportPlan;
+      if (c) return (await sq.updateBehaviourSupportPlan(c, id, data as Parameters<typeof sq.updateBehaviourSupportPlan>[2])) as unknown as BehaviourSupportPlan;
       return db.behaviourSupportPlans.update(id, data);
     },
   },
@@ -1330,8 +1248,7 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return db.camhsReferrals.findById(id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.camhsReferrals.create(data); },
+    async create(data: Parameters<typeof db.camhsReferrals.create>[0]) { return db.camhsReferrals.create(data); },
   },
 
   inductionRecords: {
@@ -1342,10 +1259,8 @@ export const dal = {
     },
     async findByStaff(staffId: string) { return db.inductionRecords.findByStaff(staffId) ?? null; },
     async findByStatus(status: string) { return db.inductionRecords.findByStatus(status); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.inductionRecords.create(data); },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.inductionRecords.update(id, data); },
+    async create(data: Parameters<typeof db.inductionRecords.create>[0]) { return db.inductionRecords.create(data); },
+    async update(id: string, data: Parameters<typeof db.inductionRecords.update>[1]) { return db.inductionRecords.update(id, data); },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1584,8 +1499,7 @@ export const dal = {
     // DEMO-ONLY append (2026-08-05): stamps id/createdAt only when absent, and
     // caps the log at the most recent 1000 events (the cap previously lived in
     // the cara/chat route).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: NonNullable<ReturnType<typeof getStore>["askCaraAuditEvents"]>[number]) {
       const events = getStore().askCaraAuditEvents;
       const evt = {
         ...data,
@@ -1601,14 +1515,12 @@ export const dal = {
   shiftPatterns: {
     async findAll() { return getStore().shiftPatterns; },
     // DEMO-ONLY CRUD via whole-array replace (mirrors rota/patterns exactly).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(pattern: any) {
+    async create(pattern: NonNullable<ReturnType<typeof getStore>["shiftPatterns"]>[number]) {
       const s = (getStore());
       s.shiftPatterns = [...(s.shiftPatterns ?? []), pattern];
       return pattern;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, pattern: any) {
+    async update(id: string, pattern: NonNullable<ReturnType<typeof getStore>["shiftPatterns"]>[number]) {
       const s = (getStore());
       const list = ((s.shiftPatterns ?? []));
       s.shiftPatterns = list.map((p) => (p.id === id ? pattern : p));
@@ -1645,16 +1557,14 @@ export const dal = {
   externalAiDeclarations: {
     async findAll() { return getStore().externalAiDeclarations; },
     async findById(id: string) { return getStore().externalAiDeclarations.find((r) => r.id === id) ?? null; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(decl: any) {
+    async create(decl: NonNullable<ReturnType<typeof getStore>["externalAiDeclarations"]>[number]) {
       const s = (getStore());
       s.externalAiDeclarations = s.externalAiDeclarations ?? [];
       s.externalAiDeclarations.push(decl);
       return decl;
     },
     // Replace-by-id (mirrors the PATCH review mutation exactly).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, record: any) {
+    async update(id: string, record: NonNullable<ReturnType<typeof getStore>["externalAiDeclarations"]>[number]) {
       const s = (getStore());
       const list = ((s.externalAiDeclarations ?? []));
       const idx = list.findIndex((d) => d.id === id);
@@ -1665,8 +1575,7 @@ export const dal = {
 
   caraPostIncidentReflections: {
     async findAll() { return getStore().caraPostIncidentReflections ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(rec: any) {
+    async create(rec: NonNullable<ReturnType<typeof getStore>["caraPostIncidentReflections"]>[number]) {
       const s = (getStore());
       s.caraPostIncidentReflections = s.caraPostIncidentReflections ?? [];
       s.caraPostIncidentReflections.push(rec);
@@ -1676,8 +1585,7 @@ export const dal = {
 
   caraRestorativeConversations: {
     async findAll() { return getStore().caraRestorativeConversations ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(rec: any) {
+    async create(rec: NonNullable<ReturnType<typeof getStore>["caraRestorativeConversations"]>[number]) {
       const s = (getStore());
       s.caraRestorativeConversations = s.caraRestorativeConversations ?? [];
       s.caraRestorativeConversations.push(rec);
@@ -1687,8 +1595,7 @@ export const dal = {
 
   caraPromptBank: {
     async findAll() { return getStore().caraPromptBank ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(entry: any) {
+    async create(entry: NonNullable<ReturnType<typeof getStore>["caraPromptBank"]>[number]) {
       const s = (getStore());
       s.caraPromptBank = s.caraPromptBank ?? [];
       s.caraPromptBank.push(entry);
@@ -1696,14 +1603,13 @@ export const dal = {
     },
     async remove(id: string) {
       const s = (getStore());
-      s.caraPromptBank = (s.caraPromptBank ?? []).filter((p: any) => p.id !== id);
+      s.caraPromptBank = (s.caraPromptBank ?? []).filter((p) => p.id !== id);
     },
   },
 
   knowledgeGovernance: {
     async findAll() { return getStore().knowledgeGovernance ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(record: any) {
+    async create(record: NonNullable<ReturnType<typeof getStore>["knowledgeGovernance"]>[number]) {
       const s = (getStore());
       s.knowledgeGovernance = s.knowledgeGovernance ?? [];
       s.knowledgeGovernance.push(record);
@@ -1713,8 +1619,7 @@ export const dal = {
 
   professionalChallenges: {
     async findAll() { return getStore().professionalChallenges ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(challenge: any) {
+    async create(challenge: NonNullable<ReturnType<typeof getStore>["professionalChallenges"]>[number]) {
       const s = (getStore());
       s.professionalChallenges = s.professionalChallenges ?? [];
       s.professionalChallenges.push(challenge);
@@ -1724,8 +1629,7 @@ export const dal = {
 
   regulationProfiles: {
     async findAll() { return getStore().regulationProfiles ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(profile: any) {
+    async create(profile: NonNullable<ReturnType<typeof getStore>["regulationProfiles"]>[number]) {
       const s = (getStore());
       s.regulationProfiles = s.regulationProfiles ?? [];
       s.regulationProfiles.push(profile);
@@ -1735,8 +1639,7 @@ export const dal = {
 
   adultRegulationReflections: {
     async findAll() { return getStore().adultRegulationReflections ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(reflection: any) {
+    async create(reflection: NonNullable<ReturnType<typeof getStore>["adultRegulationReflections"]>[number]) {
       const s = (getStore());
       s.adultRegulationReflections = s.adultRegulationReflections ?? [];
       s.adultRegulationReflections.push(reflection);
@@ -1746,8 +1649,7 @@ export const dal = {
 
   voiceConcernLoops: {
     async findAll() { return getStore().voiceConcernLoops ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(loop: any) {
+    async create(loop: NonNullable<ReturnType<typeof getStore>["voiceConcernLoops"]>[number]) {
       const s = (getStore());
       s.voiceConcernLoops = s.voiceConcernLoops ?? [];
       s.voiceConcernLoops.push(loop);
@@ -1961,8 +1863,7 @@ export const dal = {
   // changes — routes stay as they are).
   shiftCoverNotes: {
     async findAll() { return getStore().shiftCoverNotes ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: NonNullable<ReturnType<typeof getStore>["shiftCoverNotes"]>[number]) {
       const s = getStore();
       (s.shiftCoverNotes ??= []).push(data);
       return data;
@@ -1978,8 +1879,7 @@ export const dal = {
   staffingPolicy: {
     /** Single policy object (not a collection). */
     async get() { return getStore().staffingPolicy; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async set(next: any) {
+    async set(next: NonNullable<ReturnType<typeof getStore>["staffingPolicy"]>) {
       getStore().staffingPolicy = next;
       return next;
     },
@@ -1987,8 +1887,7 @@ export const dal = {
   caraManagerAlertStates: {
     async findAll() { return getStore().caraManagerAlertStates ?? []; },
     /** Upsert by id. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async save(record: any) {
+    async save(record: NonNullable<ReturnType<typeof getStore>["caraManagerAlertStates"]>[number]) {
       const s = getStore();
       s.caraManagerAlertStates = s.caraManagerAlertStates ?? [];
       const i = s.caraManagerAlertStates.findIndex((r) => r.id === record.id);
@@ -2007,8 +1906,7 @@ export const dal = {
   },
   circleNotes: {
     async findAll() { return getStore().circleNotes ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: NonNullable<ReturnType<typeof getStore>["circleNotes"]>[number]) {
       getStore().circleNotes.push(data);
       return data;
     },
@@ -2027,14 +1925,12 @@ export const dal = {
   },
   shiftLifecycleRecords: {
     async findAll() { return getStore().shiftLifecycleRecords ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: NonNullable<ReturnType<typeof getStore>["shiftLifecycleRecords"]>[number]) {
       getStore().shiftLifecycleRecords.push(data);
       return data;
     },
     /** Patch-in-place by record id; returns null if unknown. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, patch: any) {
+    async update(id: string, patch: Partial<NonNullable<ReturnType<typeof getStore>["shiftLifecycleRecords"]>[number]>) {
       const record = (getStore().shiftLifecycleRecords ?? []).find((r) => r.id === id);
       if (!record) return null;
       Object.assign(record, patch);
@@ -2043,8 +1939,7 @@ export const dal = {
   },
   helpReflections: {
     async findAll() { return getStore().helpReflections ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) {
+    async create(data: NonNullable<ReturnType<typeof getStore>["helpReflections"]>[number]) {
       getStore().helpReflections.push(data);
       return data;
     },
@@ -2062,10 +1957,8 @@ export const dal = {
 export function genericTable<T extends { id: string }>(
   /** In-memory store collection accessor */
   memoryGetAll: () => T[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  memoryCreate: (data: any) => T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  memoryUpdate?: (id: string, data: any) => T | null,
+  memoryCreate: (data: Partial<T>) => T,
+  memoryUpdate?: (id: string, data: Partial<T>) => T | null,
   /** The record_type string for the generic_records table */
   recordType?: string,
 ) {
@@ -2091,8 +1984,7 @@ export function genericTable<T extends { id: string }>(
       return memoryGetAll().find((item) => item.id === id) ?? null;
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any): Promise<T> {
+    async create(data: Partial<T> & { child_id?: string | null; staff_id?: string | null; created_by?: string | null }): Promise<T> {
       const c = sb();
       if (c && recordType) {
         const { id: _id, child_id, staff_id, created_by, ...rest } = data;
@@ -2100,21 +1992,20 @@ export function genericTable<T extends { id: string }>(
           home_id: homeId(),
           record_type: recordType,
           data: rest,
-          child_id: child_id ?? null,
-          staff_id: staff_id ?? null,
-          created_by: created_by ?? null,
+          child_id: child_id ?? undefined,
+          staff_id: staff_id ?? undefined,
+          created_by: created_by ?? undefined,
         });
         const created = row as GenericRecordRow | null;
         // The insert returned nothing, so nothing was stored — say so rather
         // than handing back a record shape the caller will treat as saved.
         if (!created) throw new Error(`generic_records insert returned no row for ${recordType}`);
-        return { id: created.id, ...rest, created_at: created.created_at } as T;
+        return { id: created.id, ...rest, created_at: created.created_at } as unknown as T;
       }
       return memoryCreate(data);
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any): Promise<T | null> {
+    async update(id: string, data: Partial<T> & { updated_by?: string | null }): Promise<T | null> {
       const c = sb();
       if (c && recordType) {
         const existing = (await sq.getGenericRecordById(c, id)) as GenericRecordRow | null;
@@ -2127,7 +2018,7 @@ export function genericTable<T extends { id: string }>(
           updated_by: data.updated_by ?? null,
         })) as GenericRecordRow | null;
         if (!updated) return null;
-        return { id: updated.id, ...merged, updated_at: updated.updated_at } as T;
+        return { id: updated.id, ...merged, updated_at: updated.updated_at } as unknown as T;
       }
       return memoryUpdate ? memoryUpdate(id, data) : null;
     },
