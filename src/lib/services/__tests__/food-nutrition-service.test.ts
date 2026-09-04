@@ -45,16 +45,20 @@ const { computeNutritionMetrics, identifyNutritionAlerts } = _testing;
 
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d - n)).toISOString().slice(0, 10);
 }
 
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
 
 /** ISO datetime string N days ago. */
@@ -1845,5 +1849,22 @@ describe("Edge cases", () => {
     const m1 = computeNutritionMetrics([], [], [], 0);
     const m2 = computeNutritionMetrics([], [], [], 100);
     expect(m1).toEqual(m2);
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("does not credit a hygiene pass nobody recorded", () => {
+    const m = computeNutritionMetrics([], [], [makeHygiene({ overall_result: null })], 1);
+    expect(m.hygiene_pass_rate).toBeNull();
+  });
+  it("does not dilute the hygiene pass rate with unrecorded audits", () => {
+    const checks = ["pass", null, null, null].map((v, i) =>
+      makeHygiene({ id: `h-${i}`, overall_result: v as never }),
+    );
+    expect(computeNutritionMetrics([], [], checks, 1).hygiene_pass_rate).toBe(100);
+  });
+  it("still counts a recorded fail as a breach alert", () => {
+    const alerts = identifyNutritionAlerts([], [], [makeHygiene({ overall_result: "fail" })], 1);
+    expect(alerts.length).toBeGreaterThan(0);
   });
 });

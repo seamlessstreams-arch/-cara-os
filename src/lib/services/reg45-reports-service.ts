@@ -89,7 +89,7 @@ export interface Reg45Report {
   visit_types: VisitType[];
   children_interviewed: string[];
   staff_interviewed: string[];
-  overall_quality_rating: QualityRating;
+  overall_quality_rating: QualityRating | null; // null = not recorded; judgements are tri-state — credit needs an explicit recorded value
   evaluations: {
     area: EvaluationArea;
     rating: QualityRating;
@@ -549,7 +549,7 @@ export async function createReport(
       visit_types: input.visitTypes ?? [],
       children_interviewed: input.childrenInterviewed ?? [],
       staff_interviewed: input.staffInterviewed ?? [],
-      overall_quality_rating: input.overallQualityRating ?? "good",
+      overall_quality_rating: input.overallQualityRating ?? null,
       evaluations: input.evaluations ?? [],
       reg44_reports_reviewed: input.reg44ReportsReviewed ?? 0,
       reg44_actions_outstanding: input.reg44ActionsOutstanding ?? 0,

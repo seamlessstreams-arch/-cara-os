@@ -81,7 +81,7 @@ export interface SafetyCheck {
   checked_by: string;
   frequency: CheckFrequency;
   next_due_date: string;
-  compliance_status: ComplianceStatus;
+  compliance_status: ComplianceStatus | null; // null = not recorded; judgements are tri-state — credit needs an explicit recorded value
   findings: string | null;
   remedial_actions: {
     action: string;
@@ -234,9 +234,12 @@ export function computeSafetyMetrics(
     }
   }
 
+  // Rate over checks with a recorded status — an unrecorded compliance
+  // judgement must not read as a quiet failure (or success).
+  const recordedChecks = checks.filter((c) => c.compliance_status !== null).length;
   const complianceRate =
-    checks.length > 0
-      ? Math.round((compliantCount / checks.length) * 1000) / 10
+    recordedChecks > 0
+      ? Math.round((compliantCount / recordedChecks) * 1000) / 10
       : null;
 
   // Fire drills this year
@@ -432,7 +435,7 @@ export async function createCheck(
       checked_by: input.checkedBy,
       frequency: input.frequency,
       next_due_date: input.nextDueDate,
-      compliance_status: input.complianceStatus ?? "compliant",
+      compliance_status: input.complianceStatus ?? null,
       findings: input.findings ?? null,
       remedial_actions: input.remedialActions ?? [],
       certificate_reference: input.certificateReference ?? null,
