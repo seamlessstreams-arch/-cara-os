@@ -87,9 +87,9 @@ export interface RecordAudit {
   records_incomplete: number;
   missing_records: string[];
   data_quality_rating: DataQualityRating;
-  chronology_up_to_date: boolean;
-  sensitive_data_secure: boolean;
-  third_party_data_redacted: boolean;
+  chronology_up_to_date: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  sensitive_data_secure: boolean | null;
+  third_party_data_redacted: boolean | null;
   findings: string | null;
   actions_required: string | null;
   next_audit_date: string | null;
@@ -494,9 +494,9 @@ export async function createAudit(
       records_incomplete: input.recordsIncomplete ?? 0,
       missing_records: input.missingRecords ?? [],
       data_quality_rating: input.dataQualityRating ?? "not_assessed",
-      chronology_up_to_date: input.chronologyUpToDate ?? true,
-      sensitive_data_secure: input.sensitiveDataSecure ?? true,
-      third_party_data_redacted: input.thirdPartyDataRedacted ?? true,
+      chronology_up_to_date: input.chronologyUpToDate ?? null,
+      sensitive_data_secure: input.sensitiveDataSecure ?? null,
+      third_party_data_redacted: input.thirdPartyDataRedacted ?? null,
       findings: input.findings ?? null,
       actions_required: input.actionsRequired ?? null,
       next_audit_date: input.nextAuditDate ?? null,

@@ -75,10 +75,10 @@ export interface StaffCodeOfConductComplianceRow {
   compliance_status: ComplianceStatus;
   review_type: ReviewType;
   action_outcome: ActionOutcome;
-  code_acknowledged: boolean;
-  training_completed: boolean;
-  supervision_discussed: boolean;
-  self_assessment_done: boolean;
+  code_acknowledged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  training_completed: boolean | null;
+  supervision_discussed: boolean | null;
+  self_assessment_done: boolean | null;
   breach_reported: boolean;
   investigation_completed: boolean;
   improvement_plan_agreed: boolean;
@@ -145,10 +145,10 @@ export async function createStaffCodeOfConductCompliance(input: {
       compliance_status: input.complianceStatus,
       review_type: input.reviewType,
       action_outcome: input.actionOutcome,
-      code_acknowledged: input.codeAcknowledged ?? true,
-      training_completed: input.trainingCompleted ?? true,
-      supervision_discussed: input.supervisionDiscussed ?? true,
-      self_assessment_done: input.selfAssessmentDone ?? true,
+      code_acknowledged: input.codeAcknowledged ?? null,
+      training_completed: input.trainingCompleted ?? null,
+      supervision_discussed: input.supervisionDiscussed ?? null,
+      self_assessment_done: input.selfAssessmentDone ?? null,
       breach_reported: input.breachReported ?? false,
       investigation_completed: input.investigationCompleted ?? false,
       improvement_plan_agreed: input.improvementPlanAgreed ?? false,
@@ -193,11 +193,13 @@ export function computeCodeOfConductMetrics(
   const investigationCount = rows.filter((r) => r.compliance_status === "under_investigation").length;
   const significantConcernCount = rows.filter((r) => r.compliance_status === "significant_concern").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffCodeOfConductComplianceRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0
-      ? Math.round((count / total) * 1000) / 10
-      : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const complianceAreaBreakdown: Record<string, number> = {};
@@ -259,11 +261,13 @@ export function computeCodeOfConductAlerts(
 
   // High: code not acknowledged and no training completed
   for (const r of rows) {
-    if (!r.code_acknowledged && !r.training_completed) {
+    if (r.code_acknowledged !== true && r.training_completed !== true) {
       alerts.push({
         type: "no_acknowledgement_no_training",
         severity: "high",
-        message: `${r.staff_name} has neither acknowledged the code of conduct nor completed training — ensure compliance before unsupervised duties`,
+        message: r.code_acknowledged === false || r.training_completed === false
+          ? `${r.staff_name} has neither acknowledged the code of conduct nor completed training — ensure compliance before unsupervised duties`
+          : `${r.staff_name} has no recorded code-of-conduct acknowledgement or training — evidence both before unsupervised duties`,
         record_id: r.id,
       });
     }
@@ -284,11 +288,13 @@ export function computeCodeOfConductAlerts(
   // Medium: supervision not discussed for concern area
   const concernStatuses: ComplianceStatus[] = ["minor_concern", "significant_concern", "breach_identified", "under_investigation", "non_compliant"];
   for (const r of rows) {
-    if (concernStatuses.includes(r.compliance_status) && !r.supervision_discussed) {
+    if (concernStatuses.includes(r.compliance_status) && r.supervision_discussed !== true) {
       alerts.push({
         type: "concern_not_in_supervision",
         severity: "medium",
-        message: `${r.staff_name} has a ${r.compliance_status.replace(/_/g, " ")} in ${r.compliance_area.replace(/_/g, " ")} that has not been discussed in supervision`,
+        message: r.supervision_discussed === false
+          ? `${r.staff_name} has a ${r.compliance_status.replace(/_/g, " ")} in ${r.compliance_area.replace(/_/g, " ")} that has not been discussed in supervision`
+          : `${r.staff_name} has a ${r.compliance_status.replace(/_/g, " ")} in ${r.compliance_area.replace(/_/g, " ")} with no record of supervision discussion — discuss and evidence it`,
         record_id: r.id,
       });
     }
