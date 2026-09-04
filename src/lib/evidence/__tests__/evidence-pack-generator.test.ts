@@ -401,3 +401,46 @@ describe("typed collections (dead-read fixes)", () => {
     expect(ra!.tags).toContain("high");
   });
 });
+
+describe("typed collections (sweep 4)", () => {
+  it("reports a disclosure's type, referral state and severity from the real fields", () => {
+    const input = emptyInput();
+    input.disclosures = [
+      {
+        id: "disc-1",
+        child_id: "yp-1",
+        disclosure_date: "2026-06-02",
+        disclosure_time: "14:00",
+        location: "Kitchen",
+        context_of_disclosure: "During cooking",
+        heard_by: "Alex Morgan",
+        disclosure_summary: "Summary",
+        disclosure_type: "physical_abuse" as never,
+        child_words_used: "",
+        staff_response_at_time: "",
+        reassurance_given: "",
+        questions_asked: "none" as never,
+        disclosure_severity: "critical" as never,
+        immediate_actions_taken: [],
+        reported_to_dsl: true,
+        reported_to_dsl_date: "2026-06-02",
+        reported_to_lado: false,
+        reported_to_police: false,
+        referrals_made: ["MASH"],
+        child_informed_of_actions: true,
+        child_given_agency: "",
+        support_provided_to_child: [],
+        staff_debrief: false,
+        parallel_process_noted: "",
+        status: "open" as never,
+        created_at: "2026-06-05T10:00:00Z",
+      },
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const item = pack.sections.flatMap((s) => s.items).find((i) => i.linked_record_id === "disc-1");
+    expect(item).toBeTruthy();
+    expect(item!.title).toContain("physical_abuse");
+    expect(item!.summary).toContain("yes");
+    expect(item!.date).toBe("2026-06-02");
+  });
+});

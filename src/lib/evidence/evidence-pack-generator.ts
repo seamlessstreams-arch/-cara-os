@@ -23,13 +23,17 @@ import type {
   Medication,
   MedicationAdministration,
   StaffMember,
+  Supervision,
+  Task,
   YoungPerson,
 } from "@/types";
 import type {
   AdvocacyRecord,
   Audit,
   BehaviourEntry,
+  Disclosure,
   MissingEpisode,
+  RestraintRecord,
   RiskAssessment,
   ChronologyEntry,
   ComplaintOutcomeRecord,
@@ -96,9 +100,7 @@ export interface EvidencePackInput {
   // TODO(typing): LACReview reads in this generator target fields the struct
   // does not have; typing this collection surfaces them. Next slice.
   lacReviews: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): Supervision reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  supervisions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  supervisions: Supervision[];
   audits: Audit[];
   // TODO(typing): QAAuditRecord reads in this generator target fields the struct
   // does not have; typing this collection surfaces them. Next slice.
@@ -106,14 +108,10 @@ export interface EvidencePackInput {
   // TODO(typing): CaseFileAudit reads in this generator target fields the struct
   // does not have; typing this collection surfaces them. Next slice.
   caseFileAudits: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): Task reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  tasks: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  tasks: Task[];
   dailyLog: DailyLogEntry[];
   behaviourLog: BehaviourEntry[];
-  // TODO(typing): RestraintRecord reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  restraints: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  restraints: RestraintRecord[];
   significantEvents: SignificantEvent[];
   notifiableEvents: NotifiableEvent[];
   // TODO(typing): OutcomeTarget reads in this generator target fields the struct
@@ -126,9 +124,7 @@ export interface EvidencePackInput {
   medications: Medication[];
   medicationAdministrations: MedicationAdministration[];
   independenceSkillsRecords: IndependenceSkillsRecord[];
-  // TODO(typing): Disclosure reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  disclosures: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  disclosures: Disclosure[];
   /** Phantom collection: never populated — callers pass []. */
   safeguardingReferrals: never[];
   complaintOutcomeRecords: ComplaintOutcomeRecord[];
@@ -518,19 +514,19 @@ function buildSafeguardingActions(
 
   // Disclosures
   const periodDisclosures = (input.disclosures ?? []).filter((d) =>
-    isInPeriod(d.date ?? d.created_at, input.period_from, input.period_to),
+    isInPeriod(d.disclosure_date ?? d.created_at, input.period_from, input.period_to),
   );
   periodDisclosures.forEach((d) => {
     items.push({
       id: `ev_safeguarding_disc_${d.id}`,
       type: "disclosure",
-      title: `Disclosure — ${d.category ?? d.type ?? "general"}`,
-      date: d.date?.slice(0, 10) ?? d.created_at?.slice(0, 10) ?? input.today,
-      summary: `Safeguarding disclosure recorded. Referred: ${d.referred ? "yes" : "pending review"}.`,
+      title: `Disclosure — ${d.disclosure_type ?? "general"}`,
+      date: d.disclosure_date?.slice(0, 10) ?? d.created_at?.slice(0, 10) ?? input.today,
+      summary: `Safeguarding disclosure recorded. Referred: ${d.referrals_made?.length ? "yes" : "pending review"}.`,
       linked_record_type: "disclosure",
       linked_record_id: d.id,
       child_id: d.child_id,
-      risk_level: d.risk_level ?? "high",
+      risk_level: d.disclosure_severity ?? "high",
       tags: ["safeguarding", "disclosure"],
     });
   });
@@ -661,9 +657,9 @@ function buildIncidentsAndResponses(
     items.push({
       id: `ev_restraint_${r.id}`,
       type: "restraint",
-      title: `Physical Intervention — ${r.technique ?? "unspecified"}`,
+      title: `Physical Intervention — ${r.restraint_type ?? "unspecified"}`,
       date: r.date?.slice(0, 10) ?? r.created_at?.slice(0, 10) ?? input.today,
-      summary: `Duration: ${r.duration ?? "unrecorded"} mins. Debrief: ${r.debrief_completed ? "completed" : "pending"}.`,
+      summary: `Duration: ${r.duration ?? "unrecorded"} mins. Debrief: ${r.child_debriefed && r.staff_debriefed ? "completed" : "pending"}.`,
       linked_record_type: "restraint",
       linked_record_id: r.id,
       child_id: r.child_id,
@@ -1029,7 +1025,7 @@ function buildManagementOversight(
     items.push({
       id: `ev_oversight_sup_${s.id}`,
       type: "supervision",
-      title: `Supervision — ${s.supervisee_name ?? s.staff_id ?? "staff"}`,
+      title: `Supervision — ${s.staff_id ?? "staff"}`,
       date:
         s.actual_date?.slice(0, 10) ??
         s.scheduled_date?.slice(0, 10) ??
@@ -1201,8 +1197,8 @@ function buildOutstandingActions(
     summary: `Overdue by ${daysBetween(t.due_date?.slice(0, 10) ?? input.today, input.today)} days. Priority: ${t.priority ?? "normal"}. Assigned: ${t.assigned_to ?? "unassigned"}.`,
     linked_record_type: "task",
     linked_record_id: t.id,
-    child_id: t.child_id,
-    staff_id: t.assigned_to,
+    child_id: t.linked_child_id ?? undefined,
+    staff_id: t.assigned_to ?? undefined,
     risk_level:
       t.priority === "urgent"
         ? "high"
@@ -1847,8 +1843,8 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
         summary: `Overdue by ${daysBetween(t.due_date?.slice(0, 10) ?? input.today, input.today)} days. Priority: ${t.priority ?? "normal"}.`,
         linked_record_type: "task",
         linked_record_id: t.id,
-        child_id: t.child_id,
-        staff_id: t.assigned_to,
+        child_id: t.linked_child_id ?? undefined,
+        staff_id: t.assigned_to ?? undefined,
         risk_level:
           t.priority === "urgent"
             ? "high"
