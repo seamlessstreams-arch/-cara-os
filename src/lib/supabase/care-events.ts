@@ -23,6 +23,11 @@ import { generateId, todayStr } from "@/lib/utils";
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
+import type { Database } from "./types";
+
+/** Generated table rows — typing the mappers against these lets the compiler
+ *  adjudicate every legacy-name fallback limb. */
+type Tables = Database["public"]["Tables"];
 function supabase(): LooseSupabase {
   const client = createServerClient();
   if (!client) throw new Error("Supabase not configured — check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
@@ -30,44 +35,47 @@ function supabase(): LooseSupabase {
 }
 
 /** Map a DB row to the CareEvent domain type. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToCareEvent(row: Record<string, any>): CareEvent {
+function rowToCareEvent(row: Tables["care_events"]["Row"]): CareEvent {
   return {
     id: row.id,
     home_id: row.home_id,
-    child_id: row.child_id ?? null,
+    // The table stores child_ids (jsonb array); the domain is single-child.
+    child_id: row.child_ids?.[0] ?? null,
     shift_id: row.shift_id ?? null,
     staff_id: row.staff_id,
     verified_by: row.verified_by ?? null,
     returned_by: row.returned_by ?? null,
     locked_by: row.locked_by ?? null,
-    category: row.category,
+    category: row.category as CareEvent["category"],
     title: row.title,
-    content: row.body ?? row.content ?? "",
-    mood_score: row.mood_score ?? null,
-    is_significant: row.is_significant ?? false,
-    status: row.status,
-    event_date: row.event_date ?? row.created_at?.slice(0, 10) ?? todayStr(),
-    event_time: row.event_time ?? null,
+    content: row.body ?? "",
+    // Not stored in care_events — mood lives on daily-log entries.
+    mood_score: null,
+    is_significant: false, // not stored; significance is carried by category/routing
+    status: row.status as CareEvent["status"],
+    event_date: row.created_at?.slice(0, 10) ?? todayStr(),
+    event_time: null, // not stored — created_at carries the timestamp
     requires_manager_review: row.requires_manager_review ?? false,
     requires_reg40_triage: row.requires_reg40_triage ?? false,
     contributes_to_reg45: row.contributes_to_reg45 ?? false,
     contributes_to_annex_a: row.contributes_to_annex_a ?? false,
-    is_safeguarding: row.is_safeguarding ?? row.category === "safeguarding",
-    evidence_prompts: row.evidence_prompts ?? [],
+    is_safeguarding: row.category === "safeguarding",
+    evidence_prompts: [], // not stored; only the completion flag persists
     evidence_prompts_completed: row.evidence_prompts_completed ?? false,
-    staff_signature: row.staff_signature ?? false,
-    staff_signed_at: row.staff_signed_at ?? null,
-    manager_id: row.manager_id ?? row.manager_review_by ?? null,
-    manager_review_note: row.manager_review_note ?? row.manager_review_notes ?? null,
+    // Signatures are not stored on this table; submission is the recorded act.
+    staff_signature: false,
+    staff_signed_at: null,
+    manager_id: row.manager_review_by ?? null,
+    manager_review_note: row.manager_review_notes ?? null,
     manager_review_at: row.manager_review_at ?? null,
-    manager_review_completed: row.manager_review_completed ?? false,
-    manager_signature: row.manager_signature ?? false,
-    manager_notes: row.manager_notes ?? null,
+    // A recorded review timestamp is the completion evidence.
+    manager_review_completed: row.manager_review_at != null,
+    manager_signature: false, // not stored
+    manager_notes: null, // not stored — manager_review_notes carries the review
     return_reason: row.return_reason ?? null,
     returned_at: row.returned_at ?? null,
     submitted_at: row.submitted_at ?? null,
-    submitted_by: row.submitted_by ?? null,
+    submitted_by: null, // not stored — staff_id is the author
     verified_at: row.verified_at ?? null,
     locked_at: row.locked_at ?? null,
     version: row.version ?? 1,
@@ -75,25 +83,26 @@ function rowToCareEvent(row: Record<string, any>): CareEvent {
     amendment_reason: row.amendment_reason ?? null,
     amended_by: row.amended_by ?? null,
     amended_at: row.amended_at ?? null,
-    is_current_version: row.is_current_version ?? true,
+    // No stored flag: a row nothing supersedes is current (amendments create
+    // successors that point back via previous_version_id).
+    is_current_version: true,
     cara_suggested_summary: row.cara_suggested_summary ?? null,
-    cara_suggested_category: row.cara_suggested_category ?? null,
-    cara_suggested_routing: row.cara_suggested_routes ?? null,
+    cara_suggested_category: (row.cara_suggested_category as CareEvent["cara_suggested_category"]) ?? null,
+    cara_suggested_routing: (row.cara_suggested_routes as CareEvent["cara_suggested_routing"]) ?? null,
     cara_suggested_reg45: null,
     cara_suggested_annex_a: null,
     cara_suggestions_reviewed: false,
-    routing_summary: row.routing_summary ?? null,
+    routing_summary: (row.routing_preview as CareEvent["routing_summary"]) ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
 }
 
 /** Map CareEvent domain fields to the DB insert/update shape. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function careEventToRow(data: Partial<CareEvent>): Record<string, any> {
+function careEventToRow(data: Partial<CareEvent>): Partial<Tables["care_events"]["Row"]> {
   const row: Record<string, unknown> = {};
   if (data.home_id !== undefined) row.home_id = data.home_id;
-  if (data.child_id !== undefined) row.child_id = data.child_id;
+  if (data.child_id !== undefined) row.child_ids = data.child_id ? [data.child_id] : [];
   if (data.shift_id !== undefined) row.shift_id = data.shift_id;
   if (data.staff_id !== undefined) row.staff_id = data.staff_id;
   if (data.category !== undefined) row.category = data.category;
@@ -121,7 +130,7 @@ function careEventToRow(data: Partial<CareEvent>): Record<string, any> {
   if (data.manager_id !== undefined) row.manager_review_by = data.manager_id;
   if (data.manager_review_note !== undefined) row.manager_review_notes = data.manager_review_note;
   if (data.manager_review_at !== undefined) row.manager_review_at = data.manager_review_at;
-  if (data.routing_summary !== undefined) row.routing_summary = data.routing_summary as unknown;
+  if (data.routing_summary !== undefined) row.routing_preview = data.routing_summary as unknown;
   if (data.cara_suggested_summary !== undefined) row.cara_suggested_summary = data.cara_suggested_summary;
   if (data.cara_suggested_category !== undefined) row.cara_suggested_category = data.cara_suggested_category;
   if (data.cara_suggested_routing !== undefined) row.cara_suggested_routes = data.cara_suggested_routing as unknown;
@@ -221,7 +230,7 @@ export const sbCareEvents = {
     const row = {
       id,
       home_id: data.home_id ?? "home_oak",
-      child_id: data.child_id ?? null,
+      child_ids: data.child_id ? [data.child_id] : [],
       shift_id: data.shift_id ?? null,
       staff_id: data.staff_id ?? "staff_darren",
       category: data.category ?? "general",
@@ -238,7 +247,6 @@ export const sbCareEvents = {
       amendment_reason: data.amendment_reason ?? null,
       amended_at: data.amended_at ?? null,
       amended_by: data.amended_by ?? null,
-      is_current_version: true,
       return_reason: data.return_reason ?? null,
       returned_at: data.returned_at ?? null,
       submitted_at: data.submitted_at ?? null,
@@ -249,7 +257,7 @@ export const sbCareEvents = {
       cara_suggested_summary: data.cara_suggested_summary ?? null,
       cara_suggested_category: data.cara_suggested_category ?? null,
       cara_suggested_routes: data.cara_suggested_routing ?? null,
-      routing_summary: data.routing_summary ?? null,
+      routing_preview: data.routing_summary ?? null,
       created_at: now,
       updated_at: now,
     };
@@ -281,23 +289,22 @@ export const sbCareEvents = {
 
 // ── Care Event Routes ─────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToRoute(row: Record<string, any>): CareEventRoute {
+function rowToRoute(row: Tables["care_event_routes"]["Row"]): CareEventRoute {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
     home_id: row.home_id,
-    route_type: row.route_type,
-    status: row.status,
+    route_type: row.route_type as CareEventRoute["route_type"],
+    status: row.status as CareEventRoute["status"],
     linked_record_id: row.linked_record_id ?? null,
     linked_record_table: row.linked_record_type ?? null,
-    processing_notes: row.processing_notes ?? null,
+    processing_notes: null, // not stored — error_message carries failure detail
     error_message: row.error_message ?? null,
     retry_count: row.retry_count ?? 0,
     last_retried_at: row.last_attempted_at ?? null,
-    time_saved_minutes: row.time_saved_minutes ?? 0,
+    time_saved_minutes: 0, // not stored on routes
     created_at: row.created_at,
-    updated_at: row.updated_at ?? row.created_at,
+    updated_at: row.last_attempted_at ?? row.created_at,
   };
 }
 
@@ -348,8 +355,7 @@ export const sbCareEventRoutes = {
 
   async patch(id: string, data: Partial<CareEventRoute>): Promise<CareEventRoute | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.status !== undefined) row.status = data.status;
     if (data.linked_record_id !== undefined) row.linked_record_id = data.linked_record_id;
     if (data.linked_record_table !== undefined) row.linked_record_type = data.linked_record_table;
@@ -372,18 +378,17 @@ export const sbCareEventRoutes = {
 
 // ── Care Event Audit Log ──────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAuditLog(row: Record<string, any>): CareEventAuditLog {
+function rowToAuditLog(row: Tables["care_event_audit_log"]["Row"]): CareEventAuditLog {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
     home_id: row.home_id,
-    action: row.action,
+    action: row.action as CareEventAuditLog["action"],
     actor_staff_id: row.actor_id ?? null,
-    actor_role: row.actor_role ?? null,
-    detail: row.detail ?? {},
+    actor_role: null, // not stored — actor_id identifies the actor
+    detail: (row.detail as Record<string, unknown>) ?? {},
     ip_address: null,
-    created_at: row.performed_at ?? row.created_at,
+    created_at: row.performed_at,
   };
 }
 
@@ -429,8 +434,7 @@ export const sbCareEventAuditLog = {
 
 // ── Reg 45 Evidence Queue ─────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToReg45Evidence(row: Record<string, any>): Reg45EvidenceItem {
+function rowToReg45Evidence(row: Tables["reg45_evidence_queue"]["Row"]): Reg45EvidenceItem {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
@@ -506,8 +510,7 @@ export const sbReg45EvidenceQueue = {
 
   async patch(id: string, data: Partial<Reg45EvidenceItem>): Promise<Reg45EvidenceItem | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.manager_decision !== undefined) {
       row.status = data.manager_decision;
     }
@@ -531,8 +534,7 @@ export const sbReg45EvidenceQueue = {
 
 // ── Annex A Evidence Queue ────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAnnexAEvidence(row: Record<string, any>): AnnexAEvidenceItem {
+function rowToAnnexAEvidence(row: Tables["annex_a_evidence_queue"]["Row"]): AnnexAEvidenceItem {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
@@ -601,8 +603,7 @@ export const sbAnnexAEvidenceQueue = {
 
   async patch(id: string, data: Partial<AnnexAEvidenceItem>): Promise<AnnexAEvidenceItem | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.manager_decision !== undefined) row.status = data.manager_decision;
     if (data.manager_approved_text !== undefined) row.approved_text = data.manager_approved_text;
     if (data.reviewed_by !== undefined) row.manager_id = data.reviewed_by;
@@ -623,8 +624,7 @@ export const sbAnnexAEvidenceQueue = {
 
 // ── Child Daily Summaries ─────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToChildDailySummary(row: Record<string, any>): ChildDailySummary {
+function rowToChildDailySummary(row: Tables["child_daily_summaries"]["Row"]): ChildDailySummary {
   return {
     id: row.id,
     home_id: row.home_id,
@@ -699,16 +699,15 @@ export const sbChildDailySummaries = {
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToNotification(row: Record<string, any>): AppNotification {
+function rowToNotification(row: Tables["notifications"]["Row"]): AppNotification {
   return {
     id: row.id,
     home_id: row.home_id,
     recipient_id: row.recipient_id,
     title: row.title,
     body: row.body,
-    type: row.type ?? "system",
-    priority: row.priority ?? "normal",
+    type: (row.type as AppNotification["type"]) ?? "system",
+    priority: (row.priority as AppNotification["priority"]) ?? "normal",
     read: row.read ?? false,
     read_at: row.read_at ?? null,
     action_url: row.action_url ?? null,
