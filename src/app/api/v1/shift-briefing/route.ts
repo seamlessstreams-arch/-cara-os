@@ -13,6 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
@@ -42,15 +43,6 @@ const MON = ["January", "February", "March", "April", "May", "June", "July", "Au
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET() {
   const store = (getStore());
@@ -152,7 +144,7 @@ export async function GET() {
       date: String(l.date).slice(0, 10),
       time: l.time ?? null,
       child_name: nameOf(l.child_id),
-      summary: l.content ?? l.note ?? "",
+      summary: l.content ?? "",
       category: l.entry_type ?? null,
       is_significant: !!l.is_significant,
     });
@@ -164,7 +156,7 @@ export async function GET() {
       date: String(i.date).slice(0, 10),
       time: i.time ?? null,
       child_name: nameOf(i.child_id),
-      summary: i.description ?? i.summary ?? "",
+      summary: i.description ?? "",
       category: i.type ?? null,
       severity: i.severity ?? null,
       status: i.status ?? null,

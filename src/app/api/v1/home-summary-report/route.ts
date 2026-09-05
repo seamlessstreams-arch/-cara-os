@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import {
   computeHomeSummaryReport,
@@ -103,14 +104,6 @@ async function fetchSignal(baseUrl: string, route: string, section: string): Pro
   }
 }
 
-async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(request: Request) {
   try {

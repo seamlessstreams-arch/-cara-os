@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -23,15 +24,6 @@ import type { EntityRef, RedactableDocument } from "@/lib/entity-redaction/types
 
 export const dynamic = "force-dynamic";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 async function homeEntities(): Promise<EntityRef[]> {
   const [youngPeopleRows, staffRows] = await Promise.all([

@@ -43,3 +43,10 @@ export type LooseSupabaseClient = any;
  * replaced, so importing it keeps `(sb.from("x") as SB)` reading as before.
  */
 export type SB = LooseSupabaseClient;
+
+/**
+ * The narrowest loose shape: something with `.from(table)`. The persist
+ * modules take this instead of the full client so tests can hand them a stub.
+ * The builder it returns is untyped for the same reason SB is — see above.
+ */
+export type RawClient = { from(table: string): SB };

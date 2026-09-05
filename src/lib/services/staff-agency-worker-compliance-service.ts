@@ -42,8 +42,8 @@ export interface StaffAgencyWorkerComplianceRow {
   induction_completed: boolean;
   safeguarding_training_confirmed: boolean;
   mandatory_training_confirmed: boolean;
-  id_verified: boolean;
-  right_to_work_verified: boolean;
+  id_verified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  right_to_work_verified: boolean | null;
   supervision_arranged: boolean;
   shift_count: number;
   notes: string | null;
@@ -53,8 +53,7 @@ export interface StaffAgencyWorkerComplianceRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -83,9 +82,13 @@ export function computeMetrics(rows: StaffAgencyWorkerComplianceRow[]): {
   const partiallyCompliantCount = rows.filter((r) => r.compliance_status === "Partially Compliant").length;
   const pendingCount = rows.filter((r) => r.compliance_status === "Pending Review").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffAgencyWorkerComplianceRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const totalShifts = rows.reduce((sum, r) => sum + r.shift_count, 0);
@@ -284,8 +287,8 @@ export async function createStaffAgencyWorkerCompliance(input: {
       induction_completed: input.inductionCompleted ?? false,
       safeguarding_training_confirmed: input.safeguardingTrainingConfirmed ?? false,
       mandatory_training_confirmed: input.mandatoryTrainingConfirmed ?? false,
-      id_verified: input.idVerified ?? true,
-      right_to_work_verified: input.rightToWorkVerified ?? true,
+      id_verified: input.idVerified ?? null,
+      right_to_work_verified: input.rightToWorkVerified ?? null,
       supervision_arranged: input.supervisionArranged ?? false,
       shift_count: input.shiftCount ?? 0,
       notes: input.notes ?? null,

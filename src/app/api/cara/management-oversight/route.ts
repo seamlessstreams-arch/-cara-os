@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -57,15 +58,6 @@ type Decision = (typeof VALID_DECISIONS)[number];
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 // ─── POST: analyse a record ──────────────────────────────────────────────────
 

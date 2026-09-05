@@ -75,8 +75,8 @@ export interface StaffWhistleblowingDisclosureRow {
   investigation_opened: boolean;
   investigation_outcome: InvestigationOutcome | null;
   action_taken: boolean;
-  whistleblower_protected: boolean;
-  anonymity_maintained: boolean;
+  whistleblower_protected: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  anonymity_maintained: boolean | null;
   detriment_reported: boolean;
   feedback_provided: boolean;
   regulator_notified: boolean;
@@ -88,8 +88,7 @@ export interface StaffWhistleblowingDisclosureRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -120,9 +119,13 @@ export function computeMetrics(rows: StaffWhistleblowingDisclosureRow[]): {
   const closedCount = rows.filter((r) => r.compliance_status === "Closed").length;
   const escalatedCount = rows.filter((r) => r.compliance_status === "Escalated").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffWhistleblowingDisclosureRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const substantiatedCount = rows.filter((r) => r.investigation_outcome === "Substantiated").length;
@@ -216,11 +219,13 @@ export function computeAlerts(
 
   // Medium: Anonymity not maintained
   for (const r of rows) {
-    if (!r.anonymity_maintained) {
+    if (r.anonymity_maintained !== true) {
       alerts.push({
         type: "anonymity_not_maintained",
         severity: "medium",
-        message: `${r.discloser_name}'s anonymity has not been maintained — protecting the identity of whistleblowers is a fundamental obligation under the Public Interest Disclosure Act 1998.`,
+        message: r.anonymity_maintained === false
+          ? `${r.discloser_name}'s anonymity has not been maintained — protecting the identity of whistleblowers is a fundamental obligation under the Public Interest Disclosure Act 1998.`
+          : `No record that ${r.discloser_name}'s anonymity was maintained — confirm and evidence it; protecting whistleblower identity is a fundamental obligation under the Public Interest Disclosure Act 1998.`,
         record_id: r.id,
       });
     }
@@ -336,8 +341,8 @@ export async function createStaffWhistleblowingDisclosure(input: {
       investigation_opened: input.investigationOpened ?? false,
       investigation_outcome: input.investigationOutcome ?? null,
       action_taken: input.actionTaken ?? false,
-      whistleblower_protected: input.whistleblowerProtected ?? true,
-      anonymity_maintained: input.anonymityMaintained ?? true,
+      whistleblower_protected: input.whistleblowerProtected ?? null,
+      anonymity_maintained: input.anonymityMaintained ?? null,
       detriment_reported: input.detrimentReported ?? false,
       feedback_provided: input.feedbackProvided ?? false,
       regulator_notified: input.regulatorNotified ?? false,

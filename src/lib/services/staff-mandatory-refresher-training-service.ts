@@ -66,8 +66,7 @@ export interface StaffMandatoryRefresherTrainingRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -94,9 +93,13 @@ export function computeMetrics(rows: StaffMandatoryRefresherTrainingRow[]): {
   const dueSoonCount = rows.filter((r) => r.training_status === "Due Soon").length;
   const bookedCount = rows.filter((r) => r.training_status === "Booked").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffMandatoryRefresherTrainingRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const totalHours = rows.reduce((sum, r) => sum + r.training_hours, 0);

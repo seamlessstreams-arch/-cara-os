@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { safeList } from "@/lib/api/safe-list";
 import type { YoungPerson } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
@@ -16,15 +17,6 @@ export const dynamic = "force-dynamic";
 
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 function childrenList(youngPeople: YoungPerson[]) {
   return youngPeople

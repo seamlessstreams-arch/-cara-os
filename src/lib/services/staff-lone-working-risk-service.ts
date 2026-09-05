@@ -72,13 +72,13 @@ export interface StaffLoneWorkingRiskRow {
   staff_name: string;
   lone_working_type: LoneWorkingType;
   risk_level: RiskLevel;
-  risk_assessment_completed: boolean;
-  check_in_protocol_agreed: boolean;
+  risk_assessment_completed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  check_in_protocol_agreed: boolean | null;
   check_in_frequency: CheckInFrequency | null;
   personal_alarm_issued: boolean;
-  mobile_phone_available: boolean;
-  emergency_procedures_known: boolean;
-  training_completed: boolean;
+  mobile_phone_available: boolean | null;
+  emergency_procedures_known: boolean | null;
+  training_completed: boolean | null;
   incident_during_lone_work: boolean;
   near_miss_reported: boolean;
   next_review_date: string | null;
@@ -90,8 +90,7 @@ export interface StaffLoneWorkingRiskRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -122,9 +121,13 @@ export function computeMetrics(rows: StaffLoneWorkingRiskRow[]): {
   const nearMissCount = rows.filter((r) => r.near_miss_reported).length;
   const nonCompliantCount = rows.filter((r) => r.compliance_status === "Non-Compliant").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffLoneWorkingRiskRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   return {
@@ -166,11 +169,13 @@ export function computeAlerts(
 
   // Critical: High risk without risk assessment completed
   for (const r of rows) {
-    if (r.risk_level === "High" && !r.risk_assessment_completed) {
+    if (r.risk_level === "High" && r.risk_assessment_completed !== true) {
       alerts.push({
         type: "high_risk_no_assessment",
         severity: "critical",
-        message: `${r.staff_name} has a high lone working risk level without a completed risk assessment — the home must complete a full risk assessment before any further lone working is permitted under the Management of Health and Safety at Work Regulations 1999.`,
+        message: r.risk_assessment_completed === false
+          ? `${r.staff_name} has a high lone working risk level without a completed risk assessment — the home must complete a full risk assessment before any further lone working is permitted under the Management of Health and Safety at Work Regulations 1999.`
+          : `${r.staff_name} has a high lone working risk level with no risk assessment recorded — complete and evidence one before any further lone working under the Management of Health and Safety at Work Regulations 1999.`,
         record_id: r.id,
       });
     }
@@ -178,7 +183,7 @@ export function computeAlerts(
 
   // High: No check-in protocol for high risk
   for (const r of rows) {
-    if (r.risk_level === "High" && !r.check_in_protocol_agreed) {
+    if (r.risk_level === "High" && r.check_in_protocol_agreed !== true) {
       alerts.push({
         type: "high_risk_no_check_in",
         severity: "high",
@@ -214,11 +219,11 @@ export function computeAlerts(
 
   // Medium: Training not completed
   for (const r of rows) {
-    if (!r.training_completed) {
+    if (r.training_completed !== true) {
       alerts.push({
         type: "training_not_completed",
         severity: "medium",
-        message: `${r.staff_name} has not completed lone working training — the home must ensure all staff who work alone receive appropriate training on safety procedures, emergency protocols, and risk awareness.`,
+        message: `${r.staff_name} has no evidenced lone working training — the home must ensure all staff who work alone receive appropriate training on safety procedures, emergency protocols, and risk awareness.`,
         record_id: r.id,
       });
     }
@@ -330,13 +335,13 @@ export async function createStaffLoneWorkingRisk(input: {
       staff_name: input.staffName,
       lone_working_type: input.loneWorkingType,
       risk_level: input.riskLevel ?? "Low",
-      risk_assessment_completed: input.riskAssessmentCompleted ?? true,
-      check_in_protocol_agreed: input.checkInProtocolAgreed ?? true,
+      risk_assessment_completed: input.riskAssessmentCompleted ?? null,
+      check_in_protocol_agreed: input.checkInProtocolAgreed ?? null,
       check_in_frequency: input.checkInFrequency ?? null,
       personal_alarm_issued: input.personalAlarmIssued ?? false,
-      mobile_phone_available: input.mobilePhoneAvailable ?? true,
-      emergency_procedures_known: input.emergencyProceduresKnown ?? true,
-      training_completed: input.trainingCompleted ?? true,
+      mobile_phone_available: input.mobilePhoneAvailable ?? null,
+      emergency_procedures_known: input.emergencyProceduresKnown ?? null,
+      training_completed: input.trainingCompleted ?? null,
       incident_during_lone_work: input.incidentDuringLoneWork ?? false,
       near_miss_reported: input.nearMissReported ?? false,
       next_review_date: input.nextReviewDate ?? null,

@@ -9,6 +9,7 @@
 //   level is refused without acknowledgement + rationale + the child's views +
 //   a review within 28 days). Cara never sets or escalates a level itself.
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -26,15 +27,6 @@ export const dynamic = "force-dynamic";
 
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(req: NextRequest) {
   const childId = req.nextUrl.searchParams.get("child_id");

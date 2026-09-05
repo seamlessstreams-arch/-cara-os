@@ -2,6 +2,7 @@
 // Deterministic Cara-generated plan for an upcoming shift, with an optional
 // Cara narrative on top. Reads the live store like every other engine route.
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
@@ -23,15 +24,6 @@ function currentPeriod(now: Date): ShiftPeriod {
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(req: Request) {
   const url = new URL(req.url);

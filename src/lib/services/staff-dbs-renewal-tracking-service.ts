@@ -66,8 +66,7 @@ export interface StaffDbsRenewalTrackingRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -97,9 +96,13 @@ export function computeDbsMetrics(rows: StaffDbsRenewalTrackingRow[]): {
   const pendingCount = rows.filter((r) => r.dbs_status === "pending").length;
   const disclosedCount = rows.filter((r) => r.check_outcome === "information_disclosed").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffDbsRenewalTrackingRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const dbsTypeBreakdown: Record<string, number> = {};
