@@ -32,15 +32,23 @@ export async function generateRiskSignals(input: {
 
   const { data: incidents } = await incidentsQuery;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const groupedByChild = new Map<string, any[]>();
+  const groupedByChild = new Map<string, NonNullable<typeof incidents>[number][]>();
   for (const incident of incidents ?? []) {
     if (!incident.child_id) continue;
     groupedByChild.set(incident.child_id, [...(groupedByChild.get(incident.child_id) ?? []), incident]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const signals: any[] = [];
+  interface CaraSignal {
+    home_id: string;
+    child_id: string;
+    signal_type: string;
+    risk_level: string;
+    title: string;
+    summary: string;
+    suggested_action: string;
+    evidence: { table: string; id: unknown; date: unknown }[];
+  }
+  const signals: CaraSignal[] = [];
 
   for (const [childId, childIncidents] of groupedByChild.entries()) {
     const missing = childIncidents.filter((i: Record<string, unknown>) =>

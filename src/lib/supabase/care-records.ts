@@ -28,9 +28,8 @@ export async function persistDailyLog(entry: object): Promise<void> {
   const c = createServerClient();
   if (!c) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { id: _id, ...rest } = entry as any;
-    await sq.createDailyLogEntry(c, { ...rest, home_id: homeId() });
+    const { id: _id, ...rest } = entry as Record<string, unknown>;
+    await sq.createDailyLogEntry(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createDailyLogEntry>[1]);
   } catch {
     // best-effort — the in-memory write already succeeded; never block the caller
   }
@@ -42,9 +41,8 @@ export async function persistIncident(incident: Record<string, unknown>): Promis
   const c = createServerClient();
   if (!c) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { id: _id, ...rest } = incident as any;
-    await sq.createIncident(c, { ...rest, home_id: homeId() });
+    const { id: _id, ...rest } = incident;
+    await sq.createIncident(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createIncident>[1]);
   } catch {
     // best-effort — the in-memory write already succeeded; never block the caller
   }
@@ -55,8 +53,7 @@ export async function persistIncident(incident: Record<string, unknown>): Promis
  * Used by the sync services / orchestrators that create incidents directly (and so
  * bypass the async dal), so those incidents reach the real table when Supabase is on.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createIncidentRecord(data: any) {
+export function createIncidentRecord(data: Parameters<typeof db.incidents.create>[0]) {
   const incident = db.incidents.create(data);
   void persistIncident(incident as unknown as Record<string, unknown>);
   return incident;
@@ -68,9 +65,8 @@ export async function persistTask(task: Record<string, unknown>): Promise<void> 
   const c = createServerClient();
   if (!c) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { id: _id, ...rest } = task as any;
-    await sq.createTask(c, { ...rest, home_id: homeId() });
+    const { id: _id, ...rest } = task;
+    await sq.createTask(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createTask>[1]);
   } catch {
     // best-effort — the in-memory write already succeeded; never block the caller
   }
@@ -80,8 +76,7 @@ export async function persistTask(task: Record<string, unknown>): Promise<void> 
  * Create a task in the in-memory store AND best-effort persist it to Supabase. Used by
  * the many sync services / orchestrators / routes that create tasks directly.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createTaskRecord(data: any) {
+export function createTaskRecord(data: Parameters<typeof db.tasks.create>[0]) {
   const task = db.tasks.create(data);
   void persistTask(task as unknown as Record<string, unknown>);
   return task;
@@ -99,8 +94,7 @@ export async function persistRiskAssessment(ra: Record<string, unknown>): Promis
   const c = createServerClient();
   if (!c) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { id: _id, child_id, created_by, assessed_by, home_id: _home, ...rest } = ra as any;
+    const { id: _id, child_id, created_by, assessed_by, home_id: _home, ...rest } = ra;
     void _id; void _home;
     await sq.createGenericRecord(c, {
       home_id: homeId(),
@@ -119,8 +113,7 @@ export async function persistRiskAssessment(ra: Record<string, unknown>): Promis
  * Supabase (generic_records), so a directly-created RA survives on a live tenant
  * exactly as one created through the /risk-assessments route does.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createRiskAssessmentRecord(data: any) {
+export function createRiskAssessmentRecord(data: Parameters<typeof db.riskAssessments.create>[0]) {
   const ra = db.riskAssessments.create(data);
   void persistRiskAssessment(ra as unknown as Record<string, unknown>);
   return ra;

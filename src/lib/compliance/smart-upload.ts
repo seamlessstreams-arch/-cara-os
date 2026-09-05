@@ -73,7 +73,7 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
   // ── Durable record: the documents table via the dual-mode dal ──────────────
   const doc = await dal.documents.create({
     title: name,
-    category: tableCategory,
+    category: tableCategory as Parameters<typeof dal.documents.create>[0]["category"],
     description: text || null,
     file_name: name,
     file_size: input.fileSize || 0,
@@ -85,10 +85,8 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
     linked_staff_id: input.linkedStaffId ?? null,
     linked_incident_id: input.linkedIncidentId ?? null,
     tags: ctx ? [ctx] : [],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const docId = (doc as any)?.id ?? generateId("doc");
+  });
+  const docId = doc?.id ?? generateId("doc");
 
   // ── Smart record: full UploadedDocument powering review → approve ──────────
   const uploaded: UploadedDocument = {
@@ -99,8 +97,7 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
     file_size: input.fileSize || 0,
     uploaded_by: actorId,
     uploaded_at: now,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    linked_home_id: ((doc as any)?.home_id as string) || "",
+    linked_home_id: doc?.home_id || "",
     linked_child_id: input.linkedChildId ?? null,
     linked_staff_id: input.linkedStaffId ?? null,
     linked_incident_id: input.linkedIncidentId ?? null,
