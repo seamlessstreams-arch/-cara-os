@@ -8,7 +8,6 @@
  * Never expose service-role operations to the client.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "./server";
 import type {
   CareEvent,
@@ -23,8 +22,7 @@ import { generateId, todayStr } from "@/lib/utils";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function supabase(): LooseSupabase {
   const client = createServerClient();
   if (!client) throw new Error("Supabase not configured — check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");

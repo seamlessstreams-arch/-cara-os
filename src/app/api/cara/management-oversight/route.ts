@@ -13,8 +13,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { storageFailure } from "@/lib/http/storage-error";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   analyseRecord,
@@ -30,8 +30,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 // Tables in this module are not yet in the generated Database type, so we use
 // a loosely-typed client wrapper. The schema is enforced by migration 010 +
 // SQL constraints rather than by the TypeScript types.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }
@@ -79,6 +78,9 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  const __fd = rejectFutureDates(body, ["recordDate"]);
+  if (__fd) return __fd;
 
   const {
     recordId,

@@ -11,7 +11,6 @@
 // an LLM. Mock mode still creates real suggestions, audit logs and queue items.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   generateText,
@@ -35,8 +34,7 @@ import type {
   IncidentInput,
 } from "@/lib/cara/cara-suggestions-types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }

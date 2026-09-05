@@ -5,13 +5,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraRole } from "@/lib/cara/cara-permissions";
 
 import { seedDay } from "@/lib/seed-date";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }
@@ -78,10 +77,26 @@ export async function GET(req: NextRequest) {
     .limit(limit);
 
   if (error) {
-    return NextResponse.json({ data: getDemoPending() });
+      // A failed read is not an absence of records, and it is certainly not
+      // these invented ones. The table has no migration, so on live this is
+      // the path that runs — it used to answer with demo content that the
+      // page renders exactly as it renders real data.
+    return storageFailure("Cara pending approvals", error);
   }
 
-  const outputs: PendingOutput[] = ((data) ?? []).map((row) => {
+  /** Snake-case row for the cara_outputs select — only the columns read. */
+  interface PendingRow {
+    id: string;
+    request_id: string;
+    generated_text: string | null;
+    confidence: string | null;
+    status: string;
+    created_at: string;
+    guardrail_flagged: boolean | null;
+    guardrail_summary: string | null;
+    cara_requests?: { command_id?: string; user_id?: string } | { command_id?: string; user_id?: string }[];
+  }
+  const outputs: PendingOutput[] = (((data) as PendingRow[] | null) ?? []).map((row) => {
     // PostgREST returns an embedded relation as an array unless it can see the
     // join is to-one, and the generated types say array here. Reading
     // `.command_id` straight off it was always undefined, so every pending

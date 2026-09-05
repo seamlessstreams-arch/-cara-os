@@ -5,8 +5,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { reg45Reviews, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = any;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
