@@ -132,7 +132,7 @@ export function CaraHistoryTimeline({
   limit = 10,
   className,
 }: CaraHistoryTimelineProps) {
-  const { data: entries, isLoading } = useCaraHistory({
+  const { data: entries, isLoading, isError } = useCaraHistory({
     userId,
     days,
     limit,
@@ -152,6 +152,24 @@ export function CaraHistoryTimeline({
             Loading Cara history...
           </span>
         </div>
+      </div>
+    );
+  }
+
+  // A failed read is not an empty history. Falling through to the empty state
+  // below would tell the reader that nothing was ever recorded.
+  if (isError) {
+    return (
+      <div
+        className={cn(
+          "rounded-2xl border border-[var(--cs-border)] bg-white p-5 text-center",
+          className,
+        )}
+      >
+        <p className="text-xs text-[var(--cs-risk)]">Cara history could not be loaded.</p>
+        <p className="mt-1 text-[11px] text-[var(--cs-text-muted)]">
+          This is not the same as there being none — nothing could be read.
+        </p>
       </div>
     );
   }
