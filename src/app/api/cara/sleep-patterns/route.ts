@@ -52,8 +52,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchSleepData(sb: any, childId: string): Promise<SleepInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchSleepData(sb: SB, childId: string): Promise<SleepInput> {
+  const { data: child } = await (sb.from("young_people") as SB)
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
