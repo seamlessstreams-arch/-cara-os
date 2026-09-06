@@ -65,8 +65,7 @@ export async function generateOversightDraft(opts: {
   // Gather evidence
   let evidenceContext = "";
   if (sb && opts.recordId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: source } = await (sb.from("cara_studio_sources") as any)
+    const { data: source } = await sb.from("cara_studio_sources")
       .select("*")
       .eq("id", opts.recordId)
       .maybeSingle();
@@ -78,8 +77,7 @@ export async function generateOversightDraft(opts: {
 
   // Also gather recent context for the child if applicable
   if (sb && opts.childId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: recentSources } = await (sb.from("cara_studio_sources") as any)
+    const { data: recentSources } = await sb.from("cara_studio_sources")
       .select("source_type, title, summary, source_date")
       .eq("home_id", hid)
       .eq("child_id", opts.childId)

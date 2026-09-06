@@ -124,7 +124,7 @@ export async function scanChildVoice(childId: string): Promise<ChildVoiceEntry[]
   const sb = createServerClient();
   if (!sb) return getDemoVoiceEntries(childId);
 
-  const { data: sources, error } = await (sb.from("cara_studio_sources") as any)
+  const { data: sources, error } = await sb.from("cara_studio_sources")
     .select("id, source_type, title, content, summary, source_date")
     .eq("home_id", homeId())
     .eq("child_id", childId)

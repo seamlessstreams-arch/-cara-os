@@ -37,15 +37,14 @@ export async function generateArtifact(
   const sourcesUsed: CaraStudioArtifactSource[] = [];
 
   if (sb && request.source_ids?.length) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: sources } = await (sb.from("cara_studio_sources") as any)
+    const { data: sources } = await sb.from("cara_studio_sources")
       .select("*")
       .in("id", request.source_ids)
       .eq("home_id", hid);
 
     if (sources?.length) {
       sourceContext = sources
-        .map((s: { source_type: string; title: string; summary: string; content: string; source_date: string }) =>
+        .map((s) =>
           `[${s.source_type}] ${s.title ?? "Untitled"} (${s.source_date ?? "no date"})\n${s.summary ?? s.content ?? "No content"}`,
         )
         .join("\n\n---\n\n");
@@ -71,8 +70,7 @@ export async function generateArtifact(
   // 5. Persist artifact
   let artifact: CaraStudioArtifact;
   if (sb) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (sb.from("cara_studio_artifacts") as any)
+    const { data, error } = await sb.from("cara_studio_artifacts")
       .insert({
         home_id: hid,
         artifact_type: request.artifact_type,
@@ -92,7 +90,7 @@ export async function generateArtifact(
       .single();
 
     if (error) throw new Error(`Failed to persist artifact: ${error.message}`);
-    artifact = data;
+    artifact = data as unknown as CaraStudioArtifact;
 
     // Link sources
     if (request.source_ids?.length) {
@@ -104,8 +102,7 @@ export async function generateArtifact(
         is_child_voice: false,
         is_contradicted: false,
       }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("cara_studio_artifact_sources") as any).insert(links);
+      await sb.from("cara_studio_artifact_sources").insert(links);
     }
 
     // Write audit log

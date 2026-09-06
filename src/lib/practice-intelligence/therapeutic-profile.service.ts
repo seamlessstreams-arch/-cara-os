@@ -228,32 +228,28 @@ export async function buildProfileFromEvidence(
 
   // Gather evidence from multiple tables
   const [incidents, dailyLogs, keywork, riskAssessments] = await Promise.all([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .eq("source_type", "incident")
       .order("source_date", { ascending: false })
       .limit(20),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .eq("source_type", "daily_log")
       .order("source_date", { ascending: false })
       .limit(30),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .in("source_type", ["keywork", "direct_work"])
       .order("source_date", { ascending: false })
       .limit(20),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
@@ -268,7 +264,7 @@ export async function buildProfileFromEvidence(
     ...(dailyLogs.data ?? []),
     ...(keywork.data ?? []),
     ...(riskAssessments.data ?? []),
-  ].map((s: { content: string; summary: string }) => s.content || s.summary || "").filter(Boolean);
+  ].map((s) => s.content || s.summary || "").filter(Boolean);
 
   return extractThemesFromContent(allContent);
 }

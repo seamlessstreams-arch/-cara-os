@@ -19,6 +19,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CaraChildProfile, EvidenceRef } from "./types";
 import { todayStr } from "@/lib/utils";
+import type { Json } from "@/lib/supabase/types";
 
 import { seedDay } from "@/lib/seed-date";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -160,12 +161,12 @@ export async function buildChildProfile(
   };
 
   // ── Persist profile snapshot ───────────────────────────────────────────────
-  await (sb.from("cara_studio_profiles") as SB).insert({
+  await sb.from("cara_studio_profiles").insert({
     organisation_id: organisationId,
     home_id: homeId,
     child_id: childId,
-    profile_json: profile,
-    evidence_refs: evidenceRefs,
+    profile_json: profile as unknown as Json,
+    evidence_refs: evidenceRefs as unknown as Json,
     risk_flags: riskFlags,
     strengths: profile.strengths,
     needs: profile.needs,

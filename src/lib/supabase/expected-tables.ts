@@ -77,6 +77,111 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cara_studio_artifact_actions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_reviews",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_sources",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_versions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifacts",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_audit_log",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_care_graph_edges",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_care_graph_nodes",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_commit_links",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_contradictions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_decision_support",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_early_warnings",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_evidence_assessments",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_formulations",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_gaps",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_generations",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_home_dynamics",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_profiles",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_quality_checks",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_safeguarding_patterns",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_sources",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
     table: "care_event_audit_log",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],

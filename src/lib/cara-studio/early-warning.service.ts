@@ -64,7 +64,7 @@ export async function runEarlyWarningChecks(hId: string, childId?: string): Prom
       confidence_score: w.confidence_score, recommended_action: w.recommended_action,
       status: "open",
     }));
-    const { error } = await (sb.from("cara_studio_early_warnings") as any).insert(toInsert);
+    const { error } = await sb.from("cara_studio_early_warnings").insert(toInsert);
     if (error) console.error("[cara-studio/early-warning] Insert error:", error);
   }
 
@@ -75,7 +75,7 @@ export async function listEarlyWarnings(hId: string, childId?: string, status?: 
   const sb = createServerClient();
   if (!sb) return getDemoWarnings();
 
-  let query = (sb.from("cara_studio_early_warnings") as any)
+  let query = sb.from("cara_studio_early_warnings")
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
   if (status) query = query.eq("status", status);
@@ -89,7 +89,7 @@ export async function reviewEarlyWarning(warningId: string, status: "acknowledge
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("cara_studio_early_warnings") as any)
+  const { error } = await sb.from("cara_studio_early_warnings")
     .update({ status, reviewed_at: new Date().toISOString() }).eq("id", warningId);
 
   if (error) { console.error("[cara-studio/early-warning] Review error:", error); return false; }
