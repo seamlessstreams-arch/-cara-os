@@ -477,7 +477,7 @@ export interface Database {
           read_at: string;
           signed_at: string | null;
         };
-        Insert: Omit<Database["public"]["Tables"]["document_read_receipts"]["Row"], "id" | "read_at"> & { id?: string };
+        Insert: Omit<Database["public"]["Tables"]["document_read_receipts"]["Row"], "id" | "read_at"> & { id?: string; read_at?: string };
         Update: Partial<Database["public"]["Tables"]["document_read_receipts"]["Insert"]>;
         Relationships: [];
       };

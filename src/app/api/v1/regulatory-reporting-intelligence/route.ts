@@ -111,7 +111,7 @@ export async function GET() {
   // ── Map Staff ───────────────────────────────────────────────────────────────
   const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
-    name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
+    name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));
 
   // ── Run engine ──────────────────────────────────────────────────────────────

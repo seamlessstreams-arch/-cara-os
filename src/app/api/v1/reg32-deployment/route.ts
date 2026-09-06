@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       role: String(s.role ?? ""),
       job_title: String(s.job_title ?? ""),
-      is_active: s.is_active !== false && s.employment_status !== "inactive",
+      is_active: s.is_active !== false,
       start_date: s.start_date ?? null,
       probation_end_date: s.probation_end_date ?? null,
       dbs_issue_date: s.dbs_issue_date ?? null,

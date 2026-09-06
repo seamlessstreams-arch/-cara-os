@@ -80,7 +80,7 @@ export async function GET(req: Request) {
     priority: t.priority ?? "medium",
     due_date: t.due_date ?? null,
     status: t.status ?? "not_started",
-    child_name: ypName(t.linked_child_id ?? t.child_id),
+    child_name: ypName(t.linked_child_id),
   }));
 
   // ── Medications (active today) ──

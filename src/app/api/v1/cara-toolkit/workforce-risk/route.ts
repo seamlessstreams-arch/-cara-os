@@ -51,7 +51,7 @@ export async function GET() {
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 
-  const activeStaff = staff.filter((s) => s.status !== "inactive");
+  const activeStaff = staff.filter((s) => s.is_active);
   const agencyStaff = activeStaff.filter(
     (s) => s.employment_type === "agency" || s.employment_type === "bank"
   );
