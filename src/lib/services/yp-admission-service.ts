@@ -833,10 +833,23 @@ export async function createYoungPersonFromWorkflow(
 
   if (ypErr) return { ok: false, error: ypErr.message };
 
-  // Link back to workflow
-  await (s.from("cs_yp_admission_workflows") as SB)
+  // Link back to workflow. The young person IS created either way — that write
+  // has already succeeded — but if this link fails in silence the workflow no
+  // longer knows which child it admitted.
+  const { error: linkError } = await (s.from("cs_yp_admission_workflows") as SB)
     .update({ created_yp_id: yp.id, updated_at: new Date().toISOString() })
     .eq("id", workflowId);
+
+  if (linkError) {
+    console.error("[yp-admission] could not link workflow", workflowId, "to child", yp.id, linkError);
+    return {
+      ok: true,
+      data: { youngPersonId: yp.id },
+      warning:
+        "The child record was created, but the admission workflow could not be linked to it — " +
+        "the workflow will not show the admission as completed.",
+    };
+  }
 
   return { ok: true, data: { youngPersonId: yp.id } };
 }

@@ -278,15 +278,25 @@ export async function completeWorkflowStep(
   );
 
   if (nextStep) {
-    // Activate next step
-    await (s.from("cs_workflow_steps") as SB)
+    // Activate next step. If either of these fails in silence the workflow
+    // reports that it advanced while staying where it was.
+    const { error: stepError } = await (s.from("cs_workflow_steps") as SB)
       .update({ status: "in_progress" })
       .eq("id", nextStep.id);
 
-    // Update workflow current_step
-    await (s.from("cs_workflows") as SB)
+    const { error: workflowError } = await (s.from("cs_workflows") as SB)
       .update({ current_step: nextStep.step_number, updated_at: new Date().toISOString() })
       .eq("id", workflowId);
+
+    if (stepError || workflowError) {
+      console.error("[workflow] could not advance", workflowId, stepError ?? workflowError);
+      return {
+        ok: false,
+        error:
+          "The step was completed, but the workflow could not be advanced to the next step. " +
+          "Reopen it and check which step is active before continuing.",
+      };
+    }
   } else {
     // All steps complete — mark workflow as completed
     await (s.from("cs_workflows") as SB)
