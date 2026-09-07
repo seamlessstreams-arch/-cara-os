@@ -131,3 +131,20 @@ describe("internet-usage-monitoring-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded parental controls in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyInternetUsageAlerts([makeRecord({ parental_controls_active: null })]);
+    const alert = alerts.find((a) => a.type === "no_parental_controls");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no controls gap when controls are recorded as active", () => {
+    const alerts = identifyInternetUsageAlerts([makeRecord({ parental_controls_active: true })]);
+    expect(alerts.some((a) => a.type === "no_parental_controls")).toBe(false);
+  });
+  it("does not dilute the parental-controls rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, parental_controls_active: v }));
+    expect(computeInternetUsageMetrics(rows).parental_controls_rate).toBe(100);
+  });
+});

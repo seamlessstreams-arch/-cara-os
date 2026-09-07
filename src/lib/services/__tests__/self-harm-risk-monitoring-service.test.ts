@@ -133,3 +133,23 @@ describe("self-harm-risk-monitoring-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded means restriction in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySelfHarmRiskAlerts([
+      makeRecord({ means_restriction_applied: null }),
+      makeRecord({ id: "r-2", means_restriction_applied: null }),
+    ]);
+    const alert = alerts.find((a) => a.type === "no_means_restriction");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no means-restriction gap when it is recorded as applied", () => {
+    const alerts = identifySelfHarmRiskAlerts([makeRecord({ means_restriction_applied: true })]);
+    expect(alerts.some((a) => a.type === "no_means_restriction")).toBe(false);
+  });
+  it("does not dilute the means-restriction rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, means_restriction_applied: v }));
+    expect(computeSelfHarmRiskMetrics(rows).means_restriction_rate).toBe(100);
+  });
+});

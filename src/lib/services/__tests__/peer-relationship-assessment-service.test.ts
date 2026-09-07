@@ -132,3 +132,27 @@ describe("peer-relationship-assessment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the concerning-relationships critical between recorded no-screen and unrecorded", () => {
+    const nullAlert = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: null }),
+    ]).find((a) => a.type === "concerning_no_bullying_screen");
+    const falseAlert = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: false }),
+    ]).find((a) => a.type === "concerning_no_bullying_screen");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no bullying critical when screening is recorded as done", () => {
+    const alerts = identifyPeerRelationshipAlerts([
+      makeRecord({ relationship_quality: "concerning", bullying_screened: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "concerning_no_bullying_screen")).toBe(false);
+  });
+  it("does not dilute the bullying-screened rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, bullying_screened: v }));
+    expect(computePeerRelationshipMetrics(rows).bullying_screened_rate).toBe(100);
+  });
+});
