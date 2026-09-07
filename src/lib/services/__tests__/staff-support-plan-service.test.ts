@@ -143,3 +143,14 @@ describe("staff-support-plan-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("does not dilute recorded-promptly with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `p-${i}`, recorded_promptly: v }));
+    expect(computeSupportPlanMetrics(rows).recorded_promptly_rate).toBe(100);
+  });
+  it("still scores a recorded late entry", () => {
+    const rows = [true, false].map((v, i) => makeRecord({ id: `p-${i}`, recorded_promptly: v }));
+    expect(computeSupportPlanMetrics(rows).recorded_promptly_rate).toBe(50);
+  });
+});

@@ -138,3 +138,14 @@ describe("staff-performance-dip-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("does not dilute evidence-documented with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `p-${i}`, evidence_documented: v }));
+    expect(computePerformanceDipMetrics(rows).evidence_documented_rate).toBe(100);
+  });
+  it("does not treat unrecorded manager awareness as unaware", () => {
+    const rows = [true, null].map((v, i) => makeRecord({ id: `p-${i}`, manager_aware: v }));
+    expect(computePerformanceDipMetrics(rows).manager_aware_rate).toBe(100);
+  });
+});
