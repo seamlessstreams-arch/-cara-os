@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface DomainScore {
@@ -179,13 +180,13 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
       <div className="grid grid-cols-2 divide-x divide-border border-b border-border">
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.goalAchievementRate >= 70 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {data.goalAchievementRate}%
+            {formatRate(data.goalAchievementRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Goals achieved</p>
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.reviewComplianceRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {data.reviewComplianceRate}%
+            {formatRate(data.reviewComplianceRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Reviews on time</p>
         </div>

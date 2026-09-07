@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -70,26 +71,26 @@ export function PlacementStabilityContinuityIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Reviews" value={quality.totalReviews} />
-        <Stat label="Stability Rate" value={`${quality.stabilityRate}%`} />
+        <Stat label="Stability Rate" value={`${formatRate(quality.stabilityRate)}`} />
         <Stat label="Staff" value={staffReadiness.totalStaff} />
       </div>
 
       <Section title="Placement Quality" defaultOpen>
         <ScoreBar label="Placement Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Stability" value={`${quality.stabilityRate}%`} />
-          <Stat label="Child Participated" value={`${quality.childParticipatedRate}%`} />
-          <Stat label="Family Engaged" value={`${quality.familyEngagedRate}%`} />
-          <Stat label="Continuity" value={`${quality.continuityRate}%`} />
+          <Stat label="Stability" value={`${formatRate(quality.stabilityRate)}`} />
+          <Stat label="Child Participated" value={`${formatRate(quality.childParticipatedRate)}`} />
+          <Stat label="Family Engaged" value={`${formatRate(quality.familyEngagedRate)}`} />
+          <Stat label="Continuity" value={`${formatRate(quality.continuityRate)}`} />
         </div>
       </Section>
 
       <Section title="Placement Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Mgmt Oversight" value={`${compliance.managementOversightRate}%`} />
-          <Stat label="Actions Taken" value={`${compliance.actionsTakenRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Mgmt Oversight" value={`${formatRate(compliance.managementOversightRate)}`} />
+          <Stat label="Actions Taken" value={`${formatRate(compliance.actionsTakenRate)}`} />
           <Stat label="Review Diversity" value={`${compliance.reviewTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -109,12 +110,12 @@ export function PlacementStabilityContinuityIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Attachment Theory" value={`${staffReadiness.attachmentTheoryRate}%`} />
-          <Stat label="Therapeutic Care" value={`${staffReadiness.therapeuticCaregivingRate}%`} />
-          <Stat label="Disruption Prevention" value={`${staffReadiness.disruptionPreventionRate}%`} />
-          <Stat label="Transition Support" value={`${staffReadiness.transitionSupportRate}%`} />
-          <Stat label="Family Engagement" value={`${staffReadiness.familyEngagementRate}%`} />
-          <Stat label="Multi-Agency" value={`${staffReadiness.multiAgencyWorkingRate}%`} />
+          <Stat label="Attachment Theory" value={`${formatRate(staffReadiness.attachmentTheoryRate)}`} />
+          <Stat label="Therapeutic Care" value={`${formatRate(staffReadiness.therapeuticCaregivingRate)}`} />
+          <Stat label="Disruption Prevention" value={`${formatRate(staffReadiness.disruptionPreventionRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(staffReadiness.transitionSupportRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRate(staffReadiness.familyEngagementRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(staffReadiness.multiAgencyWorkingRate)}`} />
         </div>
       </Section>
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rate, rateOf, meanOf, weightedMeanOf, meets, below, formatRate } from "./rate";
+import { rate, rateOf, meanOf, weightedMeanOf, meets, below, formatRate, formatRateLoose } from "./rate";
 
 describe("rate", () => {
   it("returns null for an empty population rather than a flattering 100", () => {
@@ -100,5 +100,17 @@ describe("formatRate", () => {
   it("renders a measured rate with a percent sign", () => {
     expect(formatRate(0)).toBe("0%");
     expect(formatRate(87)).toBe("87%");
+  });
+});
+
+describe("formatRateLoose — the untyped-dispatcher boundary", () => {
+  it("renders a finite number identically to formatRate", () => {
+    expect(formatRateLoose(82)).toBe("82%");
+    expect(formatRateLoose(0)).toBe("0%");
+  });
+  it("renders the dash for everything a missing key can produce", () => {
+    for (const v of [undefined, null, NaN, "82", {}, [], true]) {
+      expect(formatRateLoose(v)).toBe("—");
+    }
   });
 });

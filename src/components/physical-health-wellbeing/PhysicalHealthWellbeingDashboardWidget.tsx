@@ -143,7 +143,7 @@ export default function PhysicalHealthWellbeingDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <Stat label="Records" value={child.recordCount} />
-                    <Stat label="Outcomes" value={`${child.outcomeRate}%`} />
+                    <Stat label="Outcomes" value={`${formatRate(child.outcomeRate)}`} />
                     <Stat label="Attendance" value={`${child.appointmentRate}%`} />
                     <Stat label="Areas Covered" value={child.uniqueAreas} />
                   </div>

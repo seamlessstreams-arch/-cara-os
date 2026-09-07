@@ -5,6 +5,7 @@
 // Manager/RI cockpit over the Ask CARA audit trail + external-AI declarations.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -103,7 +104,7 @@ export default function GovernancePage() {
           <>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Stat label="Ask CARA requests" value={g.usage.total} icon={MessageSquare} sub="all deterministic" />
-              <Stat label="Deterministic-only" value={`${g.deterministic.compliancePct}%`} tone="emerald" icon={ShieldCheck} sub={`${g.deterministic.deterministicOnly} of ${g.deterministic.total}`} />
+              <Stat label="Deterministic-only" value={`${formatRate(g.deterministic.compliancePct)}`} tone="emerald" icon={ShieldCheck} sub={`${g.deterministic.deterministicOnly} of ${g.deterministic.total}`} />
               <Stat label="External calls avoided" value={g.costAvoidance.externalCallsAvoided} tone="teal" icon={PoundSterling} sub={`≈ £${g.costAvoidance.estimatedCreditsSavedGbp} saved (est.)`} />
               <Stat label="Unsafe asks refused" value={g.safety.prohibitedAttempts} tone={g.safety.prohibitedAttempts > 0 ? "rose" : "slate"} icon={AlertTriangle} sub="prohibited-request classifier" />
             </div>

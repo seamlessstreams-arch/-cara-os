@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface LastShift {
@@ -113,7 +114,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
           </div>
           <div className="text-right">
             <p className={`text-lg font-bold ${metrics.overallComplianceRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-              {metrics.overallComplianceRate}%
+              {formatRate(metrics.overallComplianceRate)}
             </p>
             <p className="text-[10px] text-muted-foreground">compliant</p>
           </div>
@@ -131,7 +132,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
         <div className="grid grid-cols-3 gap-2 text-[10px]">
           <div>
             <span className="text-muted-foreground">Checks</span>
-            <p className="font-medium">{lastShift.checkRate}%</p>
+            <p className="font-medium">{formatRate(lastShift.checkRate)}</p>
           </div>
           <div>
             <span className="text-muted-foreground">Incidents</span>
@@ -160,7 +161,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${metrics.poorSleepRate <= 15 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.poorSleepRate}%
+            {formatRate(metrics.poorSleepRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Poor sleep</p>
         </div>
@@ -199,7 +200,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400"
                     : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400"
                 }`}>
-                  {shift.checkRate}%
+                  {formatRate(shift.checkRate)}
                 </div>
                 <p className="text-[8px] text-muted-foreground mt-0.5">
                   {new Date(shift.date).getDate()}
@@ -215,13 +216,13 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
         <div className="flex justify-between text-[10px] mb-1">
           <span className="text-muted-foreground">Check completion (avg)</span>
           <span className={`font-medium ${metrics.averageCheckCompletionRate >= 95 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.averageCheckCompletionRate}%
+            {formatRate(metrics.averageCheckCompletionRate)}
           </span>
         </div>
         <div className="flex justify-between text-[10px] mb-1">
           <span className="text-muted-foreground">Handover rate</span>
           <span className={`font-medium ${metrics.handoverCompletionRate >= 95 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.handoverCompletionRate}%
+            {formatRate(metrics.handoverCompletionRate)}
           </span>
         </div>
         <div className="flex justify-between text-[10px]">

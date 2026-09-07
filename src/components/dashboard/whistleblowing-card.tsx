@@ -6,6 +6,7 @@
 // Reg 41 (whistleblowing), Public Interest Disclosure Act 1998 (PIDA).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +122,7 @@ export function WhistleblowingCard() {
               "text-lg font-bold tabular-nums",
               (o.protection_measures_rate ?? 0) >= 90 ? "text-[--cs-success]" : (o.protection_measures_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.protection_measures_rate}%
+              {formatRate(o.protection_measures_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Protected</p>
           </div>
@@ -192,7 +193,7 @@ export function WhistleblowingCard() {
                 "font-bold tabular-nums",
                 (o.lessons_recorded_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
               )}>
-                {o.lessons_recorded_rate}%
+                {formatRate(o.lessons_recorded_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Lessons</p>
             </div>

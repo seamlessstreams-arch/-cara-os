@@ -191,7 +191,7 @@ export default function HealthDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-gray-900">{cp.childName}</p>
                   <p className="text-xs text-gray-500">
-                    {cp.totalAssessments} assessments, {cp.completedOnTimeRate}% on time
+                    {cp.totalAssessments} assessments, {formatRate(cp.completedOnTimeRate)} on time
                   </p>
                 </div>
                 <span className={`text-sm font-semibold ${cp.overallScore >= 7 ? "text-green-600" : cp.overallScore >= 4 ? "text-amber-600" : "text-red-600"}`}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
@@ -217,7 +218,7 @@ export default function WelfareCheckQualityPage() {
         <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm text-slate-600">Building security confirmed in rounds</p>
           <p className={`text-lg font-bold ${data.buildingSecureRate >= 90 ? "text-green-700" : "text-amber-700"}`}>
-            {data.buildingSecureRate}%
+            {formatRate(data.buildingSecureRate)}
           </p>
         </div>
       )}

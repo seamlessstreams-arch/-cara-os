@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 
@@ -667,7 +668,7 @@ function OverviewTab({
           <CardContent className="p-4 text-center">
             <BarChart3 className={cn("h-5 w-5 mx-auto mb-1", complianceColor(overview.overall_compliance_pct))} />
             <p className={cn("text-2xl font-bold", complianceColor(overview.overall_compliance_pct))}>
-              {overview.overall_compliance_pct}%
+              {formatRate(overview.overall_compliance_pct)}
             </p>
             <p className="text-xs" style={{ color: "var(--cs-text-muted)" }}>Overall Compliance</p>
           </CardContent>
@@ -739,7 +740,7 @@ function OverviewTab({
                 </div>
                 <div>
                   <p className={cn("text-lg font-bold", complianceColor(home.recording_compliance_pct))}>
-                    {home.recording_compliance_pct}%
+                    {formatRate(home.recording_compliance_pct)}
                   </p>
                   <p className="text-xs" style={{ color: "var(--cs-text-muted)" }}>Compliance</p>
                 </div>
@@ -750,13 +751,13 @@ function OverviewTab({
                 <div className="flex justify-between text-xs mb-1">
                   <span style={{ color: "var(--cs-text-secondary)" }}>Recording Compliance</span>
                   <span className={complianceColor(home.recording_compliance_pct)}>
-                    {home.recording_compliance_pct}%
+                    {formatRate(home.recording_compliance_pct)}
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
                   <div
                     className={cn("h-full rounded-full transition-all", complianceBg(home.recording_compliance_pct))}
-                    style={{ width: `${home.recording_compliance_pct}%` }}
+                    style={{ width: `${formatRate(home.recording_compliance_pct)}` }}
                   />
                 </div>
               </div>
@@ -1093,13 +1094,13 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-medium">{home.home_name}</span>
                 <span className={cn("text-sm font-semibold", complianceColor(home.staff_supervision_compliance_pct))}>
-                  {home.staff_supervision_compliance_pct}%
+                  {formatRate(home.staff_supervision_compliance_pct)}
                 </span>
               </div>
               <div className="h-3 rounded-full bg-gray-200 overflow-hidden">
                 <div
                   className={cn("h-full rounded-full transition-all", complianceBg(home.staff_supervision_compliance_pct))}
-                  style={{ width: `${home.staff_supervision_compliance_pct}%` }}
+                  style={{ width: `${formatRate(home.staff_supervision_compliance_pct)}` }}
                 />
               </div>
             </div>

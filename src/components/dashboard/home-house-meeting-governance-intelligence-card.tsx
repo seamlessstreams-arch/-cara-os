@@ -75,7 +75,7 @@ export function HomeHouseMeetingGovernanceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.child_attendance_rate ?? 0) >= 85 ? "bg-green-50" : (d.child_attendance_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.child_attendance_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.child_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_attendance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_attendance_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.child_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attend</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.action_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.action_completion_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
@@ -83,7 +83,7 @@ export function HomeHouseMeetingGovernanceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.child_feedback_rate ?? 0) >= 90 ? "bg-green-50" : (d.child_feedback_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.child_feedback_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.child_feedback_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_feedback_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_feedback_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.child_feedback_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_feedback_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.average_duration ?? 0) >= 30 ? "bg-green-50" : (d.average_duration ?? 0) >= 20 ? "bg-amber-50" : "bg-red-50")}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function SupervisionQualityIntelligenceWidget() {
       <Section title="Session Quality" defaultOpen>
         <ScoreBar label="Session Quality" value={session.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Outstanding/Good" value={`${session.outstandingGoodRate}%`} />
-          <Stat label="Reflective" value={`${session.reflectiveRate}%`} />
-          <Stat label="Safeguarding" value={`${session.safeguardingDiscussionRate}%`} />
+          <Stat label="Outstanding/Good" value={`${formatRateLoose(session.outstandingGoodRate)}`} />
+          <Stat label="Reflective" value={`${formatRateLoose(session.reflectiveRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRateLoose(session.safeguardingDiscussionRate)}`} />
           <Stat label="Avg Duration" value={`${session.averageDurationMinutes}m`} />
-          <Stat label="Recording" value={`${session.recordingComplianceRate}%`} />
-          <Stat label="Sign-Off" value={`${session.signOffRate}%`} />
+          <Stat label="Recording" value={`${formatRateLoose(session.recordingComplianceRate)}`} />
+          <Stat label="Sign-Off" value={`${formatRateLoose(session.signOffRate)}`} />
         </div>
       </Section>
 
       <Section title="Schedule Compliance">
         <ScoreBar label="Schedule" value={schedule.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="On Schedule" value={`${schedule.onScheduleRate}%`} />
+          <Stat label="On Schedule" value={`${formatRateLoose(schedule.onScheduleRate)}`} />
           <Stat label="Overdue" value={schedule.overdueCount as number} />
           <Stat label="Max Consecutive Missed" value={schedule.consecutiveMissedMax as number} />
           <Stat label="Avg Days Between" value={schedule.averageDaysBetweenSessions as number} />
@@ -99,19 +100,19 @@ export function SupervisionQualityIntelligenceWidget() {
       <Section title="Action Tracking">
         <ScoreBar label="Actions" value={actionTracking.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completed On Time" value={`${actionTracking.completedOnTimeRate}%`} />
+          <Stat label="Completed On Time" value={`${formatRateLoose(actionTracking.completedOnTimeRate)}`} />
           <Stat label="Overdue" value={actionTracking.overdueCount as number} />
-          <Stat label="Safeguarding Actions" value={`${actionTracking.safeguardingActionCompletionRate}%`} />
+          <Stat label="Safeguarding Actions" value={`${formatRateLoose(actionTracking.safeguardingActionCompletionRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Development">
         <ScoreBar label="Development" value={development.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Improvement Rate" value={`${development.improvementRate}%`} />
-          <Stat label="With Plans" value={`${development.withPlanRate}%`} />
+          <Stat label="Improvement Rate" value={`${formatRateLoose(development.improvementRate)}`} />
+          <Stat label="With Plans" value={`${formatRateLoose(development.withPlanRate)}`} />
           <Stat label="Avg Skill Improvement" value={development.averageSkillImprovement as number} />
-          <Stat label="Wellbeing Concerns" value={`${development.wellbeingConcernRate}%`} />
+          <Stat label="Wellbeing Concerns" value={`${formatRateLoose(development.wellbeingConcernRate)}`} />
         </div>
       </Section>
 

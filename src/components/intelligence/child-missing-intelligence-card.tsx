@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 34. SCCIF: "Safety of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -165,7 +166,7 @@ export function ChildMissingIntelligenceCard({ childId }: { childId: string }) {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className={cn("h-3.5 w-3.5", d.response_quality.return_interview_rate === 100 ? "text-green-500" : "text-amber-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", d.response_quality.return_interview_rate === 100 ? "text-green-600" : "text-amber-600")}>
-                  {d.response_quality.return_interview_rate}%
+                  {formatRate(d.response_quality.return_interview_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">RI Rate</p>
@@ -188,10 +189,10 @@ export function ChildMissingIntelligenceCard({ childId }: { childId: string }) {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Response Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>RI completed: <span className={d.response_quality.return_interview_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.response_quality.return_interview_rate}%</span></p>
+                <p>RI completed: <span className={d.response_quality.return_interview_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.response_quality.return_interview_rate)}</span></p>
                 {typeof d.response_quality.avg_ri_delay_days === "number" && d.response_quality.avg_ri_delay_days > 0 && <p>Avg RI delay: {d.response_quality.avg_ri_delay_days}d</p>}
-                <p>Police rate (high/crit): {d.response_quality.police_reporting_rate}%</p>
-                <p>LA notified: {d.response_quality.la_notification_rate}%</p>
+                <p>Police rate (high/crit): {formatRate(d.response_quality.police_reporting_rate)}</p>
+                <p>LA notified: {formatRate(d.response_quality.la_notification_rate)}</p>
               </div>
             </div>
           </div>

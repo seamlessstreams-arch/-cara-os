@@ -6,6 +6,7 @@
 // Reg 45 (quality of care review), SCCIF Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -143,7 +144,7 @@ export function QualityOfCareReviewCard() {
               "text-lg font-bold tabular-nums",
               o.recommendation_completion_rate >= 80 ? "text-[--cs-success]" : o.recommendation_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.recommendation_completion_rate}%
+              {formatRate(o.recommendation_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>

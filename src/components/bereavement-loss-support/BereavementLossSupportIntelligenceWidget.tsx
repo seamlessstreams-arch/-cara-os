@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function BereavementLossSupportIntelligenceWidget() {
       <Section title="Loss Response" defaultOpen>
         <ScoreBar label="Loss Response Score" value={lossResponse.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Impact Assessed" value={`${lossResponse.impactAssessedRate}%`} />
-          <Stat label="Plan Created" value={`${lossResponse.supportPlanCreatedRate}%`} />
-          <Stat label="Plan Reviewed" value={`${lossResponse.supportPlanReviewedRate}%`} />
-          <Stat label="All With Plans" value={`${lossResponse.allEventsWithPlansRate}%`} />
+          <Stat label="Impact Assessed" value={`${formatRate(lossResponse.impactAssessedRate)}`} />
+          <Stat label="Plan Created" value={`${formatRate(lossResponse.supportPlanCreatedRate)}`} />
+          <Stat label="Plan Reviewed" value={`${formatRate(lossResponse.supportPlanReviewedRate)}`} />
+          <Stat label="All With Plans" value={`${formatRate(lossResponse.allEventsWithPlansRate)}`} />
         </div>
       </Section>
 
@@ -88,9 +89,9 @@ export function BereavementLossSupportIntelligenceWidget() {
         <ScoreBar label="Support Quality Score" value={supportQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Interventions" value={supportQuality.totalInterventions} />
-          <Stat label="Child Engaged" value={`${supportQuality.childEngagedRate}%`} />
-          <Stat label="Positive Outcome" value={`${supportQuality.positiveOutcomeRate}%`} />
-          <Stat label="Follow-Up Done" value={`${supportQuality.followUpCompletedRate}%`} />
+          <Stat label="Child Engaged" value={`${formatRate(supportQuality.childEngagedRate)}`} />
+          <Stat label="Positive Outcome" value={`${formatRate(supportQuality.positiveOutcomeRate)}`} />
+          <Stat label="Follow-Up Done" value={`${formatRate(supportQuality.followUpCompletedRate)}`} />
           <Stat label="Support Type Variety" value={supportQuality.supportTypeVariety} />
         </div>
       </Section>
@@ -112,11 +113,11 @@ export function BereavementLossSupportIntelligenceWidget() {
         <ScoreBar label="Staff Readiness Score" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staffReadiness.totalStaff} />
-          <Stat label="Grief Awareness" value={`${staffReadiness.griefAwarenessRate}%`} />
-          <Stat label="Therapeutic Response" value={`${staffReadiness.therapeuticResponseRate}%`} />
-          <Stat label="Memory Work" value={`${staffReadiness.memoryWorkSkillsRate}%`} />
-          <Stat label="Cultural Sensitivity" value={`${staffReadiness.culturalSensitivityRate}%`} />
-          <Stat label="Referral Pathways" value={`${staffReadiness.referralPathwaysRate}%`} />
+          <Stat label="Grief Awareness" value={`${formatRate(staffReadiness.griefAwarenessRate)}`} />
+          <Stat label="Therapeutic Response" value={`${formatRate(staffReadiness.therapeuticResponseRate)}`} />
+          <Stat label="Memory Work" value={`${formatRate(staffReadiness.memoryWorkSkillsRate)}`} />
+          <Stat label="Cultural Sensitivity" value={`${formatRate(staffReadiness.culturalSensitivityRate)}`} />
+          <Stat label="Referral Pathways" value={`${formatRate(staffReadiness.referralPathwaysRate)}`} />
         </div>
       </Section>
 

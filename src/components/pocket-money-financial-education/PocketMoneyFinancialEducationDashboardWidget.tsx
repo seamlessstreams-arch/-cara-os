@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 // -- Local Interfaces (widget-only, no engine import in client) ---------------
@@ -208,10 +209,10 @@ export default function PocketMoneyFinancialEducationDashboardWidget() {
       {/* Key Metrics */}
       <Section title="Key Metrics">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Stat label="Child Involved" value={`${transactionQuality.childInvolvedRate}%`} score={transactionQuality.childInvolvedRate} />
+          <Stat label="Child Involved" value={`${formatRate(transactionQuality.childInvolvedRate)}`} score={transactionQuality.childInvolvedRate} />
           <Stat label="Receipts Kept" value={`${transactionQuality.receiptKeptRate}%`} score={transactionQuality.receiptKeptRate} />
-          <Stat label="Documented" value={`${transactionQuality.documentedRate}%`} score={transactionQuality.documentedRate} />
-          <Stat label="Supervised" value={`${financialEducation.supervisedRate}%`} score={financialEducation.supervisedRate} />
+          <Stat label="Documented" value={`${formatRate(transactionQuality.documentedRate)}`} score={transactionQuality.documentedRate} />
+          <Stat label="Supervised" value={`${formatRate(financialEducation.supervisedRate)}`} score={financialEducation.supervisedRate} />
         </div>
       </Section>
 
@@ -250,7 +251,7 @@ export default function PocketMoneyFinancialEducationDashboardWidget() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                    {child.understandingRate}% understood
+                    {formatRate(child.understandingRate)} understood
                   </span>
                 </div>
               </div>

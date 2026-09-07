@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -83,12 +84,12 @@ export function ChildrensRightsIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Children" value={guide.totalChildren} />
           <Stat label="Guides Provided" value={guide.guidesProvided} />
-          <Stat label="Age Appropriate" value={`${guide.ageAppropriateRate}%`} />
-          <Stat label="Accessible Format" value={`${guide.accessibleFormatRate}%`} />
-          <Stat label="Covers Complaints" value={`${guide.coversComplaintsRate}%`} />
-          <Stat label="Covers Advocacy" value={`${guide.coversAdvocacyRate}%`} />
-          <Stat label="Covers Rights" value={`${guide.coversRightsRate}%`} />
-          <Stat label="Child Understanding" value={`${guide.childUnderstandingRate}%`} />
+          <Stat label="Age Appropriate" value={`${formatRate(guide.ageAppropriateRate)}`} />
+          <Stat label="Accessible Format" value={`${formatRateLoose(guide.accessibleFormatRate)}`} />
+          <Stat label="Covers Complaints" value={`${formatRateLoose(guide.coversComplaintsRate)}`} />
+          <Stat label="Covers Advocacy" value={`${formatRateLoose(guide.coversAdvocacyRate)}`} />
+          <Stat label="Covers Rights" value={`${formatRateLoose(guide.coversRightsRate)}`} />
+          <Stat label="Child Understanding" value={`${formatRate(guide.childUnderstandingRate)}`} />
         </div>
       </Section>
 
@@ -97,9 +98,9 @@ export function ChildrensRightsIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={advocacy.totalRecords} />
           <Stat label="Active Advocacy" value={advocacy.activeAdvocacy} />
-          <Stat label="Offered Rate" value={`${advocacy.advocacyOfferedRate}%`} />
-          <Stat label="Engaged Rate" value={`${advocacy.advocacyEngagedRate}%`} />
-          <Stat label="Satisfaction" value={`${advocacy.satisfactionRate}%`} />
+          <Stat label="Offered Rate" value={`${formatRate(advocacy.advocacyOfferedRate)}`} />
+          <Stat label="Engaged Rate" value={`${formatRateLoose(advocacy.advocacyEngagedRate)}`} />
+          <Stat label="Satisfaction" value={`${formatRate(advocacy.satisfactionRate)}`} />
         </div>
       </Section>
 
@@ -117,8 +118,8 @@ export function ChildrensRightsIntelligenceWidget() {
         <ScoreBar label="Participation Score" value={participation.overallScore} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={participation.totalRecords} />
-          <Stat label="Views Recorded" value={`${participation.childViewRecordedRate}%`} />
-          <Stat label="Views Influenced Outcome" value={`${participation.viewInfluencedOutcomeRate}%`} />
+          <Stat label="Views Recorded" value={`${formatRate(participation.childViewRecordedRate)}`} />
+          <Stat label="Views Influenced Outcome" value={`${formatRateLoose(participation.viewInfluencedOutcomeRate)}`} />
           <Stat label="Avg Participation Level" value={participation.averageParticipationLevel} />
         </div>
       </Section>
@@ -127,10 +128,10 @@ export function ChildrensRightsIntelligenceWidget() {
         <ScoreBar label="Complaint Access Score" value={complaint.overallScore} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={complaint.totalAssessments} />
-          <Stat label="Knows How" value={`${complaint.knowsHowToComplainRate}%`} />
-          <Stat label="Feels Able" value={`${complaint.feelsAbleToComplainRate}%`} />
-          <Stat label="Forms Accessible" value={`${complaint.formsAccessibleRate}%`} />
-          <Stat label="Advocacy Offered" value={`${complaint.advocacyOfferedRate}%`} />
+          <Stat label="Knows How" value={`${formatRateLoose(complaint.knowsHowToComplainRate)}`} />
+          <Stat label="Feels Able" value={`${formatRateLoose(complaint.feelsAbleToComplainRate)}`} />
+          <Stat label="Forms Accessible" value={`${formatRateLoose(complaint.formsAccessibleRate)}`} />
+          <Stat label="Advocacy Offered" value={`${formatRate(complaint.advocacyOfferedRate)}`} />
         </div>
       </Section>
 
@@ -138,10 +139,10 @@ export function ChildrensRightsIntelligenceWidget() {
         <ScoreBar label="Feedback Score" value={feedback.overallScore} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Feedback" value={feedback.totalFeedback} />
-          <Stat label="Acknowledged" value={`${feedback.acknowledgedRate}%`} />
-          <Stat label="Action Taken" value={`${feedback.actionTakenRate}%`} />
-          <Stat label="Outcome Shared" value={`${feedback.outcomeSharedRate}%`} />
-          <Stat label="Satisfaction" value={`${feedback.satisfactionRate}%`} />
+          <Stat label="Acknowledged" value={`${formatRate(feedback.acknowledgedRate)}`} />
+          <Stat label="Action Taken" value={`${formatRate(feedback.actionTakenRate)}`} />
+          <Stat label="Outcome Shared" value={`${formatRateLoose(feedback.outcomeSharedRate)}`} />
+          <Stat label="Satisfaction" value={`${formatRate(feedback.satisfactionRate)}`} />
         </div>
       </Section>
 

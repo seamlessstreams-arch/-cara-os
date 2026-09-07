@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -71,25 +72,25 @@ export function StaffWellbeingIntelligenceWidget() {
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Records" value={quality.totalRecords as number} />
         <Stat label="Staff" value={readiness.totalStaff as number} />
-        <Stat label="Supervision Rate" value={`${quality.supervisionReceivedRate}%`} />
+        <Stat label="Supervision Rate" value={`${formatRateLoose(quality.supervisionReceivedRate)}`} />
       </div>
 
       <Section title="Wellbeing Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Supervision Received" value={`${quality.supervisionReceivedRate}%`} />
-          <Stat label="Wellbeing Checked" value={`${quality.wellbeingCheckedRate}%`} />
-          <Stat label="Debrief Offered" value={`${quality.debriefOfferedRate}%`} />
-          <Stat label="Support Accessed" value={`${quality.supportAccessedRate}%`} />
+          <Stat label="Supervision Received" value={`${formatRateLoose(quality.supervisionReceivedRate)}`} />
+          <Stat label="Wellbeing Checked" value={`${formatRateLoose(quality.wellbeingCheckedRate)}`} />
+          <Stat label="Debrief Offered" value={`${formatRateLoose(quality.debriefOfferedRate)}`} />
+          <Stat label="Support Accessed" value={`${formatRateLoose(quality.supportAccessedRate)}`} />
         </div>
       </Section>
 
       <Section title="Wellbeing Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Supervision Received" value={`${compliance.supervisionReceivedRate}%`} />
+          <Stat label="Documentation" value={`${formatRateLoose(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRateLoose(compliance.timelyRecordingRate)}`} />
+          <Stat label="Supervision Received" value={`${formatRateLoose(compliance.supervisionReceivedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function StaffWellbeingIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={readiness.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Supervision Delivery" value={`${readiness.supervisionDeliveryRate}%`} />
-          <Stat label="Wellbeing Assessment" value={`${readiness.wellbeingAssessmentRate}%`} />
-          <Stat label="Debriefing Skills" value={`${readiness.debriefingSkillsRate}%`} />
-          <Stat label="Stress Management" value={`${readiness.stressManagementRate}%`} />
-          <Stat label="Team Building" value={`${readiness.teamBuildingRate}%`} />
-          <Stat label="Conflict Mediation" value={`${readiness.conflictMediationRate}%`} />
+          <Stat label="Supervision Delivery" value={`${formatRateLoose(readiness.supervisionDeliveryRate)}`} />
+          <Stat label="Wellbeing Assessment" value={`${formatRateLoose(readiness.wellbeingAssessmentRate)}`} />
+          <Stat label="Debriefing Skills" value={`${formatRateLoose(readiness.debriefingSkillsRate)}`} />
+          <Stat label="Stress Management" value={`${formatRateLoose(readiness.stressManagementRate)}`} />
+          <Stat label="Team Building" value={`${formatRateLoose(readiness.teamBuildingRate)}`} />
+          <Stat label="Conflict Mediation" value={`${formatRateLoose(readiness.conflictMediationRate)}`} />
         </div>
       </Section>
 

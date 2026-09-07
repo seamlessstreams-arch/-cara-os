@@ -136,7 +136,7 @@ export default function TransitionLeavingCareReadinessDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Assessments: {cp.totalAssessments}</span><span>Progress: {cp.progressRate}%</span><span>Pathway Plan: {cp.pathwayPlanRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Assessments: {cp.totalAssessments}</span><span>Progress: {formatRate(cp.progressRate)}</span><span>Pathway Plan: {formatRate(cp.pathwayPlanRate)}</span></div>
               </div>
             ))}
           </div>

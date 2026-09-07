@@ -11,6 +11,7 @@
 // No LLM calls. Fully deterministic.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -177,7 +178,7 @@ function ProfileCard({ profile }: { profile: StaffRecordingProfile }) {
           {profile.acceptanceRate !== null && (
             <div>
               <p className="text-xs text-slate-500">Rate</p>
-              <p className="text-sm font-semibold text-slate-800">{profile.acceptanceRate}%</p>
+              <p className="text-sm font-semibold text-slate-800">{formatRate(profile.acceptanceRate)}</p>
             </div>
           )}
         </div>
@@ -334,7 +335,7 @@ export default function StaffRecordingQualityPathwayPage() {
                 {result.summary.avgAcceptanceRate !== null && (
                   <div>
                     <p className="text-xs text-slate-500">Team acceptance rate</p>
-                    <p className="text-sm font-semibold text-slate-800">{result.summary.avgAcceptanceRate}%</p>
+                    <p className="text-sm font-semibold text-slate-800">{formatRate(result.summary.avgAcceptanceRate)}</p>
                   </div>
                 )}
                 {result.summary.topTeamIssueType && (

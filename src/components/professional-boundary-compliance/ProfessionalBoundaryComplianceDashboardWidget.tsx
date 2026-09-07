@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -205,9 +206,9 @@ function StaffProfileRow({ profile }: { profile: StaffProfileData }) {
         <span className="font-medium text-sm truncate">{profile.staffName}</span>
         <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
           <span>Audits: {profile.totalAudits}</span>
-          <span>Compliance: {profile.complianceRate}%</span>
-          <span>Documented: {profile.documentedRate}%</span>
-          <span>Verified: {profile.supervisorVerifiedRate}%</span>
+          <span>Compliance: {formatRate(profile.complianceRate)}</span>
+          <span>Documented: {formatRate(profile.documentedRate)}</span>
+          <span>Verified: {formatRate(profile.supervisorVerifiedRate)}</span>
         </div>
       </div>
       <span className={`text-xs font-medium px-2 py-0.5 rounded shrink-0 ${scoreColor}`}>

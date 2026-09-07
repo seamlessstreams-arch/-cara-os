@@ -7,6 +7,7 @@
 // CHR 2015 Reg 8, 10, 25. SCCIF: Education and learning.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -128,7 +129,7 @@ export function ChildEducationIntelligenceCard({ childId }: { childId: string })
         {/* Attendance & Exclusion KPIs */}
         <div className="grid grid-cols-4 gap-2">
           <div className={cn("text-center rounded-lg p-2", att.band === "insufficient_data" ? "bg-slate-50" : (att.overall_pct ?? 0) >= 96 ? "bg-green-50" : (att.overall_pct ?? 0) >= 90 ? "bg-blue-50" : (att.overall_pct ?? 0) >= 85 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", bandStyle)}>{att.band === "insufficient_data" ? "N/A" : `${att.overall_pct}%`}</p>
+            <p className={cn("text-lg font-bold tabular-nums", bandStyle)}>{att.band === "insufficient_data" ? "N/A" : `${formatRate(att.overall_pct)}`}</p>
             <p className="text-[10px] text-muted-foreground">Attendance</p>
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
@@ -167,7 +168,7 @@ export function ChildEducationIntelligenceCard({ childId }: { childId: string })
               </p>
               {pep.targets_set > 0 && (
                 <p className="text-[10px] text-muted-foreground">
-                  Targets: {pep.targets_achieved}/{pep.targets_set} achieved ({pep.target_achievement_rate}%)
+                  Targets: {pep.targets_achieved}/{pep.targets_set} achieved ({formatRate(pep.target_achievement_rate)})
                 </p>
               )}
             </div>
@@ -205,7 +206,7 @@ export function ChildEducationIntelligenceCard({ childId }: { childId: string })
                 <div className="min-w-0">
                   <p className="font-medium text-slate-700">Homework (30d)</p>
                   <p className="text-[10px] text-muted-foreground">
-                    {d.homework.total_sessions_30d} sessions · {d.homework.completion_rate}% complete · {d.homework.engagement_rate}% engaged
+                    {d.homework.total_sessions_30d} sessions · {formatRate(d.homework.completion_rate)} complete · {formatRate(d.homework.engagement_rate)} engaged
                   </p>
                 </div>
               </div>

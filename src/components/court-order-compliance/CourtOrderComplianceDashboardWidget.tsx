@@ -191,7 +191,7 @@ function ChildProfileRow({ profile }: { profile: ChildProfile }) {
         </div>
       </div>
       <span className={`text-xs font-medium px-2 py-0.5 rounded shrink-0 ${complianceColor}`}>
-        {profile.complianceRate}%
+        {formatRate(profile.complianceRate)}
       </span>
     </div>
   );

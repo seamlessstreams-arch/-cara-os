@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,11 +78,11 @@ export function PocketMoneyFinancialEducationIntelligenceWidget() {
       <Section title="Transaction Quality" defaultOpen>
         <ScoreBar label="Transaction Quality" value={txnQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child Involved" value={`${txnQuality.childInvolvedRate}%`} />
-          <Stat label="Receipt Kept" value={`${txnQuality.receiptKeptRate}%`} />
-          <Stat label="Documented" value={`${txnQuality.documentedRate}%`} />
-          <Stat label="Child Understood" value={`${txnQuality.childUnderstoodRate}%`} />
-          <Stat label="Savings Encouraged" value={`${txnQuality.savingsEncouragedRate}%`} />
+          <Stat label="Child Involved" value={`${formatRate(txnQuality.childInvolvedRate)}`} />
+          <Stat label="Receipt Kept" value={`${formatRateLoose(txnQuality.receiptKeptRate)}`} />
+          <Stat label="Documented" value={`${formatRate(txnQuality.documentedRate)}`} />
+          <Stat label="Child Understood" value={`${formatRateLoose(txnQuality.childUnderstoodRate)}`} />
+          <Stat label="Savings Encouraged" value={`${formatRateLoose(txnQuality.savingsEncouragedRate)}`} />
         </div>
       </Section>
 
@@ -89,8 +90,8 @@ export function PocketMoneyFinancialEducationIntelligenceWidget() {
         <ScoreBar label="Financial Education" value={finEd.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Type Ratio" value={`${finEd.typeRatio}%`} />
-          <Stat label="Supervised" value={`${finEd.supervisedRate}%`} />
-          <Stat label="Savings Encouraged" value={`${finEd.savingsEncouragedRate}%`} />
+          <Stat label="Supervised" value={`${formatRate(finEd.supervisedRate)}`} />
+          <Stat label="Savings Encouraged" value={`${formatRateLoose(finEd.savingsEncouragedRate)}`} />
         </div>
       </Section>
 
@@ -109,12 +110,12 @@ export function PocketMoneyFinancialEducationIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Financial Literacy" value={`${staffReadiness.financialLiteracyRate}%`} />
-          <Stat label="Money Mgmt" value={`${staffReadiness.moneyManagementRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingFinancesRate}%`} />
-          <Stat label="Budgeting" value={`${staffReadiness.budgetingSkillsRate}%`} />
-          <Stat label="Banking" value={`${staffReadiness.bankingAwarenessRate}%`} />
-          <Stat label="Fraud Prevention" value={`${staffReadiness.fraudPreventionRate}%`} />
+          <Stat label="Financial Literacy" value={`${formatRate(staffReadiness.financialLiteracyRate)}`} />
+          <Stat label="Money Mgmt" value={`${formatRateLoose(staffReadiness.moneyManagementRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRateLoose(staffReadiness.safeguardingFinancesRate)}`} />
+          <Stat label="Budgeting" value={`${formatRateLoose(staffReadiness.budgetingSkillsRate)}`} />
+          <Stat label="Banking" value={`${formatRateLoose(staffReadiness.bankingAwarenessRate)}`} />
+          <Stat label="Fraud Prevention" value={`${formatRateLoose(staffReadiness.fraudPreventionRate)}`} />
         </div>
       </Section>
 

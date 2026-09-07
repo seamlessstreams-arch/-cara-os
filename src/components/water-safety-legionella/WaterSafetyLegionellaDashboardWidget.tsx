@@ -347,7 +347,7 @@ export function WaterSafetyLegionellaDashboardWidget() {
                   {loc.location}
                 </div>
                 <div className="text-gray-500 mt-0.5">
-                  {loc.checkCount} checks | Pass: {loc.passRate}% | Score:{" "}
+                  {loc.checkCount} checks | Pass: {formatRate(loc.passRate)} | Score:{" "}
                   {loc.score}/10
                 </div>
               </div>
@@ -541,8 +541,8 @@ export function WaterSafetyLegionellaDashboardWidget() {
                     {loc.location}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Checks: {loc.checkCount} | Pass: {loc.passRate}% | Safe
-                    range: {loc.withinSafeRangeRate}% | Avg temp:{" "}
+                    Checks: {loc.checkCount} | Pass: {formatRate(loc.passRate)} | Safe
+                    range: {formatRate(loc.withinSafeRangeRate)} | Avg temp:{" "}
                     {loc.averageTemperature}C | Risk:{" "}
                     {loc.latestRiskLevel ?? "N/A"} | Score: {loc.score}/10
                   </div>

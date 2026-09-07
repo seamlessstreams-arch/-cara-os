@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,11 +78,11 @@ export function AntiBullyingEffectivenessIntelligenceWidget() {
       <Section title="Incident Management" defaultOpen>
         <ScoreBar label="Incident Management Score" value={incident.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Timely Response" value={`${incident.timelyResponseRate}%`} />
-          <Stat label="Fully Resolved" value={`${incident.fullyResolvedRate}%`} />
-          <Stat label="Follow-Up Done" value={`${incident.followUpCompletedRate}%`} />
-          <Stat label="Child View Sought" value={`${incident.childViewSoughtRate}%`} />
-          <Stat label="Impact Assessed" value={`${incident.impactAssessedRate}%`} />
+          <Stat label="Timely Response" value={`${formatRateLoose(incident.timelyResponseRate)}`} />
+          <Stat label="Fully Resolved" value={`${formatRateLoose(incident.fullyResolvedRate)}`} />
+          <Stat label="Follow-Up Done" value={`${formatRateLoose(incident.followUpCompletedRate)}`} />
+          <Stat label="Child View Sought" value={`${formatRateLoose(incident.childViewSoughtRate)}`} />
+          <Stat label="Impact Assessed" value={`${formatRateLoose(incident.impactAssessedRate)}`} />
           <Stat label="Avg Response (hrs)" value={incident.averageResponseHours as number} />
         </div>
       </Section>
@@ -90,9 +91,9 @@ export function AntiBullyingEffectivenessIntelligenceWidget() {
         <ScoreBar label="Prevention Culture Score" value={prevention.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Surveys" value={prevention.totalSurveys as number} />
-          <Stat label="Feels Safe" value={`${prevention.feelsSafeRate}%`} />
-          <Stat label="Bullied Recently" value={`${prevention.bulliedRecentlyRate}%`} />
-          <Stat label="High Confidence" value={`${prevention.highConfidenceRate}%`} />
+          <Stat label="Feels Safe" value={`${formatRateLoose(prevention.feelsSafeRate)}`} />
+          <Stat label="Bullied Recently" value={`${formatRateLoose(prevention.bulliedRecentlyRate)}`} />
+          <Stat label="High Confidence" value={`${formatRateLoose(prevention.highConfidenceRate)}`} />
           <Stat label="Children Consulted" value={(prevention.childrenConsulted as boolean) ? "✓" : "✗"} />
         </div>
       </Section>
@@ -101,9 +102,9 @@ export function AntiBullyingEffectivenessIntelligenceWidget() {
         <ScoreBar label="Intervention Quality Score" value={intervention.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Safety Plan Rate (High/Critical)" value={`${intervention.safetyPlanRateHighCritical}%`} />
-          <Stat label="Restorative Practice" value={`${intervention.restorativePracticeRate}%`} />
+          <Stat label="Restorative Practice" value={`${formatRateLoose(intervention.restorativePracticeRate)}`} />
           <Stat label="Diverse Interventions" value={intervention.diverseInterventions as number} />
-          <Stat label="Resolution Rate" value={`${intervention.resolutionRate}%`} />
+          <Stat label="Resolution Rate" value={`${formatRateLoose(intervention.resolutionRate)}`} />
           <Stat label="Critical Incidents" value={intervention.criticalIncidents as number} />
         </div>
       </Section>
@@ -112,10 +113,10 @@ export function AntiBullyingEffectivenessIntelligenceWidget() {
         <ScoreBar label="Staff Readiness Score" value={staffReadiness.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staffReadiness.totalStaff as number} />
-          <Stat label="Recognition Skills" value={`${staffReadiness.recognitionSkillsRate}%`} />
-          <Stat label="Intervention Skills" value={`${staffReadiness.interventionSkillsRate}%`} />
-          <Stat label="Restorative Practice" value={`${staffReadiness.restorativePracticeRate}%`} />
-          <Stat label="Overall Trained" value={`${staffReadiness.overallTrainedRate}%`} />
+          <Stat label="Recognition Skills" value={`${formatRateLoose(staffReadiness.recognitionSkillsRate)}`} />
+          <Stat label="Intervention Skills" value={`${formatRateLoose(staffReadiness.interventionSkillsRate)}`} />
+          <Stat label="Restorative Practice" value={`${formatRateLoose(staffReadiness.restorativePracticeRate)}`} />
+          <Stat label="Overall Trained" value={`${formatRateLoose(staffReadiness.overallTrainedRate)}`} />
         </div>
       </Section>
 

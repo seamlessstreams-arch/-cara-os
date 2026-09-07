@@ -240,7 +240,7 @@ export default function PetTherapyAnimalInteractionDashboardWidget() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                   <span>Sessions: {cp.totalSessions}</span>
-                  <span>Engagement: {cp.engagementRate}%</span>
+                  <span>Engagement: {formatRate(cp.engagementRate)}</span>
                   <span>Benefit: {cp.therapeuticBenefitPositive ? "Yes" : "No"}</span>
                 </div>
               </div>

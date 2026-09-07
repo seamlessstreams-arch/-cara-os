@@ -255,8 +255,8 @@ export default function LifeStoryWorkDashboardWidget() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                   <span>Sessions: {cp.totalSessions}</span>
                   <span>Memory Items: {cp.totalMemoryItems}</span>
-                  <span>Engaged: {cp.engagementRate}%</span>
-                  <span>Therapeutic: {cp.therapeuticRate}%</span>
+                  <span>Engaged: {formatRate(cp.engagementRate)}</span>
+                  <span>Therapeutic: {formatRate(cp.therapeuticRate)}</span>
                 </div>
               </div>
             ))}

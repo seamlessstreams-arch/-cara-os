@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -52,18 +53,18 @@ export function EnvironmentIntelligenceWidget() {
         <ScoreBar label="Quality" value={quality.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={quality.totalRecords as number} />
-          <Stat label="Adequate" value={`${quality.adequateRate}%`} />
-          <Stat label="Child Involved" value={`${quality.childInvolvedRate}%`} />
-          <Stat label="Documented" value={`${quality.documentedRate}%`} />
-          <Stat label="Child Feedback" value={`${quality.childFeedbackSoughtRate}%`} />
+          <Stat label="Adequate" value={`${formatRateLoose(quality.adequateRate)}`} />
+          <Stat label="Child Involved" value={`${formatRateLoose(quality.childInvolvedRate)}`} />
+          <Stat label="Documented" value={`${formatRateLoose(quality.documentedRate)}`} />
+          <Stat label="Child Feedback" value={`${formatRateLoose(quality.childFeedbackSoughtRate)}`} />
         </div>
       </Section>
       <Section title="Environment Compliance">
         <ScoreBar label="Compliance" value={compliance.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={compliance.totalRecords as number} />
-          <Stat label="Action Taken" value={`${compliance.actionTakenRate}%`} />
-          <Stat label="Timely Completion" value={`${compliance.timelyCompletionRate}%`} />
+          <Stat label="Action Taken" value={`${formatRateLoose(compliance.actionTakenRate)}`} />
+          <Stat label="Timely Completion" value={`${formatRateLoose(compliance.timelyCompletionRate)}`} />
           <Stat label="Category Diversity" value={compliance.uniqueCategories as number} />
         </div>
       </Section>
@@ -79,11 +80,11 @@ export function EnvironmentIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff as number} />
-          <Stat label="Environmental Awareness" value={`${staff.environmentalAwarenessRate}%`} />
-          <Stat label="H&S Knowledge" value={`${staff.healthSafetyKnowledgeRate}%`} />
-          <Stat label="Maintenance Skills" value={`${staff.maintenanceSkillsRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentRate}%`} />
-          <Stat label="Infection Control" value={`${staff.infectionControlRate}%`} />
+          <Stat label="Environmental Awareness" value={`${formatRateLoose(staff.environmentalAwarenessRate)}`} />
+          <Stat label="H&S Knowledge" value={`${formatRateLoose(staff.healthSafetyKnowledgeRate)}`} />
+          <Stat label="Maintenance Skills" value={`${formatRateLoose(staff.maintenanceSkillsRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRateLoose(staff.riskAssessmentRate)}`} />
+          <Stat label="Infection Control" value={`${formatRateLoose(staff.infectionControlRate)}`} />
         </div>
       </Section>
       {profiles.length > 0 && (<Section title={`Child Profiles (${profiles.length})`}>{profiles.map((p) => (<div key={p.childId as string} className="mb-2 p-2 bg-gray-50 rounded"><div className="flex justify-between text-sm font-medium"><span>{p.childName as string}</span><span>{p.environmentScore as number}/10</span></div><p className="text-xs text-gray-500 mt-1">{p.totalRecords as number} records · Adequate {p.adequateRate as number}% · Child Involved {p.childInvolvedRate as number}% · Categories {p.uniqueCategories as number}</p></div>))}</Section>)}

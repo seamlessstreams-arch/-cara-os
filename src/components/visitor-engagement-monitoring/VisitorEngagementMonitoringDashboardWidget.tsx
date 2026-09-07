@@ -318,7 +318,7 @@ export default function VisitorEngagementMonitoringDashboardWidget() {
                     <span className="font-medium text-gray-900">{entry.count} visits</span>
                   </div>
                   <div className="text-xs text-gray-500">
-                    Positive: {entry.positiveRate}% | Safeguarding: {entry.safeguardingRate}%
+                    Positive: {formatRate(entry.positiveRate)} | Safeguarding: {formatRate(entry.safeguardingRate)}
                   </div>
                 </div>
               ))}

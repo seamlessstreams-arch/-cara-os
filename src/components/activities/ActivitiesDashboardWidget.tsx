@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -312,7 +313,7 @@ export default function ActivitiesDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalActivities} activities, {child.uniqueCategories} categories, {child.childChoiceRate}% choice, {child.enjoymentRate}% enjoyment
+                    {child.totalActivities} activities, {child.uniqueCategories} categories, {formatRate(child.childChoiceRate)} choice, {formatRate(child.enjoymentRate)} enjoyment
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.activityScore, 10)}`}>

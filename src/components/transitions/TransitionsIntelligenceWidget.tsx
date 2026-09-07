@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -42,18 +43,18 @@ export function TransitionsIntelligenceWidget() {
       <Section title="Transition Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Plan Rate" value={`${quality.transitionPlanRate}%`} />
-          <Stat label="Child Prepared" value={`${quality.childPreparedRate}%`} />
-          <Stat label="Receiving Briefed" value={`${quality.receivingBriefedRate}%`} />
-          <Stat label="Handover Rate" value={`${quality.handoverRate}%`} />
+          <Stat label="Plan Rate" value={`${formatRateLoose(quality.transitionPlanRate)}`} />
+          <Stat label="Child Prepared" value={`${formatRateLoose(quality.childPreparedRate)}`} />
+          <Stat label="Receiving Briefed" value={`${formatRateLoose(quality.receivingBriefedRate)}`} />
+          <Stat label="Handover Rate" value={`${formatRateLoose(quality.handoverRate)}`} />
         </div>
       </Section>
       <Section title="Transition Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely" value={`${compliance.timelyRate}%`} />
-          <Stat label="Handover" value={`${compliance.handoverRate}%`} />
+          <Stat label="Documentation" value={`${formatRateLoose(compliance.documentationRate)}`} />
+          <Stat label="Timely" value={`${formatRateLoose(compliance.timelyRate)}`} />
+          <Stat label="Handover" value={`${formatRateLoose(compliance.handoverRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -72,12 +73,12 @@ export function TransitionsIntelligenceWidget() {
       <Section title="Staff Transition Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Planning Training" value={`${staff.transitionPlanningRate}%`} />
-          <Stat label="Child Preparation" value={`${staff.childPreparationRate}%`} />
-          <Stat label="Handover Skills" value={`${staff.handoverSkillsRate}%`} />
-          <Stat label="Family Engagement" value={`${staff.familyEngagementRate}%`} />
-          <Stat label="Multi-Agency" value={`${staff.multiAgencyWorkingRate}%`} />
-          <Stat label="Emotional Support" value={`${staff.emotionalSupportRate}%`} />
+          <Stat label="Planning Training" value={`${formatRateLoose(staff.transitionPlanningRate)}`} />
+          <Stat label="Child Preparation" value={`${formatRateLoose(staff.childPreparationRate)}`} />
+          <Stat label="Handover Skills" value={`${formatRateLoose(staff.handoverSkillsRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRateLoose(staff.familyEngagementRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRateLoose(staff.multiAgencyWorkingRate)}`} />
+          <Stat label="Emotional Support" value={`${formatRateLoose(staff.emotionalSupportRate)}`} />
         </div>
       </Section>
       {childProfiles.length > 0 && <Section title={`Child Profiles (${childProfiles.length})`}>

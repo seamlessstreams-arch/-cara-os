@@ -7,6 +7,7 @@
 // Working Together to Safeguard Children 2018.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,7 +115,7 @@ export function MultiAgencyCard() {
               "text-lg font-bold tabular-nums",
               (o.child_participation_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.child_participation_rate}%
+              {formatRate(o.child_participation_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Participation</p>
           </div>
@@ -178,7 +179,7 @@ export function MultiAgencyCard() {
                     "text-[10px]",
                     (mt.actions_completion_rate ?? 0) >= 90 ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]",
                   )}>
-                    {mt.actions_completion_rate}% done
+                    {formatRate(mt.actions_completion_rate)} done
                   </Badge>
                 </div>
               </div>
@@ -196,19 +197,19 @@ export function MultiAgencyCard() {
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
               <p className={cn("font-bold tabular-nums", o.home_report_rate === null ? "text-muted-foreground" : o.home_report_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.home_report_rate === null ? "—" : `${o.home_report_rate}%`}
+                {o.home_report_rate === null ? "—" : `${formatRate(o.home_report_rate)}`}
               </p>
               <p className="text-[10px] text-muted-foreground">Reports</p>
             </div>
             <div>
               <p className={cn("font-bold tabular-nums", o.child_participation_rate === null ? "text-muted-foreground" : o.child_participation_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.child_participation_rate === null ? "—" : `${o.child_participation_rate}%`}
+                {o.child_participation_rate === null ? "—" : `${formatRate(o.child_participation_rate)}`}
               </p>
               <p className="text-[10px] text-muted-foreground">Participation</p>
             </div>
             <div>
               <p className={cn("font-bold tabular-nums", o.follow_up_completion_rate === null ? "text-muted-foreground" : o.follow_up_completion_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.follow_up_completion_rate === null ? "—" : `${o.follow_up_completion_rate}%`}
+                {o.follow_up_completion_rate === null ? "—" : `${formatRate(o.follow_up_completion_rate)}`}
               </p>
               <p className="text-[10px] text-muted-foreground">Follow-ups</p>
             </div>

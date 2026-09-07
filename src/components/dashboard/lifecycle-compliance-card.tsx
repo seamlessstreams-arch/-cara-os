@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useEffect, useState } from "react";
 import {
   BarChart3,
@@ -89,7 +90,7 @@ export function LifecycleComplianceCard({ homeId }: { homeId?: string }) {
       {/* Big Compliance Rate */}
       <div className="p-6 text-center border-b">
         <div className={cn("text-5xl font-bold", complianceColor)}>
-          {compliance.complianceRate}%
+          {formatRate(compliance.complianceRate)}
         </div>
         <p className="text-sm text-gray-500 mt-1">
           of scheduled items completed on time

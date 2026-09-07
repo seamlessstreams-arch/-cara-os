@@ -7,6 +7,7 @@
 // Reg 40 (notifications to Ofsted), SCCIF Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -185,11 +186,11 @@ export function RegulatoryReportingCard() {
             <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
               <div
                 className="h-full rounded-full bg-brand transition-all"
-                style={{ width: `${intel.recommendation_tracker.completion_rate}%` }}
+                style={{ width: `${formatRate(intel.recommendation_tracker.completion_rate)}` }}
               />
             </div>
             <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
-              {intel.recommendation_tracker.completion_rate}%
+              {formatRate(intel.recommendation_tracker.completion_rate)}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
@@ -203,7 +204,7 @@ export function RegulatoryReportingCard() {
             </div>
             <div>
               <p className={cn("font-bold tabular-nums", (o.notifications_on_time_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.notifications_on_time_rate}%
+                {formatRate(o.notifications_on_time_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Notifications</p>
             </div>

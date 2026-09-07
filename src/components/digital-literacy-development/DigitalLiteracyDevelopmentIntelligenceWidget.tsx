@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,19 +79,19 @@ export function DigitalLiteracyDevelopmentIntelligenceWidget() {
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Sessions" value={quality.totalSessions} />
-          <Stat label="Competency" value={`${quality.competencyRate}%`} />
-          <Stat label="Online Safety" value={`${quality.onlineSafetyRate}%`} />
-          <Stat label="Age Appropriate" value={`${quality.ageAppropriateRate}%`} />
-          <Stat label="Supervised" value={`${quality.supervisedAccessRate}%`} />
+          <Stat label="Competency" value={`${formatRate(quality.competencyRate)}`} />
+          <Stat label="Online Safety" value={`${formatRate(quality.onlineSafetyRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(quality.ageAppropriateRate)}`} />
+          <Stat label="Supervised" value={`${formatRate(quality.supervisedAccessRate)}`} />
         </div>
       </Section>
 
       <Section title="Digital Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Progress Recorded" value={`${compliance.progressRecordedRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Progress Recorded" value={`${formatRate(compliance.progressRecordedRate)}`} />
           <Stat label="Type Diversity" value={`${compliance.sessionTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -118,11 +119,11 @@ export function DigitalLiteracyDevelopmentIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Online Safety" value={`${staff.onlineSafetyRate}%`} />
-          <Stat label="Digital Literacy" value={`${staff.digitalLiteracyRate}%`} />
-          <Stat label="Social Media" value={`${staff.socialMediaAwarenessRate}%`} />
-          <Stat label="Cyberbullying" value={`${staff.cyberbullyingResponseRate}%`} />
-          <Stat label="Privacy" value={`${staff.privacyProtectionRate}%`} />
+          <Stat label="Online Safety" value={`${formatRate(staff.onlineSafetyRate)}`} />
+          <Stat label="Digital Literacy" value={`${formatRate(staff.digitalLiteracyRate)}`} />
+          <Stat label="Social Media" value={`${formatRate(staff.socialMediaAwarenessRate)}`} />
+          <Stat label="Cyberbullying" value={`${formatRate(staff.cyberbullyingResponseRate)}`} />
+          <Stat label="Privacy" value={`${formatRate(staff.privacyProtectionRate)}`} />
         </div>
       </Section>
 

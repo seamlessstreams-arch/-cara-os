@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function CreativeArtsExpressionIntelligenceWidget() {
       <Section title="Arts Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Expression" value={`${quality.expressionRate}%`} />
-          <Stat label="Creativity" value={`${quality.creativityRate}%`} />
-          <Stat label="Confidence" value={`${quality.confidenceRate}%`} />
-          <Stat label="Therapeutic" value={`${quality.therapeuticRate}%`} />
+          <Stat label="Expression" value={`${formatRate(quality.expressionRate)}`} />
+          <Stat label="Creativity" value={`${formatRate(quality.creativityRate)}`} />
+          <Stat label="Confidence" value={`${formatRate(quality.confidenceRate)}`} />
+          <Stat label="Therapeutic" value={`${formatRate(quality.therapeuticRate)}`} />
         </div>
       </Section>
 
       <Section title="Arts Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Facilitated" value={`${compliance.staffFacilitatedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Facilitated" value={`${formatRate(compliance.staffFacilitatedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Art Form Diversity" value={`${compliance.artFormDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function CreativeArtsExpressionIntelligenceWidget() {
       <Section title="Staff Creative Arts Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Arts Facilitation" value={`${staffReadiness.artsFacilitationRate}%`} />
-          <Stat label="Therapeutic Arts" value={`${staffReadiness.therapeuticArtsAwarenessRate}%`} />
-          <Stat label="Confidence Building" value={`${staffReadiness.creativeConfidenceBuildingRate}%`} />
-          <Stat label="Inclusive Practice" value={`${staffReadiness.inclusivePracticeRate}%`} />
-          <Stat label="Cultural Arts" value={`${staffReadiness.culturalArtsFormsRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingInArtsRate}%`} />
+          <Stat label="Arts Facilitation" value={`${formatRate(staffReadiness.artsFacilitationRate)}`} />
+          <Stat label="Therapeutic Arts" value={`${formatRate(staffReadiness.therapeuticArtsAwarenessRate)}`} />
+          <Stat label="Confidence Building" value={`${formatRate(staffReadiness.creativeConfidenceBuildingRate)}`} />
+          <Stat label="Inclusive Practice" value={`${formatRate(staffReadiness.inclusivePracticeRate)}`} />
+          <Stat label="Cultural Arts" value={`${formatRate(staffReadiness.culturalArtsFormsRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staffReadiness.safeguardingInArtsRate)}`} />
         </div>
       </Section>
 

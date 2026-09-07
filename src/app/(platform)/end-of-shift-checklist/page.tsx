@@ -6,6 +6,7 @@
 // Required by Quality Standard 13 (Leadership & Management) and Reg 33.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -318,7 +319,7 @@ export default function EndOfShiftChecklistPage() {
                   : "text-[--cs-risk]",
             )}
           >
-            {summary.completionRate}%
+            {formatRate(summary.completionRate)}
           </div>
           <div className="mt-1 text-xs text-[var(--cs-text-muted)]">across all tasks</div>
         </div>

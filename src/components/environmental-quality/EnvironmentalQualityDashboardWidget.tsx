@@ -225,7 +225,7 @@ export function EnvironmentalQualityDashboardWidget() {
                 <p className="text-xs text-gray-500">Issues Found</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-purple-600">{data.inspectionQuality.photographicRate}%</span>
+                <span className="text-lg font-bold text-purple-600">{formatRate(data.inspectionQuality.photographicRate)}</span>
                 <p className="text-xs text-gray-500">With Photos</p>
               </div>
             </div>
@@ -288,7 +288,7 @@ export function EnvironmentalQualityDashboardWidget() {
             <div className="pt-2 border-t border-gray-100">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Completion Rate</span>
-                <span className="font-medium">{data.maintenanceResponsiveness.completionRate}%</span>
+                <span className="font-medium">{formatRate(data.maintenanceResponsiveness.completionRate)}</span>
               </div>
               <ProgressBar value={data.maintenanceResponsiveness.completionRate} max={100} color={meets(data.maintenanceResponsiveness.completionRate, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
@@ -318,28 +318,28 @@ export function EnvironmentalQualityDashboardWidget() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Bedroom Personalised</span>
-                <span className="font-medium">{data.personalisation.bedroomPersonalisedRate}%</span>
+                <span className="font-medium">{formatRate(data.personalisation.bedroomPersonalisedRate)}</span>
               </div>
               <ProgressBar value={data.personalisation.bedroomPersonalisedRate} max={100} color="bg-purple-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Choice in Decor</span>
-                <span className="font-medium">{data.personalisation.choiceInDecorRate}%</span>
+                <span className="font-medium">{formatRate(data.personalisation.choiceInDecorRate)}</span>
               </div>
               <ProgressBar value={data.personalisation.choiceInDecorRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Personal Items</span>
-                <span className="font-medium">{data.personalisation.personalItemsRate}%</span>
+                <span className="font-medium">{formatRate(data.personalisation.personalItemsRate)}</span>
               </div>
               <ProgressBar value={data.personalisation.personalItemsRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Cultural Considerations</span>
-                <span className="font-medium">{data.personalisation.culturalConsiderationsRate}%</span>
+                <span className="font-medium">{formatRate(data.personalisation.culturalConsiderationsRate)}</span>
               </div>
               <ProgressBar value={data.personalisation.culturalConsiderationsRate} max={100} color="bg-orange-500" />
             </div>
@@ -380,19 +380,19 @@ export function EnvironmentalQualityDashboardWidget() {
               </div>
               <div>
                 <span className={`text-lg font-bold ${meets(data.childSatisfaction.feelsHomelyRate, 80) ? "text-green-600" : "text-amber-600"}`}>
-                  {data.childSatisfaction.feelsHomelyRate}%
+                  {formatRate(data.childSatisfaction.feelsHomelyRate)}
                 </span>
                 <p className="text-xs text-gray-500">Feels Homely</p>
               </div>
               <div>
                 <span className={`text-lg font-bold ${meets(data.childSatisfaction.feelsPrivateRate, 80) ? "text-green-600" : "text-amber-600"}`}>
-                  {data.childSatisfaction.feelsPrivateRate}%
+                  {formatRate(data.childSatisfaction.feelsPrivateRate)}
                 </span>
                 <p className="text-xs text-gray-500">Feels Private</p>
               </div>
               <div>
                 <span className={`text-lg font-bold ${data.childSatisfaction.feelsSafeRate === 100 ? "text-green-600" : "text-red-600"}`}>
-                  {data.childSatisfaction.feelsSafeRate}%
+                  {formatRate(data.childSatisfaction.feelsSafeRate)}
                 </span>
                 <p className="text-xs text-gray-500">Feels Safe</p>
               </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,46 +79,46 @@ export function ProfessionalDevelopmentIntelligenceWidget() {
         <ScoreBar label="CPD Quality" value={cpd.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Hours" value={cpd.totalHours as number} />
-          <Stat label="Impact Assessed" value={`${cpd.impactAssessedRate}%`} />
-          <Stat label="Positive Impact" value={`${cpd.positiveImpactRate}%`} />
-          <Stat label="Shared With Team" value={`${cpd.sharedWithTeamRate}%`} />
-          <Stat label="Relevant to Role" value={`${cpd.relevantToRoleRate}%`} />
-          <Stat label="Certificates" value={`${cpd.certificateRate}%`} />
+          <Stat label="Impact Assessed" value={`${formatRateLoose(cpd.impactAssessedRate)}`} />
+          <Stat label="Positive Impact" value={`${formatRateLoose(cpd.positiveImpactRate)}`} />
+          <Stat label="Shared With Team" value={`${formatRateLoose(cpd.sharedWithTeamRate)}`} />
+          <Stat label="Relevant to Role" value={`${formatRateLoose(cpd.relevantToRoleRate)}`} />
+          <Stat label="Certificates" value={`${formatRateLoose(cpd.certificateRate)}`} />
         </div>
       </Section>
 
       <Section title="Qualification Progress">
         <ScoreBar label="Qualifications" value={quals.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completed" value={`${quals.completedRate}%`} />
-          <Stat label="In Progress" value={`${quals.inProgressRate}%`} />
+          <Stat label="Completed" value={`${formatRateLoose(quals.completedRate)}`} />
+          <Stat label="In Progress" value={`${formatRateLoose(quals.inProgressRate)}`} />
           <Stat label="Overdue" value={quals.overdueCount as number} />
-          <Stat label="Funded" value={`${quals.fundedRate}%`} />
-          <Stat label="Support Rate" value={`${quals.supportRate}%`} />
+          <Stat label="Funded" value={`${formatRateLoose(quals.fundedRate)}`} />
+          <Stat label="Support Rate" value={`${formatRateLoose(quals.supportRate)}`} />
         </div>
       </Section>
 
       <Section title="Supervision Development">
         <ScoreBar label="Supervision Dev" value={supervision.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Goals Set" value={`${supervision.goalsSetRate}%`} />
-          <Stat label="Progress Reviewed" value={`${supervision.progressReviewedRate}%`} />
-          <Stat label="Training Needs" value={`${supervision.trainingNeedsRate}%`} />
-          <Stat label="Action Plans" value={`${supervision.actionPlanRate}%`} />
-          <Stat label="Actions Completed" value={`${supervision.actionsCompletedRate}%`} />
+          <Stat label="Goals Set" value={`${formatRateLoose(supervision.goalsSetRate)}`} />
+          <Stat label="Progress Reviewed" value={`${formatRateLoose(supervision.progressReviewedRate)}`} />
+          <Stat label="Training Needs" value={`${formatRateLoose(supervision.trainingNeedsRate)}`} />
+          <Stat label="Action Plans" value={`${formatRateLoose(supervision.actionPlanRate)}`} />
+          <Stat label="Actions Completed" value={`${formatRateLoose(supervision.actionsCompletedRate)}`} />
         </div>
       </Section>
 
       <Section title="Learning Culture">
         <ScoreBar label="Learning Culture" value={culture.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Team Meetings" value={`${culture.teamMeetingRate}%`} />
-          <Stat label="Shared Learning" value={`${culture.sharedLearningRate}%`} />
-          <Stat label="Reflective Practice" value={`${culture.reflectiveRate}%`} />
-          <Stat label="Feedback Culture" value={`${culture.feedbackCultureRate}%`} />
-          <Stat label="Innovation" value={`${culture.innovationRate}%`} />
-          <Stat label="Budget Allocated" value={`${culture.budgetRate}%`} />
-          <Stat label="Induction" value={`${culture.inductionRate}%`} />
+          <Stat label="Team Meetings" value={`${formatRateLoose(culture.teamMeetingRate)}`} />
+          <Stat label="Shared Learning" value={`${formatRateLoose(culture.sharedLearningRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRateLoose(culture.reflectiveRate)}`} />
+          <Stat label="Feedback Culture" value={`${formatRateLoose(culture.feedbackCultureRate)}`} />
+          <Stat label="Innovation" value={`${formatRateLoose(culture.innovationRate)}`} />
+          <Stat label="Budget Allocated" value={`${formatRateLoose(culture.budgetRate)}`} />
+          <Stat label="Induction" value={`${formatRateLoose(culture.inductionRate)}`} />
         </div>
       </Section>
 

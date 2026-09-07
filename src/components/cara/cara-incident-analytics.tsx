@@ -9,6 +9,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState, useMemo } from "react";
 import {
   Sparkles,
@@ -262,8 +263,8 @@ export function CaraIncidentAnalytics() {
         {[
           { label: "30-Day Total",       value: data.totalIncidents30d,             colour: "text-[var(--cs-navy)]" },
           { label: "Avg / Week",         value: data.avgPerWeek,                    colour: "text-[var(--cs-navy)]" },
-          { label: "Physical Int. Rate", value: `${data.physicalInterventionRate}%`, colour: data.physicalInterventionRate > 30 ? "text-red-600" : "text-amber-600" },
-          { label: "Oversight Complete", value: `${data.managementOversightRate}%`,  colour: data.managementOversightRate >= 90 ? "text-emerald-600" : "text-amber-600" },
+          { label: "Physical Int. Rate", value: `${formatRate(data.physicalInterventionRate)}`, colour: data.physicalInterventionRate > 30 ? "text-red-600" : "text-amber-600" },
+          { label: "Oversight Complete", value: `${formatRate(data.managementOversightRate)}`,  colour: data.managementOversightRate >= 90 ? "text-emerald-600" : "text-amber-600" },
         ].map((m) => (
           <div key={m.label} className="px-3 py-2.5 text-center">
             <div className={`text-lg font-bold tabular-nums ${m.colour}`}>{m.value}</div>

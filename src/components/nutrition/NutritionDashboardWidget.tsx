@@ -13,6 +13,7 @@
 // - Cooking skills progress & independence
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ChildNutritionProfileData {
@@ -228,19 +229,19 @@ export function NutritionDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.dietaryAccommodation.metRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.dietaryAccommodation.metRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Diet Met</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.mealQuality.freshFruitVegRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.mealQuality.freshFruitVegRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Fresh Fruit/Veg</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.childInvolvement.menuContributionRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.childInvolvement.menuContributionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Menu Input</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.foodSafety.complianceRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.foodSafety.complianceRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Food Safety</div>
         </div>
       </div>
@@ -251,17 +252,17 @@ export function NutritionDashboardWidget() {
           Allergens: {data.dietaryAccommodation.allergyManagementRate === 100 ? "Safe" : "ALERT"}
         </span>
         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-          {data.mealQuality.freshCookingRate}% fresh cooked
+          {formatRate(data.mealQuality.freshCookingRate)} fresh cooked
         </span>
         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-          {data.childInvolvement.staffAteWithChildrenRate}% staff ate with children
+          {formatRate(data.childInvolvement.staffAteWithChildrenRate)} staff ate with children
         </span>
         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-          {data.childInvolvement.engagementRate}% cooking engagement
+          {formatRate(data.childInvolvement.engagementRate)} cooking engagement
         </span>
         {data.mealQuality.culturalMealRate > 0 && (
           <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
-            {data.mealQuality.culturalMealRate}% cultural meals
+            {formatRate(data.mealQuality.culturalMealRate)} cultural meals
           </span>
         )}
       </div>
@@ -331,7 +332,7 @@ export function NutritionDashboardWidget() {
               </div>
               {data.foodSafety.correctionsNeeded > 0 && (
                 <p className="text-xs text-gray-500">
-                  Corrections: {data.foodSafety.correctionsMade}/{data.foodSafety.correctionsNeeded} resolved ({data.foodSafety.correctionRate}%)
+                  Corrections: {data.foodSafety.correctionsMade}/{data.foodSafety.correctionsNeeded} resolved ({formatRate(data.foodSafety.correctionRate)})
                 </p>
               )}
             </div>

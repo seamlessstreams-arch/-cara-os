@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { ChildrensRightsIntelligenceResult } from "@/lib/childrens-rights";
 
@@ -131,7 +132,7 @@ export function ChildrensRightsDashboardWidget() {
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.advocacy.advocacyOfferedRate}%
+            {formatRate(data.advocacy.advocacyOfferedRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Advocacy Offered</div>
         </div>
@@ -229,7 +230,7 @@ export function ChildrensRightsDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Offered Rate:</span>{" "}
-              <span className="font-medium">{data.advocacy.advocacyOfferedRate}%</span>
+              <span className="font-medium">{formatRate(data.advocacy.advocacyOfferedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Engaged Rate:</span>{" "}
@@ -237,7 +238,7 @@ export function ChildrensRightsDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Satisfaction:</span>{" "}
-              <span className="font-medium">{data.advocacy.satisfactionRate}%</span>
+              <span className="font-medium">{formatRate(data.advocacy.satisfactionRate)}</span>
             </div>
           </div>
           {data.advocacy.childrenWithoutAdvocacyOffer.length > 0 && (
@@ -277,7 +278,7 @@ export function ChildrensRightsDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Views Recorded:</span>{" "}
-              <span className="font-medium">{data.participation.childViewRecordedRate}%</span>
+              <span className="font-medium">{formatRate(data.participation.childViewRecordedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Influenced Outcome:</span>{" "}
@@ -320,11 +321,11 @@ export function ChildrensRightsDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Acknowledged:</span>{" "}
-              <span className="font-medium">{data.feedback.acknowledgedRate}%</span>
+              <span className="font-medium">{formatRate(data.feedback.acknowledgedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Action Taken:</span>{" "}
-              <span className="font-medium">{data.feedback.actionTakenRate}%</span>
+              <span className="font-medium">{formatRate(data.feedback.actionTakenRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Outcome Shared:</span>{" "}
@@ -332,7 +333,7 @@ export function ChildrensRightsDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Satisfaction:</span>{" "}
-              <span className="font-medium">{data.feedback.satisfactionRate}%</span>
+              <span className="font-medium">{formatRate(data.feedback.satisfactionRate)}</span>
             </div>
           </div>
         </Section>

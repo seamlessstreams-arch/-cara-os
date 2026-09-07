@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 // ── Local types mirroring engine output ──────────────────────────────────
@@ -264,7 +265,7 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
       <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${scoreColor(data.sessionConsistency.completionRate, 85, 70)}`}>
-            {data.sessionConsistency.completionRate}%
+            {formatRate(data.sessionConsistency.completionRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Session Completion</p>
         </div>
@@ -282,7 +283,7 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${scoreColor(data.goalProgress.achievementRate, 70, 50)}`}>
-            {data.goalProgress.achievementRate}%
+            {formatRate(data.goalProgress.achievementRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Goal Achievement</p>
         </div>
@@ -361,7 +362,7 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Cancellation Rate</span>
             <span className={`font-medium ${data.sessionConsistency.cancellationRate > 20 ? "text-red-600" : "text-muted-foreground"}`}>
-              {data.sessionConsistency.cancellationRate}%
+              {formatRate(data.sessionConsistency.cancellationRate)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -442,7 +443,7 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Trauma-Informed Rate</span>
             <span className={`font-medium ${scoreColor(data.relationshipQuality.traumaInformedRate, 60, 40)}`}>
-              {data.relationshipQuality.traumaInformedRate}%
+              {formatRate(data.relationshipQuality.traumaInformedRate)}
             </span>
           </div>
           <div className="flex justify-between">

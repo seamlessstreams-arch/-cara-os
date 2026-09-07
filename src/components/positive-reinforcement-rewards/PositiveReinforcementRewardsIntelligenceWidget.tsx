@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,9 +78,9 @@ export function PositiveReinforcementRewardsIntelligenceWidget() {
       <Section title="Praise & Recognition" defaultOpen>
         <ScoreBar label="Praise" value={praise.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Positive Response" value={`${praise.positiveResponseRate}%`} />
-          <Stat label="Specific" value={`${praise.specificRate}%`} />
-          <Stat label="Linked to Values" value={`${praise.linkedToValuesRate}%`} />
+          <Stat label="Positive Response" value={`${formatRate(praise.positiveResponseRate)}`} />
+          <Stat label="Specific" value={`${formatRate(praise.specificRate)}`} />
+          <Stat label="Linked to Values" value={`${formatRate(praise.linkedToValuesRate)}`} />
           <Stat label="Type Variety" value={praise.praiseTypeVariety} />
         </div>
       </Section>
@@ -87,32 +88,32 @@ export function PositiveReinforcementRewardsIntelligenceWidget() {
       <Section title="Reward System">
         <ScoreBar label="Rewards" value={reward.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child Chosen" value={`${reward.childChosenRate}%`} />
-          <Stat label="Fair & Consistent" value={`${reward.fairConsistentRate}%`} />
-          <Stat label="Linked to Plan" value={`${reward.linkedToPlanRate}%`} />
-          <Stat label="Positive Response" value={`${reward.positiveResponseRate}%`} />
+          <Stat label="Child Chosen" value={`${formatRate(reward.childChosenRate)}`} />
+          <Stat label="Fair & Consistent" value={`${formatRate(reward.fairConsistentRate)}`} />
+          <Stat label="Linked to Plan" value={`${formatRate(reward.linkedToPlanRate)}`} />
+          <Stat label="Positive Response" value={`${formatRate(reward.positiveResponseRate)}`} />
         </div>
       </Section>
 
       <Section title="Behavioural Impact">
         <ScoreBar label="Impact" value={impact.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Improved Trend" value={`${impact.improvedTrendRate}%`} />
-          <Stat label="De-escalation" value={`${impact.deEscalationRate}%`} />
-          <Stat label="Low Restraint" value={`${impact.lowRestraintRate}%`} />
-          <Stat label="Positive Feeling" value={`${impact.positiveChildFeelingRate}%`} />
+          <Stat label="Improved Trend" value={`${formatRate(impact.improvedTrendRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(impact.deEscalationRate)}`} />
+          <Stat label="Low Restraint" value={`${formatRate(impact.lowRestraintRate)}`} />
+          <Stat label="Positive Feeling" value={`${formatRate(impact.positiveChildFeelingRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="PBS Training" value={`${staffReadiness.positiveBehaviourRate}%`} />
-          <Stat label="Therapeutic Care" value={`${staffReadiness.therapeuticCareRate}%`} />
-          <Stat label="De-escalation" value={`${staffReadiness.deEscalationRate}%`} />
-          <Stat label="Reward Design" value={`${staffReadiness.rewardDesignRate}%`} />
-          <Stat label="Trauma-Informed" value={`${staffReadiness.traumaInformedRate}%`} />
-          <Stat label="Consistency" value={`${staffReadiness.consistencyRate}%`} />
+          <Stat label="PBS Training" value={`${formatRate(staffReadiness.positiveBehaviourRate)}`} />
+          <Stat label="Therapeutic Care" value={`${formatRate(staffReadiness.therapeuticCareRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(staffReadiness.deEscalationRate)}`} />
+          <Stat label="Reward Design" value={`${formatRate(staffReadiness.rewardDesignRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(staffReadiness.traumaInformedRate)}`} />
+          <Stat label="Consistency" value={`${formatRate(staffReadiness.consistencyRate)}`} />
         </div>
       </Section>
 

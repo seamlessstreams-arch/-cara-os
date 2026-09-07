@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -58,8 +59,8 @@ export function DigitalLiteracyIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
-        <Stat label="Assessment Rate" value={`${skills.assessmentRate}%`} />
-        <Stat label="Access Rate" value={`${access.accessRate}%`} />
+        <Stat label="Assessment Rate" value={`${formatRateLoose(skills.assessmentRate)}`} />
+        <Stat label="Access Rate" value={`${formatRateLoose(access.accessRate)}`} />
         <Stat label="Children" value={children.length} />
       </div>
 
@@ -77,9 +78,9 @@ export function DigitalLiteracyIntelligenceWidget() {
       <Section title="Device Access">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Children with Access" value={access.childrenWithAccess as number} />
-          <Stat label="Access Rate" value={`${access.accessRate}%`} />
-          <Stat label="Agreement Compliance" value={`${access.agreementComplianceRate}%`} />
-          <Stat label="Age Appropriate" value={`${access.ageAppropriateRate}%`} />
+          <Stat label="Access Rate" value={`${formatRateLoose(access.accessRate)}`} />
+          <Stat label="Agreement Compliance" value={`${formatRateLoose(access.agreementComplianceRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRateLoose(access.ageAppropriateRate)}`} />
           <Stat label="Overdue Reviews" value={access.overdueReviews as number} />
           <Stat label="Without Access" value={(access.childrenWithoutAccess as string[]).length} />
         </div>
@@ -90,8 +91,8 @@ export function DigitalLiteracyIntelligenceWidget() {
           <Stat label="Sessions" value={learning.totalSessions as number} />
           <Stat label="Per Child" value={learning.sessionsPerChild as number} />
           <Stat label="Activity Types" value={learning.activityTypeCount as number} />
-          <Stat label="Positive Outcome" value={`${learning.positiveOutcomeRate}%`} />
-          <Stat label="Supervised" value={`${learning.supervisedRate}%`} />
+          <Stat label="Positive Outcome" value={`${formatRateLoose(learning.positiveOutcomeRate)}`} />
+          <Stat label="Supervised" value={`${formatRateLoose(learning.supervisedRate)}`} />
           <Stat label="Avg Duration" value={`${learning.averageDuration}m`} />
         </div>
         {(learning.childrenWithNoLearning as string[]).length > 0 && (
@@ -102,7 +103,7 @@ export function DigitalLiteracyIntelligenceWidget() {
       <Section title="Digital Citizenship">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Records" value={citizenship.totalRecords as number} />
-          <Stat label="Positive Rate" value={`${citizenship.positiveRate}%`} />
+          <Stat label="Positive Rate" value={`${formatRateLoose(citizenship.positiveRate)}`} />
           <Stat label="Area Coverage" value={`${citizenship.areaCoverage}/${citizenship.totalAreas}`} />
           <Stat label="Children Recorded" value={citizenship.childrenWithRecords as number} />
         </div>

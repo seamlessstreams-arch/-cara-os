@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
@@ -187,9 +188,9 @@ export default function SiblingContactManagementDashboardWidget() {
       <Section title="Contact Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Contacts" value={data.contactQuality.totalContacts} />
-          <Stat label="Positive Outcome" value={`${data.contactQuality.positiveOutcomeRate}%`} />
-          <Stat label="Child Satisfied" value={`${data.contactQuality.childSatisfactionRate}%`} />
-          <Stat label="Recorded" value={`${data.contactQuality.recordedRate}%`} />
+          <Stat label="Positive Outcome" value={`${formatRate(data.contactQuality.positiveOutcomeRate)}`} />
+          <Stat label="Child Satisfied" value={`${formatRate(data.contactQuality.childSatisfactionRate)}`} />
+          <Stat label="Recorded" value={`${formatRate(data.contactQuality.recordedRate)}`} />
           <Stat label="Contact Happened" value={`${data.contactQuality.contactHappenedRate}%`} />
         </div>
       </Section>
@@ -199,9 +200,9 @@ export default function SiblingContactManagementDashboardWidget() {
           <Stat label="Total Assessments" value={data.planningDocumentation.totalAssessments} />
           <Stat label="Relationship Mapped" value={`${data.planningDocumentation.relationshipMappedRate}%`} />
           <Stat label="Contact Plan" value={`${data.planningDocumentation.contactPlanRate}%`} />
-          <Stat label="Child Views" value={`${data.planningDocumentation.childViewsRate}%`} />
+          <Stat label="Child Views" value={`${formatRate(data.planningDocumentation.childViewsRate)}`} />
           <Stat label="Sibling Views" value={`${data.planningDocumentation.siblingViewsRate}%`} />
-          <Stat label="Review Scheduled" value={`${data.planningDocumentation.reviewScheduledRate}%`} />
+          <Stat label="Review Scheduled" value={`${formatRate(data.planningDocumentation.reviewScheduledRate)}`} />
           <Stat label="SW Consulted" value={`${data.planningDocumentation.socialWorkerConsultedRate}%`} />
         </div>
       </Section>
@@ -209,8 +210,8 @@ export default function SiblingContactManagementDashboardWidget() {
       <Section title="Barrier Management">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Barriers" value={data.barrierManagement.totalBarriers} />
-          <Stat label="Resolved" value={`${data.barrierManagement.resolvedRate}%`} />
-          <Stat label="Action Taken" value={`${data.barrierManagement.actionTakenRate}%`} />
+          <Stat label="Resolved" value={`${formatRate(data.barrierManagement.resolvedRate)}`} />
+          <Stat label="Action Taken" value={`${formatRate(data.barrierManagement.actionTakenRate)}`} />
           <Stat label="Escalated" value={`${data.barrierManagement.escalatedRate}%`} />
         </div>
       </Section>
@@ -221,8 +222,8 @@ export default function SiblingContactManagementDashboardWidget() {
           <Stat label="Sibling Relationships" value={`${data.staffSiblingReadiness.siblingRelationshipsRate}%`} />
           <Stat label="Contact Facilitation" value={`${data.staffSiblingReadiness.contactFacilitationRate}%`} />
           <Stat label="Child Views Advocacy" value={`${data.staffSiblingReadiness.childViewsAdvocacyRate}%`} />
-          <Stat label="Safeguarding" value={`${data.staffSiblingReadiness.safeguardingRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffSiblingReadiness.recordKeepingRate}%`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffSiblingReadiness.safeguardingRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffSiblingReadiness.recordKeepingRate)}`} />
           <Stat label="Barrier Resolution" value={`${data.staffSiblingReadiness.barrierResolutionRate}%`} />
         </div>
       </Section>
@@ -238,8 +239,8 @@ export default function SiblingContactManagementDashboardWidget() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                   <span>Contacts: {cp.totalContacts}</span>
-                  <span>Positive: {cp.positiveOutcomeRate}%</span>
-                  <span>Satisfied: {cp.satisfactionRate}%</span>
+                  <span>Positive: {formatRate(cp.positiveOutcomeRate)}</span>
+                  <span>Satisfied: {formatRate(cp.satisfactionRate)}</span>
                   <span>Contact Plan: {cp.hasContactPlan ? "Yes" : "No"}</span>
                 </div>
               </div>

@@ -187,7 +187,7 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
 
       {/* Key metrics */}
       <div className="grid grid-cols-4 gap-2 px-4 pb-3">
-        <MetricBox label="Compliance" value={`${data.overallCompliancePercent}%`} good={data.overallCompliancePercent >= 95} warn={data.overallCompliancePercent < 80} />
+        <MetricBox label="Compliance" value={`${formatRate(data.overallCompliancePercent)}`} good={data.overallCompliancePercent >= 95} warn={data.overallCompliancePercent < 80} />
         <MetricBox label="Compliant" value={`${data.fullyCompliant}/${data.totalStaff}`} good={data.fullyCompliant === data.totalStaff} warn={data.fullyCompliant < data.totalStaff * 0.5} />
         <MetricBox label="Expired" value={String(data.withExpiredTraining)} good={data.withExpiredTraining === 0} warn={data.withExpiredTraining > 0} />
         <MetricBox label="With Gaps" value={String(data.withGaps)} good={data.withGaps === 0} warn={data.withGaps > 1} />
@@ -235,7 +235,7 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
                       <span className="text-[10px] text-gray-400 capitalize">{staff.role.replace("_", " ")}</span>
                     </div>
                     <span className={cn("text-xs font-bold", staff.compliancePercent === 100 ? "text-emerald-700" : staff.compliancePercent < 70 ? "text-red-700" : "text-amber-700")}>
-                      {staff.compliancePercent}%
+                      {formatRate(staff.compliancePercent)}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-500">
@@ -285,10 +285,10 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
                   <span className="text-gray-600">{cov.label}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-16 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                      <div className={cn("h-full rounded-full", cov.coveragePercent === 100 ? "bg-emerald-500" : cov.coveragePercent >= 80 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${cov.coveragePercent}%` }} />
+                      <div className={cn("h-full rounded-full", cov.coveragePercent === 100 ? "bg-emerald-500" : cov.coveragePercent >= 80 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${formatRate(cov.coveragePercent)}` }} />
                     </div>
                     <span className={cn("font-medium w-8 text-right", cov.coveragePercent === 100 ? "text-emerald-700" : "text-amber-700")}>
-                      {cov.coveragePercent}%
+                      {formatRate(cov.coveragePercent)}
                     </span>
                   </div>
                 </div>

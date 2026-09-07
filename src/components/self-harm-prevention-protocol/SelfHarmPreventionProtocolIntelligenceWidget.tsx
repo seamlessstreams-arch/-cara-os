@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -83,19 +84,19 @@ export function SelfHarmPreventionProtocolIntelligenceWidget() {
 
       <Section title="Risk Assessment Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Risk Assessed Rate" value={`${riskAssessmentQuality.riskAssessedRate}%`} />
-          <Stat label="Review Current" value={`${riskAssessmentQuality.reviewCurrentRate}%`} />
-          <Stat label="Triggers Identified" value={`${riskAssessmentQuality.triggersIdentifiedRate}%`} />
-          <Stat label="Professional Support" value={`${riskAssessmentQuality.professionalSupportRate}%`} />
+          <Stat label="Risk Assessed Rate" value={`${formatRateLoose(riskAssessmentQuality.riskAssessedRate)}`} />
+          <Stat label="Review Current" value={`${formatRateLoose(riskAssessmentQuality.reviewCurrentRate)}`} />
+          <Stat label="Triggers Identified" value={`${formatRateLoose(riskAssessmentQuality.triggersIdentifiedRate)}`} />
+          <Stat label="Professional Support" value={`${formatRateLoose(riskAssessmentQuality.professionalSupportRate)}`} />
         </div>
       </Section>
 
       <Section title="Incident Response Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Immediate Action" value={`${incidentResponse.immediateActionRate}%`} />
-          <Stat label="Medical Assessment" value={`${incidentResponse.medicalAssessmentRate}%`} />
-          <Stat label="Debrief Completed" value={`${incidentResponse.debriefCompletedRate}%`} />
-          <Stat label="Safety Plan Updated" value={`${incidentResponse.safetyPlanUpdatedRate}%`} />
+          <Stat label="Immediate Action" value={`${formatRateLoose(incidentResponse.immediateActionRate)}`} />
+          <Stat label="Medical Assessment" value={`${formatRateLoose(incidentResponse.medicalAssessmentRate)}`} />
+          <Stat label="Debrief Completed" value={`${formatRateLoose(incidentResponse.debriefCompletedRate)}`} />
+          <Stat label="Safety Plan Updated" value={`${formatRateLoose(incidentResponse.safetyPlanUpdatedRate)}`} />
         </div>
       </Section>
 

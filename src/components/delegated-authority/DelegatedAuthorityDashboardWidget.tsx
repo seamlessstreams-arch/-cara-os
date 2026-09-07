@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -312,7 +313,7 @@ export default function DelegatedAuthorityDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalDecisions} decisions, {child.uniqueCategories} categories, {child.timelyApprovalRate}% timely, {child.childConsultedRate}% consulted
+                    {child.totalDecisions} decisions, {child.uniqueCategories} categories, {formatRate(child.timelyApprovalRate)} timely, {formatRate(child.childConsultedRate)} consulted
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.authorityScore, 10)}`}>

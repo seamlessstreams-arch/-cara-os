@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -413,7 +414,7 @@ export function AnnualDevelopmentReviewDashboardWidget() {
                   <div className="text-[10px] font-medium mt-0.5">Goals/Child</div>
                 </div>
                 <div className={`rounded-lg p-2.5 text-center ${data.goalAchievement.notMetRate > 30 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                  <div className="text-xl font-bold">{data.goalAchievement.notMetRate}%</div>
+                  <div className="text-xl font-bold">{formatRate(data.goalAchievement.notMetRate)}</div>
                   <div className="text-[10px] font-medium mt-0.5">Not Met</div>
                 </div>
               </div>
@@ -466,7 +467,7 @@ export function AnnualDevelopmentReviewDashboardWidget() {
                 </div>
                 <div className={`p-2 rounded ${data.staffReviewReadiness.overallReadyRate >= 80 ? "bg-green-50" : data.staffReviewReadiness.overallReadyRate >= 50 ? "bg-yellow-50" : "bg-red-50"}`}>
                   <div className={`text-lg font-bold ${data.staffReviewReadiness.overallReadyRate >= 80 ? "text-green-700" : data.staffReviewReadiness.overallReadyRate >= 50 ? "text-yellow-700" : "text-red-700"}`}>
-                    {data.staffReviewReadiness.overallReadyRate}%
+                    {formatRate(data.staffReviewReadiness.overallReadyRate)}
                   </div>
                   <div className="text-[10px] text-gray-500 uppercase">Fully Ready</div>
                 </div>

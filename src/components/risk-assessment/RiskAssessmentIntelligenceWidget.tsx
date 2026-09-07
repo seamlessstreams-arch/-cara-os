@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function RiskAssessmentIntelligenceWidget() {
       <Section title="Risk Assessment Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Control Measures Identified" value={`${quality.controlMeasuresIdentifiedRate}%`} />
-          <Stat label="Child View Included" value={`${quality.childViewIncludedRate}%`} />
-          <Stat label="Review Date Set" value={`${quality.reviewDateSetRate}%`} />
-          <Stat label="Multi-Agency Input" value={`${quality.multiAgencyInputRate}%`} />
+          <Stat label="Control Measures Identified" value={`${formatRate(quality.controlMeasuresIdentifiedRate)}`} />
+          <Stat label="Child View Included" value={`${formatRate(quality.childViewIncludedRate)}`} />
+          <Stat label="Review Date Set" value={`${formatRate(quality.reviewDateSetRate)}`} />
+          <Stat label="Multi-Agency Input" value={`${formatRate(quality.multiAgencyInputRate)}`} />
         </div>
       </Section>
 
       <Section title="Risk Assessment Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Control Measures Identified" value={`${compliance.controlMeasuresIdentifiedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Control Measures Identified" value={`${formatRate(compliance.controlMeasuresIdentifiedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function RiskAssessmentIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Risk Assessment Skills" value={`${staffReadiness.riskAssessmentSkillsRate}%`} />
-          <Stat label="Dynamic Risk Management" value={`${staffReadiness.dynamicRiskManagementRate}%`} />
-          <Stat label="Positive Risk Taking" value={`${staffReadiness.positiveRiskTakingRate}%`} />
-          <Stat label="Incident Risk Analysis" value={`${staffReadiness.incidentRiskAnalysisRate}%`} />
-          <Stat label="Child View in Risk" value={`${staffReadiness.childViewInRiskRate}%`} />
-          <Stat label="Multi-Agency Risk Sharing" value={`${staffReadiness.multiAgencyRiskSharingRate}%`} />
+          <Stat label="Risk Assessment Skills" value={`${formatRate(staffReadiness.riskAssessmentSkillsRate)}`} />
+          <Stat label="Dynamic Risk Management" value={`${formatRate(staffReadiness.dynamicRiskManagementRate)}`} />
+          <Stat label="Positive Risk Taking" value={`${formatRate(staffReadiness.positiveRiskTakingRate)}`} />
+          <Stat label="Incident Risk Analysis" value={`${formatRate(staffReadiness.incidentRiskAnalysisRate)}`} />
+          <Stat label="Child View in Risk" value={`${formatRate(staffReadiness.childViewInRiskRate)}`} />
+          <Stat label="Multi-Agency Risk Sharing" value={`${formatRate(staffReadiness.multiAgencyRiskSharingRate)}`} />
         </div>
       </Section>
 

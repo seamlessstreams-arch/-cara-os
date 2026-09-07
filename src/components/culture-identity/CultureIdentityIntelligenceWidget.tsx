@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -58,7 +59,7 @@ export function CultureIdentityIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
-        <Stat label="Assessment Rate" value={`${identity.assessmentRate}%`} />
+        <Stat label="Assessment Rate" value={`${formatRateLoose(identity.assessmentRate)}`} />
         <Stat label="Activities/Child" value={activity.activitiesPerChild as number} />
         <Stat label="Children" value={children.length} />
       </div>
@@ -67,10 +68,10 @@ export function CultureIdentityIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Children" value={identity.totalChildren as number} />
           <Stat label="Assessed" value={identity.childrenWithAssessment as number} />
-          <Stat label="Assessment Rate" value={`${identity.assessmentRate}%`} />
+          <Stat label="Assessment Rate" value={`${formatRateLoose(identity.assessmentRate)}`} />
           <Stat label="Needs Identified" value={identity.totalNeedsIdentified as number} />
           <Stat label="Needs Met" value={identity.needsMet as number} />
-          <Stat label="Needs Met Rate" value={`${identity.needsMetRate}%`} />
+          <Stat label="Needs Met Rate" value={`${formatRateLoose(identity.needsMetRate)}`} />
         </div>
       </Section>
 
@@ -78,8 +79,8 @@ export function CultureIdentityIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Activities" value={activity.totalActivities as number} />
           <Stat label="Per Child" value={activity.activitiesPerChild as number} />
-          <Stat label="Engagement" value={`${activity.childEngagementRate}%`} />
-          <Stat label="Child Initiated" value={`${activity.childInitiatedRate}%`} />
+          <Stat label="Engagement" value={`${formatRateLoose(activity.childEngagementRate)}`} />
+          <Stat label="Child Initiated" value={`${formatRateLoose(activity.childInitiatedRate)}`} />
         </div>
         {(activity.childrenWithNoActivities as string[]).length > 0 && (
           <p className="text-xs text-red-600 mt-2">No activities: {(activity.childrenWithNoActivities as string[]).join(", ")}</p>
@@ -89,9 +90,9 @@ export function CultureIdentityIntelligenceWidget() {
       <Section title="Incident Analysis">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Incidents" value={incident.totalIncidents as number} />
-          <Stat label="Reported" value={`${incident.reportedRate}%`} />
-          <Stat label="Investigated" value={`${incident.investigatedRate}%`} />
-          <Stat label="Resolved" value={`${incident.resolvedRate}%`} />
+          <Stat label="Reported" value={`${formatRateLoose(incident.reportedRate)}`} />
+          <Stat label="Investigated" value={`${formatRateLoose(incident.investigatedRate)}`} />
+          <Stat label="Resolved" value={`${formatRateLoose(incident.resolvedRate)}`} />
           <Stat label="Staff Incidents" value={incident.staffIncidents as number} />
           <Stat label="Lessons Recorded" value={incident.lessonsRecorded as number} />
         </div>
@@ -100,7 +101,7 @@ export function CultureIdentityIntelligenceWidget() {
       <Section title="Staff Competence">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff as number} />
-          <Stat label="Training Rate" value={`${staff.trainingRate}%`} />
+          <Stat label="Training Rate" value={`${formatRateLoose(staff.trainingRate)}`} />
           <Stat label="Expired" value={staff.expiredTraining as number} />
           <Stat label="Missing Training" value={(staff.staffMissingTraining as string[]).length} />
         </div>

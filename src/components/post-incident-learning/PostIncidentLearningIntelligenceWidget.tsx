@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -114,9 +115,9 @@ export function PostIncidentLearningIntelligenceWidget() {
         <ScoreBar label="Team Learning" value={team.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Sessions" value={team.totalSessions} />
-          <Stat label="Incident Related" value={`${team.incidentRelatedRate}%`} />
+          <Stat label="Incident Related" value={`${formatRate(team.incidentRelatedRate)}`} />
           <Stat label="Avg Attendance" value={`${team.averageAttendance}%`} />
-          <Stat label="Action Completion" value={`${team.actionCompletionRate}%`} />
+          <Stat label="Action Completion" value={`${formatRate(team.actionCompletionRate)}`} />
           <Stat label="Avg Action Points" value={team.averageActionPoints} />
         </div>
       </Section>

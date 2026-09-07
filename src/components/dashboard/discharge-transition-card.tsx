@@ -7,6 +7,7 @@
 // Powered by the Leaving Care Intelligence Engine — live data (Reg 36/37).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -103,13 +104,13 @@ export function DischargeTransitionCard() {
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.education_employment_rate >= 80 ? "bg-green-50" : o.education_employment_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
             <p className={cn("text-lg font-bold tabular-nums", o.education_employment_rate >= 80 ? "text-[--cs-success]" : o.education_employment_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.education_employment_rate}%
+              {formatRate(o.education_employment_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">EET</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.pathway_plan_rate >= 90 ? "bg-green-50" : o.pathway_plan_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
             <p className={cn("text-lg font-bold tabular-nums", o.pathway_plan_rate >= 90 ? "text-[--cs-success]" : o.pathway_plan_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.pathway_plan_rate}%
+              {formatRate(o.pathway_plan_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Pathway Plan</p>
           </div>

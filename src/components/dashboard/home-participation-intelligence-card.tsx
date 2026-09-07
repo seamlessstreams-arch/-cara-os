@@ -7,6 +7,7 @@
 // CHR 2015 Reg 7, 9. SCCIF: "Overall experiences", "Experiences and progress."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -139,7 +140,7 @@ export function HomeParticipationIntelligenceCard() {
                   (d.meeting_profile.avg_attendance_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.meeting_profile.avg_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.meeting_profile.avg_attendance_rate}%
+                  {formatRate(d.meeting_profile.avg_attendance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attendance</p>
@@ -153,7 +154,7 @@ export function HomeParticipationIntelligenceCard() {
                   (d.meeting_profile.avg_child_raised_rate ?? 0) >= 40 ? "text-[--cs-success]" :
                   (d.meeting_profile.avg_child_raised_rate ?? 0) >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.meeting_profile.avg_child_raised_rate}%
+                  {formatRate(d.meeting_profile.avg_child_raised_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child-Raised</p>
@@ -167,7 +168,7 @@ export function HomeParticipationIntelligenceCard() {
                   (d.meeting_profile.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.meeting_profile.action_completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.meeting_profile.action_completion_rate}%
+                  {formatRate(d.meeting_profile.action_completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions Done</p>

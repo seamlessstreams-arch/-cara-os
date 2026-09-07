@@ -8,6 +8,7 @@
 // "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -170,7 +171,7 @@ export function HomePlacementStabilityIntelligenceCard() {
                   (d.stability_profile.stability_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.stability_profile.stability_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.stability_profile.stability_rate}%
+                  {formatRate(d.stability_profile.stability_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Stability</p>
@@ -205,7 +206,7 @@ export function HomePlacementStabilityIntelligenceCard() {
                   d.missing_profile.total_episodes === 0 ? "text-slate-600" :
                   (d.missing_profile.return_interview_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.missing_profile.return_interview_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.missing_profile.total_episodes === 0 ? "N/A" : `${d.missing_profile.return_interview_rate}%`}</span></p>
+                )}>{d.missing_profile.total_episodes === 0 ? "N/A" : `${formatRate(d.missing_profile.return_interview_rate)}`}</span></p>
                 <p>Avg risk flags: <span className={cn("font-medium",
                   d.stability_profile.avg_risk_flags <= 1 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.stability_profile.avg_risk_flags}</span></p>

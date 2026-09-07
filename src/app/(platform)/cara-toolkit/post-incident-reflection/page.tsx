@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { PostIncidentReflectionAnalysis, IncidentReflection, SignalColour } from "@/lib/cara-visual-toolkit/types";
@@ -160,7 +161,7 @@ export default function PostIncidentReflectionPage() {
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-sm">
           <p className={`text-2xl font-bold ${(data.debriefCompletionRate ?? 0) >= 75 ? "text-green-700" : "text-amber-700"}`}>
-            {data.debriefCompletionRate}%
+            {formatRate(data.debriefCompletionRate)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">Debrief rate</p>
         </div>

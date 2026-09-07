@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Utensils } from "lucide-react";
@@ -74,23 +75,23 @@ export function HomeFoodNutritionHygieneSafetyIntelligenceCard() {
         {d.food_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", (d.hygiene_pass_rate ?? 0) >= 90 ? "bg-green-50" : (d.hygiene_pass_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.hygiene_pass_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.hygiene_pass_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_pass_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.hygiene_pass_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.hygiene_pass_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_pass_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.budget_adherence_rate ?? 0) >= 90 ? "bg-green-50" : (d.budget_adherence_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.budget_adherence_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.budget_adherence_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.budget_adherence_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.budget_adherence_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.budget_adherence_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.budget_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Budget</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.scratch_cooking_rate ?? 0) >= 80 ? "bg-green-50" : (d.scratch_cooking_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.scratch_cooking_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.scratch_cooking_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.scratch_cooking_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.scratch_cooking_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.scratch_cooking_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.scratch_cooking_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Scratch</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.dietary_compliance_rate ?? 0) >= 90 ? "bg-green-50" : (d.dietary_compliance_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.dietary_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.dietary_compliance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dietary_compliance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.dietary_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.dietary_compliance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dietary_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dietary</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.cultural_inclusion_rate ?? 0) >= 80 ? "bg-green-50" : (d.cultural_inclusion_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.cultural_inclusion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.cultural_inclusion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cultural_inclusion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.cultural_inclusion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.cultural_inclusion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cultural_inclusion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cultural</p>
             </div>
           </div>

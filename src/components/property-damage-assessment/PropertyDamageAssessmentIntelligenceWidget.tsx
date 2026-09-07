@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,9 +78,9 @@ export function PropertyDamageAssessmentIntelligenceWidget() {
       <Section title="Incident Management" defaultOpen>
         <ScoreBar label="Incident Management" value={incident.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Therapeutic Response" value={`${incident.therapeuticResponseRate}%`} />
-          <Stat label="Timely Repair" value={`${incident.timelyRepairRate}%`} />
-          <Stat label="Context Documented" value={`${incident.contextDocumentedRate}%`} />
+          <Stat label="Therapeutic Response" value={`${formatRate(incident.therapeuticResponseRate)}`} />
+          <Stat label="Timely Repair" value={`${formatRate(incident.timelyRepairRate)}`} />
+          <Stat label="Context Documented" value={`${formatRate(incident.contextDocumentedRate)}`} />
           <Stat label="Severe Count" value={incident.severeCount} />
         </div>
       </Section>
@@ -99,8 +100,8 @@ export function PropertyDamageAssessmentIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Timeliness" value={repair.timelinessScore} />
           <Stat label="Quality" value={repair.qualityScore} />
-          <Stat label="Safety Restored" value={`${repair.safetyRestoredRate}%`} />
-          <Stat label="Completion" value={`${repair.completionRate}%`} />
+          <Stat label="Safety Restored" value={`${formatRate(repair.safetyRestoredRate)}`} />
+          <Stat label="Completion" value={`${formatRate(repair.completionRate)}`} />
         </div>
       </Section>
 
@@ -108,7 +109,7 @@ export function PropertyDamageAssessmentIntelligenceWidget() {
         <ScoreBar label="Prevention" value={prevention.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Active Measures" value={prevention.activeMeasures} />
-          <Stat label="Effectiveness" value={`${prevention.effectivenessRate}%`} />
+          <Stat label="Effectiveness" value={`${formatRate(prevention.effectivenessRate)}`} />
           <Stat label="Repeat Covered" value={prevention.repeatChildrenCovered} />
           <Stat label="Env. Adaptations" value={prevention.environmentalAdaptations} />
         </div>

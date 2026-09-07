@@ -90,7 +90,7 @@ function StaffProfileCard({ profile }: { profile: StaffDevelopmentProfile }) {
           <p className="text-xs text-gray-500">In Progress</p>
         </div>
         <div>
-          <span className="text-lg font-bold text-gray-900">{profile.impactAssessmentRate}%</span>
+          <span className="text-lg font-bold text-gray-900">{formatRate(profile.impactAssessmentRate)}</span>
           <p className="text-xs text-gray-500">Impact Assessed</p>
         </div>
       </div>

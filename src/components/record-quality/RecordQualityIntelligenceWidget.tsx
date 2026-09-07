@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -115,7 +116,7 @@ export function RecordQualityIntelligenceWidget() {
         <ScoreBar label="Sign-Off Rate" value={signOff.signOffRate} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Signed Off" value={signOff.signedOff} />
-          <Stat label="Sign-Off Rate" value={`${signOff.signOffRate}%`} />
+          <Stat label="Sign-Off Rate" value={`${formatRate(signOff.signOffRate)}`} />
           <Stat label="Pending" value={signOff.pendingSignOff} />
           <Stat label="Queried" value={signOff.queriedRecords} />
         </div>
@@ -125,7 +126,7 @@ export function RecordQualityIntelligenceWidget() {
         <ScoreBar label="Cross-Reference Rate" value={crossRef.crossReferenceRate} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="With Cross-Refs" value={crossRef.withCrossReferences} />
-          <Stat label="Cross-Ref Rate" value={`${crossRef.crossReferenceRate}%`} />
+          <Stat label="Cross-Ref Rate" value={`${formatRate(crossRef.crossReferenceRate)}`} />
           <Stat label="Incidents w/o Log" value={crossRef.incidentsWithoutDailyLog} />
           <Stat label="Restraints w/o Incident" value={crossRef.restraintsWithoutIncident} />
         </div>

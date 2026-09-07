@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -80,7 +81,7 @@ export function HomeIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Modules" value={d.totalModules as number} />
-        <Stat label="High Perf %" value={`${moduleCoverage.highPerformanceModuleRate}%`} />
+        <Stat label="High Perf %" value={`${formatRate(moduleCoverage.highPerformanceModuleRate)}`} />
         <Stat label="Consistency" value={`${moduleCoverage.consistencyScore}%`} />
       </div>
 
@@ -116,8 +117,8 @@ export function HomeIntelligenceWidget() {
       <Section title="Module Coverage">
         <ScoreBar label="Module Coverage" value={moduleCoverage.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Coverage" value={`${moduleCoverage.moduleCoverageRate}%`} />
-          <Stat label="Domain Coverage" value={`${moduleCoverage.domainCoverageRate}%`} />
+          <Stat label="Coverage" value={`${formatRate(moduleCoverage.moduleCoverageRate)}`} />
+          <Stat label="Domain Coverage" value={`${formatRate(moduleCoverage.domainCoverageRate)}`} />
         </div>
       </Section>
 

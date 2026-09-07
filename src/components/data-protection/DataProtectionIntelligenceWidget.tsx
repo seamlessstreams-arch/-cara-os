@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,10 +79,10 @@ export function DataProtectionIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Breaches" value={breach.totalBreaches} />
           <Stat label="Critical" value={breach.criticalBreaches} />
-          <Stat label="ICO Notified" value={`${breach.icoNotificationRate}%`} />
+          <Stat label="ICO Notified" value={`${formatRate(breach.icoNotificationRate)}`} />
           <Stat label="Within 72hrs" value={`${breach.icoNotificationWithin72HoursRate}%`} />
-          <Stat label="Root Cause" value={`${breach.rootCauseRate}%`} />
-          <Stat label="Resolution" value={`${breach.resolutionRate}%`} />
+          <Stat label="Root Cause" value={`${formatRate(breach.rootCauseRate)}`} />
+          <Stat label="Resolution" value={`${formatRate(breach.resolutionRate)}`} />
         </div>
       </Section>
 
@@ -89,9 +90,9 @@ export function DataProtectionIntelligenceWidget() {
         <ScoreBar label="Consent" value={consent.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={consent.totalRecords as number} />
-          <Stat label="Consent Obtained" value={`${consent.consentObtainedRate}%`} />
-          <Stat label="Age Appropriate" value={`${consent.ageAppropriateExplainedRate}%`} />
-          <Stat label="Review Current" value={`${consent.reviewDateCurrentRate}%`} />
+          <Stat label="Consent Obtained" value={`${formatRateLoose(consent.consentObtainedRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRateLoose(consent.ageAppropriateExplainedRate)}`} />
+          <Stat label="Review Current" value={`${formatRateLoose(consent.reviewDateCurrentRate)}`} />
           <Stat label="Expired" value={consent.expiredConsentCount as number} />
           <Stat label="Avg Types/Child" value={consent.averageTypesPerChild as number} />
         </div>
@@ -103,8 +104,8 @@ export function DataProtectionIntelligenceWidget() {
           <Stat label="Total Requests" value={sar.totalRequests as number} />
           <Stat label="Ack Within 5d" value={`${sar.acknowledgedWithin5DaysRate}%`} />
           <Stat label="Done Within 30d" value={`${sar.completedWithin30DaysRate}%`} />
-          <Stat label="Redaction" value={`${sar.redactionCompletedRate}%`} />
-          <Stat label="Quality Checked" value={`${sar.qualityCheckedRate}%`} />
+          <Stat label="Redaction" value={`${formatRateLoose(sar.redactionCompletedRate)}`} />
+          <Stat label="Quality Checked" value={`${formatRateLoose(sar.qualityCheckedRate)}`} />
           <Stat label="Overdue" value={sar.overdueCount as number} />
         </div>
       </Section>
