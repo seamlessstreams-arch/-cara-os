@@ -277,6 +277,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "framework_mappings",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "generated_sessions",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "generic_records",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -292,6 +302,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "learning_resources",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "leave_requests",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -299,6 +314,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "maintenance_items",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "management_oversight_drafts",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {
@@ -324,6 +344,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "notifications",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "practice_intelligence_scans",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "practice_workflow_triggers",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {
@@ -376,6 +406,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "tasks",
     migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "therapeutic_profiles",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {
