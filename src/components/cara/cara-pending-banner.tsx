@@ -68,12 +68,22 @@ export function CaraPendingBanner({
   homeId,
   className,
 }: CaraPendingBannerProps) {
-  const { data: pending } = useCaraPending({
+  const { data: pending, isError } = useCaraPending({
     actorUserId,
     actorRole,
     homeId,
     limit: 50,
   });
+
+  // Returning null on a failed read would make approvals awaiting a manager
+  // simply not appear — indistinguishable from having none waiting.
+  if (isError) {
+    return (
+      <div className={cn("rounded-xl border border-[var(--cs-risk)]/30 p-3 text-xs text-[var(--cs-risk)]", className)}>
+        Pending Cara approvals could not be loaded — this is not the same as there being none.
+      </div>
+    );
+  }
 
   if (!pending || pending.length === 0) return null;
 
