@@ -87,10 +87,10 @@ async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInpu
     type: s.type ?? "other",
     reason: s.reason ?? "",
     duration: s.duration ?? undefined,
-    proportionate: s.proportionate ?? true,
-    childInformed: s.child_informed ?? true,
-    childUnderstood: s.child_understood ?? true,
-    linkedToBehaviour: s.linked_to_behaviour ?? true,
+    proportionate: s.proportionate ?? null,
+    childInformed: s.child_informed ?? null,
+    childUnderstood: s.child_understood ?? null,
+    linkedToBehaviour: s.linked_to_behaviour ?? null,
     staffMember: s.staff_member ?? "Unknown",
     behaviourCategory: s.behaviour_category ?? undefined,
     appealed: s.appealed ?? false,
@@ -121,8 +121,8 @@ async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInpu
     bspUpToDate: bsp?.is_current ?? false,
     bspReviewDate: bsp?.review_date ?? undefined,
     childParticipatedInBSP: bsp?.child_participated ?? false,
-    sanctionPolicyExplainedToChild: bsp?.policy_explained ?? true,
-    appealsProcessExplained: bsp?.appeals_explained ?? true,
+    sanctionPolicyExplainedToChild: bsp?.policy_explained ?? null,
+    appealsProcessExplained: bsp?.appeals_explained ?? null,
   };
 }
 
