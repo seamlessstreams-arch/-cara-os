@@ -73,18 +73,22 @@ export async function buildChildProfile(
 
   // ── Fetch recent incidents (last 28 days) ──────────────────────────────────
   const cutoff28 = new Date(Date.now() - 28 * 86400000).toISOString();
-  const { data: incidents } = await (sb.from("incidents") as SB)
-    .select("id, date, category, severity, trigger, description")
+  const { data: incidents } = await sb.from("incidents")
+    // category/trigger were phantom columns — naming them 400s the whole query
+    // on live, so every profile built with zero incident evidence.
+    .select("id, date, type, severity, description")
     .eq("child_id", childId)
     .gte("date", cutoff28)
     .order("date", { ascending: false })
     .limit(15);
 
-  const triggers = extractUnique(incidents?.map((i: any) => i.trigger).filter(Boolean) ?? []);
+  // No schema records an incident trigger (the archived one never had it) —
+  // honest empty until a capture field exists, not a keyword guess.
+  const triggers: string[] = [];
   const riskFlags: string[] = [];
-  if (incidents?.length >= 5) riskFlags.push("High incident frequency (5+ in 28 days)");
-  if (incidents?.some((i: any) => i.category === "self_harm")) riskFlags.push("Self-harm risk");
-  if (incidents?.some((i: any) => i.category === "missing")) riskFlags.push("Missing from care history");
+  if ((incidents?.length ?? 0) >= 5) riskFlags.push("High incident frequency (5+ in 28 days)");
+  if (incidents?.some((i) => i.type === "self_harm")) riskFlags.push("Self-harm risk");
+  if (incidents?.some((i) => i.type === "missing_from_care")) riskFlags.push("Missing from care history");
 
   if (incidents?.length) {
     evidenceRefs.push({
@@ -235,6 +239,3 @@ function buildDemoProfile(childId: string): CaraChildProfile {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function extractUnique(arr: string[]): string[] {
-  return [...new Set(arr)].slice(0, 6);
-}

@@ -19,7 +19,7 @@ function homeId(): string {
 interface WarningCheck {
   type: CaraStudioWarningType;
   title: string;
-  check: (sb: any, hId: string, childId?: string) => Promise<WarningResult | null>;
+  check: (sb: NonNullable<ReturnType<typeof createServerClient>>, hId: string, childId?: string) => Promise<WarningResult | null>;
 }
 
 interface WarningResult {
