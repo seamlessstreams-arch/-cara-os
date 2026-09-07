@@ -9,10 +9,8 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraRole } from "@/lib/cara/cara-permissions";
 
 import { seedDay } from "@/lib/seed-date";
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// Typed tables since the promotions — the client runs un-loosened;
+// tables still archived fall to the string overload.
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -44,7 +42,7 @@ export async function GET(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ data: getDemoAuditEvents() });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const { data, error } = await supabase.from("cara_audit_events")
     .select("*")

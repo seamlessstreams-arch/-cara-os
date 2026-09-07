@@ -22,16 +22,28 @@ import { generateId, todayStr } from "@/lib/utils";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-import type { Database } from "./types";
+import type { Database, Json } from "./types";
 
 /** Generated table rows — typing the mappers against these lets the compiler
  *  adjudicate every legacy-name fallback limb. */
 type Tables = Database["public"]["Tables"];
-function supabase(): LooseSupabase {
+function supabase() {
   const client = createServerClient();
   if (!client) throw new Error("Supabase not configured — check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
-  return client as unknown as LooseSupabase;
+  // Every table this module touches is in the generated Database type — the
+  // client runs fully typed since the promotions un-broke the schema.
+  return client;
+}
+
+
+/** Amendments create a successor pointing back via previous_version_id — a
+ *  row is current when no other row in the result supersedes it. The old
+ *  `.eq("is_current_version", true)` filter named a column the live table
+ *  does not have, which 400s the WHOLE read — these lists always fell to
+ *  their error paths on live. */
+function currentVersions(rows: Tables["care_events"]["Row"][]): Tables["care_events"]["Row"][] {
+  const superseded = new Set(rows.map((r) => r.previous_version_id).filter(Boolean));
+  return rows.filter((r) => !superseded.has(r.id));
 }
 
 /** Map a DB row to the CareEvent domain type. */
@@ -169,10 +181,9 @@ export const sbCareEvents = {
     const { data, error } = await sb
       .from("care_events")
       .select("*")
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findByChild(childId: string): Promise<CareEvent[]> {
@@ -180,11 +191,12 @@ export const sbCareEvents = {
     const { data, error } = await sb
       .from("care_events")
       .select("*")
-      .eq("child_id", childId)
-      .eq("is_current_version", true)
+      // child linkage lives in the child_ids array — the old scalar filter
+      // named a column the live table does not have.
+      .contains("child_ids", [childId])
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findByStatus(status: CareEvent["status"]): Promise<CareEvent[]> {
@@ -193,10 +205,9 @@ export const sbCareEvents = {
       .from("care_events")
       .select("*")
       .eq("status", status)
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findNeedingManagerReview(): Promise<CareEvent[]> {
@@ -217,10 +228,9 @@ export const sbCareEvents = {
       .from("care_events")
       .select("*")
       .eq("requires_reg40_triage", true)
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async create(data: Partial<CareEvent>): Promise<CareEvent> {
@@ -263,7 +273,7 @@ export const sbCareEvents = {
     };
     const { data: inserted, error } = await sb
       .from("care_events")
-      .insert(row)
+      .insert(row as unknown as Tables["care_events"]["Insert"])
       .select()
       .single();
     if (error) throw error;
@@ -346,7 +356,7 @@ export const sbCareEventRoutes = {
     };
     const { data: upserted, error } = await sb
       .from("care_event_routes")
-      .upsert(row, { onConflict: "care_event_id,route_type" })
+      .upsert(row as unknown as Tables["care_event_routes"]["Insert"], { onConflict: "care_event_id,route_type" })
       .select()
       .single();
     if (error) throw error;
@@ -364,7 +374,7 @@ export const sbCareEventRoutes = {
     if (data.last_retried_at !== undefined) row.last_attempted_at = data.last_retried_at;
     const { data: updated, error } = await sb
       .from("care_event_routes")
-      .update(row)
+      .update(row as unknown as Tables["care_event_routes"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -423,7 +433,7 @@ export const sbCareEventAuditLog = {
         home_id: data.home_id,
         action: data.action,
         actor_id: data.actor_staff_id,
-        detail: data.detail ?? {},
+        detail: (data.detail ?? {}) as Json,
       })
       .select()
       .single();
@@ -501,7 +511,7 @@ export const sbReg45EvidenceQueue = {
     };
     const { data: upserted, error } = await sb
       .from("reg45_evidence_queue")
-      .upsert(row, { onConflict: "care_event_id" })
+      .upsert(row as unknown as Tables["reg45_evidence_queue"]["Insert"], { onConflict: "care_event_id" })
       .select()
       .single();
     if (error) throw error;
@@ -520,7 +530,7 @@ export const sbReg45EvidenceQueue = {
     if (data.reviewed_at !== undefined) row.decided_at = data.reviewed_at;
     const { data: updated, error } = await sb
       .from("reg45_evidence_queue")
-      .update(row)
+      .update(row as unknown as Tables["reg45_evidence_queue"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -594,7 +604,7 @@ export const sbAnnexAEvidenceQueue = {
     };
     const { data: upserted, error } = await sb
       .from("annex_a_evidence_queue")
-      .upsert(row, { onConflict: "care_event_id,annex_a_section" })
+      .upsert(row as unknown as Tables["annex_a_evidence_queue"]["Insert"], { onConflict: "care_event_id,annex_a_section" })
       .select()
       .single();
     if (error) throw error;
@@ -610,7 +620,7 @@ export const sbAnnexAEvidenceQueue = {
     if (data.reviewed_at !== undefined) row.decided_at = data.reviewed_at;
     const { data: updated, error } = await sb
       .from("annex_a_evidence_queue")
-      .update(row)
+      .update(row as unknown as Tables["annex_a_evidence_queue"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -689,7 +699,7 @@ export const sbChildDailySummaries = {
     };
     const { data: upserted, error } = await sb
       .from("child_daily_summaries")
-      .upsert(row, { onConflict: "home_id,child_id,summary_date" })
+      .upsert(row as unknown as Tables["child_daily_summaries"]["Insert"], { onConflict: "home_id,child_id,summary_date" })
       .select()
       .single();
     if (error) throw error;
@@ -749,6 +759,7 @@ export const sbNotifications = {
         action_url: data.action_url ?? null,
         entity_type: data.entity_type ?? null,
         entity_id: data.entity_id ?? null,
+        read_at: null,
       })
       .select()
       .single();
