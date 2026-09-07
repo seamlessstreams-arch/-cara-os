@@ -54,7 +54,7 @@ export interface ChildGangsAffiliationRiskRow {
   county_lines_risk: boolean;
   nrm_referral_made: boolean;
   police_notified: boolean;
-  social_worker_notified: boolean;
+  social_worker_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   disruption_strategy: DisruptionStrategy | null;
   multi_agency_meeting_held: boolean;
   safety_plan_in_place: boolean;
@@ -306,7 +306,7 @@ export async function createRecord(input: {
       county_lines_risk: input.countyLinesRisk ?? false,
       nrm_referral_made: input.nrmReferralMade ?? false,
       police_notified: input.policeNotified ?? false,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       disruption_strategy: input.disruptionStrategy ?? null,
       multi_agency_meeting_held: input.multiAgencyMeetingHeld ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,

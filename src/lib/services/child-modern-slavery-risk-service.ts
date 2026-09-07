@@ -62,7 +62,7 @@ export interface ChildModernSlaveryRiskRow {
   nrm_referral_made: boolean;
   nrm_decision: NrmDecision | null;
   police_notified: boolean;
-  social_worker_notified: boolean;
+  social_worker_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   multi_agency_referral: boolean;
   safety_plan_in_place: boolean;
   specialist_service_involved: boolean;
@@ -304,7 +304,7 @@ export async function createChildModernSlaveryRisk(input: {
       nrm_referral_made: input.nrmReferralMade ?? false,
       nrm_decision: input.nrmDecision ?? null,
       police_notified: input.policeNotified ?? false,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       multi_agency_referral: input.multiAgencyReferral ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,
       specialist_service_involved: input.specialistServiceInvolved ?? false,

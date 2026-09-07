@@ -708,3 +708,19 @@ describe("child-fgm-risk-assessment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the cultural-sensitivity alert between recorded not-considered and unrecorded", () => {
+    const nullAlert = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: null })])
+      .find((a) => a.type === "cultural_sensitivity_not_considered");
+    const falseAlert = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: false })])
+      .find((a) => a.type === "cultural_sensitivity_not_considered");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no sensitivity alert when consideration is recorded", () => {
+    const alerts = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: true })]);
+    expect(alerts.some((a) => a.type === "cultural_sensitivity_not_considered")).toBe(false);
+  });
+});
