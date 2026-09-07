@@ -320,3 +320,21 @@ describe("safeguarding-referral-service", () => {
     });
   });
 });
+
+// ── Tri-state: a gap on an IMMEDIATE referral alerts, with honest wording ──
+describe("tri-state judgements", () => {
+  it("alerts on an unrecorded timeliness as a gap, not an asserted breach", () => {
+    const alerts = _testing.identifySafeguardingReferralAlerts([
+      makeRecord({ referral_urgency: "immediate", referral_timely: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "untimely_immediate_referral");
+    expect(a?.message).toMatch(/no timeliness recorded/i);
+    expect(a?.message).not.toMatch(/was not timely/i);
+  });
+  it("still asserts the breach when it was recorded", () => {
+    const alerts = _testing.identifySafeguardingReferralAlerts([
+      makeRecord({ referral_urgency: "immediate", referral_timely: false }),
+    ]);
+    expect(alerts.some((x) => /was not timely/i.test(x.message))).toBe(true);
+  });
+});

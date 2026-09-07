@@ -347,3 +347,14 @@ describe("missing-person-risk-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unassessed exploitation risk is not an identified one ──
+describe("tri-state judgements", () => {
+  it("counts only recorded identifications", () => {
+    const m = _testing.computeMissingPersonRiskMetrics([
+      makeRecord({ exploitation_risk_identified: null }),
+      makeRecord({ id: "r-2", exploitation_risk_identified: true }),
+    ]);
+    expect(m.exploitation_risk_count).toBe(1);
+  });
+});
