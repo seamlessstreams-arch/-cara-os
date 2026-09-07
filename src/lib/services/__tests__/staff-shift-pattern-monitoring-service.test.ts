@@ -133,3 +133,15 @@ describe("staff-shift-pattern-monitoring-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded working_time_directive_met as a failure", () => {
+    const alerts = _testing.identifyStaffShiftPatternAlerts([makeRecord({ working_time_directive_met: null })]);
+    expect(alerts.some((a) => /working time|directive/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyStaffShiftPatternAlerts([makeRecord({ working_time_directive_met: false })]);
+    expect(alerts.some((a) => /working time|directive/i.test(a.message))).toBe(true);
+  });
+});
