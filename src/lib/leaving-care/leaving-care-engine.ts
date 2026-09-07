@@ -542,7 +542,9 @@ export function evaluateIndependenceSkills(
 
       return {
         skill,
-        childCount: skillAssessments.length,
+        // Assessments, not children — a child reassessed on the same skill
+        // would otherwise be counted twice in a field named for children.
+        childCount: new Set(skillAssessments.map((a) => a.childId)).size,
         averageLevel: avg,
         competentCount: competent,
         label: getSkillCategoryLabel(skill),
