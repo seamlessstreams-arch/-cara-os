@@ -192,7 +192,7 @@ export interface Database {
           created_by: string | null;
           updated_by: string | null;
         };
-        Insert: Omit<Database["public"]["Tables"]["tasks"]["Row"], "id" | "created_at" | "updated_at"> & { id?: string };
+        Insert: Partial<Omit<Database["public"]["Tables"]["tasks"]["Row"], "created_at" | "updated_at">> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["tasks"]["Insert"]>;
         Relationships: [];
       };
@@ -904,7 +904,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["care_events"]["Row"], "id" | "created_at" | "updated_at"> & { id?: string };
+        Insert: Partial<Database["public"]["Tables"]["care_events"]["Row"]> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["care_events"]["Insert"]>;
         Relationships: [];
       };
@@ -924,7 +924,7 @@ export interface Database {
           completed_at: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["care_event_routes"]["Row"], "id" | "created_at"> & { id?: string };
+        Insert: Partial<Database["public"]["Tables"]["care_event_routes"]["Row"]> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["care_event_routes"]["Insert"]>;
         Relationships: [];
       };
