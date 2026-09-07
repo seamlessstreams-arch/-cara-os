@@ -131,3 +131,20 @@ describe("education-attendance-tracking-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded PEP status in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: null })]);
+    const alert = alerts.find((a) => a.type === "pep_not_current");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no PEP gap when the plan is recorded as current", () => {
+    const alerts = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: true })]);
+    expect(alerts.some((a) => a.type === "pep_not_current")).toBe(false);
+  });
+  it("does not dilute the PEP rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, pep_up_to_date: v }));
+    expect(computeEducationAttendanceMetrics(rows).pep_up_to_date_rate).toBe(100);
+  });
+});
