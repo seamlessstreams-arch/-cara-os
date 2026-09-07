@@ -297,6 +297,51 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "hr_audit_log",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_case_actions",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_case_chronology",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_cases",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_letters",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_process_guardian_audit_log",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_process_guardian_reviews",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_safer_recruitment",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_staff_profiles",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "incidents",
     migration: "00000000000000_lean_live_baseline.sql",
     columns: [],

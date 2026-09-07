@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import type { Database, Json } from "@/lib/supabase/types";
 import { renderLetterTemplate, type LetterContext } from "@/lib/hr/letterTemplates";
 import {
   reviewHrAction,
@@ -27,10 +28,7 @@ import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 import type { HrLetterType } from "@/lib/hr/types";
 import { readJsonBody } from "@/lib/http/read-json";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// The HR tables are typed since the promotion — the client runs un-loosened.
 
 // Map letter_type → guardian action_type. The Guardian doesn't have a
 // 1:1 entry for every HR letter type, so we map to the closest equivalent.
@@ -151,7 +149,7 @@ export async function POST(req: NextRequest) {
       data: { letter: { draftBody, status: "cara_draft", letterType }, guardianReview, persisted: false },
     });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   // Persist the Guardian review first (when present), so we can reference it.
   let guardianReviewId: string | null = null;
@@ -176,9 +174,9 @@ export async function POST(req: NextRequest) {
       evidence_quality: guardianReview.evidenceQuality,
       wording_risk: guardianReview.wordingRisk,
       prejudgment_signals: guardianReview.prejudgmentSignals,
-      flags: guardianReview.flags,
+      flags: guardianReview.flags as unknown as Json,
       suggested_safer_wording: guardianReview.suggestedSaferWording ?? null,
-      suggested_actions: guardianReview.suggestedActions,
+      suggested_actions: guardianReview.suggestedActions as unknown as Json,
       regulatory_links: guardianReview.regulatoryLinks,
       cara_confidence: guardianReview.caraConfidence,
       llm_used: guardianReview.llmUsed,
@@ -230,7 +228,7 @@ export async function POST(req: NextRequest) {
       staffId,
       guardianReviewId,
       guardianJudgement: guardianReview?.fairnessJudgement,
-    },
+    } as Json,
   });
 
   return NextResponse.json({
@@ -255,7 +253,7 @@ export async function GET(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -296,7 +294,7 @@ export async function PATCH(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -407,7 +405,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data: updated, error: updateError } = await supabase
     .from("hr_letters")
-    .update(updates)
+    .update(updates as Database["public"]["Tables"]["hr_letters"]["Update"]) // keys allowlisted above
     .eq("id", letterId)
     .select()
     .single();

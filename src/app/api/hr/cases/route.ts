@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import type { Database, Json } from "@/lib/supabase/types";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 import type {
   HrCase,
@@ -24,10 +25,7 @@ import type {
 } from "@/lib/hr/types";
 import { readJsonBody } from "@/lib/http/read-json";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// The HR tables are typed since the promotion — the client runs un-loosened.
 
 const VALID_CASE_TYPES: HrCaseType[] = [
   "disciplinary", "grievance", "capability", "sickness_absence", "probation",
@@ -54,7 +52,7 @@ export async function POST(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -187,7 +185,7 @@ export async function GET(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -230,7 +228,7 @@ export async function GET(req: NextRequest) {
         actor_user_id: actorUserId,
         actor_role: actorRole,
         event_type: "restricted_access",
-        event_detail: { reason: access.reason },
+        event_detail: { reason: access.reason } as Json,
       });
       return NextResponse.json({ error: "Access denied", reason: access.reason }, { status: 403 });
     }
@@ -281,7 +279,7 @@ export async function PATCH(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -353,7 +351,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data: updated, error: updateError } = await supabase
     .from("hr_cases")
-    .update(updates)
+    .update(updates as Database["public"]["Tables"]["hr_cases"]["Update"]) // keys allowlisted above
     .eq("id", caseId)
     .select()
     .single();

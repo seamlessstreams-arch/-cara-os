@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import type { Database, Json } from "@/lib/supabase/types";
 import {
   reviewHrAction,
   type GuardianInput,
@@ -25,10 +26,7 @@ import {
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 import { readJsonBody } from "@/lib/http/read-json";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// The HR tables are typed since the promotion — the client runs un-loosened.
 
 const VALID_DECISIONS = ["approve", "edit", "reject", "request_rewrite"] as const;
 type Decision = (typeof VALID_DECISIONS)[number];
@@ -139,7 +137,7 @@ export async function POST(req: NextRequest) {
       data: { review, persisted: false, caraLabel: review.caraLabel },
     });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const reviewId = `hpg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -162,9 +160,9 @@ export async function POST(req: NextRequest) {
     evidence_quality: review.evidenceQuality,
     wording_risk: review.wordingRisk,
     prejudgment_signals: review.prejudgmentSignals,
-    flags: review.flags,
+    flags: review.flags as unknown as Json,
     suggested_safer_wording: review.suggestedSaferWording ?? null,
-    suggested_actions: review.suggestedActions,
+    suggested_actions: review.suggestedActions as unknown as Json,
     regulatory_links: review.regulatoryLinks,
     cara_confidence: review.caraConfidence,
     llm_used: review.llmUsed,
@@ -224,7 +222,7 @@ export async function GET(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -263,7 +261,7 @@ export async function PATCH(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -364,7 +362,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data: updated, error: updateError } = await supabase
     .from("hr_process_guardian_reviews")
-    .update(updates)
+    .update(updates as Database["public"]["Tables"]["hr_process_guardian_reviews"]["Update"]) // keys allowlisted above
     .eq("id", reviewId)
     .select()
     .single();
@@ -377,7 +375,7 @@ export async function PATCH(req: NextRequest) {
     actor_user_id: actorUserId,
     actor_role: actorRole,
     event_type: eventType,
-    event_detail: eventDetail,
+    event_detail: eventDetail as Json,
   });
 
   await supabase.from("hr_audit_log").insert({
@@ -387,7 +385,7 @@ export async function PATCH(req: NextRequest) {
     actor_user_id: actorUserId,
     actor_role: actorRole,
     event_type: eventType === "approved" ? "approved" : eventType === "rejected" ? "rejected" : "edited",
-    event_detail: eventDetail,
+    event_detail: eventDetail as Json,
   });
 
   return NextResponse.json({ data: { review: updated, decision } });
