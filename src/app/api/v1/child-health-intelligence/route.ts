@@ -41,17 +41,15 @@ export async function GET(request: NextRequest) {
 
   // ── Medications ───────────────────────────────────────────────────────
   const medications: MedicationInput[] = (medicationsList ?? [])
-    .filter((m) => m.young_person_id === childId || m.child_id === childId)
+    .filter((m) => m.child_id === childId)
     .map((m) => ({
       id: m.id,
-      name: m.name ?? m.medication_name ?? "Unknown",
-      type: m.type ?? m.medication_type ?? "regular",
+      name: m.name ?? "Unknown",
+      type: m.type ?? "regular",
       dosage: m.dosage ?? "",
       frequency: m.frequency ?? "daily",
-      // `?? true` after a boolean comparison is unreachable — the intended
-      // default only applies when neither field is recorded.
-      is_active: m.is_active ?? (m.status ? m.status === "active" : true),
-      start_date: (m.start_date ?? m.date ?? "").slice(0, 10),
+      is_active: m.is_active ?? true,
+      start_date: (m.start_date ?? "").slice(0, 10),
       end_date: m.end_date ? m.end_date.slice(0, 10) : null,
     }));
 
@@ -61,9 +59,9 @@ export async function GET(request: NextRequest) {
     .map((a) => ({
       id: a.id,
       medication_id: a.medication_id ?? "",
-      date: (a.date ?? a.scheduled_time ?? a.actual_time ?? "").slice(0, 10),
+      date: (a.actual_time ?? a.scheduled_time ?? "").slice(0, 10),
       status: a.status ?? "given",
-      witnessed: a.witnessed ?? a.witness_id != null,
+      witnessed: a.witnessed_by != null,
     }));
 
   // ── Health Assessments ────────────────────────────────────────────────

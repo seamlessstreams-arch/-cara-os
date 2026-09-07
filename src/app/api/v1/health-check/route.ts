@@ -46,9 +46,9 @@ export async function GET(_req: NextRequest) {
   const [youngPeople, incidents, allMars, shifts, training] = await Promise.all([
     safeList(dal.youngPeople.findAll() as unknown as Promise<Record<string, unknown>[]>),
     safeList(dal.incidents.findAll() as unknown as Promise<Record<string, unknown>[]>),
-    safeList(dal.medicationAdministrations.findAll() as Promise<Record<string, unknown>[]>),
-    safeList(dal.shifts.findAll() as Promise<Record<string, unknown>[]>),
-    safeList(dal.training.findAll() as Promise<Record<string, unknown>[]>),
+    safeList(dal.medicationAdministrations.findAll() as unknown as Promise<Record<string, unknown>[]>),
+    safeList(dal.shifts.findAll() as unknown as Promise<Record<string, unknown>[]>),
+    safeList(dal.training.findAll() as unknown as Promise<Record<string, unknown>[]>),
   ]);
 
   // Nothing to assess — an empty or newly-provisioned home. Report it honestly

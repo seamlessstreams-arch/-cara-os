@@ -86,12 +86,12 @@ export async function GET() {
   // ── Tasks ──────────────────────────────────────────────────────────────────
   const tasks: TaskInput[] = (((allTasks))).map((t) => ({
     id: String(t.id),
-    title: t.title ?? t.name ?? "Task",
+    title: t.title ?? "Task",
     due_date: t.due_date ?? null,
     status: t.status ?? null,
     priority: t.priority ?? null,
     assigned_name: t.assigned_to ? (getStaffName(t.assigned_to) || null) : null,
-    child_name: nameOf(t.linked_child_id ?? t.child_id),
+    child_name: nameOf(t.linked_child_id),
   }));
 
   // ── Plan reviews due (verified registry, current children only) ────────────
@@ -129,8 +129,8 @@ export async function GET() {
       id: String(mm.id),
       child_id: String(mm.child_id),
       child_name: nameOf(mm.child_id),
-      name: mm.name ?? mm.medication_name ?? "Medication",
-      dosage: mm.dosage ?? mm.dose ?? null,
+      name: mm.name ?? "Medication",
+      dosage: mm.dosage ?? null,
       frequency: mm.frequency ?? null,
       prn: String(mm.type ?? "").toLowerCase() === "prn",
     }));

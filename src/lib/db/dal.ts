@@ -23,8 +23,15 @@ import type { BehaviourSupportPlan } from "@/types/extended";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
 // was collapsing the union — so every consumer had to annotate `(x: any)`.
-import type { YoungPerson, Incident, DailyLogEntry } from "@/types";
-import type { MissingEpisode } from "@/types/extended";
+import type {
+  YoungPerson, Incident, DailyLogEntry, Home, StaffMember, Task, Shift,
+  LeaveRequest, TrainingRecord, Medication, MedicationAdministration,
+  Supervision, Document, Expense, CareForm, DocumentReadReceipt,
+} from "@/types";
+import type {
+  MissingEpisode, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
+  Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
+} from "@/types/extended";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -53,6 +60,15 @@ interface GenericRecordRow {
   updated_at: string;
 }
 
+// Live Supabase rows and the in-memory app types share the same columns
+// (field census 2026-09-06, fix/typed-queries-facade). Rows may carry `null`
+// where app types say `undefined` — consumers handle both, and have since
+// go-live. This is the ONE documented seam between the generated Row types
+// and the app contract; field drift is caught by the census, not per-site.
+function asApp<T>(rows: unknown): T {
+  return rows as T;
+}
+
 export const dal = {
   // ── Home ──────────────────────────────────────────────────────────────────
   // The one home this deployment serves. In demo mode this is the seeded home
@@ -61,7 +77,7 @@ export const dal = {
   home: {
     async get() {
       const c = sb();
-      if (c) return sq.getHome(c, homeId());
+      if (c) return asApp<Home | null>(await sq.getHome(c, homeId()));
       return db.home.get();
     },
   },
@@ -70,17 +86,17 @@ export const dal = {
   staff: {
     async findAll(filters?: { role?: string; employment_type?: string; status?: string }) {
       const c = sb();
-      if (c) return sq.getStaff(c, homeId(), filters);
+      if (c) return asApp<StaffMember[]>(await sq.getStaff(c, homeId(), filters));
       return db.staff.findAll();
     },
     async findById(id: string) {
       const c = sb();
-      if (c) return sq.getStaffById(c, id);
+      if (c) return asApp<StaffMember | null>(await sq.getStaffById(c, id));
       return db.staff.findById(id);
     },
     async findActive() {
       const c = sb();
-      if (c) return sq.getStaff(c, homeId(), { status: "active" });
+      if (c) return asApp<StaffMember[]>(await sq.getStaff(c, homeId(), { status: "active" }));
       return db.staff.findActive();
     },
     async create(data: Parameters<typeof db.staff.create>[0]) {
@@ -101,17 +117,17 @@ export const dal = {
   youngPeople: {
     async findAll(status?: string): Promise<YoungPerson[]> {
       const c = sb();
-      if (c) return sq.getYoungPeople(c, homeId(), status);
+      if (c) return asApp<YoungPerson[]>(await sq.getYoungPeople(c, homeId(), status));
       return db.youngPeople.findAll();
     },
     async findById(id: string): Promise<YoungPerson | null> {
       const c = sb();
-      if (c) return sq.getYoungPersonById(c, id);
+      if (c) return asApp<YoungPerson | null>(await sq.getYoungPersonById(c, id));
       return db.youngPeople.findById(id) ?? null;
     },
     async findCurrent(): Promise<YoungPerson[]> {
       const c = sb();
-      if (c) return sq.getYoungPeople(c, homeId(), "current");
+      if (c) return asApp<YoungPerson[]>(await sq.getYoungPeople(c, homeId(), "current"));
       return db.youngPeople.findCurrent();
     },
     async create(data: Parameters<typeof db.youngPeople.create>[0]) {
@@ -130,22 +146,22 @@ export const dal = {
   tasks: {
     async findAll(filters?: { assigned_to?: string; status?: string; priority?: string; category?: string; overdue?: boolean }) {
       const c = sb();
-      if (c) return sq.getTasks(c, homeId(), filters);
+      if (c) return asApp<Task[]>(await sq.getTasks(c, homeId(), filters));
       return db.tasks.findAll();
     },
     async findById(id: string) {
       const c = sb();
-      if (c) return sq.getTaskById(c, id);
+      if (c) return asApp<Task | null>(await sq.getTaskById(c, id));
       return db.tasks.findById(id);
     },
     async findActive() {
       const c = sb();
-      if (c) return sq.getActiveTasks(c, homeId());
+      if (c) return asApp<Task[]>(await sq.getActiveTasks(c, homeId()));
       return db.tasks.findActive();
     },
     async findOverdue() {
       const c = sb();
-      if (c) return sq.getTasks(c, homeId(), { overdue: true });
+      if (c) return asApp<Task[]>(await sq.getTasks(c, homeId(), { overdue: true }));
       return db.tasks.findOverdue();
     },
     async create(data: Parameters<typeof db.tasks.create>[0]) {
@@ -166,12 +182,12 @@ export const dal = {
   incidents: {
     async findAll(filters?: { status?: string; child_id?: string; needs_oversight?: boolean }): Promise<Incident[]> {
       const c = sb();
-      if (c) return sq.getIncidents(c, homeId(), filters);
+      if (c) return asApp<Incident[]>(await sq.getIncidents(c, homeId(), filters));
       return db.incidents.findAll();
     },
     async findById(id: string): Promise<Incident | null> {
       const c = sb();
-      if (c) return sq.getIncidentById(c, id);
+      if (c) return asApp<Incident | null>(await sq.getIncidentById(c, id));
       return db.incidents.findById(id) ?? null;
     },
     async create(data: Parameters<typeof db.incidents.create>[0]) {
@@ -195,7 +211,7 @@ export const dal = {
   missingEpisodes: {
     async findAll(filters?: { child_id?: string; status?: string; risk_level?: string }): Promise<MissingEpisode[]> {
       const c = sb();
-      if (c) return sq.getMissingEpisodes(c, homeId(), filters);
+      if (c) return asApp<MissingEpisode[]>(await sq.getMissingEpisodes(c, homeId(), filters));
       return db.missingEpisodes.findAll();
     },
     async create(data: Parameters<typeof db.missingEpisodes.create>[0]) {
@@ -218,7 +234,7 @@ export const dal = {
     /** Shifts for the week beginning `weekStart` (defaults to the current week). */
     async findAll(weekStart?: string) {
       const c = sb();
-      if (c) return sq.getShiftsForWeek(c, homeId(), weekStart ?? todayStr());
+      if (c) return asApp<Shift[]>(await sq.getShiftsForWeek(c, homeId(), weekStart ?? todayStr()));
       const all = db.shifts.findAll();
       if (!weekStart) return all;
       const end = new Date(weekStart + "T00:00:00Z");
@@ -228,12 +244,12 @@ export const dal = {
     },
     async findToday() {
       const c = sb();
-      if (c) return sq.getShiftsToday(c, homeId());
+      if (c) return asApp<Shift[]>(await sq.getShiftsToday(c, homeId()));
       return db.shifts.findToday();
     },
     async findByStaff(staffId: string) {
       const c = sb();
-      if (c) return sq.getShiftsByStaff(c, homeId(), staffId);
+      if (c) return asApp<Shift[]>(await sq.getShiftsByStaff(c, homeId(), staffId));
       return db.shifts.findByStaff(staffId);
     },
     async create(data: Parameters<typeof db.shifts.create>[0]) {
@@ -254,17 +270,17 @@ export const dal = {
   leave: {
     async findAll(filters?: { staff_id?: string; status?: string; leave_type?: string }) {
       const c = sb();
-      if (c) return sq.getLeaveRequests(c, homeId(), filters);
+      if (c) return asApp<LeaveRequest[]>(await sq.getLeaveRequests(c, homeId(), filters));
       return db.leave.findAll();
     },
     async findPending() {
       const c = sb();
-      if (c) return sq.getLeaveRequests(c, homeId(), { status: "pending" });
+      if (c) return asApp<LeaveRequest[]>(await sq.getLeaveRequests(c, homeId(), { status: "pending" }));
       return db.leave.findPending();
     },
     async findOnLeaveToday() {
       const c = sb();
-      if (c) return sq.getLeaveOnDate(c, homeId(), todayStr());
+      if (c) return asApp<LeaveRequest[]>(await sq.getLeaveOnDate(c, homeId(), todayStr()));
       return db.leave.findOnLeaveToday();
     },
     async create(data: Parameters<typeof db.leave.create>[0]) {
@@ -278,12 +294,12 @@ export const dal = {
   training: {
     async findAll(filters?: { staff_id?: string; status?: string; category?: string }) {
       const c = sb();
-      if (c) return sq.getTrainingRecords(c, homeId(), filters);
+      if (c) return asApp<TrainingRecord[]>(await sq.getTrainingRecords(c, homeId(), filters));
       return db.training.findAll();
     },
     async findByStaff(staffId: string) {
       const c = sb();
-      if (c) return sq.getTrainingRecords(c, homeId(), { staff_id: staffId });
+      if (c) return asApp<TrainingRecord[]>(await sq.getTrainingRecords(c, homeId(), { staff_id: staffId }));
       return db.training.findByStaff(staffId);
     },
     async create(data: Parameters<typeof db.training.create>[0]) {
@@ -306,12 +322,12 @@ export const dal = {
   medications: {
     async findAll(childId?: string) {
       const c = sb();
-      if (c) return sq.getMedications(c, homeId(), childId);
+      if (c) return asApp<Medication[]>(await sq.getMedications(c, homeId(), childId));
       return db.medications.findAll();
     },
     async findByChild(childId: string) {
       const c = sb();
-      if (c) return sq.getMedications(c, homeId(), childId);
+      if (c) return asApp<Medication[]>(await sq.getMedications(c, homeId(), childId));
       return db.medications.findByChild(childId);
     },
     async create(data: Parameters<typeof db.medications.create>[0]) {
@@ -324,7 +340,7 @@ export const dal = {
   medicationAdministrations: {
     async findAll(filters?: { child_id?: string; medication_id?: string; since?: string }) {
       const c = sb();
-      if (c) return sq.getMedicationAdministrations(c, homeId(), filters);
+      if (c) return asApp<MedicationAdministration[]>(await sq.getMedicationAdministrations(c, homeId(), filters));
       return db.medicationAdministrations.findAll();
     },
     async create(data: Partial<Parameters<typeof sq.createMedicationAdministration>[1]>) {
@@ -343,12 +359,12 @@ export const dal = {
   dailyLog: {
     async findAll(filters?: { child_id?: string; date?: string; entry_type?: string; days?: number }): Promise<DailyLogEntry[]> {
       const c = sb();
-      if (c) return sq.getDailyLog(c, homeId(), filters);
+      if (c) return asApp<DailyLogEntry[]>(await sq.getDailyLog(c, homeId(), filters));
       return db.dailyLog.findAll();
     },
     async findByChild(childId: string): Promise<DailyLogEntry[]> {
       const c = sb();
-      if (c) return sq.getDailyLog(c, homeId(), { child_id: childId });
+      if (c) return asApp<DailyLogEntry[]>(await sq.getDailyLog(c, homeId(), { child_id: childId }));
       return db.dailyLog.findByChild(childId);
     },
     async create(data: Parameters<typeof db.dailyLog.create>[0]) {
@@ -362,7 +378,7 @@ export const dal = {
   supervisions: {
     async findAll(filters?: { staff_id?: string; supervisor_id?: string; status?: string; overdue?: boolean }) {
       const c = sb();
-      if (c) return sq.getSupervisions(c, homeId(), filters);
+      if (c) return asApp<Supervision[]>(await sq.getSupervisions(c, homeId(), filters));
       // In-memory fallback: apply the same filters client-side so demo mode
       // matches live behavior. The primitives (findByStaff, findScheduled,
       // etc.) exist on store.supervisions if a single-filter fast path is ever
@@ -379,7 +395,7 @@ export const dal = {
     },
     async findById(id: string) {
       const c = sb();
-      if (c) return sq.getSupervisionById(c, id);
+      if (c) return asApp<Supervision | null>(await sq.getSupervisionById(c, id));
       return db.supervisions.findById(id);
     },
     async create(data: Parameters<typeof db.supervisions.create>[0]) {
@@ -398,7 +414,7 @@ export const dal = {
   documents: {
     async findAll(filters?: { category?: string; requires_read_sign?: boolean }) {
       const c = sb();
-      if (c) return sq.getDocuments(c, homeId(), filters);
+      if (c) return asApp<Document[]>(await sq.getDocuments(c, homeId(), filters));
       return db.documents.findAll();
     },
     async findById(id: string) {
@@ -423,7 +439,7 @@ export const dal = {
     },
     async findByDocument(docId: string) {
       const c = sb();
-      if (c) return sq.getDocumentReadReceipts(c, [docId]);
+      if (c) return asApp<DocumentReadReceipt[]>(await sq.getDocumentReadReceipts(c, [docId]));
       return db.documentReadReceipts.findByDocument(docId);
     },
     async upsertSignature(docId: string, staffId: string) {
@@ -437,7 +453,7 @@ export const dal = {
   expenses: {
     async findAll(filters?: { status?: string; submitted_by?: string }) {
       const c = sb();
-      if (c) return sq.getExpenses(c, homeId(), filters);
+      if (c) return asApp<Expense[]>(await sq.getExpenses(c, homeId(), filters));
       return db.expenses.findAll();
     },
     async create(data: Parameters<typeof db.expenses.create>[0]) {
@@ -456,12 +472,12 @@ export const dal = {
   careForms: {
     async findAll(filters?: { status?: string; form_type?: string; linked_child_id?: string; priority?: string; pending_review?: boolean }) {
       const c = sb();
-      if (c) return sq.getCareForms(c, homeId(), filters);
+      if (c) return asApp<CareForm[]>(await sq.getCareForms(c, homeId(), filters));
       return db.careForms.findAll();
     },
     async findById(id: string) {
       const c = sb();
-      if (c) return sq.getCareFormById(c, id);
+      if (c) return asApp<CareForm | null>(await sq.getCareFormById(c, id));
       return db.careForms.findById(id);
     },
     async create(data: Parameters<typeof db.careForms.create>[0]) {
@@ -490,7 +506,7 @@ export const dal = {
   qaAudits: {
     async findAll(filters?: { status?: string; category?: string }) {
       const c = sb();
-      if (c) return sq.getQaAudits(c, homeId(), filters);
+      if (c) return asApp<Audit[]>(await sq.getQaAudits(c, homeId(), filters));
       return db.audits.findAll();
     },
     async create(data: Parameters<typeof db.audits.create>[0]) {
@@ -509,7 +525,7 @@ export const dal = {
   maintenance: {
     async findAll(filters?: { status?: string; priority?: string }) {
       const c = sb();
-      if (c) return sq.getMaintenanceItems(c, homeId(), filters);
+      if (c) return asApp<MaintenanceItem[]>(await sq.getMaintenanceItems(c, homeId(), filters));
       return db.maintenance.findAll();
     },
     async findById(id: string) {
@@ -535,12 +551,12 @@ export const dal = {
   chronology: {
     async findAll() {
       const c = sb();
-      if (c) return sq.getChronologyEntries(c, homeId());
+      if (c) return asApp<ChronologyEntry[]>(await sq.getChronologyEntries(c, homeId()));
       return db.chronology.findAll();
     },
     async findByChild(childId: string) {
       const c = sb();
-      if (c) return sq.getChronologyEntries(c, homeId(), childId);
+      if (c) return asApp<ChronologyEntry[]>(await sq.getChronologyEntries(c, homeId(), childId));
       return db.chronology.findByChild(childId);
     },
     async create(data: Parameters<typeof db.chronology.create>[0]) {
@@ -554,7 +570,7 @@ export const dal = {
   handovers: {
     async findAll(limit?: number) {
       const c = sb();
-      if (c) return sq.getHandovers(c, homeId(), limit);
+      if (c) return asApp<HandoverEntry[]>(await sq.getHandovers(c, homeId(), limit));
       return db.handovers.findAll();
     },
     async findById(id: string) {
@@ -575,7 +591,7 @@ export const dal = {
   buildings: {
     async findAll() {
       const c = sb();
-      if (c) return sq.getBuildings(c, homeId());
+      if (c) return asApp<Building[]>(await sq.getBuildings(c, homeId()));
       return facilityStore.buildings.findAll();
     },
     async findById(id: string) {
@@ -595,7 +611,7 @@ export const dal = {
   buildingChecks: {
     async findAll(buildingId?: string) {
       const c = sb();
-      if (c) return sq.getBuildingChecks(c, homeId(), buildingId);
+      if (c) return asApp<BuildingCheck[]>(await sq.getBuildingChecks(c, homeId(), buildingId));
       return facilityStore.buildingChecks.findAll();
     },
     async create(data: Parameters<typeof facilityStore.buildingChecks.create>[0]) {
@@ -609,7 +625,7 @@ export const dal = {
   vehicles: {
     async findAll() {
       const c = sb();
-      if (c) return sq.getVehicles(c, homeId());
+      if (c) return asApp<Vehicle[]>(await sq.getVehicles(c, homeId()));
       return facilityStore.vehicles.findAll();
     },
     async findById(id: string) {
@@ -629,7 +645,7 @@ export const dal = {
   vehicleChecks: {
     async findAll(vehicleId?: string) {
       const c = sb();
-      if (c) return sq.getVehicleChecks(c, homeId(), vehicleId);
+      if (c) return asApp<VehicleCheck[]>(await sq.getVehicleChecks(c, homeId(), vehicleId));
       return facilityStore.vehicleChecks.findAll();
     },
     async create(data: Parameters<typeof facilityStore.vehicleChecks.create>[0]) {
@@ -643,7 +659,7 @@ export const dal = {
   notifications: {
     async findForUser(userId: string) {
       const c = sb();
-      if (c) return sq.getNotifications(c, homeId(), userId);
+      if (c) return asApp<AppNotification[]>(await sq.getNotifications(c, homeId(), userId));
       return db.notifications.findForUser(userId);
     },
     async create(data: Parameters<typeof db.notifications.create>[0]) {
@@ -1967,7 +1983,8 @@ export function genericTable<T extends { id: string }>(
       const c = sb();
       if (c && recordType) {
         const rows = await sq.getGenericRecords(c, homeId(), recordType, filters);
-        return rows.map((r) => ({ id: r.id, ...r.data, created_at: r.created_at, updated_at: r.updated_at }) as T);
+        // data holds the record object by construction (generic-records store objects)
+        return rows.map((r) => ({ id: r.id, ...(r.data as Record<string, unknown>), created_at: r.created_at, updated_at: r.updated_at }) as unknown as T);
       }
       return memoryGetAll();
     },
@@ -2012,9 +2029,9 @@ export function genericTable<T extends { id: string }>(
         // Updating a record that is not there is a miss, not a crash — this
         // used to read `.data` straight off a null and throw a 500.
         if (!existing) return null;
-        const merged = { ...existing.data, ...data };
+        const merged = { ...(existing.data as Record<string, unknown>), ...data };
         const updated = (await sq.updateGenericRecord(c, id, {
-          data: merged,
+          data: merged as import("@/lib/supabase/types").Json, // plain record by construction
           updated_by: data.updated_by ?? null,
         })) as GenericRecordRow | null;
         if (!updated) return null;

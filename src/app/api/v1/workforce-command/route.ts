@@ -107,7 +107,10 @@ export async function GET(req: Request) {
   const recent_activity = [
     ...supRecords.map((r) => ({ kind: "supervision", label: `Reflective supervision — ${r.staff_name}`, when: iso(r.date), href: "/reflective-supervision" })),
     ...(candidates ?? []).map((c) => ({ kind: "recruitment", label: `Candidate — ${[c.first_name, c.last_name].filter(Boolean).join(" ")} (${String(c.current_stage).replace(/_/g, " ")})`, when: iso(c.updated_at) || iso(c.created_at), href: "/recruitment" })),
-    ...(inductions ?? []).map((i) => ({ kind: "onboarding", label: `Induction — ${staffName((allStaff ?? []).find((s) => s.id === i.staff_id) || { id: i.staff_id })} (${String(i.overall_status).replace(/_/g, " ")})`, when: iso(i.start_date), href: "/staff-induction" })),
+    ...(inductions ?? []).map((i) => {
+      const st = (allStaff ?? []).find((s) => s.id === i.staff_id);
+      return { kind: "onboarding", label: `Induction — ${st ? staffName(st) : String(i.staff_id)} (${String(i.overall_status).replace(/_/g, " ")})`, when: iso(i.start_date), href: "/staff-induction" };
+    }),
   ].filter((a) => a.when).sort((a, b) => String(b.when).localeCompare(String(a.when))).slice(0, 6);
 
   return NextResponse.json({ data: { ...result, recent_activity } });
