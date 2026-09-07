@@ -21,7 +21,10 @@ type Row = Record<string, unknown>;
 function table(rows: Row[] | null) {
   const terminal = { data: rows, error: rows ? null : { message: "relation does not exist" } };
   const b: Record<string, unknown> = {};
-  for (const m of ["select", "eq", "neq", "in", "is", "not", "contains", "or", "gte", "lte", "gt", "lt", "like", "ilike", "order", "range", "limit"]) {
+  for (const m of ["select", "eq", "neq", "in", "is", "not", "contains", "or", "gte", "lte", "gt", "lt", "like", "ilike", "order", "range", "limit",
+    // Write chains are accepted and resolve to the seeded rows — enough to
+    // smoke a service's call path; the DDL itself is validated in PGlite.
+    "insert", "update", "upsert", "delete"]) {
     b[m] = () => b;
   }
   b.single = () => Promise.resolve({ data: rows?.[0] ?? null, error: rows?.length ? null : { message: "no rows" } });
