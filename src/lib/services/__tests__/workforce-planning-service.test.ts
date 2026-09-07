@@ -257,7 +257,7 @@ describe("computeWorkforceMetrics", () => {
     expect(result.agency_count).toBe(0);
     expect(result.agency_rate).toBeNull();;
     expect(result.staff_child_ratio).toBe(0);
-    expect(result.meets_ratio).toBe(true);
+    expect(result.meets_ratio).toBe(null);
     expect(result.open_vacancies).toBe(0);
     expect(result.avg_time_to_fill).toBe(0);
     expect(result.succession_coverage).toBeNull();;
@@ -374,9 +374,9 @@ describe("computeWorkforceMetrics", () => {
     expect(result.meets_ratio).toBe(false);
   });
 
-  it("defaults meets_ratio to true with no snapshots", () => {
+  it("reports meets_ratio as not recorded with no snapshots", () => {
     const result = computeWorkforceMetrics([], [], []);
-    expect(result.meets_ratio).toBe(true);
+    expect(result.meets_ratio).toBe(null);
   });
 
   // ── open_vacancies ──────────────────────────────────────────────────────
@@ -1506,7 +1506,7 @@ describe("Edge cases", () => {
     expect(typeof result.agency_count).toBe("number");
     expect(["number", "object"]).toContain(typeof result.agency_rate); // number | null
     expect(typeof result.staff_child_ratio).toBe("number");
-    expect(typeof result.meets_ratio).toBe("boolean");
+    expect(["boolean", "object"]).toContain(typeof result.meets_ratio); // boolean | null
     expect(typeof result.open_vacancies).toBe("number");
     expect(typeof result.avg_time_to_fill).toBe("number");
     expect(["number", "object"]).toContain(typeof result.succession_coverage); // number | null

@@ -85,7 +85,7 @@ export interface SleepDisturbanceInterventionRow {
   sleep_plan_in_place: boolean;
   clinical_referral_made: boolean;
   trauma_link_identified: boolean;
-  parent_carer_informed: boolean;
+  parent_carer_informed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   pattern_identified: boolean;
   environment_adapted: boolean;
   staff_debriefed: boolean;
@@ -369,7 +369,7 @@ export async function createSleepDisturbanceIntervention(input: {
       sleep_plan_in_place: input.sleepPlanInPlace ?? false,
       clinical_referral_made: input.clinicalReferralMade ?? false,
       trauma_link_identified: input.traumaLinkIdentified ?? false,
-      parent_carer_informed: input.parentCarerInformed ?? true,
+      parent_carer_informed: input.parentCarerInformed ?? null,
       pattern_identified: input.patternIdentified ?? false,
       environment_adapted: input.environmentAdapted ?? false,
       staff_debriefed: input.staffDebriefed ?? false,

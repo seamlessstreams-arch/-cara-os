@@ -1168,3 +1168,19 @@ describe("makeRow helper", () => {
     expect(row.home_id).toBe("fixed-home");
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the fitness critical between recorded not-fit and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ fit_to_return: null, adjustments_required: false })])
+      .find((a) => a.type === "not_fit_no_adjustments");
+    const falseAlert = computeAlerts([makeRow({ fit_to_return: false, adjustments_required: false })])
+      .find((a) => a.type === "not_fit_no_adjustments");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("counts only recorded not-fit outcomes in the metric", () => {
+    const rows = [null, null, false].map((v, i) => makeRow({ id: `r-${i}`, fit_to_return: v }));
+    expect(computeMetrics(rows).not_fit_count).toBe(1);
+  });
+});

@@ -107,7 +107,7 @@ export interface FinancialTransaction {
   receipt_reference: string | null;
   authorised_by: string;
   witnessed_by: string | null;
-  child_present: boolean;
+  child_present: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   balance_after: number | null;
   notes: string | null;
   created_at: string;
@@ -564,7 +564,7 @@ export async function createTransaction(
       receipt_reference: input.receiptReference ?? null,
       authorised_by: input.authorisedBy,
       witnessed_by: input.witnessedBy ?? null,
-      child_present: input.childPresent ?? true,
+      child_present: input.childPresent ?? null,
       balance_after: input.balanceAfter ?? null,
       notes: input.notes ?? null,
     })

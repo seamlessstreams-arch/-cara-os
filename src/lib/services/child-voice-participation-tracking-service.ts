@@ -86,7 +86,7 @@ export interface ChildVoiceParticipationTrackingRow {
   child_felt_heard: boolean;
   outcome_fed_back: boolean;
   advocate_present: boolean;
-  age_appropriate_methods: boolean;
+  age_appropriate_methods: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   decision_changed_by_voice: boolean;
   child_satisfied_with_outcome: boolean;
   facilitator_name: string | null;
@@ -361,7 +361,7 @@ export async function createChildVoiceParticipation(input: {
       child_felt_heard: input.childFeltHeard ?? false,
       outcome_fed_back: input.outcomeFedBack ?? false,
       advocate_present: input.advocatePresent ?? false,
-      age_appropriate_methods: input.ageAppropriateMethods ?? true,
+      age_appropriate_methods: input.ageAppropriateMethods ?? null,
       decision_changed_by_voice: input.decisionChangedByVoice ?? false,
       child_satisfied_with_outcome: input.childSatisfiedWithOutcome ?? false,
       facilitator_name: input.facilitatorName ?? null,

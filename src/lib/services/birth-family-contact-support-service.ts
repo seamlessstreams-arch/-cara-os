@@ -186,7 +186,7 @@ export interface BirthFamilyContactSupportRow {
   risk_assessment_current: boolean;
   safeguarding_concerns: boolean;
   concern_details: string | null;
-  contact_plan_followed: boolean;
+  contact_plan_followed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   child_emotional_response: EmotionalResponse;
   support_after_contact: boolean;
   social_worker_informed: boolean;
@@ -466,11 +466,13 @@ export function computeAlerts(
 
   // High: Contact plan not followed
   for (const r of rows) {
-    if (!r.contact_plan_followed && r.status === "Completed") {
+    if (r.contact_plan_followed !== true && r.status === "Completed") {
       alerts.push({
         type: "contact_plan_not_followed",
         severity: "high",
-        message: `Contact plan was not followed for ${r.child_name}'s contact with ${r.contact_person_name} on ${r.contact_date} — review contact agreement and update as necessary per Care Planning Regulations 2010`,
+        message: r.contact_plan_followed === false
+          ? `Contact plan was not followed for ${r.child_name}'s contact with ${r.contact_person_name} on ${r.contact_date} — review contact agreement and update as necessary per Care Planning Regulations 2010`
+          : `No record the contact plan was followed for ${r.child_name}'s contact with ${r.contact_person_name} on ${r.contact_date} — confirm and evidence it per Care Planning Regulations 2010`,
         record_id: r.id,
       });
     }
@@ -781,7 +783,7 @@ export async function createRecord(input: {
       risk_assessment_current: input.riskAssessmentCurrent ?? false,
       safeguarding_concerns: input.safeguardingConcerns ?? false,
       concern_details: input.concernDetails ?? null,
-      contact_plan_followed: input.contactPlanFollowed ?? true,
+      contact_plan_followed: input.contactPlanFollowed ?? null,
       child_emotional_response: input.childEmotionalResponse ?? "Neutral",
       support_after_contact: input.supportAfterContact ?? false,
       social_worker_informed: input.socialWorkerInformed ?? false,

@@ -98,7 +98,7 @@ export interface StaffConfidenceIndicatorRecord {
   wellbeing_considered: boolean;
   progress_tracked: boolean;
   staff_agreed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   issues_found: string[];
   actions_taken: string[];
   created_at: string;
@@ -422,7 +422,7 @@ export async function createConfidenceIndicator(
       wellbeing_considered: payload.wellbeingConsidered ?? false,
       progress_tracked: payload.progressTracked ?? false,
       staff_agreed: payload.staffAgreed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
     })

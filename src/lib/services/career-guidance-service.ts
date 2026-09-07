@@ -163,7 +163,7 @@ export interface CareerGuidanceRow {
   employer_name: string | null;
   placement_sector: string | null;
   duration_hours: number | null;
-  young_person_engaged: boolean;
+  young_person_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   practical_component: boolean;
   cv_created_updated: boolean;
   interview_skills_practised: boolean;
@@ -768,7 +768,7 @@ export async function createRecord(input: {
       employer_name: input.employerName ?? null,
       placement_sector: input.placementSector ?? null,
       duration_hours: input.durationHours ?? null,
-      young_person_engaged: input.youngPersonEngaged ?? true,
+      young_person_engaged: input.youngPersonEngaged ?? null,
       practical_component: input.practicalComponent ?? false,
       cv_created_updated: input.cvCreatedUpdated ?? false,
       interview_skills_practised: input.interviewSkillsPractised ?? false,

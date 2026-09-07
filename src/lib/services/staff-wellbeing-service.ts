@@ -69,9 +69,9 @@ export interface WellbeingCheck {
   checked_by: string;
   wellbeing_rating: WellbeingRating;
   stress_level: StressLevel;
-  workload_manageable: boolean;
+  workload_manageable: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   sleep_quality: "good" | "fair" | "poor";
-  feeling_supported: boolean;
+  feeling_supported: boolean | null;
   concerns: string | null;
   support_offered: SupportType[];
   support_accepted: boolean;
@@ -449,9 +449,9 @@ export async function createCheck(
       checked_by: input.checkedBy,
       wellbeing_rating: input.wellbeingRating,
       stress_level: input.stressLevel,
-      workload_manageable: input.workloadManageable ?? true,
+      workload_manageable: input.workloadManageable ?? null,
       sleep_quality: input.sleepQuality ?? "good",
-      feeling_supported: input.feelingSupported ?? true,
+      feeling_supported: input.feelingSupported ?? null,
       concerns: input.concerns ?? null,
       support_offered: input.supportOffered ?? [],
       support_accepted: input.supportAccepted ?? false,

@@ -183,7 +183,7 @@ export interface HigherEducationSupportRow {
   personal_adviser_involved: boolean;
   pathway_plan_updated: boolean;
   social_worker_informed: boolean;
-  young_person_engaged: boolean;
+  young_person_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   mentoring_in_place: boolean;
   next_milestone_date: string | null;
   notes: string | null;
@@ -764,7 +764,7 @@ export async function createRecord(input: {
       personal_adviser_involved: input.personalAdviserInvolved ?? false,
       pathway_plan_updated: input.pathwayPlanUpdated ?? false,
       social_worker_informed: input.socialWorkerInformed ?? false,
-      young_person_engaged: input.youngPersonEngaged ?? true,
+      young_person_engaged: input.youngPersonEngaged ?? null,
       mentoring_in_place: input.mentoringInPlace ?? false,
       next_milestone_date: input.nextMilestoneDate ?? null,
       notes: input.notes ?? null,

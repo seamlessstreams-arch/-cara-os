@@ -42,8 +42,8 @@ export interface StaffAgencyWorkerComplianceRow {
   induction_completed: boolean;
   safeguarding_training_confirmed: boolean;
   mandatory_training_confirmed: boolean;
-  id_verified: boolean;
-  right_to_work_verified: boolean;
+  id_verified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  right_to_work_verified: boolean | null;
   supervision_arranged: boolean;
   shift_count: number;
   notes: string | null;
@@ -288,8 +288,8 @@ export async function createStaffAgencyWorkerCompliance(input: {
       induction_completed: input.inductionCompleted ?? false,
       safeguarding_training_confirmed: input.safeguardingTrainingConfirmed ?? false,
       mandatory_training_confirmed: input.mandatoryTrainingConfirmed ?? false,
-      id_verified: input.idVerified ?? true,
-      right_to_work_verified: input.rightToWorkVerified ?? true,
+      id_verified: input.idVerified ?? null,
+      right_to_work_verified: input.rightToWorkVerified ?? null,
       supervision_arranged: input.supervisionArranged ?? false,
       shift_count: input.shiftCount ?? 0,
       notes: input.notes ?? null,

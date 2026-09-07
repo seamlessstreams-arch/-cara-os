@@ -78,8 +78,8 @@ export interface NightLog {
   all_children_checked: boolean;
   incidents_count: number;
   disturbances_count: number;
-  premises_secure: boolean;
-  fire_panel_checked: boolean;
+  premises_secure: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  fire_panel_checked: boolean | null;
   overnight_summary: string;
   handover_given: boolean;
   handover_given_notes: string | null;
@@ -543,8 +543,8 @@ export async function createNightLog(
       all_children_checked: input.allChildrenChecked ?? false,
       incidents_count: input.incidentsCount ?? 0,
       disturbances_count: input.disturbancesCount ?? 0,
-      premises_secure: input.premisesSecure ?? true,
-      fire_panel_checked: input.firePanelChecked ?? true,
+      premises_secure: input.premisesSecure ?? null,
+      fire_panel_checked: input.firePanelChecked ?? null,
       overnight_summary: input.overnightSummary ?? "",
       handover_given: input.handoverGiven ?? false,
       handover_given_notes: input.handoverGivenNotes ?? null,

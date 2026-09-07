@@ -52,7 +52,7 @@ export interface StaffExitInterviewRow {
   staff_name: string;
   departure_reason: DepartureReason;
   departure_date: string;
-  notice_period_met: boolean;
+  notice_period_met: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   knowledge_transfer_completed: boolean;
   handover_document_provided: boolean;
   equipment_returned: boolean;
@@ -304,7 +304,7 @@ export async function createStaffExitInterview(input: {
       staff_name: input.staffName,
       departure_reason: input.departureReason,
       departure_date: input.departureDate,
-      notice_period_met: input.noticePeriodMet ?? true,
+      notice_period_met: input.noticePeriodMet ?? null,
       knowledge_transfer_completed: input.knowledgeTransferCompleted ?? false,
       handover_document_provided: input.handoverDocumentProvided ?? false,
       equipment_returned: input.equipmentReturned ?? false,

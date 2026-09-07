@@ -98,7 +98,7 @@ export interface Reg45Report {
   }[];
   reg44_reports_reviewed: number;
   reg44_actions_outstanding: number;
-  statement_of_purpose_compliant: boolean;
+  statement_of_purpose_compliant: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   key_strengths: string[];
   areas_for_improvement: string[];
   status: ReportStatus;
@@ -421,12 +421,14 @@ export function identifyReg45Alerts(
     // Statement of purpose non-compliant — high
     if (
       (r.status === "approved" || r.status === "distributed") &&
-      !r.statement_of_purpose_compliant
+      r.statement_of_purpose_compliant !== true
     ) {
       alerts.push({
         type: "sop_non_compliant",
         severity: "high",
-        message: `Reg 45 report identified non-compliance with Statement of Purpose — Reg 16 requires adherence`,
+        message: r.statement_of_purpose_compliant === false
+          ? `Reg 45 report identified non-compliance with Statement of Purpose — Reg 16 requires adherence`
+          : `Reg 45 report has no Statement-of-Purpose compliance recorded — confirm and evidence adherence per Reg 16`,
         id: r.id,
       });
     }
@@ -551,7 +553,7 @@ export async function createReport(
       evaluations: input.evaluations ?? [],
       reg44_reports_reviewed: input.reg44ReportsReviewed ?? 0,
       reg44_actions_outstanding: input.reg44ActionsOutstanding ?? 0,
-      statement_of_purpose_compliant: input.statementOfPurposeCompliant ?? true,
+      statement_of_purpose_compliant: input.statementOfPurposeCompliant ?? null,
       key_strengths: input.keyStrengths ?? [],
       areas_for_improvement: input.areasForImprovement ?? [],
       status: "draft",
