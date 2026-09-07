@@ -365,3 +365,39 @@ describe("education notes", () => {
     expect(section?.summary).toContain("100%");
   });
 });
+
+describe("typed collections (dead-read fixes)", () => {
+  it("reports the recorded risk level, not 'unknown'", () => {
+    const input = emptyInput();
+    input.riskAssessments = [
+      {
+        id: "ra-1",
+        child_id: "yp-1",
+        domain: "self_harm",
+        current_level: "high",
+        previous_level: "medium",
+        trend: "increasing",
+        status: "current",
+        assessed_by: "Alex Morgan",
+        assessed_date: "2026-06-01",
+        review_date: "2026-09-01",
+        triggers: [],
+        indicators: [],
+        mitigations: [],
+        contingency_plan: "",
+        child_views: "",
+        history_notes: "",
+        linked_incidents: [],
+        home_id: "home_oak",
+        created_at: "2026-06-01T10:00:00Z",
+      },
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const allItems = pack.sections.flatMap((s) => s.items);
+    const ra = allItems.find((i) => i.linked_record_id === "ra-1");
+    expect(ra).toBeTruthy();
+    expect(ra!.summary).toContain("high");
+    expect(ra!.summary).not.toContain("unknown");
+    expect(ra!.tags).toContain("high");
+  });
+});

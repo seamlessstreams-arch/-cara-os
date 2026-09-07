@@ -17,7 +17,9 @@ import type { RelationshipEntry } from "@/lib/protective-relationships/types";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type {
+  CareForm,
   DailyLogEntry,
+  Incident,
   Medication,
   MedicationAdministration,
   StaffMember,
@@ -27,6 +29,8 @@ import type {
   AdvocacyRecord,
   Audit,
   BehaviourEntry,
+  MissingEpisode,
+  RiskAssessment,
   ChronologyEntry,
   ComplaintOutcomeRecord,
   ExploitationScreening,
@@ -58,18 +62,10 @@ export interface EvidencePackInput {
   // Core collections — mirrors store shape
   youngPeople: YoungPerson[];
   staff: StaffMember[];
-  // TODO(typing): CareForm reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  careForms: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): RiskAssessment reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  riskAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): Incident reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  incidents: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): MissingEpisode reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  missingEpisodes: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  careForms: CareForm[];
+  riskAssessments: RiskAssessment[];
+  incidents: Incident[];
+  missingEpisodes: MissingEpisode[];
   exploitationScreenings: ExploitationScreening[];
   // TODO(typing): KeyWorkingSession reads in this generator target fields the struct
   // does not have; typing this collection surfaces them. Next slice.
@@ -366,25 +362,25 @@ function buildCarePlanProgress(
   children: YoungPerson[],
 ): EvidenceSection {
   const periodForms = input.careForms.filter((f) =>
-    isInPeriod(f.created_at ?? f.date, input.period_from, input.period_to),
+    isInPeriod(f.created_at, input.period_from, input.period_to),
   );
 
   const items: EvidenceItem[] = periodForms.slice(0, 50).map((f) => ({
     id: `ev_careplan_${f.id}`,
     type: "care_plan",
     title: f.title ?? f.description ?? "Care Plan Entry",
-    date: f.created_at?.slice(0, 10) ?? f.date ?? input.today,
-    summary: `${f.form_type ?? f.category ?? "care"} record. Status: ${f.status ?? "active"}.`,
+    date: f.created_at?.slice(0, 10) ?? input.today,
+    summary: `${f.form_type ?? "care"} record. Status: ${f.status ?? "active"}.`,
     linked_record_type: "care_form",
     linked_record_id: f.id,
-    child_id: f.linked_child_id ?? f.child_id,
+    child_id: f.linked_child_id ?? undefined,
     tags: ["care_plan", f.form_type ?? "general"],
   }));
 
   const childrenWithPlan = children.filter((c) =>
     input.careForms.some(
       (f) =>
-        (f.linked_child_id === c.id || f.child_id === c.id) &&
+        f.linked_child_id === c.id &&
         (f.status === "approved"),
     ),
   ).length;
@@ -417,7 +413,7 @@ function buildRiskManagement(
 ): EvidenceSection {
   const periodRAs = input.riskAssessments.filter((r) =>
     isInPeriod(
-      r.created_at ?? r.date ?? r.assessment_date,
+      r.created_at,
       input.period_from,
       input.period_to,
     ),
@@ -426,18 +422,14 @@ function buildRiskManagement(
   const items: EvidenceItem[] = periodRAs.slice(0, 50).map((r) => ({
     id: `ev_risk_${r.id}`,
     type: "risk_assessment",
-    title: r.title ?? r.risk_type ?? "Risk Assessment",
-    date:
-      r.created_at?.slice(0, 10) ??
-      r.date ??
-      r.assessment_date ??
-      input.today,
-    summary: `Risk level: ${r.risk_level ?? r.current_risk ?? "unknown"}. Status: ${r.status ?? "current"}.`,
+    title: `Risk assessment — ${r.domain}`,
+    date: r.created_at?.slice(0, 10) ?? r.assessed_date?.slice(0, 10) ?? input.today,
+    summary: `Risk level: ${r.current_level ?? "unknown"}. Status: ${r.status ?? "current"}.`,
     linked_record_type: "risk_assessment",
     linked_record_id: r.id,
     child_id: r.child_id,
-    risk_level: r.risk_level ?? r.current_risk,
-    tags: ["risk", r.risk_level ?? "unspecified"],
+    risk_level: r.current_level,
+    tags: ["risk", r.current_level ?? "unspecified"],
   }));
 
   const childrenWithRA = children.filter((c) =>
@@ -448,7 +440,7 @@ function buildRiskManagement(
 
   const coverage = rate(childrenWithRA, children.length);
   const overdueCount = input.riskAssessments.filter((r) => {
-    const reviewDate = r.review_date ?? r.next_review;
+    const reviewDate = r.review_date;
     return reviewDate && reviewDate < input.today && r.status === "current";
   }).length;
 
@@ -501,7 +493,7 @@ function buildSafeguardingActions(
   // Missing episodes
   const periodMissing = input.missingEpisodes.filter((m) =>
     isInPeriod(
-      m.date_missing ?? m.date ?? m.created_at,
+      m.date_missing ?? m.created_at,
       input.period_from,
       input.period_to,
     ),
@@ -513,7 +505,6 @@ function buildSafeguardingActions(
       title: `Missing Episode — ${m.status ?? "unknown"}`,
       date:
         m.date_missing?.slice(0, 10) ??
-        m.date ??
         m.created_at?.slice(0, 10) ??
         input.today,
       summary: `Missing episode. Return interview: ${m.return_interview_completed ? "completed" : "pending"}.`,
@@ -638,7 +629,7 @@ function buildIncidentsAndResponses(
 ): EvidenceSection {
   const periodIncidents = input.incidents.filter((i) =>
     isInPeriod(
-      i.date ?? i.incident_date ?? i.created_at,
+      i.date ?? i.created_at,
       input.period_from,
       input.period_to,
     ),
@@ -649,16 +640,15 @@ function buildIncidentsAndResponses(
     .map((i) => ({
       id: `ev_incident_${i.id}`,
       type: "incident",
-      title: i.title ?? i.description?.slice(0, 60) ?? "Incident",
+      title: i.description?.slice(0, 60) ?? "Incident",
       date:
         i.date?.slice(0, 10) ??
-        i.incident_date?.slice(0, 10) ??
         i.created_at?.slice(0, 10) ??
         input.today,
-      summary: `Severity: ${i.severity ?? "unknown"}. Status: ${i.status ?? "open"}. Type: ${i.type ?? i.category ?? "general"}.`,
+      summary: `Severity: ${i.severity ?? "unknown"}. Status: ${i.status ?? "open"}. Type: ${i.type ?? "general"}.`,
       linked_record_type: "incident",
       linked_record_id: i.id,
-      child_id: i.child_id ?? i.young_person_id,
+      child_id: i.child_id,
       risk_level: i.severity,
       tags: ["incident", i.severity ?? "unspecified"],
     }));
@@ -1870,7 +1860,7 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
   // Overdue risk assessment reviews
   input.riskAssessments
     .filter((r) => {
-      const reviewDate = r.review_date ?? r.next_review;
+      const reviewDate = r.review_date;
       return reviewDate && reviewDate < input.today && r.status === "current";
     })
     .slice(0, 10)
@@ -1878,9 +1868,9 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
       actions.push({
         id: `action_ra_${r.id}`,
         type: "overdue_risk_review",
-        title: `Overdue Risk Assessment Review — ${r.title ?? r.risk_type ?? ""}`,
-        date: r.review_date ?? r.next_review ?? input.today,
-        summary: `Risk assessment review overdue. Risk level: ${r.risk_level ?? "unknown"}.`,
+        title: `Overdue Risk Assessment Review — ${r.domain}`,
+        date: r.review_date ?? input.today,
+        summary: `Risk assessment review overdue. Risk level: ${r.current_level ?? "unknown"}.`,
         linked_record_type: "risk_assessment",
         linked_record_id: r.id,
         child_id: r.child_id,
@@ -1901,15 +1891,14 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
       actions.push({
         id: `action_incident_${i.id}`,
         type: "open_critical_incident",
-        title: `Open Critical Incident — ${i.title ?? ""}`,
+        title: `Open Critical Incident — ${i.reference}`,
         date:
           i.date?.slice(0, 10) ??
-          i.incident_date?.slice(0, 10) ??
           input.today,
         summary: `Critical incident still open. Requires urgent resolution.`,
         linked_record_type: "incident",
         linked_record_id: i.id,
-        child_id: i.child_id ?? i.young_person_id,
+        child_id: i.child_id,
         risk_level: "critical",
         tags: ["outstanding", "critical"],
       });
