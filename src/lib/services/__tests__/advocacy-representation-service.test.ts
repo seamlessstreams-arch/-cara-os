@@ -134,3 +134,20 @@ describe("advocacy-representation-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded child voice in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: null })]);
+    const alert = alerts.find((a) => a.type === "child_voice_not_heard");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no voice gap when voice is recorded as heard", () => {
+    const alerts = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: true })]);
+    expect(alerts.some((a) => a.type === "child_voice_not_heard")).toBe(false);
+  });
+  it("does not dilute the child-voice rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, child_voice_heard: v }));
+    expect(computeAdvocacyRepresentationMetrics(rows).child_voice_rate).toBe(100);
+  });
+});
