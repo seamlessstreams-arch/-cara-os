@@ -119,9 +119,9 @@ export interface HygieneCheck {
   home_id: string;
   check_date: string;
   checked_by: string;
-  fridge_temp_ok: boolean;
-  freezer_temp_ok: boolean;
-  food_storage_ok: boolean;
+  fridge_temp_ok: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  freezer_temp_ok: boolean | null;
+  food_storage_ok: boolean | null;
   kitchen_cleanliness: HygieneCheckResult;
   food_prep_areas: HygieneCheckResult;
   hand_washing_facilities: HygieneCheckResult;
@@ -638,9 +638,9 @@ export async function createHygieneCheck(
       home_id: input.homeId,
       check_date: input.checkDate,
       checked_by: input.checkedBy,
-      fridge_temp_ok: input.fridgeTempOk ?? true,
-      freezer_temp_ok: input.freezerTempOk ?? true,
-      food_storage_ok: input.foodStorageOk ?? true,
+      fridge_temp_ok: input.fridgeTempOk ?? null,
+      freezer_temp_ok: input.freezerTempOk ?? null,
+      food_storage_ok: input.foodStorageOk ?? null,
       kitchen_cleanliness: input.kitchenCleanliness ?? "pass",
       food_prep_areas: input.foodPrepAreas ?? "pass",
       hand_washing_facilities: input.handWashingFacilities ?? "pass",

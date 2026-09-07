@@ -112,17 +112,17 @@ export interface SexualHealthEducationRow {
   session_date: string;
   facilitator_name: string;
   session_type: SessionType;
-  age_appropriate: boolean;
+  age_appropriate: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   gillick_competent: boolean | null;
-  consent_given: boolean;
-  confidentiality_explained: boolean;
+  consent_given: boolean | null;
+  confidentiality_explained: boolean | null;
   safeguarding_concerns: boolean;
   concern_details: string | null;
   referral_made: boolean;
   referral_service: string | null;
   school_aware: boolean;
   social_worker_informed: boolean;
-  young_person_engaged: boolean;
+  young_person_engaged: boolean | null;
   resources_provided: boolean;
   follow_up_required: boolean;
   follow_up_date: string | null;
@@ -372,12 +372,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (CLINICAL_SESSION_TYPES as string[]).includes(r.session_type) &&
-      !r.consent_given
+      r.consent_given !== true
     ) {
       alerts.push({
         type: "clinical_no_consent",
         severity: "critical",
-        message: `Clinical session (${r.session_type}) for ${r.child_name} on ${r.session_date} proceeded without consent — Fraser guidelines and Gillick competency assessment must be completed before clinical sexual health interventions for under-16s`,
+        message: r.consent_given === false
+          ? `Clinical session (${r.session_type}) for ${r.child_name} on ${r.session_date} proceeded without consent — Fraser guidelines and Gillick competency assessment must be completed before clinical sexual health interventions for under-16s`
+          : `Clinical session (${r.session_type}) for ${r.child_name} on ${r.session_date} has no consent recorded — evidence the Fraser/Gillick assessment and consent now`,
         record_id: r.id,
       });
     }
@@ -385,11 +387,13 @@ export function computeAlerts(
 
   // Critical: Confidentiality not explained
   for (const r of rows) {
-    if (!r.confidentiality_explained) {
+    if (r.confidentiality_explained !== true) {
       alerts.push({
         type: "confidentiality_not_explained",
         severity: "critical",
-        message: `Confidentiality was not explained to ${r.child_name} before ${r.session_type} session on ${r.session_date} — Fraser guidelines require that young people understand the limits of confidentiality before any sexual health discussion`,
+        message: r.confidentiality_explained === false
+          ? `Confidentiality was not explained to ${r.child_name} before ${r.session_type} session on ${r.session_date} — Fraser guidelines require that young people understand the limits of confidentiality before any sexual health discussion`
+          : `No record confidentiality was explained to ${r.child_name} before ${r.session_type} session on ${r.session_date} — explain and evidence it per Fraser guidelines`,
         record_id: r.id,
       });
     }
@@ -397,11 +401,13 @@ export function computeAlerts(
 
   // High: Not age-appropriate
   for (const r of rows) {
-    if (!r.age_appropriate) {
+    if (r.age_appropriate !== true) {
       alerts.push({
         type: "not_age_appropriate",
         severity: "high",
-        message: `Session (${r.session_type}) for ${r.child_name} on ${r.session_date} was flagged as not age-appropriate — DfE RSHE statutory guidance 2020 requires all sexual health education to be delivered in an age-appropriate manner`,
+        message: r.age_appropriate === false
+          ? `Session (${r.session_type}) for ${r.child_name} on ${r.session_date} was flagged as not age-appropriate — DfE RSHE statutory guidance 2020 requires all sexual health education to be delivered in an age-appropriate manner`
+          : `Session (${r.session_type}) for ${r.child_name} on ${r.session_date} has no record it was age-appropriate — confirm and evidence per DfE RSHE statutory guidance 2020`,
         record_id: r.id,
       });
     }
@@ -411,12 +417,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (SAFEGUARDING_SENSITIVE_TYPES as string[]).includes(r.session_type) &&
-      !r.young_person_engaged
+      r.young_person_engaged !== true
     ) {
       alerts.push({
         type: "disengaged_safeguarding_session",
         severity: "high",
-        message: `${r.child_name} was not engaged during ${r.session_type} on ${r.session_date} — disengagement in safeguarding-sensitive sessions may indicate underlying concerns that require further exploration`,
+        message: r.young_person_engaged === false
+          ? `${r.child_name} was not engaged during ${r.session_type} on ${r.session_date} — disengagement in safeguarding-sensitive sessions may indicate underlying concerns that require further exploration`
+          : `No record of ${r.child_name}'s engagement during ${r.session_type} on ${r.session_date} — record it; disengagement in safeguarding-sensitive sessions may indicate underlying concerns`,
         record_id: r.id,
       });
     }
@@ -703,17 +711,17 @@ export async function createRecord(input: {
       session_date: input.sessionDate,
       facilitator_name: input.facilitatorName,
       session_type: input.sessionType,
-      age_appropriate: input.ageAppropriate ?? true,
+      age_appropriate: input.ageAppropriate ?? null,
       gillick_competent: input.gillickCompetent ?? null,
-      consent_given: input.consentGiven ?? true,
-      confidentiality_explained: input.confidentialityExplained ?? true,
+      consent_given: input.consentGiven ?? null,
+      confidentiality_explained: input.confidentialityExplained ?? null,
       safeguarding_concerns: input.safeguardingConcerns ?? false,
       concern_details: input.concernDetails ?? null,
       referral_made: input.referralMade ?? false,
       referral_service: input.referralService ?? null,
       school_aware: input.schoolAware ?? false,
       social_worker_informed: input.socialWorkerInformed ?? false,
-      young_person_engaged: input.youngPersonEngaged ?? true,
+      young_person_engaged: input.youngPersonEngaged ?? null,
       resources_provided: input.resourcesProvided ?? false,
       follow_up_required: input.followUpRequired ?? false,
       follow_up_date: input.followUpDate ?? null,
