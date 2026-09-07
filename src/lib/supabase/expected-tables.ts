@@ -72,6 +72,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cara_agent_runs",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_audit_events",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
     table: "cara_interactions",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -212,6 +222,26 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "child_report_actions",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_report_evidence",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_report_sections",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_reports",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
     table: "chronology_entries",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -309,6 +339,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "reg45_evidence_queue",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "regulation45_evidence_items",
+    migration: "20260907090000_child_reports_promotion.sql",
     columns: [],
   },
   {

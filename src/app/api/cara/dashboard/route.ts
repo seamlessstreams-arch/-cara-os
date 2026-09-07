@@ -63,56 +63,48 @@ export async function GET(req: NextRequest) {
       weakRecordsResult,
     ] = await Promise.all([
       // Reports created this week
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_reports") as any)
+      sb.from("child_reports")
         .select("id", { count: "exact", head: true })
         .eq("home_id", homeId)
         .gte("created_at", sevenDaysAgo),
 
       // Reports pending review
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_reports") as any)
+      sb.from("child_reports")
         .select("id", { count: "exact", head: true })
         .eq("home_id", homeId)
         .eq("status", "pending_review"),
 
       // High-risk reports needing approval
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_reports") as any)
+      sb.from("child_reports")
         .select("id", { count: "exact", head: true })
         .eq("home_id", homeId)
         .eq("risk_tier", "high")
         .in("status", ["draft", "pending_review"]),
 
       // Distinct children with reports in draft or pending_review status
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_reports") as any)
+      sb.from("child_reports")
         .select("child_id")
         .eq("home_id", homeId)
         .in("status", ["draft", "pending_review"]),
 
       // Reg 45 evidence items this month
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("regulation45_evidence_items") as any)
+      sb.from("regulation45_evidence_items")
         .select("id", { count: "exact", head: true })
         .eq("home_id", homeId)
         .gte("created_at", startOfMonth),
 
       // Outstanding actions (suggested or accepted, not completed/dismissed)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_report_actions") as any)
+      sb.from("child_report_actions")
         .select("id", { count: "exact", head: true })
         .in("status", ["suggested", "accepted", "in_progress"]),
 
       // Evidence gaps (sections with not_enough_evidence)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_report_sections") as any)
+      sb.from("child_report_sections")
         .select("id", { count: "exact", head: true })
         .eq("evidence_status", "not_enough_evidence"),
 
       // Weak records (sections with low confidence and partial evidence)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("child_report_sections") as any)
+      sb.from("child_report_sections")
         .select("id", { count: "exact", head: true })
         .eq("evidence_status", "partial_evidence")
         .lt("confidence_score", 40),

@@ -99,9 +99,9 @@ export async function POST(
         `[Dismissed: ${body.rejectionReason}]`;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (sb.from("child_report_actions") as any)
-      .update(updatePayload)
+    const { data, error } = await sb.from("child_report_actions")
+      // updatePayload's keys are built above from the action contract
+      .update(updatePayload as import("@/lib/supabase/types").Database["public"]["Tables"]["child_report_actions"]["Update"])
       .eq("id", actionId)
       .select("*")
       .single();
