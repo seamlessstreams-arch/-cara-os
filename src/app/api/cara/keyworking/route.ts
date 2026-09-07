@@ -74,7 +74,7 @@ async function fetchData(sb: any, childId: string): Promise<KeyworkingInput> {
     keyworkerName: s.keyworker_name ?? "Unknown",
     plannedDuration: s.planned_duration ?? 45,
     actualDuration: s.actual_duration ?? 0,
-    occurred: s.occurred ?? true,
+    occurred: s.occurred ?? null,
     cancelledBy: s.cancelled_by ?? undefined,
     topicsCovered: (s.topics ?? []) as SessionTopic[],
     childLed: s.child_led ?? false,
@@ -83,7 +83,7 @@ async function fetchData(sb: any, childId: string): Promise<KeyworkingInput> {
     actionsCompleted: s.actions_completed ?? 0,
     childEngagement: s.engagement ?? "moderate",
     childFeedback: s.feedback ?? undefined,
-    privateTime: s.private_time ?? true,
+    privateTime: s.private_time ?? null,
     location: s.location ?? "in_home",
   }));
 
@@ -103,11 +103,11 @@ async function fetchData(sb: any, childId: string): Promise<KeyworkingInput> {
     currentKeyworkerName: config?.current_keyworker ?? "Unknown",
     keyworkerChangesLast12Months: config?.kw_changes_12m ?? 0,
     keyworkerRelationshipMonths: config?.relationship_months ?? 6,
-    childCanChooseTopics: config?.child_chooses_topics ?? true,
-    childKnowsKeyworker: config?.child_knows_kw ?? true,
-    keyworkPolicyInPlace: config?.policy_in_place ?? true,
-    reg44VisitorMeetsChild: config?.reg44_meets_child ?? true,
-    reg44VisitsCurrent: config?.reg44_current ?? true,
+    childCanChooseTopics: config?.child_chooses_topics ?? null,
+    childKnowsKeyworker: config?.child_knows_kw ?? null,
+    keyworkPolicyInPlace: config?.policy_in_place ?? null,
+    reg44VisitorMeetsChild: config?.reg44_meets_child ?? null,
+    reg44VisitsCurrent: config?.reg44_current ?? null,
   };
 }
 
