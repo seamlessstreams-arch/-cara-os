@@ -467,3 +467,23 @@ describe("lac-health-assessment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the urgent-concern critical between recorded not-shared and unrecorded", () => {
+    const nullAlert = computeLacHealthAssessmentAlerts([
+      makeRow({ health_outcome: "urgent_concern", shared_with_social_worker: null }),
+    ]).find((a) => a.type === "urgent_concern_not_shared");
+    const falseAlert = computeLacHealthAssessmentAlerts([
+      makeRow({ health_outcome: "urgent_concern", shared_with_social_worker: false }),
+    ]).find((a) => a.type === "urgent_concern_not_shared");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when sharing is recorded", () => {
+    const alerts = computeLacHealthAssessmentAlerts([
+      makeRow({ health_outcome: "urgent_concern", shared_with_social_worker: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "urgent_concern_not_shared")).toBe(false);
+  });
+});
