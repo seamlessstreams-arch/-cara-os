@@ -133,3 +133,27 @@ describe("medication-side-effects-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the severe-side-effect critical between recorded no-GP-contact and unrecorded", () => {
+    const nullAlert = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: null }),
+    ]).find((a) => a.type === "severe_no_gp_contact");
+    const falseAlert = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: false }),
+    ]).find((a) => a.type === "severe_no_gp_contact");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when GP contact is recorded as prompt", () => {
+    const alerts = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "severe_no_gp_contact")).toBe(false);
+  });
+  it("does not dilute the GP-contact rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, gp_contacted_promptly: v }));
+    expect(computeMedicationSideEffectsMetrics(rows).gp_contacted_promptly_rate).toBe(100);
+  });
+});
