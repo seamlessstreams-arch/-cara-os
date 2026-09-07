@@ -124,3 +124,22 @@ describe("child-wellbeing-checkin-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded child voice in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyWellbeingCheckinAlerts([makeRecord({ child_voice_captured: null })]);
+    const alert = alerts.find((a) => a.type === "voice_not_captured");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("does not assert concerns nobody recorded", () => {
+    const alerts = identifyWellbeingCheckinAlerts([
+      makeRecord({ concerns_identified: null, social_worker_informed: false }),
+    ]);
+    expect(alerts.some((a) => a.type === "concerns_no_sw")).toBe(false);
+  });
+  it("does not dilute the child-voice rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, child_voice_captured: v }));
+    expect(computeWellbeingCheckinMetrics(rows).child_voice_rate).toBe(100);
+  });
+});
