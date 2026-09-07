@@ -25,16 +25,31 @@ import type {
   StaffMember,
   Supervision,
   Task,
+  TrainingRecord,
   YoungPerson,
 } from "@/types";
 import type {
   AdvocacyRecord,
+  AnnualHealthAssessment,
   Audit,
   BehaviourEntry,
+  CaseFileAudit,
+  ContactPlan,
+  DentalRecord,
   Disclosure,
+  FamilyTimeSession,
+  HealthAssessment,
+  KeyWorkingSession,
+  KeyworkerSessionRecord,
+  LACReview,
+  MentalHealthCheckIn,
   MissingEpisode,
+  OutcomeTarget,
+  QAAuditRecord,
   RestraintRecord,
   RiskAssessment,
+  TherapeuticChildImpact,
+  YPFeedbackEntry,
   ChronologyEntry,
   ComplaintOutcomeRecord,
   ExploitationScreening,
@@ -71,56 +86,30 @@ export interface EvidencePackInput {
   incidents: Incident[];
   missingEpisodes: MissingEpisode[];
   exploitationScreenings: ExploitationScreening[];
-  // TODO(typing): KeyWorkingSession reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  keyWorkingSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): KeyworkerSessionRecord reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  keyworkerSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  keyWorkingSessions: KeyWorkingSession[];
+  keyworkerSessions: KeyworkerSessionRecord[];
   educationRecords: EducationRecord[];
-  // TODO(typing): HealthAssessment reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  healthAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): DentalRecord reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  dentalRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): MentalHealthCheckIn reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  mentalHealthCheckIns: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): AnnualHealthAssessment reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  annualHealthAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): FamilyTimeSession reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  familyTimeSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): ContactPlan reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  contactPlans: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  healthAssessments: HealthAssessment[];
+  dentalRecords: DentalRecord[];
+  mentalHealthCheckIns: MentalHealthCheckIn[];
+  annualHealthAssessments: AnnualHealthAssessment[];
+  familyTimeSessions: FamilyTimeSession[];
+  contactPlans: ContactPlan[];
   multiAgencyMeetings: MultiAgencyMeeting[];
-  // TODO(typing): LACReview reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  lacReviews: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  lacReviews: LACReview[];
   supervisions: Supervision[];
   audits: Audit[];
-  // TODO(typing): QAAuditRecord reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  qaAuditRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): CaseFileAudit reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  caseFileAudits: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  qaAuditRecords: QAAuditRecord[];
+  caseFileAudits: CaseFileAudit[];
   tasks: Task[];
   dailyLog: DailyLogEntry[];
   behaviourLog: BehaviourEntry[];
   restraints: RestraintRecord[];
   significantEvents: SignificantEvent[];
   notifiableEvents: NotifiableEvent[];
-  // TODO(typing): OutcomeTarget reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  outcomeTargets: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  outcomeTargets: OutcomeTarget[];
   outcomeReviews: OutcomeReview[];
-  // TODO(typing): TrainingRecord reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  trainingRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  trainingRecords: TrainingRecord[];
   medications: Medication[];
   medicationAdministrations: MedicationAdministration[];
   independenceSkillsRecords: IndependenceSkillsRecord[];
@@ -130,12 +119,8 @@ export interface EvidencePackInput {
   complaintOutcomeRecords: ComplaintOutcomeRecord[];
   chronology: ChronologyEntry[];
   handovers: HandoverEntry[];
-  // TODO(typing): TherapeuticChildImpact reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  therapeuticChildImpact: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // TODO(typing): YPFeedbackEntry reads in this generator target fields the struct
-  // does not have; typing this collection surfaces them. Next slice.
-  ypFeedback: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  therapeuticChildImpact: TherapeuticChildImpact[];
+  ypFeedback: YPFeedbackEntry[];
   advocacyRecords: AdvocacyRecord[];
   participationEntries: ParticipationEntry[];
   improvementObjectives: ImprovementObjective[];
@@ -576,21 +561,27 @@ function buildDirectWorkSummary(
     ...input.keyWorkingSessions,
     ...input.keyworkerSessions,
   ];
+  const sessionDate = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
+    "date" in s ? s.date : s.session_date;
+  const sessionKind = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
+    "type" in s ? s.type : s.format;
+  const sessionMins = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
+    "duration" in s ? s.duration : s.duration_minutes;
   const periodSessions = allSessions.filter((s) =>
-    isInPeriod(s.date ?? s.created_at, input.period_from, input.period_to),
+    isInPeriod(sessionDate(s) ?? s.created_at, input.period_from, input.period_to),
   );
 
   const items: EvidenceItem[] = periodSessions.slice(0, 50).map((s) => ({
     id: `ev_directwork_${s.id}`,
     type: "direct_work_session",
-    title: s.title ?? s.focus ?? s.type ?? "Key Work Session",
-    date: s.date?.slice(0, 10) ?? s.created_at?.slice(0, 10) ?? input.today,
-    summary: `${s.type ?? "key_work"} session. Duration: ${s.duration ?? "unrecorded"} mins.`,
+    title: `Key Work Session — ${sessionKind(s) ?? "session"}`,
+    date: sessionDate(s)?.slice(0, 10) ?? s.created_at?.slice(0, 10) ?? input.today,
+    summary: `${sessionKind(s) ?? "key_work"} session. Duration: ${sessionMins(s) ?? "unrecorded"} mins.`,
     linked_record_type: "key_working_session",
     linked_record_id: s.id,
     child_id: s.child_id,
     staff_id: s.staff_id,
-    tags: ["direct_work", s.type ?? "key_work"],
+    tags: ["direct_work", sessionKind(s) ?? "key_work"],
   }));
 
   const childrenWithSessions = new Set(
@@ -769,7 +760,7 @@ function buildHealthNotes(
         type: "health_assessment",
         title: `Health Assessment — ${h.type ?? "general"}`,
         date: h.date?.slice(0, 10) ?? h.created_at?.slice(0, 10) ?? input.today,
-        summary: `Health assessment completed. Outcome: ${h.outcome ?? "recorded"}.`,
+        summary: `Health assessment completed. Status: ${h.status ?? "recorded"}.`,
         linked_record_type: "health_assessment",
         linked_record_id: h.id,
         child_id: h.child_id,
@@ -780,15 +771,15 @@ function buildHealthNotes(
   // Dental records
   input.dentalRecords
     .filter((d) =>
-      isInPeriod(d.date ?? d.created_at, input.period_from, input.period_to),
+      isInPeriod(d.last_check_up_date ?? d.created_at, input.period_from, input.period_to),
     )
     .forEach((d) => {
       items.push({
         id: `ev_health_dental_${d.id}`,
         type: "dental_record",
-        title: "Dental Appointment",
-        date: d.date?.slice(0, 10) ?? d.created_at?.slice(0, 10) ?? input.today,
-        summary: `Dental visit completed. Outcome: ${d.outcome ?? "attended"}.`,
+        title: "Dental Registration & Check-ups",
+        date: d.last_check_up_date?.slice(0, 10) ?? d.created_at?.slice(0, 10) ?? input.today,
+        summary: `Dental record. Registration: ${d.registration_status ?? "recorded"}.`,
         linked_record_type: "dental_record",
         linked_record_id: d.id,
         child_id: d.child_id,
@@ -807,7 +798,7 @@ function buildHealthNotes(
         type: "mental_health_check",
         title: "Mental Health Check-in",
         date: m.date?.slice(0, 10) ?? m.created_at?.slice(0, 10) ?? input.today,
-        summary: `Mental health check-in. Mood: ${m.mood ?? m.score ?? "recorded"}.`,
+        summary: `Mental health check-in. Mood: ${m.mood_rating ?? "recorded"}.`,
         linked_record_type: "mental_health_check_in",
         linked_record_id: m.id,
         child_id: m.child_id,
@@ -818,15 +809,15 @@ function buildHealthNotes(
   // Annual health assessments
   input.annualHealthAssessments
     .filter((a) =>
-      isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
+      isInPeriod(a.assessment_date ?? a.created_at, input.period_from, input.period_to),
     )
     .forEach((a) => {
       items.push({
         id: `ev_health_annual_${a.id}`,
         type: "annual_health_assessment",
         title: "Annual Health Assessment",
-        date: a.date?.slice(0, 10) ?? a.created_at?.slice(0, 10) ?? input.today,
-        summary: `Annual statutory health assessment. Status: ${a.status ?? "completed"}.`,
+        date: a.assessment_date?.slice(0, 10) ?? a.created_at?.slice(0, 10) ?? input.today,
+        summary: `Annual statutory health assessment. ${a.completed_within_deadline ? "Completed within deadline" : "Deadline compliance not confirmed"}.`,
         linked_record_type: "annual_health_assessment",
         linked_record_id: a.id,
         child_id: a.child_id,
@@ -877,13 +868,13 @@ function buildFamilyContact(
     .map((f) => ({
       id: `ev_family_${f.id}`,
       type: "family_contact",
-      title: f.title ?? `Family Time — ${f.contact_type ?? "visit"}`,
+      title: `Family Time — ${f.family_member_name ?? f.family_member ?? "family"}`,
       date: f.date?.slice(0, 10) ?? f.created_at?.slice(0, 10) ?? input.today,
-      summary: `Contact type: ${f.contact_type ?? "visit"}. Quality: ${f.quality ?? "not assessed"}. Outcome: ${f.outcome ?? "completed"}.`,
+      summary: `Supervision: ${f.supervision_level ?? "unrecorded"}. Safe: ${f.was_it_safe ?? "not recorded"}. Concerns: ${f.concerns_raised ? "yes" : "none recorded"}.`,
       linked_record_type: "family_time_session",
       linked_record_id: f.id,
       child_id: f.child_id,
-      tags: ["family", "contact", f.contact_type ?? "visit"],
+      tags: ["family", "contact"],
     }));
 
   // Contact plans
@@ -895,9 +886,9 @@ function buildFamilyContact(
       items.push({
         id: `ev_family_plan_${cp.id}`,
         type: "contact_plan",
-        title: `Contact Plan — ${cp.relationship ?? "family"}`,
+        title: `Contact Plan — ${cp.status ?? "active"}`,
         date: cp.created_at?.slice(0, 10) ?? input.today,
-        summary: `Contact plan for ${cp.relationship ?? "family member"}. Frequency: ${cp.frequency ?? "as agreed"}.`,
+        summary: `Contact plan. Next scheduled: ${cp.next_scheduled_contact ?? "not set"}.`,
         linked_record_type: "contact_plan",
         linked_record_id: cp.id,
         child_id: cp.child_id,
@@ -958,7 +949,7 @@ function buildProfessionalContact(
   // LAC reviews
   const periodLAC = input.lacReviews.filter((r) =>
     isInPeriod(
-      r.review_date ?? r.date ?? r.created_at,
+      r.date ?? r.created_at,
       input.period_from,
       input.period_to,
     ),
@@ -969,7 +960,6 @@ function buildProfessionalContact(
       type: "lac_review",
       title: `LAC Review — ${r.child_id ?? ""}`,
       date:
-        r.review_date?.slice(0, 10) ??
         r.date?.slice(0, 10) ??
         r.created_at?.slice(0, 10) ??
         input.today,
@@ -1009,7 +999,7 @@ function buildProfessionalContact(
 
 function buildManagementOversight(
   input: EvidencePackInput,
-  activeStaff: any[],
+  activeStaff: StaffMember[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -1041,15 +1031,15 @@ function buildManagementOversight(
 
   // QA Audits
   const periodAudits = input.qaAuditRecords.filter((a) =>
-    isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
+    isInPeriod(a.date, input.period_from, input.period_to),
   );
   periodAudits.forEach((a) => {
     items.push({
       id: `ev_oversight_qa_${a.id}`,
       type: "qa_audit",
-      title: `QA Audit — ${a.audit_type ?? a.area ?? "general"}`,
-      date: a.date?.slice(0, 10) ?? a.created_at?.slice(0, 10) ?? input.today,
-      summary: `Quality assurance audit. Score: ${a.score ?? "N/A"}. Outcome: ${a.outcome ?? "recorded"}.`,
+      title: `QA Audit — ${a.scope ?? a.title ?? "general"}`,
+      date: a.date?.slice(0, 10) ?? input.today,
+      summary: `Quality assurance audit. Score: ${a.score ?? "N/A"}. Rating: ${a.overall_rating ?? "recorded"}.`,
       linked_record_type: "qa_audit",
       linked_record_id: a.id,
       tags: ["management", "audit", "quality_assurance"],
@@ -1058,14 +1048,14 @@ function buildManagementOversight(
 
   // Training records
   const periodTraining = input.trainingRecords.filter((t) =>
-    isInPeriod(t.date ?? t.created_at, input.period_from, input.period_to),
+    isInPeriod(t.completed_date, input.period_from, input.period_to),
   );
   periodTraining.slice(0, 20).forEach((t) => {
     items.push({
       id: `ev_oversight_training_${t.id}`,
       type: "training",
-      title: `Training — ${t.name ?? t.course ?? "course"}`,
-      date: t.date?.slice(0, 10) ?? t.created_at?.slice(0, 10) ?? input.today,
+      title: `Training — ${t.course_name ?? "course"}`,
+      date: t.completed_date?.slice(0, 10) ?? input.today,
       summary: `Training record. Status: ${t.status ?? "completed"}.`,
       linked_record_type: "training_record",
       linked_record_id: t.id,
@@ -1110,15 +1100,15 @@ function buildAuditTrail(
 
   // Case file audits
   const periodCFA = input.caseFileAudits.filter((a) =>
-    isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
+    isInPeriod(a.audit_date ?? a.created_at, input.period_from, input.period_to),
   );
   periodCFA.forEach((a) => {
     items.push({
       id: `ev_audit_cfa_${a.id}`,
       type: "case_file_audit",
-      title: `Case File Audit — ${a.child_name ?? a.child_id ?? "unknown"}`,
-      date: a.date?.slice(0, 10) ?? a.created_at?.slice(0, 10) ?? input.today,
-      summary: `Case file audit. Grade: ${a.grade ?? a.outcome ?? "recorded"}. Score: ${a.score ?? "N/A"}.`,
+      title: `Case File Audit — ${a.child_id ?? "unknown"}`,
+      date: a.audit_date?.slice(0, 10) ?? a.created_at?.slice(0, 10) ?? input.today,
+      summary: `Case file audit. Grade: ${a.overall_rag_rating ?? "recorded"}. Score: ${a.overall_score ?? "N/A"}.`,
       linked_record_type: "case_file_audit",
       linked_record_id: a.id,
       child_id: a.child_id,
@@ -1238,15 +1228,15 @@ function buildEvidenceOfProgress(
   // Outcome targets & reviews
   input.outcomeTargets
     .filter((o) =>
-      isInPeriod(o.created_at ?? o.date, input.period_from, input.period_to),
+      isInPeriod(o.created_at, input.period_from, input.period_to),
     )
     .forEach((o) => {
       items.push({
         id: `ev_progress_target_${o.id}`,
         type: "outcome_target",
-        title: `Outcome Target — ${o.target ?? o.description?.slice(0, 50) ?? "target"}`,
-        date: o.created_at?.slice(0, 10) ?? o.date ?? input.today,
-        summary: `Outcome target. Status: ${o.status ?? "active"}. Progress: ${o.progress ?? "ongoing"}.`,
+        title: `Outcome Target — ${o.target_description?.slice(0, 50) ?? "target"}`,
+        date: o.created_at?.slice(0, 10) ?? input.today,
+        summary: `Outcome target. Status: ${o.status ?? "active"}. Direction: ${o.direction ?? "ongoing"}.`,
         linked_record_type: "outcome_target",
         linked_record_id: o.id,
         child_id: o.child_id,
@@ -1257,15 +1247,15 @@ function buildEvidenceOfProgress(
   // Therapeutic impact
   input.therapeuticChildImpact
     .filter((t) =>
-      isInPeriod(t.date ?? t.created_at, input.period_from, input.period_to),
+      isInPeriod(t.reviewDate ?? t.created_at, input.period_from, input.period_to),
     )
     .forEach((t) => {
       items.push({
         id: `ev_progress_therapeutic_${t.id}`,
         type: "therapeutic_impact",
-        title: `Therapeutic Impact — ${t.area ?? "general"}`,
-        date: t.date?.slice(0, 10) ?? t.created_at?.slice(0, 10) ?? input.today,
-        summary: `Therapeutic impact recorded. Change: ${t.change ?? t.impact ?? "noted"}.`,
+        title: `Therapeutic Impact — ${t.modelApplication ?? "general"}`,
+        date: t.reviewDate?.slice(0, 10) ?? t.created_at?.slice(0, 10) ?? input.today,
+        summary: `Therapeutic impact recorded. Progress: ${t.evidenceOfProgress?.slice(0, 80) ?? "noted"}.`,
         linked_record_type: "therapeutic_child_impact",
         linked_record_id: t.id,
         child_id: t.child_id,
@@ -1302,15 +1292,15 @@ function buildEvidenceOfProgress(
   // YP Feedback
   input.ypFeedback
     .filter((f) =>
-      isInPeriod(f.date ?? f.created_at, input.period_from, input.period_to),
+      isInPeriod(f.date, input.period_from, input.period_to),
     )
     .forEach((f) => {
       items.push({
         id: `ev_progress_feedback_${f.id}`,
         type: "yp_feedback",
         title: "Young Person Feedback",
-        date: f.date?.slice(0, 10) ?? f.created_at?.slice(0, 10) ?? input.today,
-        summary: `Feedback from young person. Sentiment: ${f.sentiment ?? f.rating ?? "recorded"}.`,
+        date: f.date?.slice(0, 10) ?? input.today,
+        summary: `Feedback from young person. Sentiment: ${f.sentiment ?? "recorded"}.`,
         linked_record_type: "yp_feedback",
         linked_record_id: f.id,
         child_id: f.child_id,
@@ -1461,7 +1451,7 @@ function buildLearningFromIncidents(
     isInPeriod(r.incident_date ?? r.created_at, input.period_from, input.period_to),
   );
 
-  const stageDone = (s: any) =>
+  const stageDone = (s: { status?: string } | null | undefined) =>
     s?.status === "completed" || s?.status === "signed_off";
 
   const items: EvidenceItem[] = reflections.slice(0, 50).map((r) => {
