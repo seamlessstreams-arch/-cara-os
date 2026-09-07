@@ -133,3 +133,23 @@ describe("health-screening-immunisation-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the high-risk follow-up critical between recorded no and unrecorded", () => {
+    const nullAlert = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: null })])
+      .find((a) => a.type === "high_risk_no_followup");
+    const falseAlert = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: false })])
+      .find((a) => a.type === "high_risk_no_followup");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no follow-up critical when follow-up is recorded as arranged", () => {
+    const alerts = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: true })]);
+    expect(alerts.some((a) => a.type === "high_risk_no_followup")).toBe(false);
+  });
+  it("does not dilute the GP-notified rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, gp_notified: v }));
+    expect(computeHealthScreeningMetrics(rows).gp_notified_rate).toBe(100);
+  });
+});
