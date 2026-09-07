@@ -41,7 +41,7 @@ export async function buildChildProfile(
   const evidenceRefs: EvidenceRef[] = [];
 
   // ── Fetch child basic info ─────────────────────────────────────────────────
-  const { data: child } = await (sb.from("young_people") as SB)
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, preferred_name, date_of_birth, gender, placement_start, key_worker_id")
     .eq("id", childId)
     .single();

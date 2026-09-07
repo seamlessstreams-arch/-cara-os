@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchHealthData(sb: SB, childId: string): Promise<HealthInput> {
-  const { data: child } = await (sb.from("young_people") as SB)
+async function fetchHealthData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<HealthInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth, placement_start")
     .eq("id", childId)
     .single();

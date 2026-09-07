@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: SB, childId: string): Promise<PlacementStabilityInput> {
-  const { data: child } = await (sb.from("young_people") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<PlacementStabilityInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -90,12 +90,12 @@ async function fetchData(sb: SB, childId: string): Promise<PlacementStabilityInp
     .single();
 
   const cutoff30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-  const { count: incidentCount } = await (sb.from("incidents") as SB)
+  const { count: incidentCount } = await sb.from("incidents")
     .select("id", { count: "exact" })
     .eq("child_id", childId)
     .gte("date", cutoff30);
 
-  const { count: missingCount } = await (sb.from("missing_episodes") as SB)
+  const { count: missingCount } = await sb.from("missing_episodes")
     .select("id", { count: "exact" })
     .eq("child_id", childId)
     .gte("date", cutoff30);

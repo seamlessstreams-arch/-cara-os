@@ -23,7 +23,7 @@ export async function generateRiskSignals(input: {
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
-  let incidentsQuery = (sb.from("incidents") as SB)
+  let incidentsQuery = sb.from("incidents")
     .select("*")
     .eq("home_id", input.homeId)
     .gte("incident_date", since.toISOString());
