@@ -1851,3 +1851,20 @@ describe("Edge cases", () => {
     expect(m1).toEqual(m2);
   });
 });
+
+describe("tri-state judgements", () => {
+  it("does not credit a hygiene pass nobody recorded", () => {
+    const m = computeNutritionMetrics([], [], [makeHygiene({ overall_result: null })], 1);
+    expect(m.hygiene_pass_rate).toBeNull();
+  });
+  it("does not dilute the hygiene pass rate with unrecorded audits", () => {
+    const checks = ["pass", null, null, null].map((v, i) =>
+      makeHygiene({ id: `h-${i}`, overall_result: v as never }),
+    );
+    expect(computeNutritionMetrics([], [], checks, 1).hygiene_pass_rate).toBe(100);
+  });
+  it("still counts a recorded fail as a breach alert", () => {
+    const alerts = identifyNutritionAlerts([], [], [makeHygiene({ overall_result: "fail" })], 1);
+    expect(alerts.length).toBeGreaterThan(0);
+  });
+});
