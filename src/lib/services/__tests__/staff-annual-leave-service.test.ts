@@ -8,26 +8,29 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffAnnualLeaveRow>): StaffAnnualLeaveRow {
   return {
-    id: overrides?.id ?? "r-1",
-    home_id: overrides?.home_id ?? "home-1",
-    staff_name: overrides?.staff_name ?? "Alice Walker",
+    id: "r-1",
+    home_id: "home-1",
+    staff_name: "Alice Walker",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    start_date: overrides?.start_date ?? "2026-06-01",
-    end_date: overrides?.end_date ?? "2026-06-05",
-    leave_type: overrides?.leave_type ?? "annual_leave",
-    approval_status: overrides?.approval_status ?? "approved",
-    cover_arrangement: overrides?.cover_arrangement ?? "internal_swap",
-    staffing_impact: overrides?.staffing_impact ?? "no_impact",
-    days_requested: overrides?.days_requested ?? 5,
+    start_date: "2026-06-01",
+    end_date: "2026-06-05",
+    leave_type: "annual_leave",
+    approval_status: "approved",
+    cover_arrangement: "internal_swap",
+    staffing_impact: "no_impact",
+    days_requested: 5,
     approved_by: "approved_by" in (overrides ?? {}) ? (overrides!.approved_by ?? null) : null,
-    cover_confirmed: overrides?.cover_confirmed ?? true,
-    handover_completed: overrides?.handover_completed ?? true,
-    children_informed: overrides?.children_informed ?? true,
-    minimum_staffing_maintained: overrides?.minimum_staffing_maintained ?? true,
+    cover_confirmed: true,
+    handover_completed: true,
+    children_informed: true,
+    minimum_staffing_maintained: true,
     entitlement_remaining: "entitlement_remaining" in (overrides ?? {}) ? (overrides!.entitlement_remaining ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

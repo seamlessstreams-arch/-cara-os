@@ -25,33 +25,33 @@ function makeRecord(
   overrides?: Partial<ChildrensFeedbackRecord>,
 ): ChildrensFeedbackRecord {
   return {
-    id: overrides?.id ?? crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    feedback_type: overrides?.feedback_type ?? "satisfaction_survey",
-    feedback_date: overrides?.feedback_date ?? "2025-06-01",
-    satisfaction_rating: overrides?.satisfaction_rating ?? "happy",
-    response_status: overrides?.response_status ?? "completed",
-    feedback_category: overrides?.feedback_category ?? "general",
-    child_name: overrides?.child_name ?? "Child A",
+    id: crypto.randomUUID(),
+    home_id: "home-1",
+    feedback_type: "satisfaction_survey",
+    feedback_date: "2025-06-01",
+    satisfaction_rating: "happy",
+    response_status: "completed",
+    feedback_category: "general",
+    child_name: "Child A",
     child_id:
       "child_id" in (overrides ?? {})
         ? (overrides!.child_id ?? null)
         : null,
-    child_chose_method: overrides?.child_chose_method ?? true,
-    child_comfortable_sharing: overrides?.child_comfortable_sharing ?? true,
-    anonymous_option_offered: overrides?.anonymous_option_offered ?? true,
+    child_chose_method: true,
+    child_comfortable_sharing: true,
+    anonymous_option_offered: true,
     feedback_discussed_with_child:
-      overrides?.feedback_discussed_with_child ?? true,
-    changes_implemented: overrides?.changes_implemented ?? false,
-    child_informed_of_outcome: overrides?.child_informed_of_outcome ?? false,
+      true,
+    changes_implemented: false,
+    child_informed_of_outcome: false,
     child_satisfied_with_response:
-      overrides?.child_satisfied_with_response ?? false,
-    staff_responsive: overrides?.staff_responsive ?? true,
-    themes_identified: overrides?.themes_identified ?? [],
-    improvements_suggested: overrides?.improvements_suggested ?? [],
-    actions_taken: overrides?.actions_taken ?? [],
-    issues_found: overrides?.issues_found ?? [],
-    collected_by: overrides?.collected_by ?? "Staff A",
+      false,
+    staff_responsive: true,
+    themes_identified: [],
+    improvements_suggested: [],
+    actions_taken: [],
+    issues_found: [],
+    collected_by: "Staff A",
     response_date:
       "response_date" in (overrides ?? {})
         ? (overrides!.response_date ?? null)
@@ -60,8 +60,8 @@ function makeRecord(
       "notes" in (overrides ?? {})
         ? (overrides!.notes ?? null)
         : null,
-    created_at: overrides?.created_at ?? "2025-06-01T10:00:00.000Z",
-    updated_at: overrides?.updated_at ?? "2025-06-01T10:00:00.000Z",
+    created_at: "2025-06-01T10:00:00.000Z",
+    updated_at: "2025-06-01T10:00:00.000Z",
     ...overrides,
   };
 }

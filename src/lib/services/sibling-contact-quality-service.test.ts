@@ -9,7 +9,7 @@ function makeRecord(
   overrides: Partial<SiblingContactQualityRecord> = {},
 ): SiblingContactQualityRecord {
   return {
-    id: overrides.id ?? "rec-1",
+    id: "rec-1",
     home_id: "home-1",
     contact_type: "face_to_face",
     contact_quality: "good",

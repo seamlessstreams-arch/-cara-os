@@ -9,24 +9,26 @@ import {
 
 function makeRecord(overrides: Partial<CookingRecordInput> = {}): CookingRecordInput {
   return {
-    id: overrides.id ?? "rec-1",
-    child_id: overrides.child_id ?? "child-1",
-    competency_level: overrides.competency_level ?? "assisted",
-    recipes_attempted_count: overrides.recipes_attempted_count ?? 5,
-    recipes_good_or_better_count: overrides.recipes_good_or_better_count ?? 4,
-    cuisines_explored_count: overrides.cuisines_explored_count ?? 1,
-    has_child_voice: overrides.has_child_voice ?? true,
-    hygiene_certificate: overrides.hygiene_certificate ?? false,
-    led_family_meal: overrides.led_family_meal ?? false,
-    category: overrides.category ?? "hob_cooking",
+    id: "rec-1",
+    child_id: "child-1",
+    competency_level: "assisted",
+    recipes_attempted_count: 5,
+    recipes_good_or_better_count: 4,
+    cuisines_explored_count: 1,
+    has_child_voice: true,
+    hygiene_certificate: false,
+    led_family_meal: false,
+    category: "hob_cooking",
+      ...overrides,
   };
 }
 
 function baseInput(overrides: Partial<CookingLifeSkillsInput> = {}): CookingLifeSkillsInput {
   return {
-    today: overrides.today ?? "2026-05-27",
-    total_children: overrides.total_children ?? 6,
-    records: overrides.records ?? [],
+    today: "2026-05-27",
+    total_children: 6,
+    records: [],
+      ...overrides,
   };
 }
 
