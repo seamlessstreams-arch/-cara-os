@@ -130,3 +130,20 @@ describe("physical-activity-tracking-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded risk assessment in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyPhysicalActivityAlerts([makeRecord({ risk_assessed: null })]);
+    const alert = alerts.find((a) => a.type === "risk_not_assessed");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no risk gap when the assessment is recorded as done", () => {
+    const alerts = identifyPhysicalActivityAlerts([makeRecord({ risk_assessed: true })]);
+    expect(alerts.some((a) => a.type === "risk_not_assessed")).toBe(false);
+  });
+  it("does not dilute the risk-assessed rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, risk_assessed: v }));
+    expect(computePhysicalActivityMetrics(rows).risk_assessed_rate).toBe(100);
+  });
+});

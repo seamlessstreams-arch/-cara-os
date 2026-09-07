@@ -130,3 +130,20 @@ describe("religious-cultural-observance-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded dietary provision in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyReligiousCulturalAlerts([makeRecord({ dietary_needs_met: null })]);
+    const alert = alerts.find((a) => a.type === "dietary_needs_not_met");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no dietary gap when needs are recorded as met", () => {
+    const alerts = identifyReligiousCulturalAlerts([makeRecord({ dietary_needs_met: true })]);
+    expect(alerts.some((a) => a.type === "dietary_needs_not_met")).toBe(false);
+  });
+  it("does not dilute the dietary rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, dietary_needs_met: v }));
+    expect(computeReligiousCulturalMetrics(rows).dietary_needs_rate).toBe(100);
+  });
+});
