@@ -133,3 +133,20 @@ describe("celebration-milestones-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded child choice in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyCelebrationMilestonesAlerts([makeRecord({ child_chose_celebration: null })]);
+    const alert = alerts.find((a) => a.type === "no_child_choice");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no choice gap when child choice is recorded", () => {
+    const alerts = identifyCelebrationMilestonesAlerts([makeRecord({ child_chose_celebration: true })]);
+    expect(alerts.some((a) => a.type === "no_child_choice")).toBe(false);
+  });
+  it("does not dilute the photo-consent rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, photos_consent_obtained: v }));
+    expect(computeCelebrationMilestonesMetrics(rows).photos_consent_rate).toBe(100);
+  });
+});

@@ -130,3 +130,27 @@ describe("behaviour-pattern-analysis-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the restraint critical between recorded no-de-escalation and unrecorded", () => {
+    const nullAlert = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: null }),
+    ]).find((a) => a.type === "restraint_no_deescalation");
+    const falseAlert = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false }),
+    ]).find((a) => a.type === "restraint_no_deescalation");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no restraint critical when de-escalation is recorded as attempted", () => {
+    const alerts = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "restraint_no_deescalation")).toBe(false);
+  });
+  it("does not dilute the debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, debrief_completed: v }));
+    expect(computeBehaviourPatternMetrics(rows).debrief_rate).toBe(100);
+  });
+});
