@@ -8,6 +8,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database, Json } from "@/lib/supabase/types";
+
+// Zero code-vs-DDL drift (promotion census): the domain shape IS the column
+// contract, so one documented boundary cast per write replaces field-by-field.
+type Ins<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"];
 import { generateStudioContent } from "@/lib/cara-studio/ai-provider.service";
 import { EXTENDED_FRAMEWORK_PROMPTS, TONE_PROMPTS, CARA_STUDIO_SYSTEM_PROMPT } from "@/lib/cara-studio/prompts";
 import type {
@@ -98,8 +103,7 @@ export async function generateSession(opts: {
     }
 
     // Also fetch therapeutic profile if exists
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (sb.from("therapeutic_profiles") as any)
+    const { data: profile } = await sb.from("therapeutic_profiles")
       .select("known_triggers, known_soothing_strategies, what_helps, what_does_not_help, communication_style, current_presentation")
       .eq("home_id", hid)
       .eq("child_id", opts.childId)
@@ -180,9 +184,8 @@ export async function generateSession(opts: {
       created_by: opts.createdBy,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (sb.from("generated_sessions") as any)
-      .insert(record)
+    const { data, error } = await sb.from("generated_sessions")
+      .insert(record as unknown as Ins<"generated_sessions">)
       .select("*")
       .single();
 
@@ -232,8 +235,7 @@ export async function listGeneratedSessions(opts?: {
 
   if (!sb) return getDemoSessions(hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("generated_sessions") as any)
+  let query = sb.from("generated_sessions")
     .select("*")
     .eq("home_id", hid)
     .order("created_at", { ascending: false })
@@ -254,8 +256,7 @@ export async function approveSession(sessionId: string, approvedBy: string): Pro
   const sb = createServerClient();
   if (!sb) throw new Error("Database connection required");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("generated_sessions") as any)
+  const { data, error } = await sb.from("generated_sessions")
     .update({
       status: "approved",
       approved_by: approvedBy,
@@ -281,14 +282,13 @@ export async function recordSessionDelivery(
   const sb = createServerClient();
   if (!sb) throw new Error("Database connection required");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("generated_sessions") as any)
+  const { data, error } = await sb.from("generated_sessions")
     .update({
       status: "delivered",
       delivered_by: deliveredBy,
       delivered_at: new Date().toISOString(),
       recording_notes: notes ?? null,
-      follow_up_actions: followUpActions ?? [],
+      follow_up_actions: (followUpActions ?? []) as unknown as Json,
       updated_at: new Date().toISOString(),
     })
     .eq("id", sessionId)
