@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS cs_placement_moves (
   placement_type              text NOT NULL,
   previous_placement_type     text,
   move_reason                 text NOT NULL,
-  planned                     boolean NOT NULL DEFAULT true,
+  planned                     boolean,
   disruption_meeting_held     boolean NOT NULL DEFAULT false,
   disruption_outcome          text NOT NULL DEFAULT 'not_applicable',
   placement_duration_days     integer NOT NULL DEFAULT 0,

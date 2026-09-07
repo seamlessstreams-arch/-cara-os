@@ -71,7 +71,7 @@ create table if not exists public.aria_ai_runs (
   output_json jsonb not null default '{}'::jsonb,
   status aria_output_status not null default 'draft',
   confidence numeric(5,2) not null default 0,
-  requires_human_approval boolean not null default true,
+  requires_human_approval boolean,
   human_approved_by uuid,
   human_approved_at timestamptz,
   rejection_reason text,

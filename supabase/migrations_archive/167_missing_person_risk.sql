@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS cs_missing_person_risk (
   safe_places_identified boolean NOT NULL DEFAULT false,
   escalation_protocol_followed boolean NOT NULL DEFAULT false,
   multi_agency_involved boolean NOT NULL DEFAULT false,
-  exploitation_risk_identified boolean NOT NULL DEFAULT false,
+  exploitation_risk_identified boolean,
   issues_found  jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   assessed_by   text NOT NULL,

@@ -20,10 +20,10 @@ CREATE TABLE IF NOT EXISTS cs_home_pest_control_management (
   treatment_date      date    NULL,
   treatment_completed boolean NOT NULL DEFAULT false,
 
-  proofing_adequate     boolean NOT NULL DEFAULT true,
-  hygiene_satisfactory  boolean NOT NULL DEFAULT true,
-  food_storage_adequate boolean NOT NULL DEFAULT true,
-  waste_management_ok   boolean NOT NULL DEFAULT true,
+  proofing_adequate     boolean,
+  hygiene_satisfactory  boolean,
+  food_storage_adequate boolean,
+  waste_management_ok   boolean,
 
   re_inspection_required boolean NOT NULL DEFAULT false,
   re_inspection_date     date    NULL,

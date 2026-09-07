@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS cs_activities (
   location              text,
   description           text,
   child_feedback        text,
-  child_enjoyed         boolean NOT NULL DEFAULT true,
+  child_enjoyed         boolean,
   skills_developed      jsonb NOT NULL DEFAULT '[]'::jsonb,
   staff_member          uuid NOT NULL,
   created_at            timestamptz NOT NULL DEFAULT now()
@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS cs_health_appointments (
   notes                 text,
   follow_up_required    boolean NOT NULL DEFAULT false,
   follow_up_date        date,
-  consent_obtained      boolean NOT NULL DEFAULT true,
+  consent_obtained      boolean,
   accompanied_by        uuid,
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now()

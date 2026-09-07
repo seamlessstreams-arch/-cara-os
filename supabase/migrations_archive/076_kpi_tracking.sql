@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS cs_kpi_definitions (
   target_value          numeric(10,2) NOT NULL,
   threshold_amber       numeric(10,2) NOT NULL,
   threshold_red         numeric(10,2) NOT NULL,
-  higher_is_better      boolean NOT NULL DEFAULT true,
+  higher_is_better      boolean,
   frequency             text NOT NULL,
   data_source           text NOT NULL,
   responsible_person    text NOT NULL,

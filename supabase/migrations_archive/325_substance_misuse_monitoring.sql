@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS cs_substance_misuse_monitoring (
 
   referral_to_specialist   boolean NOT NULL DEFAULT false,
   specialist_service_name  text    NULL,
-  harm_reduction_plan      boolean NOT NULL DEFAULT false,
+  harm_reduction_plan      boolean,
   young_person_engaged     boolean NOT NULL DEFAULT false,
   parental_carer_informed  boolean NOT NULL DEFAULT false,
   social_worker_informed   boolean NOT NULL DEFAULT false,

@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS cs_activities (
   led_by              text NOT NULL,
   status              text NOT NULL DEFAULT 'planned',
   max_participants    integer NOT NULL DEFAULT 10,
-  risk_assessed       boolean NOT NULL DEFAULT false,
+  risk_assessed       boolean,
   cost                numeric(10,2) NOT NULL DEFAULT 0,
   external_provider   boolean NOT NULL DEFAULT false,
   provider_name       text,

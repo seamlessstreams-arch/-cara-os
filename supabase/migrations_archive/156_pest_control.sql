@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS cs_pest_control (
 
   location_in_home        text NOT NULL DEFAULT '',
   contractor_name         text,
-  contractor_certified    boolean NOT NULL DEFAULT true,
+  contractor_certified    boolean,
 
-  children_informed       boolean NOT NULL DEFAULT true,
+  children_informed       boolean,
   children_relocated      boolean NOT NULL DEFAULT false,
   chemicals_used          boolean NOT NULL DEFAULT false,
   chemical_safety_sheet_obtained boolean NOT NULL DEFAULT false,
-  area_ventilated         boolean NOT NULL DEFAULT true,
+  area_ventilated         boolean,
   food_areas_affected     boolean NOT NULL DEFAULT false,
   entry_points_sealed     boolean NOT NULL DEFAULT false,
   prevention_measures_implemented boolean NOT NULL DEFAULT false,

@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS cs_home_water_hygiene_management (
   cold_water_temp  numeric(4,1) NULL,
   return_temp      numeric(4,1) NULL,
 
-  hot_temp_compliant  boolean NOT NULL DEFAULT true,
-  cold_temp_compliant boolean NOT NULL DEFAULT true,
+  hot_temp_compliant  boolean,
+  cold_temp_compliant boolean,
 
   flushing_completed    boolean NOT NULL DEFAULT false,
   tmv_functioning       boolean NULL,

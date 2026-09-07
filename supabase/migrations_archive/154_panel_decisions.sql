@@ -21,7 +21,7 @@ create table if not exists cs_panel_decisions (
   matching_criteria_assessed  boolean not null default false,
   impact_on_group_assessed    boolean not null default false,
   safeguarding_discussed      boolean not null default false,
-  minutes_recorded            boolean not null default true,
+  minutes_recorded            boolean,
   actions_agreed              jsonb not null default '[]'::jsonb,
   conditions                  jsonb not null default '[]'::jsonb,
   follow_up_date              date,

@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS cs_utility_records (
   contract_end_date       date,
 
   smart_meter_installed   boolean NOT NULL DEFAULT false,
-  heating_adequate        boolean NOT NULL DEFAULT true,
-  hot_water_available     boolean NOT NULL DEFAULT true,
-  children_comfortable    boolean NOT NULL DEFAULT true,
+  heating_adequate        boolean,
+  hot_water_available     boolean,
+  children_comfortable    boolean,
   energy_saving_measures  boolean NOT NULL DEFAULT false,
   renewable_energy_used   boolean NOT NULL DEFAULT false,
   carbon_offset           boolean NOT NULL DEFAULT false,

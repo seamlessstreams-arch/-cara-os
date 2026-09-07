@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_practice_risk_assessments (
   children_safeguarded               boolean NOT NULL DEFAULT false,
   alternative_explanations_considered boolean NOT NULL DEFAULT false,
   proportionate_response             boolean NOT NULL DEFAULT false,
-  recorded_promptly                  boolean NOT NULL DEFAULT true,
+  recorded_promptly                  boolean,
   issues_found     jsonb NOT NULL DEFAULT '[]',
   actions_taken    jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

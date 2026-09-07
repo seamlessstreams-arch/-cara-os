@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS cs_sleep_support (
   disturbance_type            text NULL,
   medication_involved         boolean NOT NULL DEFAULT false,
   medication_type             text NULL,
-  sleep_environment_suitable  boolean NOT NULL DEFAULT true,
+  sleep_environment_suitable  boolean,
   screen_time_managed         boolean NOT NULL DEFAULT false,
   routine_followed            boolean NOT NULL DEFAULT false,
   young_person_input          boolean NOT NULL DEFAULT false,

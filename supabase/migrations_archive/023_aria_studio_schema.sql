@@ -210,7 +210,7 @@ create table if not exists aria_quality_checks (
   artifact_id                text not null references aria_artifacts(id) on delete cascade,
   evidence_cited             boolean not null default false,
   child_voice_considered     boolean not null default false,
-  risk_considered            boolean not null default false,
+  risk_considered            boolean,
   safeguarding_considered    boolean not null default false,
   regulation_considered      boolean not null default false,
   actions_clear              boolean not null default false,

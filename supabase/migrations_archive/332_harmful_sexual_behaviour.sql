@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS cs_harmful_sexual_behaviour (
   specialist_referral_made      boolean NOT NULL DEFAULT false,
   specialist_service            text NULL,
   safety_plan_in_place          boolean NOT NULL DEFAULT false,
-  environmental_risk_assessment boolean NOT NULL DEFAULT false,
+  environmental_risk_assessment boolean,
   sleeping_arrangements_reviewed boolean NOT NULL DEFAULT false,
   supervision_level_adjusted    boolean NOT NULL DEFAULT false,
   police_notified               boolean NOT NULL DEFAULT false,
