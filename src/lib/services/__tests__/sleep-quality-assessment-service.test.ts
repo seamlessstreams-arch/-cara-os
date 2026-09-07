@@ -137,3 +137,20 @@ describe("sleep-quality-assessment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded sleep plan in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySleepQualityAlerts([makeRecord({ sleep_plan_in_place: null })]);
+    const alert = alerts.find((a) => a.type === "no_sleep_plan");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no sleep-plan gap when the plan is recorded", () => {
+    const alerts = identifySleepQualityAlerts([makeRecord({ sleep_plan_in_place: true })]);
+    expect(alerts.some((a) => a.type === "no_sleep_plan")).toBe(false);
+  });
+  it("does not dilute the sleep-plan rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, sleep_plan_in_place: v }));
+    expect(computeSleepQualityMetrics(rows).sleep_plan_rate).toBe(100);
+  });
+});

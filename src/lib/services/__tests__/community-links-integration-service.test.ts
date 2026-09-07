@@ -132,3 +132,27 @@ describe("community-links-integration-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the active-link safeguarding critical between recorded no-check and unrecorded", () => {
+    const nullAlert = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: null }),
+    ]).find((a) => a.type === "active_no_safeguarding");
+    const falseAlert = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: false }),
+    ]).find((a) => a.type === "active_no_safeguarding");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no safeguarding critical when the check is recorded as done", () => {
+    const alerts = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "active_no_safeguarding")).toBe(false);
+  });
+  it("does not dilute the DBS rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, dbs_verified: v }));
+    expect(computeCommunityLinksMetrics(rows).dbs_verified_rate).toBe(100);
+  });
+});
