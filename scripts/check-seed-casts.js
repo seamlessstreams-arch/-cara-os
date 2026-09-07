@@ -45,10 +45,25 @@ function* walk(dir) {
 }
 
 const violations = [];
-for (const root of roots) {
-  for (const file of walk(root)) {
-    const lines = fs.readFileSync(file, "utf8").split("\n");
+
+// store.ts holds the seed collections but is not named like a seed file, so the
+// member check never reached it. Its `const db = {` CRUD surface below is a
+// different thing — those casts build a record from partial input and are the
+// create API's problem, not seed data's — so only the seed region above it is
+// in scope here.
+function seedRegionEnd(text) {
+  const i = text.search(/^(export )?const db = \{/m);
+  return i === -1 ? text.length : text.slice(0, i).split("\n").length;
+}
+
+const memberFiles = [...new Set([...roots.flatMap((r) => [...walk(r)]), "src/lib/db/store.ts"])];
+for (const file of memberFiles) {
+  {
+    const text = fs.readFileSync(file, "utf8");
+    const limit = file.endsWith("db/store.ts") ? seedRegionEnd(text) : Infinity;
+    const lines = text.split("\n");
     lines.forEach((line, i) => {
+      if (i >= limit) return;
       const m = line.match(/\}\s+as\s+([A-Z][A-Za-z0-9_]*)\s*[,;)\]]?\s*$/);
       if (m && m[1] !== "const") {
         violations.push(`${file}:${i + 1}  } as ${m[1]}`);
