@@ -12,7 +12,6 @@
 // All output is "Cara suggested draft" until a human approves and commits.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   CARA_PROFESSIONAL_IDENTITY_PROMPT,
@@ -37,8 +36,7 @@ import type {
   CaraInvocationInput,
 } from "@/lib/cara/cara-types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }

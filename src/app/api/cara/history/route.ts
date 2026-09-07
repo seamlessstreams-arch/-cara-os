@@ -6,12 +6,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 import { seedDay } from "@/lib/seed-date";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }
@@ -79,7 +77,21 @@ export async function GET(req: NextRequest) {
     return storageFailure("Cara history", error);
   }
 
-  const entries: HistoryEntry[] = (((data)) ?? []).map((row) => {
+  /** Snake-case row for the cara_requests select — only the columns read. */
+  interface HistoryRow {
+    id: string;
+    command_id: string;
+    module: string | null;
+    created_at: string;
+    cara_outputs?: {
+      id: string;
+      status: string;
+      confidence: string | null;
+      generated_text: string | null;
+      guardrail_flagged: boolean | null;
+    }[];
+  }
+  const entries: HistoryEntry[] = (((data) as HistoryRow[] | null) ?? []).map((row) => {
     const output = row.cara_outputs?.[0] ?? null;
     return {
       requestId: row.id,
