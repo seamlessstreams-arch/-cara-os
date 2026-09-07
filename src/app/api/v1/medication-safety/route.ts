@@ -1,19 +1,8 @@
 import { NextResponse } from "next/server";
+import { createSafeReader, incompleteNote } from "@/lib/http/safe-list";
 import { dal } from "@/lib/db/dal";
 
 const CONCERN_STATUSES = new Set(["refused", "missed", "withheld", "late"]);
-
-// Read a dal collection defensively: a transient query failure degrades to an
-// empty list rather than 500-ing the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET() {
   try {
@@ -21,10 +10,15 @@ export async function GET() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyStr = thirtyDaysAgo.toISOString().split("T")[0];
 
+    // A failed read here used to become an empty list, and an empty list is an
+    // answer: with no administrations, `administeredWithoutWitness` is 0 and
+    // the insight about doses given without a witness simply never fires. The
+    // concern does not read as unknown — it disappears.
+    const reader = createSafeReader();
     const [youngPeople, medications, administrations] = await Promise.all([
-      safeList(dal.youngPeople.findAll()),
-      safeList(dal.medications.findAll()),
-      safeList(dal.medicationAdministrations.findAll()),
+      reader.list("young people", dal.youngPeople.findAll()),
+      reader.list("medications", dal.medications.findAll()),
+      reader.list("medication administrations", dal.medicationAdministrations.findAll()),
     ]);
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
@@ -120,6 +114,11 @@ export async function GET() {
     else overallSignal = "green";
 
     return NextResponse.json({
+      // Named so a surface can say which source was unreadable rather than
+      // presenting an incomplete count as a clean one.
+      incomplete: reader.incomplete(),
+      unreadableSources: reader.failures(),
+      incompleteNote: reader.incomplete() ? incompleteNote(reader.failures()) : null,
       data: {
         totalDoses,
         givenDoses,
