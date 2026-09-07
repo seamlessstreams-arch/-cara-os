@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { enumParam } from "@/lib/http/enum-param";
 import { ADMISSION_PHASE_VALUES } from "@/lib/services/yp-admission-service";
 import { NextRequest, NextResponse } from "next/server";
@@ -41,6 +42,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
+    const __fd = rejectFutureDates(body, ["referralDate", "childDateOfBirth"]);
+    if (__fd) return __fd;
     const {
       homeId, childFirstName, childLastName, childDateOfBirth,
       childGender, referralSource, referringLa, createdBy,

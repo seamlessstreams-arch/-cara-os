@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { storageFailure } from "@/lib/http/storage-error";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -79,6 +80,9 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  const __fd = rejectFutureDates(body, ["recordDate"]);
+  if (__fd) return __fd;
 
   const {
     recordId,
