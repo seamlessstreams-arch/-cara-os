@@ -131,3 +131,20 @@ describe("staff-lone-working-service", () => {
     });
   });
 });
+
+// ── Tri-state: very-high risk with unrecorded authorisation alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded authorisation as a gap", () => {
+    const alerts = _testing.identifyStaffLoneWorkingAlerts([
+      makeRecord({ risk_level: "very_high", manager_authorised: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "very_high_not_authorised");
+    expect(a?.message).toMatch(/no authorisation recorded/i);
+  });
+  it("still asserts a recorded refusal", () => {
+    const alerts = _testing.identifyStaffLoneWorkingAlerts([
+      makeRecord({ risk_level: "very_high", manager_authorised: false }),
+    ]);
+    expect(alerts.some((x) => /without manager authorisation/i.test(x.message))).toBe(true);
+  });
+});

@@ -131,3 +131,19 @@ describe("staff-handover-notes-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded written_record_complete as a failure", () => {
+    const alerts = _testing.identifyStaffHandoverNotesAlerts([
+      makeRecord({ written_record_complete: null }), makeRecord({ id: "r-2", written_record_complete: null }),
+    ]);
+    expect(alerts.some((a) => a.type === "no_written_record")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyStaffHandoverNotesAlerts([
+      makeRecord({ written_record_complete: false }), makeRecord({ id: "r-2", written_record_complete: false }),
+    ]);
+    expect(alerts.some((a) => a.type === "no_written_record")).toBe(true);
+  });
+});
