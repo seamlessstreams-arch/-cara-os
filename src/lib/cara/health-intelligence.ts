@@ -31,7 +31,7 @@ export type AssessmentType = "initial" | "review";
 export interface HealthAssessment {
   date: string;
   type: AssessmentType;
-  completedOnTime: boolean;
+  completedOnTime: boolean | null;
   actionPlanCreated: boolean;
 }
 
@@ -45,14 +45,14 @@ export interface Immunisation {
 export interface HealthAppointment {
   date: string;
   type: "gp" | "dental" | "optical" | "specialist" | "camhs" | "sexual_health" | "other";
-  attended: boolean;
+  attended: boolean | null;
   reason?: string;
 }
 
 export interface Medication {
   name: string;
-  prescribed: boolean;
-  administeredCorrectly: boolean;
+  prescribed: boolean | null;
+  administeredCorrectly: boolean | null;
   consentInPlace: boolean;
   reviewDue: boolean;
 }
@@ -71,13 +71,13 @@ export interface HealthInput {
   assessmentOverdue: boolean;
 
   // Registrations
-  gpRegistered: boolean;
-  dentistRegistered: boolean;
-  opticiansRegistered: boolean;
+  gpRegistered: boolean | null;
+  dentistRegistered: boolean | null;
+  opticiansRegistered: boolean | null;
 
   // Checks
-  dentalCheckLast6Months: boolean;
-  opticalCheckLast12Months: boolean;
+  dentalCheckLast6Months: boolean | null;
+  opticalCheckLast12Months: boolean | null;
   lastDentalDate?: string;
   lastOpticalDate?: string;
 
@@ -92,23 +92,23 @@ export interface HealthInput {
   medications: Medication[];
 
   // Health action plan
-  healthActionPlanInPlace: boolean;
-  healthActionPlanReviewed: boolean;
+  healthActionPlanInPlace: boolean | null;
+  healthActionPlanReviewed: boolean | null;
   actionsTotal: number;
   actionsCompleted: number;
 
   // Lifestyle
   substanceMisuseIdentified: boolean;
   substanceMisuseSupport: boolean;
-  healthyEatingSupported: boolean;
-  physicalActivityRegular: boolean;
-  sleepRoutineGood: boolean;
+  healthyEatingSupported: boolean | null;
+  physicalActivityRegular: boolean | null;
+  sleepRoutineGood: boolean | null;
 
   // Support
-  staffHealthTrained: boolean;
-  childUnderstandsHealth: boolean;
-  consentFormsComplete: boolean;
-  healthPassportUpToDate: boolean;
+  staffHealthTrained: boolean | null;
+  childUnderstandsHealth: boolean | null;
+  consentFormsComplete: boolean | null;
+  healthPassportUpToDate: boolean | null;
 }
 
 // ── Output Types ───────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ export interface HealthStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -169,14 +169,19 @@ export function analyseHealth(input: HealthInput): HealthAssessmentResult {
     ? Math.round((input.immunisations.filter(i => !i.due && !i.overdue).length / input.immunisations.length) * 100) / 100
     : null;
 
-  const totalAppts = input.appointments.length;
-  const attendedAppts = input.appointments.filter(a => a.attended).length;
-  const appointmentAttendanceRate = totalAppts > 0
-    ? Math.round((attendedAppts / totalAppts) * 100) / 100
+  // Attendance is rated over the appointments whose attendance was recorded.
+  // An appointment nobody wrote up is not a missed one.
+  const apptsWithAttendance = input.appointments.filter(a => a.attended !== null);
+  const attendedAppts = apptsWithAttendance.filter(a => a.attended === true).length;
+  const appointmentAttendanceRate = apptsWithAttendance.length > 0
+    ? Math.round((attendedAppts / apptsWithAttendance.length) * 100) / 100
     : 1;
 
+  // Every medication must be RECORDED as correctly administered. Under the old
+  // default an unanswered question read as a yes, so a medication nobody had
+  // signed off counted toward compliance.
   const medicationCompliance = input.medications.length === 0 ||
-    input.medications.every(m => m.administeredCorrectly && m.consentInPlace);
+    input.medications.every(m => m.administeredCorrectly === true && m.consentInPlace);
 
   const healthActionProgress = input.actionsTotal > 0
     ? Math.round((input.actionsCompleted / input.actionsTotal) * 100)
@@ -254,20 +259,21 @@ function scoreAssessments(input: HealthInput, immunisationRate: number | null): 
   else score += 15; // no assessments but not flagged overdue
 
   // Assessments completed on time
-  const onTimeRate = input.healthAssessments.length > 0
-    ? input.healthAssessments.filter(a => a.completedOnTime).length / input.healthAssessments.length
+  const timedAssessments = input.healthAssessments.filter(a => a.completedOnTime !== null);
+  const onTimeRate = timedAssessments.length > 0
+    ? timedAssessments.filter(a => a.completedOnTime === true).length / timedAssessments.length
     : 0;
   score += Math.round(onTimeRate * 20);
 
   // Action plan
-  if (input.healthActionPlanInPlace) score += 10;
-  if (input.healthActionPlanReviewed) score += 10;
+  if (input.healthActionPlanInPlace === true) score += 10;
+  if (input.healthActionPlanReviewed === true) score += 10;
 
   // Immunisations — no evidence earns no credit (was a fabricated +20)
   score += immunisationRate === null ? 0 : Math.round(immunisationRate * 20);
 
   // Health passport
-  if (input.healthPassportUpToDate) score += 10;
+  if (input.healthPassportUpToDate === true) score += 10;
 
   return Math.min(100, score);
 }
@@ -275,11 +281,11 @@ function scoreAssessments(input: HealthInput, immunisationRate: number | null): 
 function scoreRegistrations(input: HealthInput): number {
   let score = 0;
 
-  if (input.gpRegistered) score += 30;
-  if (input.dentistRegistered) score += 25;
-  if (input.opticiansRegistered) score += 20;
-  if (input.dentalCheckLast6Months) score += 15;
-  if (input.opticalCheckLast12Months) score += 10;
+  if (input.gpRegistered === true) score += 30;
+  if (input.dentistRegistered === true) score += 25;
+  if (input.opticiansRegistered === true) score += 20;
+  if (input.dentalCheckLast6Months === true) score += 15;
+  if (input.opticalCheckLast12Months === true) score += 10;
 
   return Math.min(100, score);
 }
@@ -294,15 +300,20 @@ function scoreAppointments(input: HealthInput, attendanceRate: number): number {
   if (input.medications.length === 0) {
     score += 25; // no meds = no concerns
   } else {
-    const compliant = input.medications.filter(m => m.administeredCorrectly && m.consentInPlace).length;
-    score += Math.round((compliant / input.medications.length) * 25);
+    // Scored over the medications whose administration was recorded. One with
+    // no record is unevidenced, not mis-administered.
+    const recordedMeds = input.medications.filter(m => m.administeredCorrectly !== null);
+    if (recordedMeds.length > 0) {
+      const compliant = recordedMeds.filter(m => m.administeredCorrectly === true && m.consentInPlace).length;
+      score += Math.round((compliant / recordedMeds.length) * 25);
+    }
   }
 
   // Consent forms
-  if (input.consentFormsComplete) score += 15;
+  if (input.consentFormsComplete === true) score += 15;
 
   // Staff trained
-  if (input.staffHealthTrained) score += 10;
+  if (input.staffHealthTrained === true) score += 10;
 
   return Math.min(100, score);
 }
@@ -310,10 +321,10 @@ function scoreAppointments(input: HealthInput, attendanceRate: number): number {
 function scoreLifestyle(input: HealthInput): number {
   let score = 0;
 
-  if (input.healthyEatingSupported) score += 20;
-  if (input.physicalActivityRegular) score += 20;
-  if (input.sleepRoutineGood) score += 20;
-  if (input.childUnderstandsHealth) score += 15;
+  if (input.healthyEatingSupported === true) score += 20;
+  if (input.physicalActivityRegular === true) score += 20;
+  if (input.sleepRoutineGood === true) score += 20;
+  if (input.childUnderstandsHealth === true) score += 15;
 
   // Substance misuse
   if (!input.substanceMisuseIdentified) {
@@ -347,8 +358,8 @@ function identifyConcerns(
     });
   }
 
-  // GP not registered
-  if (!input.gpRegistered) {
+  // GP not registered. Only a recorded "no" is the critical concern.
+  if (input.gpRegistered === false) {
     concerns.push({
       severity: "critical",
       category: "registration",
@@ -381,18 +392,18 @@ function identifyConcerns(
   }
 
   // Dental not done
-  if (!input.dentalCheckLast6Months) {
+  if (input.dentalCheckLast6Months === false) {
     concerns.push({
-      severity: input.dentistRegistered ? "moderate" : "significant",
+      severity: input.dentistRegistered === true ? "moderate" : "significant",
       category: "dental",
-      description: input.dentistRegistered
+      description: input.dentistRegistered === true
         ? "Dental check overdue (6-monthly requirement)"
         : "Not registered with dentist and dental check overdue",
     });
   }
 
   // Optical not done
-  if (!input.opticalCheckLast12Months) {
+  if (input.opticalCheckLast12Months === false) {
     concerns.push({
       severity: "moderate",
       category: "optical",
@@ -411,7 +422,7 @@ function identifyConcerns(
 
   // Medication issues
   if (!medicationCompliance) {
-    const issues = input.medications.filter(m => !m.administeredCorrectly || !m.consentInPlace);
+    const issues = input.medications.filter(m => m.administeredCorrectly === false || !m.consentInPlace);
     concerns.push({
       severity: "significant",
       category: "medication",
@@ -439,7 +450,7 @@ function identifyConcerns(
   }
 
   // No health action plan
-  if (!input.healthActionPlanInPlace) {
+  if (input.healthActionPlanInPlace === false) {
     concerns.push({
       severity: "moderate",
       category: "action_plan",
@@ -468,7 +479,7 @@ function identifyStrengths(
     strengths.push({ category: "immunisation", description: "All immunisations up to date" });
   }
 
-  if (input.gpRegistered && input.dentistRegistered && input.opticiansRegistered) {
+  if (input.gpRegistered === true && input.dentistRegistered === true && input.opticiansRegistered === true) {
     strengths.push({ category: "registration", description: "Registered with GP, dentist, and optician" });
   }
 
@@ -476,19 +487,19 @@ function identifyStrengths(
     strengths.push({ category: "appointments", description: "Excellent health appointment attendance" });
   }
 
-  if (input.dentalCheckLast6Months && input.opticalCheckLast12Months) {
+  if (input.dentalCheckLast6Months === true && input.opticalCheckLast12Months === true) {
     strengths.push({ category: "checks", description: "Dental and optical checks current" });
   }
 
-  if (input.healthyEatingSupported && input.physicalActivityRegular && input.sleepRoutineGood) {
+  if (input.healthyEatingSupported === true && input.physicalActivityRegular === true && input.sleepRoutineGood === true) {
     strengths.push({ category: "lifestyle", description: "Healthy lifestyle supported — diet, exercise, and sleep" });
   }
 
-  if (input.healthPassportUpToDate) {
+  if (input.healthPassportUpToDate === true) {
     strengths.push({ category: "records", description: "Health passport up to date — continuity of care supported" });
   }
 
-  if (input.medications.length > 0 && input.medications.every(m => m.administeredCorrectly && m.consentInPlace)) {
+  if (input.medications.length > 0 && input.medications.every(m => m.administeredCorrectly === true && m.consentInPlace)) {
     strengths.push({ category: "medication", description: "All medications managed correctly with consent" });
   }
 
@@ -506,14 +517,15 @@ function assessRegulatory(
 
   // CHR 2015 Reg 6(2)(b) — Physical health
   const reg6Met = status === "current" &&
-    input.gpRegistered &&
-    input.dentalCheckLast6Months &&
-    input.healthActionPlanInPlace;
+    input.gpRegistered === true &&
+    input.dentalCheckLast6Months === true &&
+    input.healthActionPlanInPlace === true;
   flags.push({
     regulation: "CHR 2015 Reg 6(2)(b)",
     area: "Physical Health",
     status: reg6Met ? "met"
-      : (status === "current" || input.gpRegistered) ? "partially_met"
+      : (status === "current" || input.gpRegistered === true) ? "partially_met"
+      : input.gpRegistered === null ? "not_evidenced"
       : "not_met",
     detail: reg6Met
       ? "Physical health actively promoted and monitored"
@@ -523,13 +535,14 @@ function assessRegulatory(
   // Promoting Health of LAC
   const promotingMet = status === "current" &&
     meets(immunisationRate, 1) &&
-    input.dentalCheckLast6Months &&
-    input.opticalCheckLast12Months;
+    input.dentalCheckLast6Months === true &&
+    input.opticalCheckLast12Months === true;
   flags.push({
     regulation: "Promoting Health of LAC",
     area: "Health Checks",
     status: promotingMet ? "met"
-      : (status === "current" || input.dentalCheckLast6Months) ? "partially_met"
+      : (status === "current" || input.dentalCheckLast6Months === true) ? "partially_met"
+      : input.dentalCheckLast6Months === null ? "not_evidenced"
       : "not_met",
     detail: promotingMet
       ? "All statutory health checks completed on schedule"
@@ -538,14 +551,15 @@ function assessRegulatory(
 
   // SCCIF Health
   const sccifMet = status === "current" &&
-    input.gpRegistered &&
-    input.healthyEatingSupported &&
-    input.physicalActivityRegular;
+    input.gpRegistered === true &&
+    input.healthyEatingSupported === true &&
+    input.physicalActivityRegular === true;
   flags.push({
     regulation: "SCCIF",
     area: "Health Outcomes",
     status: sccifMet ? "met"
-      : input.gpRegistered ? "partially_met"
+      : input.gpRegistered === true ? "partially_met"
+      : input.gpRegistered === null ? "not_evidenced"
       : "not_met",
     detail: sccifMet
       ? "Health outcomes positive — child's health actively promoted"
@@ -554,16 +568,20 @@ function assessRegulatory(
 
   // Medication (if applicable)
   if (input.medications.length > 0) {
-    const medsMet = input.medications.every(m => m.administeredCorrectly && m.consentInPlace && !m.reviewDue);
+    const medsMet = input.medications.every(m => m.administeredCorrectly === true && m.consentInPlace && !m.reviewDue);
+    const medsUnrecorded = input.medications.some(m => m.administeredCorrectly === null);
     flags.push({
       regulation: "CHR 2015 Reg 23",
       area: "Medication",
       status: medsMet ? "met"
+        : medsUnrecorded ? "not_evidenced"
         : input.medications.every(m => m.consentInPlace) ? "partially_met"
         : "not_met",
       detail: medsMet
         ? "Medication managed safely with appropriate consent"
-        : "Medication management needs attention",
+        : medsUnrecorded
+          ? "Cannot be evidenced — one or more medications have no record of correct administration"
+          : "Medication management needs attention",
     });
   }
 
@@ -584,19 +602,19 @@ function buildRecommendations(
     recs.push("URGENT: Arrange health assessment — statutory requirement overdue");
   }
 
-  if (!input.gpRegistered) {
+  if (input.gpRegistered === false) {
     recs.push("URGENT: Register with GP immediately");
   }
 
-  if (!input.dentistRegistered) {
+  if (input.dentistRegistered === false) {
     recs.push("Register with dental practice");
   }
 
-  if (!input.dentalCheckLast6Months) {
+  if (input.dentalCheckLast6Months === false) {
     recs.push("Book dental check — 6-monthly requirement");
   }
 
-  if (!input.opticalCheckLast12Months) {
+  if (input.opticalCheckLast12Months === false) {
     recs.push("Book eye test — annual requirement");
   }
 
@@ -623,17 +641,17 @@ function buildRecommendations(
     recs.push("Arrange substance misuse support — specialist referral needed");
   }
 
-  if (!input.healthActionPlanInPlace) {
+  if (input.healthActionPlanInPlace === false) {
     recs.push("Create health action plan from latest health assessment");
-  } else if (!input.healthActionPlanReviewed) {
+  } else if (input.healthActionPlanReviewed === false) {
     recs.push("Review and update health action plan");
   }
 
-  if (!input.healthPassportUpToDate) {
+  if (input.healthPassportUpToDate === false) {
     recs.push("Update health passport — ensures continuity if placement changes");
   }
 
-  if (!input.staffHealthTrained) {
+  if (input.staffHealthTrained === false) {
     recs.push("Ensure staff have health promotion training");
   }
 

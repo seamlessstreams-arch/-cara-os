@@ -219,8 +219,8 @@ const ALLOWED = new Map([
     "0-1 scale contact outcome rate — no outcomes recorded ⇒ vacuously complete; the code surfaces 'outcomes not yet recorded' text elsewhere so the 1 doesn't reach the manager as a fabricated pass",
   ],
   [
-    "src/lib/cara/health-intelligence.ts:totalAppts:1",
-    "appointment attendance rate — no appointments this period ⇒ vacuously complete",
+    "src/lib/cara/health-intelligence.ts:apptsWithAttendance:1",
+    "appointment attendance rate — no appointment has a RECORDED attendance this period ⇒ vacuously complete. The denominator was widened from every appointment to those whose attendance was recorded, so an appointment nobody wrote up no longer counts as a missed one; with none recorded there is still nothing to have missed",
   ],
   [
     "src/lib/cara/keyworking-intelligence.ts:totalActions:1",
