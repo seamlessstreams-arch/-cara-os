@@ -238,45 +238,45 @@ export function identifySocialSkillsAlerts(
   }
 
   // No targets set
-  const noTargets = records.filter((r) => !r.targets_set).length;
+  const noTargets = records.filter((r) => r.targets_set !== true).length;
   if (noTargets >= 1) {
     alerts.push({
       type: "no_targets_set",
       severity: "high",
-      message: `${noTargets} ${noTargets === 1 ? "session has" : "sessions have"} no targets set — ensure structured development goals`,
+      message: `${noTargets} ${noTargets === 1 ? "session has" : "sessions have"} no targets set evidenced — ensure structured development goals`,
       id: "no_targets_set",
     });
   }
 
   // Strengths not identified
-  const noStrengths = records.filter((r) => !r.strengths_identified).length;
+  const noStrengths = records.filter((r) => r.strengths_identified !== true).length;
   if (noStrengths >= 1) {
     alerts.push({
       type: "strengths_not_identified",
       severity: "high",
-      message: `${noStrengths} ${noStrengths === 1 ? "session has" : "sessions have"} strengths not identified — build on existing competencies`,
+      message: `${noStrengths} ${noStrengths === 1 ? "session has" : "sessions have"} no strengths identification evidenced — build on existing competencies`,
       id: "strengths_not_identified",
     });
   }
 
   // No positive reinforcement
-  const noReinforcement = records.filter((r) => !r.positive_reinforcement).length;
+  const noReinforcement = records.filter((r) => r.positive_reinforcement !== true).length;
   if (noReinforcement >= 2) {
     alerts.push({
       type: "no_positive_reinforcement",
       severity: "medium",
-      message: `${noReinforcement} sessions without positive reinforcement — essential for skill development`,
+      message: `${noReinforcement} sessions without evidenced positive reinforcement — essential for skill development`,
       id: "no_positive_reinforcement",
     });
   }
 
   // No therapeutic input
-  const noTherapeutic = records.filter((r) => !r.therapeutic_input).length;
+  const noTherapeutic = records.filter((r) => r.therapeutic_input !== true).length;
   if (noTherapeutic >= 2) {
     alerts.push({
       type: "no_therapeutic_input",
       severity: "medium",
-      message: `${noTherapeutic} sessions without therapeutic input — consider specialist involvement`,
+      message: `${noTherapeutic} sessions without evidenced therapeutic input — consider specialist involvement`,
       id: "no_therapeutic_input",
     });
   }

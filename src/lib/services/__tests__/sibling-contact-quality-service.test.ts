@@ -133,3 +133,20 @@ describe("sibling-contact-quality-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded debrief in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySiblingContactAlerts([makeRecord({ debrief_completed: null })]);
+    const alert = alerts.find((a) => a.type === "debrief_not_completed");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no debrief gap when the debrief is recorded as done", () => {
+    const alerts = identifySiblingContactAlerts([makeRecord({ debrief_completed: true })]);
+    expect(alerts.some((a) => a.type === "debrief_not_completed")).toBe(false);
+  });
+  it("does not dilute the debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `s-${i}`, debrief_completed: v }));
+    expect(computeSiblingContactMetrics(rows).debrief_rate).toBe(100);
+  });
+});

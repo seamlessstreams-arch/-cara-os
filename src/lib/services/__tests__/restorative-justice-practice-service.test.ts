@@ -134,3 +134,20 @@ describe("restorative-justice-practice-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded child voice in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyRestorativeJusticeAlerts([makeRecord({ child_voice_heard: null })]);
+    const alert = alerts.find((a) => a.type === "child_voice_not_heard");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no child-voice gap when voice is recorded as heard", () => {
+    const alerts = identifyRestorativeJusticeAlerts([makeRecord({ child_voice_heard: true })]);
+    expect(alerts.some((a) => a.type === "child_voice_not_heard")).toBe(false);
+  });
+  it("does not dilute the victim-support rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `s-${i}`, victim_supported: v }));
+    expect(computeRestorativeJusticeMetrics(rows).victim_supported_rate).toBe(100);
+  });
+});
