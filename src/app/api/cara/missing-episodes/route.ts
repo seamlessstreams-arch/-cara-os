@@ -54,8 +54,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchMissingData(sb: any, childId: string): Promise<MissingInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchMissingData(sb: SB, childId: string): Promise<MissingInput> {
+  const { data: child } = await (sb.from("young_people") as SB)
     .select("id, first_name, last_name, date_of_birth, placement_type")
     .eq("id", childId)
     .single();

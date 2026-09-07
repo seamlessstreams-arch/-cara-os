@@ -40,8 +40,8 @@ export async function buildChildProfile(
   const evidenceRefs: EvidenceRef[] = [];
 
   // ── Fetch child basic info ─────────────────────────────────────────────────
-  const { data: child } = await (sb.from("children") as SB)
-    .select("id, first_name, last_name, preferred_name, date_of_birth, gender, pronouns, placement_start_date, key_worker_id")
+  const { data: child } = await (sb.from("young_people") as SB)
+    .select("id, first_name, last_name, preferred_name, date_of_birth, gender, placement_start, key_worker_id")
     .eq("id", childId)
     .single();
 
@@ -145,8 +145,8 @@ export async function buildChildProfile(
     preferredName: child.preferred_name ?? undefined,
     age,
     gender: child.gender ?? undefined,
-    pronouns: child.pronouns ?? undefined,
-    placementStartDate: child.placement_start_date ?? undefined,
+    pronouns: undefined, // not recorded in the live young_people schema
+    placementStartDate: child.placement_start ?? undefined,
     strengths: Array.isArray(strengths) ? strengths.slice(0, 8) : [],
     needs: Array.isArray(needs) ? needs.slice(0, 8) : [],
     riskFlags,

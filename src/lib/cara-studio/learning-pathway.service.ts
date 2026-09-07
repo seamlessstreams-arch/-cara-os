@@ -59,7 +59,7 @@ export async function generateStaffPathway(staffId: string): Promise<StaffLearni
   if (!sb) return getDemoPathway(staffId);
 
   // Look up staff
-  const { data: staff, error: staffErr } = await (sb.from("staff") as any)
+  const { data: staff, error: staffErr } = await sb.from("staff_members")
     .select("id, full_name, role")
     .eq("id", staffId)
     .single();
@@ -67,10 +67,10 @@ export async function generateStaffPathway(staffId: string): Promise<StaffLearni
   if (staffErr || !staff) return getDemoPathway(staffId);
 
   // Look up incidents where staff was involved (for practice themes)
-  const { data: incidents } = await (sb.from("incidents") as any)
-    .select("id, incident_type, description, created_at")
+  const { data: incidents } = await sb.from("incidents")
+    .select("id, type, description, created_at")
     .eq("home_id", homeId())
-    .contains("staff_involved", [staffId])
+    .eq("reported_by", staffId) // the only staff linkage live incidents record (witnesses holds names, not ids)
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -85,7 +85,7 @@ export async function generateStaffPathway(staffId: string): Promise<StaffLearni
 
   // Build objectives from practice themes
   const objectives = buildObjectivesFromEvidence(
-    (incidents ?? []) as Array<{ id: string; incident_type: string; description: string; created_at: string }>,
+    incidents ?? [],
     (trainingArtifacts ?? []) as Array<{ id: string; title: string; artifact_type: string; status: string; created_at: string }>,
   );
 
@@ -112,10 +112,10 @@ export async function getLearningPathwaySummary(): Promise<LearningPathwaySummar
   const sb = createServerClient();
   if (!sb) return getDemoSummary();
 
-  const { data: staffList, error } = await (sb.from("staff") as any)
+  const { data: staffList, error } = await sb.from("staff_members")
     .select("id, full_name, role")
     .eq("home_id", homeId())
-    .eq("status", "active")
+    .eq("is_active", true)
     .limit(30);
 
   if (error || !staffList) return getDemoSummary();
@@ -157,7 +157,7 @@ export async function getLearningPathwaySummary(): Promise<LearningPathwaySummar
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function buildObjectivesFromEvidence(
-  incidents: Array<{ id: string; incident_type: string; description: string; created_at: string }>,
+  incidents: Array<{ id: string; type: string; description: string; created_at: string }>,
   trainingArtifacts: Array<{ id: string; title: string; artifact_type: string; status: string; created_at: string }>,
 ): LearningObjective[] {
   const objectives: LearningObjective[] = [];
@@ -166,7 +166,7 @@ function buildObjectivesFromEvidence(
   // Analyse incident patterns to generate learning needs
   const incidentTypes: Record<string, number> = {};
   for (const inc of incidents) {
-    incidentTypes[inc.incident_type] = (incidentTypes[inc.incident_type] ?? 0) + 1;
+    incidentTypes[inc.type] = (incidentTypes[inc.type] ?? 0) + 1;
   }
 
   if ((incidentTypes["physical_intervention"] ?? 0) >= 2) {
@@ -176,7 +176,7 @@ function buildObjectivesFromEvidence(
       description: "Multiple physical interventions recorded — refresher training on de-escalation techniques recommended.",
       priority: "high",
       status: "not_started",
-      sourceEvidence: incidents.filter((i) => i.incident_type === "physical_intervention").map((i) => i.id),
+      sourceEvidence: incidents.filter((i) => i.type === "physical_intervention").map((i) => i.id),
       linkedArtifactIds: [],
       dueDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       completedDate: null,
@@ -184,14 +184,14 @@ function buildObjectivesFromEvidence(
     });
   }
 
-  if ((incidentTypes["safeguarding"] ?? 0) >= 1) {
+  if ((incidentTypes["safeguarding_concern"] ?? 0) >= 1) {
     objectives.push({
       id: `obj-${Date.now()}-sg`,
       title: "Safeguarding Practice Review",
       description: "Safeguarding incident(s) recorded — review practice understanding and response protocols.",
       priority: "critical",
       status: "not_started",
-      sourceEvidence: incidents.filter((i) => i.incident_type === "safeguarding").map((i) => i.id),
+      sourceEvidence: incidents.filter((i) => i.type === "safeguarding_concern").map((i) => i.id),
       linkedArtifactIds: [],
       dueDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       completedDate: null,
