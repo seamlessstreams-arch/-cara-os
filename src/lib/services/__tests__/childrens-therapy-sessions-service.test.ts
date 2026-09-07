@@ -136,3 +136,20 @@ describe("childrens-therapy-sessions-service", () => {
     });
   });
 });
+
+// ── Tri-state: refusal with unrecorded consent alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded consent as a gap", () => {
+    const alerts = _testing.identifyChildrensTherapyAlerts([
+      makeRecord({ child_engagement: "refused", consent_current: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "refused_no_consent");
+    expect(a?.message).toMatch(/no consent status recorded/i);
+  });
+  it("still asserts a recorded lapse", () => {
+    const alerts = _testing.identifyChildrensTherapyAlerts([
+      makeRecord({ child_engagement: "refused", consent_current: false }),
+    ]);
+    expect(alerts.some((x) => /consent not current/i.test(x.message))).toBe(true);
+  });
+});

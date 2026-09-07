@@ -126,3 +126,21 @@ describe("home-decoration-personalisation-service", () => {
     });
   });
 });
+
+// ── Tri-state: dissatisfaction with unrecorded choice is not "had no choice" ──
+describe("tri-state judgements", () => {
+  it("does not assert a voice failure nobody recorded", () => {
+    const alerts = _testing.identifyHomeDecorationAlerts([
+      makeRecord({ satisfaction_level: "dissatisfied", child_chose: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "dissatisfied_no_choice");
+    expect(a?.message).toMatch(/not recorded/i);
+    expect(a?.message).not.toMatch(/had no choice/i);
+  });
+  it("still asserts a recorded no-choice", () => {
+    const alerts = _testing.identifyHomeDecorationAlerts([
+      makeRecord({ satisfaction_level: "dissatisfied", child_chose: false }),
+    ]);
+    expect(alerts.some((x) => /had no choice/i.test(x.message))).toBe(true);
+  });
+});
