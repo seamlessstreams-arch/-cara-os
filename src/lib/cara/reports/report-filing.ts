@@ -67,8 +67,7 @@ export async function fileLockedReport(
   }
 
   // Fetch the report
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: report, error: fetchErr } = await (sb.from("child_reports") as any)
+  const { data: report, error: fetchErr } = await sb.from("child_reports")
     .select("*")
     .eq("id", reportId)
     .single();
@@ -122,8 +121,7 @@ export async function fileLockedReport(
   }
 
   // Update the report with the filing reference
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sb.from("child_reports") as any)
+  await sb.from("child_reports")
     .update({ filed_document_id: doc.id })
     .eq("id", reportId);
 

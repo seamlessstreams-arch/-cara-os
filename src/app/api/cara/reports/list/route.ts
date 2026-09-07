@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build query with filters
-    let query = ((sb.from("child_reports")))
+    let query = sb.from("child_reports")
       .select("*")
       .eq("home_id", homeId)
       .order("created_at", { ascending: false })

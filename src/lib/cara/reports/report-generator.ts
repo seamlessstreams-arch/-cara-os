@@ -346,8 +346,7 @@ Rules:
   if (sb) {
     try {
       // Insert agent run
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: agentRunData } = await (sb.from("cara_agent_runs") as any)
+      const { data: agentRunData } = await sb.from("cara_agent_runs")
         .insert({
           organisation_id: request.organisationId,
           home_id: request.homeId,
@@ -381,8 +380,7 @@ Rules:
       const agentRunId = agentRunData?.id ?? null;
 
       // Insert report
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: reportData } = await (sb.from("child_reports") as any)
+      const { data: reportData } = await sb.from("child_reports")
         .insert({
           organisation_id: report.organisation_id,
           home_id: report.home_id,
@@ -423,8 +421,7 @@ Rules:
 
         // Update agent run with report_id
         if (agentRunId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (sb.from("cara_agent_runs") as any)
+          await sb.from("cara_agent_runs")
             .update({ report_id: reportData.id })
             .eq("id", agentRunId);
         }
@@ -447,8 +444,7 @@ Rules:
           last_edited_at: null,
         }));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: sectionData } = await (sb.from("child_report_sections") as any)
+        const { data: sectionData } = await sb.from("child_report_sections")
           .insert(sectionInserts)
           .select("id, section_key, created_at, updated_at");
 
@@ -493,8 +489,7 @@ Rules:
               };
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: evidenceData } = await (sb.from("child_report_evidence") as any)
+            const { data: evidenceData } = await sb.from("child_report_evidence")
               .insert(evidenceInserts)
               .select("id, section_id, created_at");
 
@@ -596,22 +591,19 @@ export async function getReport(
     return isDemoReportId(reportId) ? getDemoReportData(reportId) : null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: report, error: reportError } = await (sb.from("child_reports") as any)
+  const { data: report, error: reportError } = await sb.from("child_reports")
     .select("*")
     .eq("id", reportId)
     .single();
 
   if (reportError || !report) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: sections } = await (sb.from("child_report_sections") as any)
+  const { data: sections } = await sb.from("child_report_sections")
     .select("*")
     .eq("report_id", reportId)
     .order("order", { ascending: true });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: evidence } = await (sb.from("child_report_evidence") as any)
+  const { data: evidence } = await sb.from("child_report_evidence")
     .select("*")
     .eq("report_id", reportId);
 
@@ -657,8 +649,7 @@ export async function updateReportSection(
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("child_report_sections") as any)
+  const { data, error } = await sb.from("child_report_sections")
     .update({
       content,
       manager_edited: true,
@@ -696,8 +687,7 @@ export async function rewriteSection(
   let sectionKey: string = "unknown";
 
   if (sb) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (sb.from("child_report_sections") as any)
+    const { data } = await sb.from("child_report_sections")
       .select("content, section_key")
       .eq("id", sectionId)
       .eq("report_id", reportId)
@@ -743,8 +733,7 @@ export async function rewriteSection(
   // Update in DB
   if (sb) {
     const now = nowISO();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (sb.from("child_report_sections") as any)
+    await sb.from("child_report_sections")
       .update({
         content: sanitisedContent,
         last_edited_at: now,

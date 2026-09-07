@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   }
   const supabase = loose(supabaseRaw);
 
-  const { data, error } = await ((supabase.from("cara_audit_events")))
+  const { data, error } = await supabase.from("cara_audit_events")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
