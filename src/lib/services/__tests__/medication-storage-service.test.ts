@@ -425,3 +425,21 @@ describe("medication-storage-service", () => {
     });
   });
 });
+
+// ── Tri-state: CD-cupboard gaps alert as gaps, breaches as breaches ──
+describe("tri-state judgements", () => {
+  it("alerts an unrecorded lock state as unevidenced, not found-unlocked", () => {
+    const alerts = _testing.identifyMedicationStorageAlerts([
+      makeRecord({ storage_type: "controlled_drug_cupboard", cabinet_locked: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "controlled_drug_unlocked");
+    expect(a?.message).toMatch(/no lock state recorded/i);
+    expect(a?.message).not.toMatch(/found unlocked/i);
+  });
+  it("still asserts a recorded unlocked cupboard", () => {
+    const alerts = _testing.identifyMedicationStorageAlerts([
+      makeRecord({ storage_type: "controlled_drug_cupboard", cabinet_locked: false }),
+    ]);
+    expect(alerts.some((x) => /found unlocked/i.test(x.message))).toBe(true);
+  });
+});

@@ -123,3 +123,20 @@ describe("child-risk-assessment-review-service", () => {
     });
   });
 });
+
+// ── Tri-state: risk-up with unrecorded plan-update alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words an unrecorded update as a gap", () => {
+    const alerts = _testing.identifyChildRiskReviewAlerts([
+      makeRecord({ review_outcome: "risk_increased", safety_plan_updated: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "risk_increased_no_plan");
+    expect(a?.message).toMatch(/no safety-plan update recorded/i);
+  });
+  it("still asserts a recorded not-updated", () => {
+    const alerts = _testing.identifyChildRiskReviewAlerts([
+      makeRecord({ review_outcome: "risk_increased", safety_plan_updated: false }),
+    ]);
+    expect(alerts.some((x) => /safety plan not updated/i.test(x.message))).toBe(true);
+  });
+});
