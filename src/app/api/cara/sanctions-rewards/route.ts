@@ -87,10 +87,10 @@ async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>,
     type: s.type ?? "other",
     reason: s.reason ?? "",
     duration: s.duration ?? undefined,
-    proportionate: s.proportionate ?? true,
-    childInformed: s.child_informed ?? true,
-    childUnderstood: s.child_understood ?? true,
-    linkedToBehaviour: s.linked_to_behaviour ?? true,
+    proportionate: s.proportionate ?? null,
+    childInformed: s.child_informed ?? null,
+    childUnderstood: s.child_understood ?? null,
+    linkedToBehaviour: s.linked_to_behaviour ?? null,
     staffMember: s.staff_member ?? "Unknown",
     behaviourCategory: s.behaviour_category ?? undefined,
     appealed: s.appealed ?? false,
@@ -124,8 +124,10 @@ async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>,
     bspUpToDate: bsp?.status === "active",
     bspReviewDate: bsp?.review_date ?? undefined,
     childParticipatedInBSP: Boolean(bsp?.child_views && bsp.child_views.trim()),
-    sanctionPolicyExplainedToChild: false,
-    appealsProcessExplained: false,
+    // No schema records the policy/appeals explanations: tri-state null, never
+    // a credited default (the absence-as-assurance branch set the contract).
+    sanctionPolicyExplainedToChild: null,
+    appealsProcessExplained: null,
   };
 }
 
