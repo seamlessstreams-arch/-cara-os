@@ -55,9 +55,9 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Data Fetch ─────────────────────────────────────────────────────
 
-async function fetchContactData(sb: SB, childId: string, _homeId: string): Promise<FamilyContactInput> {
+async function fetchContactData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string, _homeId: string): Promise<FamilyContactInput> {
   // Fetch child basic info
-  const { data: child } = await (sb.from("young_people") as SB)
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, placement_start")
     .eq("id", childId)
     .single();

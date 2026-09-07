@@ -182,11 +182,11 @@ export async function generateOfstedReadinessSnapshot(input: {
       .select("*")
       .eq("home_id", input.homeId)
       .gte("created_at", since.toISOString()),
-    (sb.from("supervisions") as SB)
+    sb.from("supervisions")
       .select("*")
       .eq("home_id", input.homeId)
       .gte("scheduled_date", since.toISOString().slice(0, 10)),
-    (sb.from("training_records") as SB).select("*").eq("home_id", input.homeId),
+    sb.from("training_records").select("*").eq("home_id", input.homeId),
   ]);
 
   const scores = scoreReadiness({

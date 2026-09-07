@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: SB, childId: string): Promise<HealthInput> {
-  const { data: child } = await (sb.from("young_people") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<HealthInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -107,17 +107,37 @@ async function fetchData(sb: SB, childId: string): Promise<HealthInput> {
   }));
 
   // Medications
-  const { data: rawMeds } = await (sb.from("medications") as SB)
+  const { data: rawMeds } = await sb.from("medications")
     .select("*")
     .eq("child_id", childId)
-    .eq("active", true);
+    // The real column is is_active — filtering on phantom "active" 400'd the
+    // whole read on live, so the health picture always showed zero medications.
+    .eq("is_active", true);
 
-  const medications: Medication[] = (rawMeds ?? []).map((m: any) => ({
+  // Administration correctness lives in the MAR, not the medications table —
+  // "correct" here means no failed administration is recorded for that med.
+  const { data: rawAdmins } = await sb.from("medication_administrations")
+    .select("medication_id, status")
+    .eq("child_id", childId);
+  const recordedMedIds = new Set((rawAdmins ?? []).map((a) => a.medication_id));
+  const failedMedIds = new Set(
+    (rawAdmins ?? [])
+      .filter((a) => a.status === "missed" || a.status === "refused" || a.status === "error")
+      .map((a) => a.medication_id),
+  );
+
+  const medications: Medication[] = (rawMeds ?? []).map((m) => ({
     name: m.name,
-    prescribed: m.prescribed ?? null,
-    administeredCorrectly: m.administered_correctly ?? null,
-    consentInPlace: m.consent ?? false,
-    reviewDue: m.review_due ?? false,
+    // A medications row IS the prescription record (prescriber is a column).
+    prescribed: true,
+    // Tri-state per the absence-as-assurance contract, but from REAL MAR
+    // evidence: no administrations recorded → null (not evidenced); recorded
+    // with no missed/refused/error → true; a recorded failure → false.
+    administeredCorrectly: recordedMedIds.has(m.id) ? !failedMedIds.has(m.id) : null,
+    // Neither consent nor review scheduling is recorded in any live table —
+    // uncredited until captured (the engine's contract keeps these boolean).
+    consentInPlace: false,
+    reviewDue: false,
   }));
 
   // Health config

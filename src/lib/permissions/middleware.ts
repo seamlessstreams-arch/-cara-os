@@ -218,7 +218,7 @@ async function logAccessAttempt(
   reason: string,
 ) {
   try {
-    await (sb.from("audit_log") as SB).insert({
+    await sb.from("audit_log").insert({
       event_type: allowed ? "access_granted" : "access_denied",
       user_id: userId,
       resource_type: resourceType,

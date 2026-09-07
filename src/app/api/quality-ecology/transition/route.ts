@@ -193,7 +193,7 @@ async function handleLiveTransition(
   }
 
   // Log audit trail
-  await (sb.from("audit_log") as SB).insert({
+  await sb.from("audit_log").insert({
     event_type: "lifecycle_transition",
     user_id: user.id,
     resource_type: "scheduled_occurrence",
