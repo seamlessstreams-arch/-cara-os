@@ -186,6 +186,11 @@ function TripCard({ trip }: { trip: TripPlan }) {
                 <AlertTriangle className="h-2.5 w-2.5" />Consent pending
               </span>
             )}
+            {!allSWApproved && (
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-risk] inline-flex items-center gap-0.5">
+                <AlertTriangle className="h-2.5 w-2.5" />SW approval pending
+              </span>
+            )}
           </div>
         </div>
 

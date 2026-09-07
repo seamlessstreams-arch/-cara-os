@@ -68,7 +68,6 @@ export function computeAvgConfidence(
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? undefined;
   const days = Math.min(
     Number.parseInt(url.searchParams.get("days") ?? "30", 10) || 30,
     90,

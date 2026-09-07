@@ -193,7 +193,7 @@ export function computeQualityOfCare(input: QualityOfCareInput): QualityOfCareRe
     else lsScore += 0;
   }
   const ppRate = rate(input.children_with_personal_passport, tc);
-  if (meets(ppRate, 90)) meets(ppRate, 90) && (lsScore += 4);
+  if (meets(ppRate, 90)) lsScore += 4;
   else if (meets(ppRate, 70)) lsScore += 2;
   else if (meets(ppRate, 50)) lsScore += 1;
   else lsScore += 0;

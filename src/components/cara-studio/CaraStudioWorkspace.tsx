@@ -152,7 +152,6 @@ interface GenerationResponse {
 export function CaraStudioWorkspace({
   childId,
   childName,
-  currentUserId,
   currentRole,
   onGenerationComplete,
 }: CaraStudioWorkspaceProps) {

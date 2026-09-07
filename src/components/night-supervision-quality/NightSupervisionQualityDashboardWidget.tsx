@@ -1,6 +1,7 @@
+"use client";
+
 import { formatRate } from "@/lib/metrics/rate";
 import type { JSX } from "react";
-"use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NIGHT SUPERVISION QUALITY DASHBOARD WIDGET

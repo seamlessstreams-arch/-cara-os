@@ -1,5 +1,6 @@
-import type { JSX } from "react";
 "use client";
+
+import type { JSX } from "react";
 
 // ==============================================================================
 // COMPLAINT RESOLUTION EFFECTIVENESS DASHBOARD WIDGET

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -94,9 +95,12 @@ export function ChildContextCard({
         {/* Photo placeholder */}
         <div className="shrink-0 h-10 w-10 rounded-full bg-[var(--cs-surface)] border border-[var(--cs-border)] flex items-center justify-center overflow-hidden">
           {child.photoUrl ? (
-            <img
+            <Image
               src={child.photoUrl}
               alt=""
+              width={40}
+              height={40}
+              unoptimized
               className="h-full w-full object-cover"
             />
           ) : (

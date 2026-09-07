@@ -181,7 +181,7 @@ export default function CalendarPage() {
           ) : (
             <div className="space-y-1.5">
               {dayItems.map((it) => (
-                <ItemRow key={it.id} item={it} onClick={() => { setSelectedDay(null); it.editable ? (setEditingId(it.source_id), setEditorOpen(true)) : setSelectedItem(it); }} />
+                <ItemRow key={it.id} item={it} onClick={() => { setSelectedDay(null); if (it.editable) { setEditingId(it.source_id); setEditorOpen(true); } else { setSelectedItem(it); } }} />
               ))}
             </div>
           )}
