@@ -135,3 +135,20 @@ describe("faith-spiritual-observance-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded wish-respect in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyFaithSpiritualAlerts([makeRecord({ child_wishes_respected: null })]);
+    const alert = alerts.find((a) => a.type === "wishes_not_respected");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no wishes gap when respect is recorded", () => {
+    const alerts = identifyFaithSpiritualAlerts([makeRecord({ child_wishes_respected: true })]);
+    expect(alerts.some((a) => a.type === "wishes_not_respected")).toBe(false);
+  });
+  it("does not dilute the child-wishes rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, child_wishes_respected: v }));
+    expect(computeFaithSpiritualMetrics(rows).child_wishes_rate).toBe(100);
+  });
+});

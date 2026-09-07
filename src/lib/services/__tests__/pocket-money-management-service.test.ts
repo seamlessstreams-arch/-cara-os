@@ -126,3 +126,27 @@ describe("pocket-money-management-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the retrospective-transaction critical between recorded no-receipt and unrecorded", () => {
+    const nullAlert = identifyPocketMoneyAlerts([
+      makeRecord({ approval_status: "retrospective", receipt_obtained: null }),
+    ]).find((a) => a.type === "retrospective_no_receipt");
+    const falseAlert = identifyPocketMoneyAlerts([
+      makeRecord({ approval_status: "retrospective", receipt_obtained: false }),
+    ]).find((a) => a.type === "retrospective_no_receipt");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when the receipt is recorded as obtained", () => {
+    const alerts = identifyPocketMoneyAlerts([
+      makeRecord({ approval_status: "retrospective", receipt_obtained: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "retrospective_no_receipt")).toBe(false);
+  });
+  it("does not dilute the reconciliation rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, balance_reconciled: v }));
+    expect(computePocketMoneyMetrics(rows).balance_reconciled_rate).toBe(100);
+  });
+});
