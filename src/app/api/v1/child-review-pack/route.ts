@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
@@ -76,14 +77,6 @@ function num(v: unknown): number {
 
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
-async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(request: NextRequest) {
   try {
