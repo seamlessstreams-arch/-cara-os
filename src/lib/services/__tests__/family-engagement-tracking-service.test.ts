@@ -132,3 +132,26 @@ describe("family-engagement-tracking-service", () => {
     });
   });
 });
+
+// ── Tri-state: hostile contact with unrecorded safeguarding alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words the unrecorded case as a gap", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ family_response: "hostile", safeguarding_considered: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "hostile_no_safeguarding");
+    expect(a?.message).toMatch(/no safeguarding consideration recorded/i);
+  });
+  it("still asserts a recorded omission", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ family_response: "hostile", safeguarding_considered: false }),
+    ]);
+    expect(alerts.some((x) => /hostile without safeguarding consideration/i.test(x.message))).toBe(true);
+  });
+  it("does not count an unrecorded child_prepared as a failure", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ child_prepared: null }), makeRecord({ id: "r-2", child_prepared: null }),
+    ]);
+    expect(alerts.some((a) => a.type === "child_not_prepared")).toBe(false);
+  });
+});

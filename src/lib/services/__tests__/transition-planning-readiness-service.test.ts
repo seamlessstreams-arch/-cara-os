@@ -130,3 +130,15 @@ describe("transition-planning-readiness-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded housing_identified as a failure", () => {
+    const alerts = _testing.identifyTransitionPlanningAlerts([makeRecord({ housing_identified: null }), makeRecord({ id: "r-2", housing_identified: null })]);
+    expect(alerts.some((a) => a.type === "housing_not_identified")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyTransitionPlanningAlerts([makeRecord({ housing_identified: false }), makeRecord({ id: "r-2", housing_identified: false })]);
+    expect(alerts.some((a) => a.type === "housing_not_identified")).toBe(true);
+  });
+});
