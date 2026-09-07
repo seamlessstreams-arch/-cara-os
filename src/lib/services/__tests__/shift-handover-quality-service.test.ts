@@ -124,3 +124,15 @@ describe("shift-handover-quality-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded medication_info_shared as a failure", () => {
+    const alerts = _testing.identifyShiftHandoverQualityAlerts([makeRecord({ medication_info_shared: null })]);
+    expect(alerts.some((a) => /medication info/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyShiftHandoverQualityAlerts([makeRecord({ medication_info_shared: false })]);
+    expect(alerts.some((a) => /medication info/i.test(a.message))).toBe(true);
+  });
+});

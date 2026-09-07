@@ -120,3 +120,16 @@ describe("environmental-audit-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded child_friendly as a failure", () => {
+    // the alert thresholds at >= 2 — two records, both unanswered
+    const alerts = _testing.identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: null }), makeRecord({ id: "r-2", child_friendly: null })]);
+    expect(alerts.some((a) => /child-friendly/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: false }), makeRecord({ id: "r-2", child_friendly: false })]);
+    expect(alerts.some((a) => /child-friendly/i.test(a.message))).toBe(true);
+  });
+});
