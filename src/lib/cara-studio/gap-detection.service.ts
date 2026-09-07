@@ -21,8 +21,7 @@ export async function detectGaps(
 
   // Check for missing child voice in recent sources
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (sb.from("cara_studio_sources") as any)
+    let query = sb.from("cara_studio_sources")
       .select("id, source_type, title, content, summary, child_id")
       .eq("home_id", hid)
       .is("archived_at", null)
@@ -33,7 +32,7 @@ export async function detectGaps(
     const { data: sources } = await query;
 
     if (sources?.length) {
-      const hasChildVoice = sources.some((s: { content?: string; summary?: string }) => {
+      const hasChildVoice = sources.some((s) => {
         const text = `${s.content ?? ""} ${s.summary ?? ""}`.toLowerCase();
         return text.includes("child said") || text.includes("child's voice") ||
           text.includes("wishes") || text.includes("young person said");
@@ -51,8 +50,7 @@ export async function detectGaps(
 
   // Check for overdue actions
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: overdueActions } = await (sb.from("cara_studio_artifact_actions") as any)
+    const { data: overdueActions } = await sb.from("cara_studio_artifact_actions")
       .select("id, action_title, due_date")
       .eq("status", "open")
       .lt("due_date", now)
@@ -70,8 +68,7 @@ export async function detectGaps(
   // Persist gaps
   for (const gap of gaps) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("cara_studio_gaps") as any).insert({
+      await sb.from("cara_studio_gaps").insert({
         home_id: gap.home_id,
         child_id: gap.child_id,
         gap_type: gap.gap_type,
@@ -91,8 +88,7 @@ export async function resolveGap(gapId: string, resolvedBy: string): Promise<voi
   const sb = createServerClient();
   if (!sb) return;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sb.from("cara_studio_gaps") as any).update({
+  await sb.from("cara_studio_gaps").update({
     status: "resolved",
     resolved_at: new Date().toISOString(),
     assigned_to: resolvedBy,

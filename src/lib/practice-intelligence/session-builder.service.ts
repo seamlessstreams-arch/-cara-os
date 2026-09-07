@@ -84,8 +84,7 @@ export async function generateSession(opts: {
   // Gather child evidence if available
   let evidenceContext = "";
   if (sb && opts.childId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: sources } = await (sb.from("cara_studio_sources") as any)
+    const { data: sources } = await sb.from("cara_studio_sources")
       .select("source_type, title, summary, content, source_date")
       .eq("home_id", hid)
       .eq("child_id", opts.childId)

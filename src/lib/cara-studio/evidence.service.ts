@@ -77,8 +77,7 @@ export async function assessEvidence(source: CaraStudioSource): Promise<CaraStud
   const sb = createServerClient();
   if (sb) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("cara_studio_evidence_assessments") as any).insert({
+      await sb.from("cara_studio_evidence_assessments").insert({
         source_id: source.id,
         relevance_score: assessment.relevance_score,
         recency_score: assessment.recency_score,
