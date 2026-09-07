@@ -115,12 +115,12 @@ async function fetchData(sb: any, childId: string): Promise<ContactInput> {
     age,
     contactSessions,
     arrangements,
-    contactPlanReviewed: config?.plan_reviewed ?? true,
+    contactPlanReviewed: config?.plan_reviewed ?? null,
     contactPlanLastReviewDate: config?.last_review_date ?? undefined,
-    childConsultedOnPlan: config?.child_consulted ?? true,
-    advocateAvailableForContact: config?.advocate_available ?? true,
+    childConsultedOnPlan: config?.child_consulted ?? null,
+    advocateAvailableForContact: config?.advocate_available ?? null,
     lifestoryWorkStarted: config?.lifestory_started ?? false,
-    siblingPlacementConsidered: config?.sibling_considered ?? true,
+    siblingPlacementConsidered: config?.sibling_considered ?? null,
     letterboxContactAvailable: config?.letterbox_available ?? false,
   };
 }

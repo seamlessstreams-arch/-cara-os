@@ -73,12 +73,12 @@ export interface ContactInput {
   age: number;
   contactSessions: ContactSession[];
   arrangements: ContactArrangement[];
-  contactPlanReviewed: boolean;
+  contactPlanReviewed: boolean | null;
   contactPlanLastReviewDate?: string;
-  childConsultedOnPlan: boolean;
-  advocateAvailableForContact: boolean;
+  childConsultedOnPlan: boolean | null;
+  advocateAvailableForContact: boolean | null;
   lifestoryWorkStarted: boolean;
-  siblingPlacementConsidered: boolean;
+  siblingPlacementConsidered: boolean | null;
   letterboxContactAvailable: boolean;
 }
 
@@ -135,7 +135,7 @@ export interface ContactStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -452,21 +452,34 @@ function identifyConcerns(
     });
   }
 
-  // No contact plan review
-  if (!input.contactPlanReviewed) {
+  // No contact plan review. Only a recorded "not reviewed" is a finding; an
+  // unrecorded review is a recording gap, and is reported as one.
+  if (input.contactPlanReviewed === false) {
     concerns.push({
       severity: "moderate",
       category: "planning",
       description: "Contact plan not reviewed — arrangements may not reflect current needs",
     });
+  } else if (input.contactPlanReviewed === null) {
+    concerns.push({
+      severity: "moderate",
+      category: "planning",
+      description: "Whether the contact plan has been reviewed is not recorded",
+    });
   }
 
   // Child not consulted
-  if (!input.childConsultedOnPlan) {
+  if (input.childConsultedOnPlan === false) {
     concerns.push({
       severity: "significant",
       category: "voice",
       description: "Child not consulted on contact arrangements",
+    });
+  } else if (input.childConsultedOnPlan === null) {
+    concerns.push({
+      severity: "significant",
+      category: "voice",
+      description: "Whether the child was consulted on contact arrangements is not recorded",
     });
   }
 
@@ -605,9 +618,13 @@ function assessRegulatory(
   flags.push({
     regulation: "IRO Handbook",
     area: "Contact Review",
-    status: input.contactPlanReviewed ? "met" : "not_met",
-    detail: input.contactPlanReviewed
+    status: input.contactPlanReviewed === true ? "met"
+      : input.contactPlanReviewed === null ? "not_evidenced"
+      : "not_met",
+    detail: input.contactPlanReviewed === true
       ? "Contact arrangements reviewed"
+      : input.contactPlanReviewed === null
+      ? "Cannot be evidenced — no record of whether the contact plan was reviewed"
       : "Contact plan not reviewed at LAC review",
   });
 
@@ -632,11 +649,11 @@ function buildRecommendations(
     recs.push("URGENT: Review contact causing distress — consider support, supervision, or format changes");
   }
 
-  if (!input.childConsultedOnPlan) {
+  if (input.childConsultedOnPlan === false) {
     recs.push("Consult child on contact arrangements — ensure views inform planning");
   }
 
-  if (!input.contactPlanReviewed) {
+  if (input.contactPlanReviewed === false) {
     recs.push("Review contact plan at next LAC review");
   }
 

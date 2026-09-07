@@ -92,7 +92,7 @@ async function fetchMissingData(sb: any, childId: string): Promise<MissingInput>
     outcome: e.outcome ?? "returned_self",
     policeNotified: e.police_notified ?? false,
     policeRefNumber: e.police_ref ?? undefined,
-    socialWorkerNotified: e.sw_notified ?? true,
+    socialWorkerNotified: e.sw_notified ?? null,
     ofstedNotified: e.ofsted_notified ?? undefined,
     returnHomeInterview: {
       offered: e.rhi_offered ?? false,
