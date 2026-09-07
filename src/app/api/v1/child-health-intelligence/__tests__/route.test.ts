@@ -138,3 +138,49 @@ describe("GET /api/v1/child-health-intelligence — mapped from the fields the s
     expect(appts.dna_count).toBe(1);
   });
 });
+
+// ── Regression: the medication mapper (fix/typed-queries-facade) ─────────────
+// Before the typed facade, `witnessed` was read off a phantom field
+// (`a.witnessed ?? a.witness_id != null` — neither exists in ANY schema, so
+// every administration counted as unwitnessed), and the administration date
+// led with phantom `a.date`, falling back to scheduled_time even when the
+// dose was actually given later. Both had been wrong in demo AND live mode.
+describe("medication administration mapping", () => {
+  beforeAll(() => {
+    const s = getStore();
+    s.medications.push({
+      ...s.medications[0],
+      id: "med-cht-1", child_id: CHILD, name: "Melatonin", type: "regular", is_active: true,
+    } as (typeof s.medications)[number]);
+    s.medicationAdministrations.push(
+      {
+        id: "mar-cht-1", home_id: "home-1", medication_id: "med-cht-1", child_id: CHILD,
+        scheduled_time: `${daysAgo(3)}T20:00:00Z`, actual_time: `${daysAgo(3)}T20:10:00Z`,
+        status: "given", administered_by: "st1", witnessed_by: "st2",
+        dose_given: "2mg", reason_not_given: null, notes: null,
+        prn_reason: null, prn_effectiveness: null,
+        created_at: `${daysAgo(3)}T20:10:00Z`, updated_at: `${daysAgo(3)}T20:10:00Z`,
+        created_by: "st1", updated_by: "st1",
+      } as (typeof s.medicationAdministrations)[number],
+      // Scheduled outside the 30-day window but actually given inside it —
+      // only the actual_time-led mapping counts this one.
+      {
+        id: "mar-cht-2", home_id: "home-1", medication_id: "med-cht-1", child_id: CHILD,
+        scheduled_time: `${daysAgo(40)}T20:00:00Z`, actual_time: `${daysAgo(5)}T20:05:00Z`,
+        status: "given", administered_by: "st1", witnessed_by: "st1",
+        dose_given: "2mg", reason_not_given: null, notes: null,
+        prn_reason: null, prn_effectiveness: null,
+        created_at: `${daysAgo(5)}T20:05:00Z`, updated_at: `${daysAgo(5)}T20:05:00Z`,
+        created_by: "st1", updated_by: "st1",
+      } as (typeof s.medicationAdministrations)[number],
+    );
+  });
+
+  it("witnessed comes from witnessed_by, and dates prefer actual_time", async () => {
+    const body = (await (await call()).json()).data;
+    // Both administrations land in the 30-day window via actual_time.
+    expect(body.medication_compliance.total_administrations_30d).toBe(2);
+    // Both carried witnessed_by — the phantom `witnessed` field made this 0 before.
+    expect(body.medication_compliance.witnessed_rate).toBe(100);
+  });
+});
