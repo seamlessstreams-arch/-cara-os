@@ -126,3 +126,21 @@ describe("restraint-debrief-service", () => {
     });
   });
 });
+
+// ── Tri-state: unassessed proportionality is not "assessed as disproportionate" ──
+describe("tri-state judgements", () => {
+  it("surfaces an unassessed restraint as unassessed", () => {
+    const alerts = _testing.identifyRestraintDebriefAlerts([
+      makeRecord({ proportionate_response: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "disproportionate_response");
+    expect(a?.message).toMatch(/no proportionality assessment recorded/i);
+    expect(a?.message).not.toMatch(/assessed as disproportionate/i);
+  });
+  it("still asserts a recorded disproportionate response", () => {
+    const alerts = _testing.identifyRestraintDebriefAlerts([
+      makeRecord({ proportionate_response: false }),
+    ]);
+    expect(alerts.some((x) => /assessed as disproportionate/i.test(x.message))).toBe(true);
+  });
+});
