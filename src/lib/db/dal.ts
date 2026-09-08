@@ -30,6 +30,7 @@ import type {
   Supervision, Document, Expense, CareForm, DocumentReadReceipt,
 } from "@/types";
 import type {
+  BehaviourEntry,
   KeyWorkingSession,
   MissingEpisode, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
@@ -108,6 +109,43 @@ function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessio
     confidential: r.safeguarding_concerns != null && r.safeguarding_concerns.trim() !== "" ? true : null,
     linked_goals: [],
     home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
+}
+
+
+/** Behaviour consolidation: cs_behaviour_entries (the ABC capture) projected
+ *  into the BehaviourEntry shape the intelligence readers expect. direction
+ *  is binary (only the 'positive' category is positive); intensity is a
+ *  DOCUMENTED translation of the recorder's own category — safety-first, so
+ *  self-harm and aggression never under-alarm: crisis→critical,
+ *  self_harm/aggression/escalating→high, positive→low, the rest→moderate.
+ *  trigger is the recorded antecedent (the A of ABC), strategy_used the
+ *  de-escalation list — nothing here is invented.
+ */
+function behaviourRowToEntry(r: Database["public"]["Tables"]["cs_behaviour_entries"]["Row"]): BehaviourEntry {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const cat = r.category ?? "";
+  const intensity: BehaviourEntry["intensity"] =
+    cat === "crisis" ? "critical"
+    : cat === "self_harm" || cat === "aggression" || cat === "escalating" ? "high"
+    : cat === "positive" ? "low"
+    : "moderate";
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    date: r.date ?? r.created_at.slice(0, 10),
+    time: (r.time ?? "").slice(0, 5),
+    direction: cat === "positive" ? "positive" : "concern",
+    intensity,
+    title: (r.description ?? r.behaviour ?? "").slice(0, 80),
+    antecedent: r.antecedent ?? "",
+    behaviour: r.behaviour ?? r.description ?? "",
+    consequence: r.consequence ?? "",
+    trigger: r.antecedent ?? "",
+    strategy_used: strings(r.de_escalation_used).join(", "),
+    outcome: r.outcome ?? "",
+    recorded_by: r.recorded_by ?? "",
     created_at: r.created_at,
   };
 }
@@ -865,12 +903,26 @@ export const dal = {
   },
 
   behaviourLog: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<BehaviourEntry[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_behaviour_entries").select("*").order("date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(behaviourRowToEntry);
+      }
       let list = db.behaviourLog.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.behaviourLog.findById(id) ?? null; },
+    async findById(id: string): Promise<BehaviourEntry | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_behaviour_entries").select("*").eq("id", id).single();
+        if (!error && data) return behaviourRowToEntry(data);
+      }
+      return db.behaviourLog.findById(id) ?? null;
+    },
     async findByChild(childId: string) { return db.behaviourLog.findByChild(childId); },
     async create(data: Parameters<typeof db.behaviourLog.create>[0]) { return db.behaviourLog.create(data); },
     async update(id: string, data: Parameters<typeof db.behaviourLog.update>[1]) { return db.behaviourLog.update(id, data); },

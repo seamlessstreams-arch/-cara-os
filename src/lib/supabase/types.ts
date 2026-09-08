@@ -2338,6 +2338,37 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["cs_key_work_sessions"]["Insert"]>;
         Relationships: [];
       };
+      cs_behaviour_entries: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          date: string | null;
+          time: string | null;
+          category: string | null;
+          description: string | null;
+          antecedent: string | null;
+          behaviour: string | null;
+          consequence: string | null;
+          de_escalation_used: Json;
+          de_escalation_effective: boolean | null;
+          physical_intervention: boolean | null;
+          pi_technique: string | null;
+          pi_duration_minutes: number | null;
+          pi_staff_involved: Json;
+          pi_injuries_child: boolean | null;
+          pi_injuries_staff: boolean | null;
+          pi_debrief_completed: boolean | null;
+          pi_debrief_date: string | null;
+          outcome: string | null;
+          recorded_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_behaviour_entries"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_behaviour_entries"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;
