@@ -17,6 +17,7 @@
 import { db, getStore, type EarlyAccessRequest } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan } from "@/types/extended";
@@ -29,6 +30,7 @@ import type {
   Supervision, Document, Expense, CareForm, DocumentReadReceipt,
 } from "@/types";
 import type {
+  KeyWorkingSession,
   MissingEpisode, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
 } from "@/types/extended";
@@ -67,6 +69,47 @@ interface GenericRecordRow {
 // and the app contract; field drift is caught by the census, not per-site.
 function asApp<T>(rows: unknown): T {
   return rows as T;
+}
+
+
+/** Keywork consolidation: cs_key_work_sessions (what key-working-service
+ *  captures) projected into the KeyWorkingSession shape the 30+ intelligence
+ *  readers expect. Honest mapping only — moods come from the single recorded
+ *  child_mood (before == after: no improvement is ever fabricated), and the
+ *  fields capture never records (follow-up tracking, confidentiality) stay
+ *  null rather than defaulting to a credit. care_plan_review projects as
+ *  "review".
+ */
+function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessions"]["Row"]): KeyWorkingSession {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const mood = (r.child_mood != null && r.child_mood >= 1 && r.child_mood <= 5
+    ? (r.child_mood as 1 | 2 | 3 | 4 | 5) : null);
+  const typeMap: Record<string, KeyWorkingSession["type"]> = {
+    one_to_one: "one_to_one", group: "group", informal: "informal",
+    therapeutic: "therapeutic", life_skills: "life_skills", care_plan_review: "review",
+  };
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    staff_id: r.key_worker_id ?? "",
+    date: r.completed_date ?? r.planned_date ?? r.created_at.slice(0, 10),
+    type: typeMap[r.session_type ?? ""] ?? "one_to_one",
+    duration: r.duration_minutes ?? 0,
+    location: r.location ?? "",
+    topics: strings(r.topics_covered),
+    child_voice: r.child_voice ?? "",
+    worker_observations: strings(r.positive_observations).join("; "),
+    actions_agreed: strings(r.actions),
+    mood_before: mood,
+    mood_after: mood,
+    follow_up: strings(r.next_session_topics).join(", ") || null,
+    follow_up_date: null,
+    follow_up_completed: null,
+    confidential: r.safeguarding_concerns != null && r.safeguarding_concerns.trim() !== "" ? true : null,
+    linked_goals: [],
+    home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
 }
 
 export const dal = {
@@ -787,14 +830,36 @@ export const dal = {
   // ─────────────────────────────────────────────────────────────────────────
 
   keyWorkingSessions: {
-    async findAll(filters?: { child_id?: string; staff_id?: string }) {
+    async findAll(filters?: { child_id?: string; staff_id?: string }): Promise<KeyWorkingSession[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_key_work_sessions").select("*").order("planned_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        if (filters?.staff_id) q = q.eq("key_worker_id", filters.staff_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(keyworkRowToSession);
+      }
       let list = db.keyWorkingSessions.findAll();
       if (filters?.child_id) list = list.filter((s) => s.child_id === filters.child_id);
       if (filters?.staff_id) list = list.filter((s) => s.staff_id === filters.staff_id);
       return list;
     },
-    async findById(id: string) { return db.keyWorkingSessions.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.keyWorkingSessions.findByChild(childId); },
+    async findById(id: string): Promise<KeyWorkingSession | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("id", id).single();
+        if (!error && data) return keyworkRowToSession(data);
+      }
+      return db.keyWorkingSessions.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<KeyWorkingSession[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("child_id", childId).order("planned_date", { ascending: false });
+        if (!error && data) return data.map(keyworkRowToSession);
+      }
+      return db.keyWorkingSessions.findByChild(childId);
+    },
     async create(data: Parameters<typeof db.keyWorkingSessions.create>[0]) { return db.keyWorkingSessions.create(data); },
     async update(id: string, data: Parameters<typeof db.keyWorkingSessions.update>[1]) { return db.keyWorkingSessions.update(id, data); },
   },

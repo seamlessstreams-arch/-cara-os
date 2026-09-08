@@ -252,6 +252,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cs_key_work_sessions",
+    migration: "20260908090000_keywork_consolidation.sql",
+    columns: [],
+  },
+  {
     table: "daily_log_entries",
     migration: "00000000000000_lean_live_baseline.sql",
     columns: [],

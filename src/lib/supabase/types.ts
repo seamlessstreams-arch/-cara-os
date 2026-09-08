@@ -2307,6 +2307,37 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["hr_case_actions"]["Insert"]>;
         Relationships: [{ foreignKeyName: "hr_case_actions_case_id_fkey"; columns: ["case_id"]; isOneToOne: false; referencedRelation: "hr_cases"; referencedColumns: ["id"] }];
       };
+      cs_key_work_sessions: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          key_worker_id: string | null;
+          session_type: string | null;
+          therapeutic_framework: string | null;
+          status: string | null;
+          planned_date: string | null;
+          completed_date: string | null;
+          duration_minutes: number | null;
+          location: string | null;
+          topics_covered: Json;
+          child_voice: string | null;
+          child_mood: number | null;
+          child_engagement: number | null;
+          outcomes: Json;
+          actions: Json;
+          next_session_topics: Json;
+          safeguarding_concerns: string | null;
+          positive_observations: Json;
+          attachments_count: number | null;
+          signed_off_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_key_work_sessions"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_key_work_sessions"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;

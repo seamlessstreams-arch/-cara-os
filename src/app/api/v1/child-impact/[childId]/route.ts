@@ -181,8 +181,8 @@ export async function GET(
       child_views_captured: !!(k.child_voice && k.child_voice.trim().length > 0),
       topics: k.topics,
       themes: k.topics,
-      mood_before: k.mood_before ?? null,
-      mood_after: k.mood_after ?? null,
+      mood_before: k.mood_before ?? undefined,
+      mood_after: k.mood_after ?? undefined,
     }));
 
   // ── Family Time Sessions ───────────────────────────────────────────────

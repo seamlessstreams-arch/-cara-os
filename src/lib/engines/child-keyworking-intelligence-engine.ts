@@ -32,8 +32,8 @@ export interface KeyworkSessionInput {
   duration_minutes: number;
   topics: string[];
   has_child_voice: boolean;
-  mood_before: number;            // 1-5
-  mood_after: number;             // 1-5
+  mood_before: number | null;            // 1-5
+  mood_after: number | null;             // 1-5
   actions_count: number;
   follow_up_completed: boolean;
   has_follow_up: boolean;         // whether a follow-up was set
@@ -174,12 +174,15 @@ export function computeChildKeyworking(
   };
 
   // ── Mood Impact ───────────────────────────────────────────────────────
-  const moodBefores = sessions.map((s) => s.mood_before);
-  const moodAfters = sessions.map((s) => s.mood_after);
-  const moodChanges = sessions.map((s) => s.mood_after - s.mood_before);
-  const positiveImpact = sessions.filter((s) => s.mood_after > s.mood_before);
-  const noChange = sessions.filter((s) => s.mood_after === s.mood_before);
-  const negativeImpact = sessions.filter((s) => s.mood_after < s.mood_before);
+  // Mood impact is computed over the RECORDED subset — a session with no
+  // mood captured neither improves nor worsens anything.
+  const moodRecorded = sessions.filter((s) => s.mood_before != null && s.mood_after != null);
+  const moodBefores = moodRecorded.map((s) => s.mood_before ?? 0);
+  const moodAfters = moodRecorded.map((s) => s.mood_after ?? 0);
+  const moodChanges = moodRecorded.map((s) => (s.mood_after ?? 0) - (s.mood_before ?? 0));
+  const positiveImpact = moodRecorded.filter((s) => (s.mood_after ?? 0) > (s.mood_before ?? 0));
+  const noChange = moodRecorded.filter((s) => s.mood_after === s.mood_before);
+  const negativeImpact = moodRecorded.filter((s) => (s.mood_after ?? 0) < (s.mood_before ?? 0));
 
   const mood_impact: MoodImpact = {
     avg_mood_before: avg(moodBefores),

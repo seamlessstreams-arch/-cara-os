@@ -2350,13 +2350,13 @@ export interface KeyWorkingSession {
   child_voice: string;
   worker_observations: string;
   actions_agreed: string[];
-  mood_before: 1 | 2 | 3 | 4 | 5;
-  mood_after: 1 | 2 | 3 | 4 | 5;
-  follow_up: string;
-  follow_up_date: string;
-  follow_up_completed: boolean;
+  mood_before: 1 | 2 | 3 | 4 | 5 | null;
+  mood_after: 1 | 2 | 3 | 4 | 5 | null;
+  follow_up: string | null;
+  follow_up_date: string | null;
+  follow_up_completed: boolean | null;
   linked_goals: string[];
-  confidential: boolean;
+  confidential: boolean | null;
   home_id: string;
   created_at: string;
 }

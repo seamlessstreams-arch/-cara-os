@@ -39,10 +39,10 @@ export interface KeyworkSessionInput {
   duration_minutes: number;
   topics: string[];
   has_child_voice: boolean;    // whether child_voice was recorded
-  mood_before: number;         // 1-5
-  mood_after: number;          // 1-5
+  mood_before: number | null;  // 1-5, null = not recorded
+  mood_after: number | null;   // 1-5, null = not recorded
   follow_up_date: string;      // ISO date — when follow-up is due
-  follow_up_completed: boolean;
+  follow_up_completed: boolean | null;
   actions_agreed_count: number;
   linked_goals_count: number;
 }
@@ -183,7 +183,8 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
   // ── Overview ──────────────────────────────────────────────────────────
   const childCount = children.length || 1;
   const sessionsWithVoice = sessions30d.filter((s) => s.has_child_voice);
-  const sessionsWithMoodImprovement = sessions30d.filter((s) => s.mood_after > s.mood_before);
+  // Recorded moods only — an unrecorded session never counts as improvement.
+  const sessionsWithMoodImprovement = sessions30d.filter((s) => s.mood_after != null && s.mood_before != null && s.mood_after > s.mood_before);
   const therapeuticSessions = sessions30d.filter((s) => s.type === "therapeutic");
 
   // Follow-up completion (from all sessions with a valid follow-up date that has passed)
@@ -208,7 +209,7 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
     const childAll = sessions.filter((s) => s.child_id === child.id);
 
     const durations = child30d.map((s) => s.duration_minutes);
-    const moodChanges = child30d.map((s) => s.mood_after - s.mood_before);
+    const moodChanges = child30d.filter((s) => s.mood_after != null && s.mood_before != null).map((s) => (s.mood_after ?? 0) - (s.mood_before ?? 0));
     const staffIds = childAll.map((s) => s.staff_id);
     const types = [...new Set(child90d.map((s) => s.type))];
 
@@ -271,7 +272,7 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
       type,
       label: SESSION_TYPE_LABELS[type],
       count_30d: typeSessions.length,
-      avg_mood_change: Math.round(average(typeSessions.map((s) => s.mood_after - s.mood_before)) * 10) / 10,
+      avg_mood_change: Math.round(average(typeSessions.filter((s) => s.mood_after != null && s.mood_before != null).map((s) => (s.mood_after ?? 0) - (s.mood_before ?? 0))) * 10) / 10,
     }))
     .sort((a, b) => b.count_30d - a.count_30d);
 
