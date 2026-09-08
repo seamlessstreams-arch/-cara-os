@@ -68,7 +68,7 @@ export async function GET(req: Request) {
   if (period === "night" && !hasWaking) alerts.push({ type: "no_waking_night", severity: "high", message: "No waking-night cover scheduled — confirm arrangements" });
 
   // ── Window events (calendar, excluding task/training/shift) ──
-  const feed = getCalendarFeed({ from: date, to: nextDay(date) });
+  const feed = await getCalendarFeed({ from: date, to: nextDay(date) });
   const events = feed.items
     .filter((i) => !EVENT_EXCLUDE.has(i.source))
     .map((i) => ({ id: i.id, start: i.start, title: i.title, child_name: i.child_name, kind: i.source }));
