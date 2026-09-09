@@ -1331,6 +1331,16 @@ export const dal = {
     async create(data: Parameters<typeof db.lacReviews.create>[0]) { return db.lacReviews.create(data); },
   },
 
+  // ── Education consolidation (6 of 6) — the ONE brief pick that does NOT
+  // consolidate here. store.educationRecords is an education EVENT LOG
+  // (suspensions, managed moves, PEP meetings — the off-rolling scrutiny
+  // triggers), a different model from cs_education_records, which is a
+  // per-child status PROFILE read directly by education-service. No honest
+  // projection bridges a profile back into dated typed events, and the event
+  // log's only live-shaped writer is the care-events processor, which is
+  // sync-over-store BY DESIGN. So this arm stays demo-only until that spine
+  // can persist; the education CAPTURE surface (4 tables) is promoted and
+  // typed under #108, exercised by the write-contract proofs, not here.
   educationRecords: {
     async findAll(filters?: { child_id?: string }) {
       let list = db.educationRecords.findAll();

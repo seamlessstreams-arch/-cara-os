@@ -247,6 +247,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cs_activities",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_attendance_entries",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
     table: "cs_behaviour_entries",
     migration: "20260908120000_behaviour_consolidation.sql",
     columns: [],
@@ -254,6 +264,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "cs_communication_drafts",
     migration: "20260816210000_persist_communication_drafts.sql",
+    columns: [],
+  },
+  {
+    table: "cs_education_attendance_tracking",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_education_records",
+    migration: "20260909140000_education_consolidation.sql",
     columns: [],
   },
   {

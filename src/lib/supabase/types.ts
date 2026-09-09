@@ -2512,6 +2512,107 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["cs_restraint_debriefs"]["Insert"]>;
         Relationships: [];
       };
+      cs_education_records: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          education_status: string | null;
+          school_name: string | null;
+          year_group: string | null;
+          sen_status: string | null;
+          pupil_premium_plus: boolean | null;
+          virtual_school_contact: string | null;
+          designated_teacher: string | null;
+          pep_date: string | null;
+          next_pep_date: string | null;
+          attendance_percentage: number | null;
+          exclusion_count: number | null;
+          achievements: Json;
+          concerns: Json;
+          is_current: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_education_records"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_education_records"]["Insert"]>;
+        Relationships: [];
+      };
+      cs_attendance_entries: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          education_record_id: string | null;
+          date: string | null;
+          mark: string | null;
+          session: string | null;
+          notes: string | null;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_attendance_entries"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_attendance_entries"]["Insert"]>;
+        Relationships: [];
+      };
+      cs_activities: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          activity_name: string | null;
+          category: string | null;
+          date: string | null;
+          duration_minutes: number | null;
+          location: string | null;
+          description: string | null;
+          child_feedback: string | null;
+          child_enjoyed: boolean | null;
+          skills_developed: Json;
+          staff_member: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_activities"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_activities"]["Insert"]>;
+        Relationships: [];
+      };
+      cs_education_attendance_tracking: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          attendance_status: string | null;
+          absence_reason: string | null;
+          school_engagement: string | null;
+          education_setting: string | null;
+          attendance_date: string | null;
+          child_name: string | null;
+          child_id: string | null;
+          recorded_by: string | null;
+          school_contacted: boolean | null;
+          reason_documented: boolean | null;
+          return_plan_in_place: boolean | null;
+          pep_up_to_date: boolean | null;
+          virtual_school_informed: boolean | null;
+          social_worker_informed: boolean | null;
+          child_views_sought: boolean | null;
+          alternative_education_arranged: boolean | null;
+          homework_supported: boolean | null;
+          achievement_celebrated: boolean | null;
+          parent_informed: boolean | null;
+          recorded_promptly: boolean | null;
+          issues_found: Json;
+          actions_taken: Json;
+          sessions_attended: number | null;
+          sessions_possible: number | null;
+          next_review_date: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_education_attendance_tracking"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_education_attendance_tracking"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;
