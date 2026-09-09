@@ -21,6 +21,7 @@ import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
 import type { Database } from "@/lib/supabase/types";
+import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
 // was collapsing the union — so every consumer had to annotate `(x: any)`.
@@ -931,6 +932,43 @@ export const dal = {
       const c = sb();
       if (c) { const r = await sq.updateEducationEvent(c, id, data); return r ? eduEventRowToRecord(r) : null; }
       return db.educationRecords.update(id, data);
+    },
+  },
+
+  // Phase 4: filing cabinet + saved-time metrics have no dedicated table and are
+  // simply-read idempotent records — they persist to the generic_records
+  // catch-all (the processor's best-effort write-through target), and these read
+  // arms reconstruct the item verbatim from the record `data`. The sync primary
+  // surfaces (the filing-cabinet index, the saved-time dashboard) call these on
+  // live via their async loaders; the inspection snapshot keeps a sync store read.
+  filingCabinet: {
+    async findByHome(homeId_: string): Promise<FilingCabinetItem[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "filingCabinet");
+        return rows.map((r) => ({ id: r.id, ...r.data, created_at: r.created_at } as unknown as FilingCabinetItem));
+      }
+      return db.filingCabinet.findByHome(homeId_);
+    },
+    async findByCareEvent(careEventId: string): Promise<FilingCabinetItem[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "filingCabinet");
+        return rows
+          .map((r) => ({ id: r.id, ...r.data, created_at: r.created_at } as unknown as FilingCabinetItem))
+          .filter((i) => i.care_event_id === careEventId);
+      }
+      return db.filingCabinet.findByCareEvent(careEventId);
+    },
+  },
+  savedTimeMetrics: {
+    async findByHome(homeId_: string): Promise<SavedTimeMetric[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "savedTimeMetrics");
+        return rows.map((r) => ({ id: r.id, ...r.data, created_at: r.created_at } as unknown as SavedTimeMetric));
+      }
+      return db.savedTimeMetrics.findByHome(homeId_);
     },
   },
 

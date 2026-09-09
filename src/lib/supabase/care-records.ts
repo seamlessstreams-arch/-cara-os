@@ -160,6 +160,49 @@ export async function persistEducationEvent(record: object): Promise<void> {
   }
 }
 
+/**
+ * Best-effort write-through of a filing-cabinet item auto-filed by the sync
+ * processor. Phase 4: filing items are idempotent (keyed by care_event_id, and
+ * the processor de-dupes before re-processing) and simply read (list by home),
+ * so — like health — they persist to the generic_records catch-all under
+ * record_type "filingCabinet". The whole item is kept in `data` (child_id also
+ * as a column) so dal.filingCabinet.findByHome reconstructs it verbatim.
+ */
+export async function persistFilingCabinetItem(item: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = item as Record<string, unknown>;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "filingCabinet",
+      data: rest,
+      child_id: (rest.child_id as string) ?? undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a saved-time metric recorded by the sync processor (Phase 4). */
+export async function persistSavedTimeMetric(metric: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = metric as Record<string, unknown>;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "savedTimeMetrics",
+      data: rest,
+      staff_id: (rest.staff_id as string) ?? undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
 /** Best-effort write-through of an incident created by a sync service / orchestrator. */
 export async function persistIncident(incident: Record<string, unknown>): Promise<void> {
   if (!isSupabaseEnabled()) return;

@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import type { RouteType, SavedTimeMetric } from "@/types/care-events";
 
 export interface SavedTimeBucketByRoute {
@@ -109,8 +110,8 @@ function buildWindow(rows: SavedTimeMetric[]): SavedTimeWindow {
   };
 }
 
-export function loadSavedTimeDashboard(homeId: string): SavedTimeDashboard {
-  const all = db.savedTimeMetrics.findByHome(homeId);
+// Pure over the metric rows — shared by the async (live) and sync (snapshot) loaders.
+function buildSavedTimeDashboard(homeId: string, all: SavedTimeMetric[]): SavedTimeDashboard {
   const now = Date.now();
   const cutoff7  = now - 7  * 24 * 60 * 60 * 1000;
   const cutoff30 = now - 30 * 24 * 60 * 60 * 1000;
@@ -125,4 +126,14 @@ export function loadSavedTimeDashboard(homeId: string): SavedTimeDashboard {
     last_7_days:  buildWindow(last7),
     last_30_days: buildWindow(last30),
   };
+}
+
+// Live primary surface (the saved-time dashboard route) — round-trips via dal.
+export async function loadSavedTimeDashboard(homeId: string): Promise<SavedTimeDashboard> {
+  return buildSavedTimeDashboard(homeId, await dal.savedTimeMetrics.findByHome(homeId));
+}
+
+// Sync variant for the sync inspection-snapshot aggregator.
+export function loadSavedTimeDashboardFromStore(homeId: string): SavedTimeDashboard {
+  return buildSavedTimeDashboard(homeId, db.savedTimeMetrics.findByHome(homeId));
 }

@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import type { FilingCabinetItem, FilingCategory } from "@/types/care-events";
 
 export interface FilingCategoryGroup {
@@ -53,9 +54,9 @@ const ALL_CATEGORIES: FilingCategory[] = [
   "other",
 ];
 
-export function loadFilingCabinetIndex(homeId: string): FilingCabinetIndex {
-  const items = db.filingCabinet.findByHome(homeId);
-
+// Pure over the filed items — no I/O, so both the async (live, dal) and sync
+// (inspection snapshot, store) loaders share it.
+function buildFilingCabinetIndex(homeId: string, items: FilingCabinetItem[]): FilingCabinetIndex {
   const groupsMap = new Map<FilingCategory, FilingCabinetItem[]>();
   for (const cat of ALL_CATEGORIES) groupsMap.set(cat, []);
   for (const it of items) {
@@ -102,6 +103,18 @@ export function loadFilingCabinetIndex(homeId: string): FilingCabinetIndex {
     categories,
     recent_filings,
   };
+}
+
+// Live primary surfaces (the filing-cabinet page + export) — round-trips through
+// dal.filingCabinet, which reads generic_records when Supabase is on.
+export async function loadFilingCabinetIndex(homeId: string): Promise<FilingCabinetIndex> {
+  return buildFilingCabinetIndex(homeId, await dal.filingCabinet.findByHome(homeId));
+}
+
+// Sync variant for the sync inspection-snapshot aggregator — reads the store
+// directly (the snapshot subsystem is sync/demo throughout).
+export function loadFilingCabinetIndexFromStore(homeId: string): FilingCabinetIndex {
+  return buildFilingCabinetIndex(homeId, db.filingCabinet.findByHome(homeId));
 }
 
 export function filingCabinetCount(homeId: string): number {

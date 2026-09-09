@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
 import {
-  loadFilingCabinetIndex,
+  loadFilingCabinetIndexFromStore,
   filingCabinetCount,
 } from "@/lib/care-events/filing-cabinet-index";
 import type { FilingCategory } from "@/types/care-events";
@@ -43,9 +43,9 @@ function file(category: FilingCategory, opts: { verified?: boolean; filed_at?: s
 
 beforeEach(() => clearAll());
 
-describe("loadFilingCabinetIndex", () => {
+describe("loadFilingCabinetIndexFromStore", () => {
   it("returns empty index when nothing filed", () => {
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     expect(r.total).toBe(0);
     expect(r.verified).toBe(0);
     expect(r.unverified).toBe(0);
@@ -58,7 +58,7 @@ describe("loadFilingCabinetIndex", () => {
     file("daily_care", { verified: true });
     file("daily_care", { verified: false });
     file("incident", { verified: false });
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     expect(r.total).toBe(3);
     expect(r.verified).toBe(1);
     expect(r.unverified).toBe(2);
@@ -70,7 +70,7 @@ describe("loadFilingCabinetIndex", () => {
     file("daily_care");
     file("daily_care");
     file("incident");
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     expect(r.categories.length).toBe(2);
     expect(r.categories[0].category).toBe("daily_care");
     expect(r.categories[0].total).toBe(3);
@@ -80,7 +80,7 @@ describe("loadFilingCabinetIndex", () => {
   it("computes per-group verified/unverified counts", () => {
     file("safeguarding", { verified: true });
     file("safeguarding", { verified: false });
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     const g = r.categories.find((c) => c.category === "safeguarding")!;
     expect(g.verified).toBe(1);
     expect(g.unverified).toBe(1);
@@ -90,7 +90,7 @@ describe("loadFilingCabinetIndex", () => {
     for (let i = 0; i < 7; i += 1) {
       file("health", { filed_at: `2026-05-${String(i + 1).padStart(2, "0")}T00:00:00Z`, title: `h-${i}` });
     }
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     const g = r.categories.find((c) => c.category === "health")!;
     expect(g.total).toBe(7);
     expect(g.recent_items.length).toBe(5);
@@ -102,7 +102,7 @@ describe("loadFilingCabinetIndex", () => {
     for (let i = 0; i < 25; i += 1) {
       file("daily_care", { filed_at: `2026-05-${String((i % 28) + 1).padStart(2, "0")}T00:00:0${i % 10}Z` });
     }
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     expect(r.recent_filings.length).toBe(20);
     for (let i = 1; i < r.recent_filings.length; i += 1) {
       expect(
@@ -131,7 +131,7 @@ describe("loadFilingCabinetIndex", () => {
       filed_at: new Date().toISOString(),
     });
     expect(filingCabinetCount(HOME_ID)).toBe(1);
-    const r = loadFilingCabinetIndex(HOME_ID);
+    const r = loadFilingCabinetIndexFromStore(HOME_ID);
     expect(r.total).toBe(1);
   });
 });

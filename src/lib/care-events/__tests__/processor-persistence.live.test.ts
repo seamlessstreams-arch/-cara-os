@@ -90,6 +90,22 @@ describe("care-events processor — live persistence write-through (Phase 1)", (
     expect((p.data as Record<string, unknown>).child_id).toBe("yp_alex");
   });
 
+  it("mirrors filing-cabinet items and saved-time metrics to generic_records (Phase 4)", async () => {
+    processCareEvent(makeEvent({
+      category: "safeguarding", is_safeguarding: true, child_id: "yp_alex",
+      title: "Disclosure", content: "A safeguarding disclosure.", requires_manager_review: true,
+    }));
+    await flush();
+    const generic = insertsTo("generic_records");
+    const filing = generic.find((w) => (w.payload as Record<string, unknown>).record_type === "filingCabinet");
+    const saved = generic.find((w) => (w.payload as Record<string, unknown>).record_type === "savedTimeMetrics");
+    expect(filing, "no generic_records insert for filingCabinet").toBeDefined();
+    expect(saved, "no generic_records insert for savedTimeMetrics").toBeDefined();
+    // the filing item keeps its category/care-event linkage in data (round-trips)
+    const fd = (filing!.payload as Record<string, unknown>).data as Record<string, unknown>;
+    expect(fd.care_event_id).toBeTruthy();
+  });
+
   it("mirrors an education event to cs_education_events, not the profile or the catch-all (Phase 3)", async () => {
     processCareEvent(makeEvent({
       category: "education", child_id: "yp_alex", title: "Fixed-term suspension",

@@ -27,6 +27,8 @@ import {
   persistAnnexAEvidence,
   persistHealthRecordEntry,
   persistEducationEvent,
+  persistFilingCabinetItem,
+  persistSavedTimeMetric,
 } from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
@@ -78,9 +80,9 @@ const HOME_ID = "home_oak";
 // (demo + immediate read-back) and fire a best-effort write-through to the real
 // table when Supabase is on — the same fire-and-forget pattern as
 // persistDailyLog / createIncidentRecord, so the processor stays sync. The still
-// -uncovered records (filing, saved-time, restraints, the job queue and the route
-// state-machine) have no live home yet and keep using db.* directly — restraints
-// waits on #106's cs_restraint_records reaching main.
+// -uncovered records (restraints, the job queue and the route state-machine) have
+// no live home yet and keep using db.* directly — restraints waits on #106's
+// cs_restraint_records reaching main.
 function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
   const e = db.chronology.create(d);
   void persistChronologyEntry(e);
@@ -119,6 +121,19 @@ function mirrorHealthRecord(d: Parameters<typeof db.healthRecordEntries.create>[
 function mirrorEducationRecord(d: Parameters<typeof db.educationRecords.create>[0]) {
   const e = db.educationRecords.create(d);
   void persistEducationEvent(e as unknown as Record<string, unknown>);
+  return e;
+}
+// Phase 4: filing cabinet + saved-time metrics mirror to generic_records — the
+// home dal.filingCabinet / dal.savedTimeMetrics read on live for the primary
+// surfaces (the filing index, the saved-time dashboard).
+function mirrorFilingCabinet(d: Parameters<typeof db.filingCabinet.upsert>[0]) {
+  const e = db.filingCabinet.upsert(d);
+  void persistFilingCabinetItem(e as unknown as Record<string, unknown>);
+  return e;
+}
+function mirrorSavedTime(d: Parameters<typeof db.savedTimeMetrics.upsert>[0]) {
+  const e = db.savedTimeMetrics.upsert(d);
+  void persistSavedTimeMetric(e as unknown as Record<string, unknown>);
   return e;
 }
 
@@ -391,7 +406,7 @@ function processFilingCabinet(event: CareEvent, route: CareEventRoute): void {
     : (event.category as FilingCategory) ?? "other";
 
   // Write to filing cabinet (idempotent via care_event_id + category)
-  const item = db.filingCabinet.upsert({
+  const item = mirrorFilingCabinet({
     care_event_id: event.id,
     home_id: HOME_ID,
     child_id: event.child_id,
@@ -451,7 +466,7 @@ function processSavedTime(event: CareEvent, route: CareEventRoute): void {
   for (const r of routes) {
     const mins = TIME_SAVED_BY_ROUTE[r.route_type] ?? 0;
     if (mins > 0) {
-      db.savedTimeMetrics.upsert({
+      mirrorSavedTime({
         care_event_id: event.id,
         home_id: HOME_ID,
         route_type: r.route_type,
