@@ -2369,6 +2369,34 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["cs_behaviour_entries"]["Insert"]>;
         Relationships: [];
       };
+      cs_risk_assessments: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          category: string | null;
+          title: string | null;
+          description: string | null;
+          likelihood: number | null;
+          impact: number | null;
+          inherent_risk_score: number | null;
+          current_risk_level: string | null;
+          residual_risk_level: string | null;
+          mitigations: Json;
+          triggers: Json;
+          protective_factors: Json;
+          status: string | null;
+          assessor_id: string | null;
+          reviewer_id: string | null;
+          review_date: string | null;
+          next_review_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_risk_assessments"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_risk_assessments"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;

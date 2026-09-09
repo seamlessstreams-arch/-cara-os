@@ -32,7 +32,8 @@ import type {
 import type {
   BehaviourEntry,
   KeyWorkingSession,
-  MissingEpisode, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
+  MissingEpisode,
+  RiskAssessment, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
 } from "@/types/extended";
 
@@ -148,6 +149,107 @@ function behaviourRowToEntry(r: Database["public"]["Tables"]["cs_behaviour_entri
     recorded_by: r.recorded_by ?? "",
     created_at: r.created_at,
   };
+}
+
+
+// ── Risk consolidation (3 of 6): cs_risk_assessments → RiskAssessment ───────
+// Capture records likelihood×impact per category; intelligence reads a
+// domain-keyed assessment. Honest projection rules:
+//  • category → domain only where exact or professionally standard
+//    (radicalisation is exploitation-shaped harm under Prevent/EFH). bullying
+//    (direction-ambiguous: being bullied ≠ bullying others) and the
+//    operational categories (environmental, health_medical, transport,
+//    activities) stay capture-only, as do home-level rows with no child — a
+//    premises risk cannot wear a child-harm domain. All remain fully visible
+//    in the capture surfaces.
+//  • current_level = the residual level where the assessor recorded one (the
+//    risk as it stands WITH mitigations), else the inherent band; very_low
+//    joins low (the intelligence union has no very_low). A row with no
+//    recorded level is skipped — it cannot honestly wear one.
+//  • previous_level/trend are DERIVED from real history — earlier assessments
+//    of the same child+category, compared on the raw five-band scale. A first
+//    assessment spans its single reading (previous = current, trend stable):
+//    the least-claiming members of the required unions.
+//  • status: active/escalated → current (escalated is live — dropping it
+//    would under-alarm), mitigated/closed → superseded. An unrecognised
+//    status also maps to current: a risk record must never disappear from
+//    safety counts because its status string is malformed.
+//  • review_date = next_review_date (what the currency engine does overdue
+//    arithmetic on; required at capture). Never invented: indicators,
+//    contingency_plan, child_views, history_notes and linked_incidents are
+//    empty — capture does not record them — and mitigation strings carry
+//    effectiveness "not_yet_assessed".
+const RISK_CATEGORY_TO_DOMAIN: Record<string, RiskAssessment["domain"]> = {
+  self_harm: "self_harm",
+  violence_aggression: "aggression",
+  absconding: "absconding",
+  exploitation: "exploitation",
+  radicalisation: "exploitation",
+  substance_misuse: "substance_use",
+  online_safety: "online_safety",
+  fire_setting: "fire_setting",
+  sexual_behaviour: "sexual_behaviour",
+  emotional_wellbeing: "emotional_harm",
+};
+const RISK_LEVEL_RANK: Record<string, number> = { very_low: 0, low: 1, medium: 2, high: 3, very_high: 4 };
+const RISK_LEVEL_BAND: Record<string, RiskAssessment["current_level"]> = {
+  very_low: "low", low: "low", medium: "medium", high: "high", very_high: "very_high",
+};
+const RISK_STATUS_MAP: Record<string, RiskAssessment["status"]> = {
+  active: "current", escalated: "current", under_review: "under_review", mitigated: "superseded", closed: "superseded",
+};
+
+function riskRowsToAssessments(rows: Database["public"]["Tables"]["cs_risk_assessments"]["Row"][]): RiskAssessment[] {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const usable = rows.flatMap((r) => {
+    const domain = RISK_CATEGORY_TO_DOMAIN[r.category ?? ""];
+    const rawLevel = r.residual_risk_level ?? r.current_risk_level;
+    if (!r.child_id || !domain || !rawLevel || RISK_LEVEL_RANK[rawLevel] === undefined) return [];
+    return [{ r, childId: r.child_id, domain, rawLevel }];
+  });
+  const threads = new Map<string, typeof usable>();
+  for (const u of usable) {
+    const key = `${u.childId}|${u.r.category}`;
+    const t = threads.get(key);
+    if (t) t.push(u); else threads.set(key, [u]);
+  }
+  const out: RiskAssessment[] = [];
+  for (const thread of threads.values()) {
+    thread.sort((a, b) => a.r.created_at.localeCompare(b.r.created_at));
+    for (let i = 0; i < thread.length; i++) {
+      const { r, childId, domain, rawLevel } = thread[i];
+      const prevRaw = i > 0 ? thread[i - 1].rawLevel : rawLevel;
+      const trend: RiskAssessment["trend"] =
+        RISK_LEVEL_RANK[rawLevel] > RISK_LEVEL_RANK[prevRaw] ? "increasing"
+        : RISK_LEVEL_RANK[rawLevel] < RISK_LEVEL_RANK[prevRaw] ? "decreasing"
+        : "stable";
+      out.push({
+        id: r.id,
+        child_id: childId,
+        domain,
+        current_level: RISK_LEVEL_BAND[rawLevel],
+        previous_level: RISK_LEVEL_BAND[prevRaw],
+        trend,
+        status: RISK_STATUS_MAP[r.status ?? ""] ?? "current",
+        assessed_by: r.assessor_id ?? "",
+        assessed_date: r.created_at.slice(0, 10),
+        review_date: r.next_review_date ?? r.review_date ?? "",
+        triggers: strings(r.triggers),
+        indicators: [],
+        mitigations: strings(r.mitigations).map((strategy) => ({
+          strategy, responsible: "", effectiveness: "not_yet_assessed" as const,
+        })),
+        contingency_plan: "",
+        child_views: "",
+        history_notes: "",
+        linked_incidents: [],
+        home_id: r.home_id ?? "",
+        created_at: r.created_at,
+      });
+    }
+  }
+  out.sort((a, b) => b.assessed_date.localeCompare(a.assessed_date));
+  return out;
 }
 
 export const dal = {
@@ -929,13 +1031,42 @@ export const dal = {
   },
 
   riskAssessments: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<RiskAssessment[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_risk_assessments").select("*");
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return riskRowsToAssessments(data);
+      }
       let list = db.riskAssessments.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.riskAssessments.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.riskAssessments.findByChild(childId); },
+    async findById(id: string): Promise<RiskAssessment | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_risk_assessments").select("*").eq("id", id).single();
+        if (!error && data) {
+          // previous_level/trend come from the row's real thread, not the row alone.
+          const sib = data.child_id && data.category
+            ? await c.from("cs_risk_assessments").select("*").eq("child_id", data.child_id).eq("category", data.category)
+            : null;
+          const rows = sib && !sib.error && sib.data ? sib.data : [data];
+          return riskRowsToAssessments(rows).find((a) => a.id === id) ?? null;
+        }
+      }
+      return db.riskAssessments.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<RiskAssessment[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_risk_assessments").select("*").eq("child_id", childId);
+        if (!error && data) return riskRowsToAssessments(data);
+      }
+      return db.riskAssessments.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through risk-assessment-service.
     async create(data: Parameters<typeof db.riskAssessments.create>[0]) { return db.riskAssessments.create(data); },
     async update(id: string, data: Parameters<typeof db.riskAssessments.update>[1]) { return db.riskAssessments.update(id, data); },
   },
