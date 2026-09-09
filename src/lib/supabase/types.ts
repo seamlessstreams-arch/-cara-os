@@ -1210,6 +1210,30 @@ export interface Database {
         Insert: Omit<Database["public"]["Tables"]["generic_records"]["Row"], "id" | "created_at" | "updated_at"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["generic_records"]["Insert"]>;
       };
+      cs_education_events: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          record_type: string | null;
+          title: string | null;
+          date: string | null;
+          school: string | null;
+          details: string | null;
+          outcome: string | null;
+          follow_up_date: string | null;
+          attendance_status: string | null;
+          linked_pep: boolean | null;
+          status: string | null;
+          staff_id: string | null;
+          care_event_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_education_events"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_education_events"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;

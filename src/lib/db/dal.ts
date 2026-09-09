@@ -19,7 +19,8 @@ import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
+import type { Database } from "@/lib/supabase/types";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
 // was collapsing the union — so every consumer had to annotate `(x: any)`.
@@ -51,6 +52,30 @@ interface GenericRecordRow {
   data: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+}
+
+// Phase 3: cs_education_events row → EducationRecord (the event-log intelligence
+// shape). Columns map 1:1; record_type falls back to the generic "concern"
+// (never an off-rolling type) and status to "open" (the unresolved, chase-it
+// state) only if a malformed row omitted them — the recorder's answer otherwise.
+function eduEventRowToRecord(r: Database["public"]["Tables"]["cs_education_events"]["Row"]): EducationRecord {
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    record_type: (r.record_type ?? "concern") as EducationRecord["record_type"],
+    title: r.title ?? "",
+    date: r.date ?? r.created_at.slice(0, 10),
+    school: r.school ?? undefined,
+    details: r.details ?? undefined,
+    outcome: r.outcome ?? undefined,
+    follow_up_date: r.follow_up_date ?? undefined,
+    attendance_status: (r.attendance_status ?? null) as EducationRecord["attendance_status"],
+    linked_pep: r.linked_pep ?? undefined,
+    staff_id: r.staff_id ?? "",
+    status: (r.status ?? "open") as EducationRecord["status"],
+    home_id: r.home_id ?? undefined,
+    created_at: r.created_at,
+  };
 }
 
 export const dal = {
@@ -867,18 +892,46 @@ export const dal = {
     async create(data: any) { return db.lacReviews.create(data); },
   },
 
+  // Phase 3: the education EVENT LOG goes live via cs_education_events (distinct
+  // from #108's cs_education_records profile). All reads round-trip through the
+  // dedicated table on live, so the off-rolling triggers and education
+  // intelligence see events created from care events instead of an empty store.
   educationRecords: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<EducationRecord[]> {
+      const c = sb();
+      if (c) return (await sq.getEducationEvents(c, homeId(), filters?.child_id)).map(eduEventRowToRecord);
       let list = db.educationRecords.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.educationRecords.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.educationRecords.findByChild(childId); },
+    async findById(id: string): Promise<EducationRecord | null> {
+      const c = sb();
+      if (c) {
+        try { const r = await sq.getEducationEventById(c, id); return r ? eduEventRowToRecord(r) : null; } catch { return null; }
+      }
+      return db.educationRecords.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<EducationRecord[]> {
+      const c = sb();
+      if (c) return (await sq.getEducationEvents(c, homeId(), childId)).map(eduEventRowToRecord);
+      return db.educationRecords.findByChild(childId);
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.educationRecords.create(data); },
+    async create(data: any): Promise<EducationRecord> {
+      const c = sb();
+      if (c) {
+        const created = await sq.createEducationEvent(c, { ...data, home_id: homeId() });
+        if (!created) throw new Error("cs_education_events insert returned no row");
+        return eduEventRowToRecord(created);
+      }
+      return db.educationRecords.create(data);
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.educationRecords.update(id, data); },
+    async update(id: string, data: any): Promise<EducationRecord | null> {
+      const c = sb();
+      if (c) { const r = await sq.updateEducationEvent(c, id, data); return r ? eduEventRowToRecord(r) : null; }
+      return db.educationRecords.update(id, data);
+    },
   },
 
   trainingRecords: {

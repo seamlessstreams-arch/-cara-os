@@ -26,6 +26,7 @@ import {
   persistChildDailySummary,
   persistAnnexAEvidence,
   persistHealthRecordEntry,
+  persistEducationEvent,
 } from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
@@ -77,9 +78,9 @@ const HOME_ID = "home_oak";
 // (demo + immediate read-back) and fire a best-effort write-through to the real
 // table when Supabase is on — the same fire-and-forget pattern as
 // persistDailyLog / createIncidentRecord, so the processor stays sync. The still
-// -uncovered records (education events, filing, saved-time, restraints, jobs and
-// the route state-machine) have no live home yet and keep using db.* directly —
-// restraints waits on #106's cs_restraint_records reaching main.
+// -uncovered records (filing, saved-time, restraints, the job queue and the route
+// state-machine) have no live home yet and keep using db.* directly — restraints
+// waits on #106's cs_restraint_records reaching main.
 function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
   const e = db.chronology.create(d);
   void persistChronologyEntry(e);
@@ -111,6 +112,13 @@ function mirrorAnnexAEvidence(d: Parameters<typeof db.annexAEvidenceQueue.upsert
 function mirrorHealthRecord(d: Parameters<typeof db.healthRecordEntries.create>[0]) {
   const e = db.healthRecordEntries.create(d);
   void persistHealthRecordEntry(e as unknown as Record<string, unknown>);
+  return e;
+}
+// Phase 3: education events get a dedicated table (cs_education_events) — the
+// mirror persists there, the home dal.educationRecords now reads on live.
+function mirrorEducationRecord(d: Parameters<typeof db.educationRecords.create>[0]) {
+  const e = db.educationRecords.create(d);
+  void persistEducationEvent(e as unknown as Record<string, unknown>);
   return e;
 }
 
@@ -789,7 +797,7 @@ function processEducationRecord(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const record = db.educationRecords.create({
+  const record = mirrorEducationRecord({
     child_id: event.child_id ?? "",
     record_type: "concern",
     title: event.title,

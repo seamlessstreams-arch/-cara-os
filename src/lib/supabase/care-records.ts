@@ -141,6 +141,25 @@ export async function persistHealthRecordEntry(record: Record<string, unknown>):
   }
 }
 
+/**
+ * Best-effort write-through of an education EVENT created by the sync processor.
+ * Phase 3: the education event log has its own dedicated table (cs_education_events,
+ * distinct from #108's cs_education_records profile), so the record persists there
+ * — the same home dal.educationRecords now reads from on live, so it round-trips
+ * into the off-rolling triggers and education intelligence.
+ */
+export async function persistEducationEvent(record: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = record as Record<string, unknown>;
+    await sq.createEducationEvent(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createEducationEvent>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
 /** Best-effort write-through of an incident created by a sync service / orchestrator. */
 export async function persistIncident(incident: Record<string, unknown>): Promise<void> {
   if (!isSupabaseEnabled()) return;
