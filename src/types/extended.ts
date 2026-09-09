@@ -2646,7 +2646,7 @@ export interface RestraintRecord {
   duration: number;
   child_id: string;
   staff_involved: RestraintStaffEntry[];
-  reason: RestraintReason;
+  reason: RestraintReason | null;
   restraint_type: RestraintType;
   antecedent: string;
   behaviour: string;
@@ -2656,7 +2656,7 @@ export interface RestraintRecord {
   injuries: RestraintInjury[];
   child_debriefed: boolean;
   child_debrief_notes: string;
-  staff_debriefed: boolean;
+  staff_debriefed: boolean | null;
   witnessed_by: string[];
   review_status: RestraintReviewStatus;
   review_notes: string;
@@ -2664,7 +2664,7 @@ export interface RestraintRecord {
   linked_incident_id: string;
   notifications_sent: { party: string; date: string }[];
   body_map_completed: boolean;
-  medical_check_completed: boolean;
+  medical_check_completed: boolean | null;
   recorded_by: string;
   created_at: string;
 }

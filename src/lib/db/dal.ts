@@ -36,7 +36,10 @@ import type {
   RiskAssessment,
   LACReview,
   LACReviewAttendee,
-  LACReviewAction, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
+  LACReviewAction,
+  RestraintRecord,
+  RestraintStaffEntry,
+  RestraintInjury, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
 } from "@/types/extended";
 
@@ -375,6 +378,103 @@ function lacRowToReview(r: Database["public"]["Tables"]["cs_lac_reviews"]["Row"]
     notes: r.notes ?? "",
     recorded_by: "",
     home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
+}
+
+// ── Restraints consolidation (5 of 6): cs_restraint_records → RestraintRecord
+// Single writer (restraint-service). cs_restraint_debriefs is promoted
+// alongside as a standalone capture read through its own service — the two
+// tables share no FK and are NEVER joined by child+date inference. Honest
+// projection rules:
+//  • reason stays null — no capture field records the statutory ground, and
+//    a physical intervention must never wear a legal justification the
+//    recorder did not give. staff_debriefed and medical_check_completed stay
+//    null for the same shape: the form never asks, and an unasked question
+//    is a form gap, not a compliance failure (readers use recorded-subset
+//    denominators).
+//  • end_time is DERIVED from the recorded start + recorded duration — pure
+//    wall-clock arithmetic on two recorded facts; absent either, "".
+//  • description composes the recorded technique and outcome text — real
+//    prose only, joined with a dash, nothing authored.
+//  • review_status: manager_reviewed true → reviewed; otherwise pending_rm —
+//    not-yet-reviewed is the honest state of an unreviewed record.
+//  • notifications_sent carries one entry per recorded-true notified flag,
+//    with the date "" (the capture records WHETHER, not when).
+//  • child_debriefed is the record's own debrief_completed answer; an absent
+//    answer reads false — the chase-it direction, never assurance.
+//  • never invented: justification, witnessed_by, linked incident, per-staff
+//    technique; the child's own views text has no intelligence field and
+//    stays capture-visible (noted for the recording-philosophy call).
+const RESTRAINT_TYPE_SET = new Set<RestraintRecord["restraint_type"]>(["standing", "seated", "ground", "escort", "other"]);
+
+function restraintRowToRecord(r: Database["public"]["Tables"]["cs_restraint_records"]["Row"]): RestraintRecord | null {
+  if (!r.child_id) return null;
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const objs = (j: unknown): Record<string, unknown>[] =>
+    Array.isArray(j) ? j.map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {})) : [];
+
+  const staff: RestraintStaffEntry[] = objs(r.staff_involved).map((o) => ({
+    staff_id: String(o.staff_name ?? o.staff_id ?? ""),
+    role: String(o.role_in_incident ?? o.role ?? ""),
+    technique: "",
+    ...(typeof o.trained === "boolean" ? { team_teach_trained: o.trained } : {}),
+  }));
+
+  const injury = (person: string) => (o: Record<string, unknown>): RestraintInjury => ({
+    person: String(o.person_name ?? person),
+    injury: [o.description, o.body_location].filter(Boolean).map(String).join(" — "),
+    treatment: String(o.treatment_given ?? ""),
+  });
+  const injuries = [
+    ...objs(r.injuries_child).map(injury("Child")),
+    ...objs(r.injuries_staff).map(injury("Staff")),
+  ];
+
+  const start = (r.incident_time ?? "").slice(0, 5);
+  let end = "";
+  if (start && typeof r.duration_minutes === "number") {
+    const [h, m] = start.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) {
+      const t = (h * 60 + m + r.duration_minutes) % 1440;
+      end = `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+    }
+  }
+
+  const notifications: RestraintRecord["notifications_sent"] = [];
+  if (r.ofsted_notified) notifications.push({ party: "Ofsted", date: "" });
+  if (r.parent_carer_notified) notifications.push({ party: "Parent/Carer", date: "" });
+  if (r.social_worker_notified) notifications.push({ party: "Social Worker", date: "" });
+
+  const rawType = r.restraint_type ?? "";
+  return {
+    id: r.id,
+    date: r.incident_date ?? r.created_at.slice(0, 10),
+    start_time: start,
+    end_time: end,
+    duration: r.duration_minutes ?? 0,
+    child_id: r.child_id,
+    staff_involved: staff,
+    reason: null,
+    restraint_type: (RESTRAINT_TYPE_SET.has(rawType as RestraintRecord["restraint_type"]) ? rawType : "other") as RestraintRecord["restraint_type"],
+    antecedent: r.antecedent ?? "",
+    behaviour: r.behaviour_description ?? "",
+    de_escalation_attempts: strings(r.de_escalation_attempted),
+    justification: "",
+    description: [r.technique_used, r.outcome].filter(Boolean).join(" — "),
+    injuries,
+    child_debriefed: r.debrief_completed === true,
+    child_debrief_notes: r.debrief_notes ?? "",
+    staff_debriefed: null,
+    witnessed_by: [],
+    review_status: r.manager_reviewed === true ? "reviewed" : "pending_rm",
+    review_notes: r.manager_review_notes ?? "",
+    reviewed_by: "",
+    linked_incident_id: "",
+    notifications_sent: notifications,
+    body_map_completed: r.body_map_completed === true,
+    medical_check_completed: null,
+    recorded_by: r.created_by ?? "",
     created_at: r.created_at,
   };
 }
@@ -1254,13 +1354,35 @@ export const dal = {
   },
 
   restraints: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<RestraintRecord[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_restraint_records").select("*").order("incident_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.flatMap((r) => restraintRowToRecord(r) ?? []);
+      }
       let list = db.restraints.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.restraints.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.restraints.findByChild(childId); },
+    async findById(id: string): Promise<RestraintRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_restraint_records").select("*").eq("id", id).single();
+        if (!error && data) return restraintRowToRecord(data);
+      }
+      return db.restraints.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<RestraintRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_restraint_records").select("*").eq("child_id", childId).order("incident_date", { ascending: false });
+        if (!error && data) return data.flatMap((r) => restraintRowToRecord(r) ?? []);
+      }
+      return db.restraints.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through restraint-service.
     async create(data: Parameters<typeof db.restraints.create>[0]) { return db.restraints.create(data); },
   },
 

@@ -51,11 +51,11 @@ export interface RestraintInput {
   child_id: string;
   date: string;
   duration: number; // minutes
-  reason: string;
+  reason: string | null;
   restraint_type: string;
   injuries: { person: string; description: string }[];
   child_debriefed: boolean;
-  staff_debriefed: boolean;
+  staff_debriefed: boolean | null;
   review_status: string; // reviewed, pending
   de_escalation_attempts: string[];
 }
@@ -250,8 +250,11 @@ export function computeSafeguardingIntelligence(
   const totalInjuries = restraints90d.reduce((sum, r) => sum + r.injuries.length, 0);
 
   const childDebriefed = restraints90d.filter((r) => r.child_debriefed).length;
-  const staffDebriefed = restraints90d.filter((r) => r.staff_debriefed).length;
-  const totalDebriefable = restraints90d.length * 2; // child + staff per restraint
+  // A staff debrief the capture never asked about is not a missed debrief —
+  // only recorded answers enter the denominator.
+  const staffDebriefRecorded = restraints90d.filter((r) => r.staff_debriefed !== null);
+  const staffDebriefed = staffDebriefRecorded.filter((r) => r.staff_debriefed).length;
+  const totalDebriefable = restraints90d.length + staffDebriefRecorded.length;
   const debriefRate = rate(childDebriefed + staffDebriefed, totalDebriefable);
 
   const reviewed = restraints90d.filter((r) => r.review_status === "reviewed").length;

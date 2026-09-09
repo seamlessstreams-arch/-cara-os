@@ -53,7 +53,7 @@ export function mapStoreToEventInput(store: EventStoreShape): EventProjectorInpu
     })),
     restraints: (((store.restraints ?? []))).map((r) => ({
       id: r.id, child_id: r.child_id, date: d(r.date ?? r.created_at), start_time: r.start_time, restraint_type: r.restraint_type,
-      injuries_count: Array.isArray(r.injuries) ? r.injuries.length : 0, child_debriefed: r.child_debriefed, staff_debriefed: r.staff_debriefed,
+      injuries_count: Array.isArray(r.injuries) ? r.injuries.length : 0, child_debriefed: r.child_debriefed, staff_debriefed: r.staff_debriefed ?? undefined,
       linked_incident_id: r.linked_incident_id, recorded_by: r.recorded_by, created_at: r.created_at,
     })),
     medicationErrors: (((store.medicationErrors ?? []))).map((e) => ({
