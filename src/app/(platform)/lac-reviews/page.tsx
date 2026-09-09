@@ -375,12 +375,13 @@ export default function LACReviewsPage() {
             const fd = new FormData(e.currentTarget);
             const childId = fd.get("child_id") as string;
             const reviewType = fd.get("review_type") as string;
-            if (!childId || !reviewType) return;
+            const participation = fd.get("child_participation") as string;
+            if (!childId || !reviewType || !participation) return;
             createReview.mutate({
               child_id: childId, review_type: reviewType as LACReviewType,
               date: fd.get("date") as string || todayStr(),
               iro: fd.get("iro") as string || "", venue: fd.get("venue") as string || "",
-              attendees: [], child_participation: "attended" as LACChildParticipation,
+              attendees: [], child_participation: participation as LACChildParticipation,
               child_views: fd.get("child_views") as string || "",
               key_discussions: (fd.get("key_discussions") as string || "").split("\n").filter(Boolean),
               recommendations: [], outcome: null, actions_agreed: [],
@@ -417,6 +418,12 @@ export default function LACReviewsPage() {
             <div>
               <label htmlFor="6e4b-venue" className="text-sm font-medium">Venue</label>
               <Input id="6e4b-venue" name="venue" placeholder="Where was the review held?" />
+            </div>
+            <div>
+              <label htmlFor="6e4b-participation" className="text-sm font-medium">Child&apos;s Participation</label>
+              <Select name="child_participation"><SelectTrigger id="6e4b-participation"><SelectValue placeholder="How did the child take part?" /></SelectTrigger>
+                <SelectContent>{Object.entries(PARTICIPATION_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <label htmlFor="6e4b-child-apos-s-views" className="text-sm font-medium">Child&apos;s Views</label>
