@@ -75,11 +75,30 @@ describe("care-events processor — live persistence write-through (Phase 1)", (
     expect(insertsTo("missing_episodes").length).toBeGreaterThan(0);
   });
 
-  it("writes nothing to Supabase for the record types Phase 1 does not cover (no fabricated mirror)", async () => {
-    // education events have no cs_ table yet — they must NOT invent a live write.
+  it("mirrors a health event's record to the generic_records catch-all (Phase 2)", async () => {
+    processCareEvent(makeEvent({
+      category: "health", child_id: "yp_alex", title: "GP appointment",
+      content: "Seen by GP for a persistent cough; antibiotics prescribed.",
+    }));
+    await flush();
+    const generic = insertsTo("generic_records");
+    const health = generic.find((w) => (w.payload as Record<string, unknown>).record_type === "healthRecordEntries");
+    expect(health, "no generic_records insert for healthRecordEntries").toBeDefined();
+    // child_id is kept so the record round-trips into the health-intelligence engine
+    const p = health!.payload as Record<string, unknown>;
+    expect(p.child_id).toBe("yp_alex");
+    expect((p.data as Record<string, unknown>).child_id).toBe("yp_alex");
+  });
+
+  it("writes nothing to Supabase for the record types still uncovered (no fabricated mirror)", async () => {
+    // education events have no live home yet — they must NOT invent a live write.
     processCareEvent(makeEvent({ category: "education", title: "Suspension", content: "2-day fixed-term." }));
     await flush();
     expect(insertsTo("education_records")).toEqual([]);
     expect(insertsTo("cs_education_records")).toEqual([]);
+    const genericEdu = insertsTo("generic_records").find(
+      (w) => (w.payload as Record<string, unknown>).record_type === "educationRecords",
+    );
+    expect(genericEdu).toBeUndefined();
   });
 });

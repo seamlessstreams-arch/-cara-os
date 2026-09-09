@@ -112,6 +112,35 @@ export async function persistAnnexAEvidence(item: object): Promise<void> {
   }
 }
 
+/**
+ * Best-effort write-through of a health record entry created by the sync processor.
+ * Phase 2: healthRecordEntries has no dedicated table, so — like risk assessments —
+ * it persists to the `generic_records` catch-all under its record_type. child_id
+ * and staff_id are kept INSIDE `data` (as well as passed as columns) so the
+ * dal's genericTable read reconstructs them; without that the child grouping in
+ * the health-intelligence engine would silently lose its subject.
+ */
+export async function persistHealthRecordEntry(record: Record<string, unknown>): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id: _id, home_id: _home, ...rest } = record as any;
+    void _id; void _home;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "healthRecordEntries",
+      data: rest,
+      child_id: (rest.child_id as string) ?? undefined,
+      staff_id: (rest.staff_id as string) ?? undefined,
+      created_by: (rest.staff_id as string) ?? undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
 /** Best-effort write-through of an incident created by a sync service / orchestrator. */
 export async function persistIncident(incident: Record<string, unknown>): Promise<void> {
   if (!isSupabaseEnabled()) return;

@@ -25,6 +25,7 @@ import {
   persistNotification,
   persistChildDailySummary,
   persistAnnexAEvidence,
+  persistHealthRecordEntry,
 } from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
@@ -75,9 +76,10 @@ const HOME_ID = "home_oak";
 // The processor is a sync orchestrator; these wrappers keep the in-memory write
 // (demo + immediate read-back) and fire a best-effort write-through to the real
 // table when Supabase is on — the same fire-and-forget pattern as
-// persistDailyLog / createIncidentRecord, so the processor stays sync. Group-B
-// records (education events, filing, saved-time, restraints, health, jobs and
-// the route state-machine) have no live table yet and keep using db.* directly.
+// persistDailyLog / createIncidentRecord, so the processor stays sync. The still
+// -uncovered records (education events, filing, saved-time, restraints, jobs and
+// the route state-machine) have no live home yet and keep using db.* directly —
+// restraints waits on #106's cs_restraint_records reaching main.
 function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
   const e = db.chronology.create(d);
   void persistChronologyEntry(e);
@@ -101,6 +103,14 @@ function mirrorChildDailySummary(d: Parameters<typeof db.childDailySummaries.ups
 function mirrorAnnexAEvidence(d: Parameters<typeof db.annexAEvidenceQueue.upsert>[0]) {
   const e = db.annexAEvidenceQueue.upsert(d);
   void persistAnnexAEvidence(e);
+  return e;
+}
+// Phase 2: health record entries have no dedicated table — the mirror persists
+// to the generic_records catch-all (record_type "healthRecordEntries"), the same
+// home dal.healthRecordEntries now reads from on live, so the record round-trips.
+function mirrorHealthRecord(d: Parameters<typeof db.healthRecordEntries.create>[0]) {
+  const e = db.healthRecordEntries.create(d);
+  void persistHealthRecordEntry(e as unknown as Record<string, unknown>);
   return e;
 }
 
@@ -702,7 +712,7 @@ function processHealthRecord(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const record = db.healthRecordEntries.create({
+  const record = mirrorHealthRecord({
     child_id: event.child_id ?? "",
     date: event.event_date,
     record_type: "other",

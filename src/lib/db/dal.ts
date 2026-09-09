@@ -1410,9 +1410,17 @@ export const dal = {
     async findByChild(childId: string) { return db.contactPlans.findByChild(childId); },
   },
 
-  healthRecordEntries: {
-    async findAll() { return db.healthRecordEntries.getAll(); },
-  },
+  // Phase 2: healthRecordEntries has no dedicated table — it round-trips through
+  // the generic_records catch-all (record_type "healthRecordEntries") on live,
+  // the same home the care-events processor's best-effort write-through targets,
+  // so a health record created from a care event survives a cold start and
+  // surfaces in the health-intelligence engine instead of evaporating.
+  healthRecordEntries: genericTable(
+    () => db.healthRecordEntries.getAll(),
+    (data) => db.healthRecordEntries.create(data),
+    (id, data) => db.healthRecordEntries.update(id, data),
+    "healthRecordEntries",
+  ),
 
   homePolicies: {
     async findAll() { return db.homePolicies.getAll(); },
