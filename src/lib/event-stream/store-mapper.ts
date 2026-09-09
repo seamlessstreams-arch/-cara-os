@@ -122,8 +122,8 @@ export function mapStoreToEventInput(store: EventStoreShape): EventProjectorInpu
     })),
     lacReviews: (((store.lacReviews ?? []))).map((r) => ({
       id: r.id, child_id: r.child_id, date: d(r.date ?? r.created_at), review_type: r.review_type, iro: r.iro,
-      child_participation: r.child_participation, outcome: r.outcome, placement_stability: r.placement_stability,
-      care_plan_updated: r.care_plan_updated, recorded_by: r.recorded_by, home_id: r.home_id, created_at: r.created_at,
+      child_participation: r.child_participation, outcome: r.outcome ?? undefined, placement_stability: r.placement_stability ?? undefined,
+      care_plan_updated: r.care_plan_updated ?? undefined, recorded_by: r.recorded_by, home_id: r.home_id, created_at: r.created_at,
     })),
     notifiableEvents: (((store.notifiableEvents ?? []))).map((r) => ({
       id: r.id, date: d(r.date), event_type: r.event_type, child_id: r.child_id, summary: r.summary,

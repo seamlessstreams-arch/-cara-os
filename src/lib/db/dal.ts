@@ -33,7 +33,10 @@ import type {
   BehaviourEntry,
   KeyWorkingSession,
   MissingEpisode,
-  RiskAssessment, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
+  RiskAssessment,
+  LACReview,
+  LACReviewAttendee,
+  LACReviewAction, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
 } from "@/types/extended";
 
@@ -250,6 +253,130 @@ function riskRowsToAssessments(rows: Database["public"]["Tables"]["cs_risk_asses
   }
   out.sort((a, b) => b.assessed_date.localeCompare(a.assessed_date));
   return out;
+}
+
+// ── LAC reviews consolidation (4 of 6): cs_lac_reviews → LACReview ──────────
+// TWO services write this table in different vocabularies — lac-review-service
+// (IRO, six-member participation scale, domain-reviewed flags, an 8-member
+// outcome) and placement-service (chair, attendee names, plan changes,
+// boolean participation). Honest projection rules:
+//  • only COMPLETED rows project — a scheduled/cancelled/overdue row is not a
+//    held review, and projecting one would forge statutory compliance.
+//  • vocabulary translation is exact or least-claiming: "second" is the
+//    3-month review, which the intelligence union names first_review (its own
+//    label says "(3 months)"); too_young keeps the recorded FACT
+//    (did_not_participate) and loses only the reason; an unknown review_type
+//    label projects as "additional" rather than claim a statutory slot.
+//  • outcome: the recorded member translated (escalation_required survives —
+//    losing the one alarm member would under-alarm; plan_endorsed /
+//    permanence_confirmed / no_change all state the placement continues);
+//    where no outcome was recorded it is DERIVED from the completion record
+//    (plan changes → care_plan_amended, agreed actions → actions_agreed) or
+//    stays null — never defaulted.
+//  • attendees carry exactly what was recorded: role-only entries from the
+//    attendance booleans, name-only entries from the chair's list.
+//  • care_plan_updated: the jsonb columns have no '[]' default, so a null
+//    plan_changes means the question was never asked (→ null) while a
+//    recorded empty list from the completion form means no changes (→ false).
+//  • never invented: venue, child views text (the capture records only THAT
+//    views were recorded, not the words), placement_stability (no capture
+//    field judges it — stays null), recorded_by. A-side action strings carry
+//    completed: false — an action with no completion record is outstanding.
+const LAC_TYPE_MAP: Record<string, LACReview["review_type"]> = {
+  initial: "initial",
+  second: "first_review",
+  first_review: "first_review",
+  subsequent: "subsequent",
+  emergency: "emergency",
+  disruption: "disruption",
+  additional: "additional",
+  pre_discharge: "pre_discharge",
+};
+const LAC_PART_MAP: Record<string, LACReview["child_participation"]> = {
+  attended_spoke: "attended",
+  attended: "attended",
+  attended_advocate: "advocate_attended",
+  advocate_attended: "advocate_attended",
+  written_views: "views_submitted",
+  views_via_worker: "views_submitted",
+  views_submitted: "views_submitted",
+  did_not_participate: "did_not_participate",
+  too_young: "did_not_participate",
+};
+const LAC_OUTCOME_MAP: Record<string, NonNullable<LACReview["outcome"]>> = {
+  plan_endorsed: "placement_continues",
+  permanence_confirmed: "placement_continues",
+  no_change: "placement_continues",
+  placement_continues: "placement_continues",
+  plan_amended: "care_plan_amended",
+  care_plan_amended: "care_plan_amended",
+  placement_change: "placement_change",
+  return_home: "return_home",
+  further_assessment: "actions_agreed",
+  actions_agreed: "actions_agreed",
+  escalation_required: "escalation_required",
+};
+
+function lacRowToReview(r: Database["public"]["Tables"]["cs_lac_reviews"]["Row"]): LACReview | null {
+  if ((r.status ?? "scheduled") !== "completed" || !r.child_id) return null;
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+
+  const attendees: LACReviewAttendee[] = [];
+  if (r.parent_attended) attendees.push({ name: "", role: "Parent" });
+  if (r.social_worker_attended) attendees.push({ name: "", role: "Social Worker" });
+  if (r.key_worker_attended) attendees.push({ name: "", role: "Key Worker" });
+  for (const name of strings(r.attendees)) attendees.push({ name, role: "" });
+
+  const discussions: string[] = [];
+  if (r.placement_stability_discussed) discussions.push("Placement stability");
+  if (r.permanence_plan_reviewed) discussions.push("Permanence plan");
+  if (r.health_reviewed) discussions.push("Health");
+  if (r.education_reviewed) discussions.push("Education");
+
+  const actions: LACReviewAction[] = strings(r.actions_agreed).map((action) => ({
+    action, owner: "", due_date: "", completed: false,
+  }));
+  for (const j of Array.isArray(r.actions) ? r.actions : []) {
+    const o = (j ?? {}) as Record<string, unknown>;
+    actions.push({
+      action: String(o.action ?? ""),
+      owner: String(o.responsible ?? ""),
+      due_date: String(o.due_date ?? ""),
+      completed: o.completed === true,
+    });
+  }
+
+  const planChanges = Array.isArray(r.plan_changes) ? strings(r.plan_changes) : null;
+  const outcome: LACReview["outcome"] =
+    LAC_OUTCOME_MAP[r.outcome ?? ""]
+    ?? (planChanges && planChanges.length > 0 ? "care_plan_amended"
+      : actions.length > 0 ? "actions_agreed"
+      : null);
+
+  return {
+    id: r.id,
+    child_id: r.child_id,
+    date: r.review_date ?? r.created_at.slice(0, 10),
+    review_type: LAC_TYPE_MAP[r.review_type ?? ""] ?? "additional",
+    iro: r.iro_name ?? r.chaired_by ?? "",
+    venue: "",
+    attendees,
+    child_participation:
+      LAC_PART_MAP[r.child_participation ?? ""]
+      ?? (r.child_participated === true ? "attended" : "did_not_participate"),
+    child_views: "",
+    key_discussions: discussions,
+    recommendations: strings(r.recommendations),
+    outcome,
+    actions_agreed: actions,
+    next_review_date: r.next_review_due ?? r.next_review_date ?? "",
+    placement_stability: null,
+    care_plan_updated: planChanges ? planChanges.length > 0 : null,
+    notes: r.notes ?? "",
+    recorded_by: "",
+    home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
 }
 
 export const dal = {
@@ -1072,13 +1199,35 @@ export const dal = {
   },
 
   lacReviews: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<LACReview[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_lac_reviews").select("*").order("review_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.flatMap((r) => lacRowToReview(r) ?? []);
+      }
       let list = db.lacReviews.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.lacReviews.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.lacReviews.findByChild(childId); },
+    async findById(id: string): Promise<LACReview | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_lac_reviews").select("*").eq("id", id).single();
+        if (!error && data) return lacRowToReview(data);
+      }
+      return db.lacReviews.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<LACReview[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_lac_reviews").select("*").eq("child_id", childId).order("review_date", { ascending: false });
+        if (!error && data) return data.flatMap((r) => lacRowToReview(r) ?? []);
+      }
+      return db.lacReviews.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through the two services.
     async create(data: Parameters<typeof db.lacReviews.create>[0]) { return db.lacReviews.create(data); },
   },
 

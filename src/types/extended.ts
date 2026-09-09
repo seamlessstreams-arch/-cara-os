@@ -2197,8 +2197,8 @@ export interface OutcomeReview {
 // LAC REVIEWS — Looked-After Children statutory review meetings
 // ══════════════════════════════════════════════════════════════════════════════
 
-export type LACReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption";
-export type LACReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home";
+export type LACReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption" | "additional" | "pre_discharge";
+export type LACReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home" | "escalation_required";
 export type LACChildParticipation = "attended" | "views_submitted" | "advocate_attended" | "did_not_participate";
 export type LACPlacementStability = "stable" | "some_concerns" | "at_risk";
 
@@ -2226,11 +2226,11 @@ export interface LACReview {
   child_views: string;
   key_discussions: string[];
   recommendations: string[];
-  outcome: LACReviewOutcome;
+  outcome: LACReviewOutcome | null;
   actions_agreed: LACReviewAction[];
   next_review_date: string;
-  placement_stability: LACPlacementStability;
-  care_plan_updated: boolean;
+  placement_stability: LACPlacementStability | null;
+  care_plan_updated: boolean | null;
   notes: string;
   recorded_by: string;
   home_id: string;

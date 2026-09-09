@@ -2397,6 +2397,46 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["cs_risk_assessments"]["Insert"]>;
         Relationships: [];
       };
+      cs_lac_reviews: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          child_id: string | null;
+          child_name: string | null;
+          review_type: string | null;
+          review_date: string | null;
+          status: string | null;
+          next_review_due: string | null;
+          iro_name: string | null;
+          child_participation: string | null;
+          child_views_recorded: boolean | null;
+          parent_attended: boolean | null;
+          social_worker_attended: boolean | null;
+          key_worker_attended: boolean | null;
+          outcome: string | null;
+          recommendations: Json;
+          actions_agreed: Json;
+          placement_stability_discussed: boolean | null;
+          permanence_plan_reviewed: boolean | null;
+          health_reviewed: boolean | null;
+          education_reviewed: boolean | null;
+          within_timescale: boolean | null;
+          notes: string | null;
+          chaired_by: string | null;
+          attendees: Json;
+          outcomes: Json;
+          actions: Json;
+          child_participated: boolean | null;
+          plan_changes: Json;
+          next_review_date: string | null;
+          minutes_recorded: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["cs_lac_reviews"]["Row"], "id" | "created_at">> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["cs_lac_reviews"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [key: string]: never;
