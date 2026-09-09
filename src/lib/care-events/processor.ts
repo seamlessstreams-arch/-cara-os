@@ -16,7 +16,16 @@
 import { db } from "@/lib/db/store";
 import { generateId, todayStr } from "@/lib/utils";
 import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
-import { persistDailyLog, createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
+import {
+  persistDailyLog,
+  createIncidentRecord,
+  createTaskRecord,
+  persistChronologyEntry,
+  persistMissingEpisode,
+  persistNotification,
+  persistChildDailySummary,
+  persistAnnexAEvidence,
+} from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
 // ── Forms-as-views: spine write-through helpers ───────────────────────────────
@@ -61,6 +70,39 @@ const TIME_SAVED_BY_ROUTE: Partial<Record<RouteType, number>> = {
 // ── Home ID constant (seed data) ──────────────────────────────────────────────
 
 const HOME_ID = "home_oak";
+
+// ── Phase 1: create-in-store + best-effort Supabase mirror ──────────────────
+// The processor is a sync orchestrator; these wrappers keep the in-memory write
+// (demo + immediate read-back) and fire a best-effort write-through to the real
+// table when Supabase is on — the same fire-and-forget pattern as
+// persistDailyLog / createIncidentRecord, so the processor stays sync. Group-B
+// records (education events, filing, saved-time, restraints, health, jobs and
+// the route state-machine) have no live table yet and keep using db.* directly.
+function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
+  const e = db.chronology.create(d);
+  void persistChronologyEntry(e);
+  return e;
+}
+function mirrorMissingEpisode(d: Parameters<typeof db.missingEpisodes.create>[0]) {
+  const e = db.missingEpisodes.create(d);
+  void persistMissingEpisode(e);
+  return e;
+}
+function mirrorNotification(d: Parameters<typeof db.notifications.create>[0]) {
+  const e = db.notifications.create(d);
+  void persistNotification(e);
+  return e;
+}
+function mirrorChildDailySummary(d: Parameters<typeof db.childDailySummaries.upsert>[0]) {
+  const e = db.childDailySummaries.upsert(d);
+  void persistChildDailySummary(e);
+  return e;
+}
+function mirrorAnnexAEvidence(d: Parameters<typeof db.annexAEvidenceQueue.upsert>[0]) {
+  const e = db.annexAEvidenceQueue.upsert(d);
+  void persistAnnexAEvidence(e);
+  return e;
+}
 
 // ── Route processors ──────────────────────────────────────────────────────────
 
@@ -144,7 +186,7 @@ function processChildDailySummary(event: CareEvent): void {
       (avgMood !== null ? `Average mood: ${avgMood}/10. ` : "") +
       `Categories: ${categories.join(", ")}.`;
 
-  db.childDailySummaries.upsert({
+  mirrorChildDailySummary({
     home_id: HOME_ID,
     child_id: event.child_id,
     summary_date: event.event_date,
@@ -181,7 +223,7 @@ function processManagementOversight(event: CareEvent, route: CareEventRoute): vo
   // Send in-app notification to the manager (or all managers if no manager_id)
   const notifRecipient = event.manager_id ?? event.staff_id;
   try {
-    db.notifications.create({
+    mirrorNotification({
       home_id: HOME_ID,
       recipient_id: notifRecipient,
       title: "Management review required",
@@ -306,7 +348,7 @@ function processAnnexAEvidence(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const item = db.annexAEvidenceQueue.upsert({
+  const item = mirrorAnnexAEvidence({
     care_event_id: event.id,
     home_id: HOME_ID,
     annex_section: classification.annex_a_section,
@@ -356,7 +398,7 @@ function processFilingCabinet(event: CareEvent, route: CareEventRoute): void {
 
   // Also create a chronology entry as before (dual-filing)
   try {
-    db.chronology.create({
+    mirrorChronology({
       child_id: event.child_id,
       date: event.event_date,
       time: event.event_time ?? null,
@@ -525,7 +567,7 @@ function processMissingEpisode(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const episode = db.missingEpisodes.create({
+  const episode = mirrorMissingEpisode({
     child_id: event.child_id ?? "",
     home_id: HOME_ID,
     date_missing: event.event_date,
@@ -700,7 +742,7 @@ function processMedicationRecord(event: CareEvent, route: CareEventRoute): void 
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -794,7 +836,7 @@ function processFamilyContactRecord(event: CareEvent, route: CareEventRoute): vo
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -831,7 +873,7 @@ function processProfessionalContactRecord(event: CareEvent, route: CareEventRout
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -960,7 +1002,7 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
 
   // Also add to chronology
   try {
-    db.chronology.create({
+    mirrorChronology({
       child_id: event.child_id ?? "",
       date: event.event_date,
       time: event.event_time ?? null,
@@ -979,7 +1021,7 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
   // Urgent notification to manager
   try {
     const notifRecipient = event.manager_id ?? event.staff_id;
-    db.notifications.create({
+    mirrorNotification({
       home_id: HOME_ID,
       recipient_id: notifRecipient,
       title: "URGENT — Safeguarding concern logged",

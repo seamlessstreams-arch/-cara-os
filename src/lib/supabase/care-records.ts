@@ -15,6 +15,7 @@
 import { db } from "@/lib/db/store";
 import { isSupabaseEnabled, createServerClient } from "./server";
 import * as sq from "./queries";
+import { sbChildDailySummaries, sbAnnexAEvidenceQueue } from "./care-events";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -31,6 +32,81 @@ export async function persistDailyLog(entry: object): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { id: _id, ...rest } = entry as any;
     await sq.createDailyLogEntry(c, { ...rest, home_id: homeId() });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+// ── Care-events processor write-throughs (Phase 1) ──────────────────────────
+// The care-events processor is a SYNC orchestrator that writes the records it
+// routes to the in-memory store (demo + immediate read-back). These best-effort
+// mirrors carry those records to the real tables when Supabase is on — the same
+// fire-and-forget pattern as persistDailyLog / createIncidentRecord above, so
+// the processor stays sync and its 47 test call-sites are untouched. Group-B
+// records (education events, filing cabinet, saved-time, restraints, health,
+// the job queue and the route state-machine) have no live table yet and remain
+// in-memory — see the processor-persistence decision doc.
+
+/** Best-effort write-through of a chronology entry created by the sync processor. */
+export async function persistChronologyEntry(entry: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = entry as Record<string, unknown>;
+    await sq.createChronologyEntry(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createChronologyEntry>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a missing episode created by the sync processor. */
+export async function persistMissingEpisode(episode: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = episode as Record<string, unknown>;
+    await sq.createMissingEpisode(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createMissingEpisode>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a notification created by the sync processor. */
+export async function persistNotification(notif: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = notif as Record<string, unknown>;
+    await sq.createNotification(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createNotification>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a child daily summary upserted by the sync processor. */
+export async function persistChildDailySummary(summary: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const { id: _id, ...rest } = summary as Record<string, unknown>;
+    await sbChildDailySummaries.upsert(
+      { ...rest, home_id: homeId() } as Parameters<typeof sbChildDailySummaries.upsert>[0],
+    );
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of an Annex A evidence item upserted by the sync processor. */
+export async function persistAnnexAEvidence(item: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const { id: _id, ...rest } = item as Record<string, unknown>;
+    await sbAnnexAEvidenceQueue.upsert(
+      { ...rest, home_id: homeId() } as Parameters<typeof sbAnnexAEvidenceQueue.upsert>[0],
+    );
   } catch {
     // best-effort — the in-memory write already succeeded; never block the caller
   }
