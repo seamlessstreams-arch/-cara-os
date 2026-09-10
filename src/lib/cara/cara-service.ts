@@ -36,10 +36,10 @@ import type {
   CaraInvocationInput,
 } from "@/lib/cara/cara-types";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// Typed tables since the promotions — the client runs un-loosened;
+// tables still archived fall to the string overload.
+import type { SB } from "@/lib/supabase/loose-client";
+import type { Json } from "@/lib/supabase/types";
 
 // ─── Command registry ───────────────────────────────────────────────────────
 // Every CaraCommandId is wired here. Domain-specific engines (management
@@ -1491,10 +1491,10 @@ export async function invokeCaraCommand(
   // still call the provider and return the draft, but with persisted=false).
   const requestId = `cara_req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const supabaseRaw = createServerClient();
-  const supabase = supabaseRaw ? loose(supabaseRaw) : null;
+  const supabase = supabaseRaw ? supabaseRaw : null;
 
   if (supabase) {
-    await supabase.from("cara_requests").insert({
+    await (supabase.from("cara_requests") as SB).insert({
       id: requestId,
       organisation_id: args.organisationId ?? null,
       home_id: args.homeId ?? null,
@@ -1607,15 +1607,14 @@ export async function invokeCaraCommand(
   const outputId = `cara_out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   if (supabase) {
-    await supabase
-      .from("cara_requests")
+    await (supabase.from("cara_requests") as SB)
       .update({
         status: generation.llmUsed ? "complete" : "provider_failed",
         llm_used: generation.llmUsed,
       })
       .eq("id", requestId);
 
-    await supabase.from("cara_outputs").insert({
+    await (supabase.from("cara_outputs") as SB).insert({
       id: outputId,
       request_id: requestId,
       generated_text: cleanedText,
@@ -1692,15 +1691,25 @@ export async function writeAuditEvent(args: WriteAuditEventArgs): Promise<void> 
   if (!isSupabaseEnabled()) return;
   const supabaseRaw = createServerClient();
   if (!supabaseRaw) return;
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
+  // cara_audit_events went live with the reports-flow contract (queue #93) —
+  // the Ask-Cara writer's old request/output columns map onto target_*/details
+  // losslessly, and both verbs land in event_type AND action.
   await supabase.from("cara_audit_events").insert({
     id: `cara_aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    request_id: args.requestId,
-    output_id: args.outputId,
-    actor_user_id: args.actorUserId,
-    actor_role: args.actorRole ?? null,
+    organisation_id: process.env.SUPABASE_ORG_ID ?? "org_default",
+    home_id: process.env.SUPABASE_HOME_ID ?? "home_oak",
     event_type: args.eventType,
-    event_detail: args.eventDetail ?? {},
+    action: args.eventType,
+    actor_id: args.actorUserId,
+    actor_role: args.actorRole ?? "unknown",
+    target_type: args.outputId ? "cara_output" : args.requestId ? "cara_request" : null,
+    target_id: args.outputId ?? args.requestId ?? null,
+    details: {
+      ...(args.eventDetail ?? {}),
+      request_id: args.requestId ?? null,
+      output_id: args.outputId ?? null,
+    } as Json,
   });
 }
 
@@ -1736,7 +1745,7 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
   if (!supabaseRaw) {
     return { ok: false, status: 501, errorReason: "Persistence not configured" };
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const now = new Date().toISOString();
   const updates: Record<string, unknown> = { updated_at: now };
@@ -1768,8 +1777,7 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
       break;
   }
 
-  const { data: updated, error: updateError } = await supabase
-    .from("cara_outputs")
+  const { data: updated, error: updateError } = await (supabase.from("cara_outputs") as SB)
     .update(updates)
     .eq("id", args.outputId)
     .select()
@@ -1778,7 +1786,7 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
     return { ok: false, status: 500, errorReason: updateError.message };
   }
 
-  await supabase.from("cara_approvals").insert({
+  await (supabase.from("cara_approvals") as SB).insert({
     id: `cara_appr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     output_id: args.outputId,
     decision: args.decision,

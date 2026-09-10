@@ -10,9 +10,12 @@ import { checkCaraAccess, type CaraActor, type CaraRole } from "@/lib/cara/cara-
 import { writeAuditEvent } from "@/lib/cara/cara-service";
 import { readJsonBody } from "@/lib/http/read-json";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
+// Typed tables since the promotions — the client runs un-loosened;
+// tables still archived fall to the string overload.
+import type { SB } from "@/lib/supabase/loose-client";
+
+function homeIdDefault(): string {
+  return process.env.SUPABASE_HOME_ID ?? "home_oak";
 }
 
 interface TaskPayload {
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const createdTasks: Array<{ id: string; title: string; created: boolean }> = [];
 
@@ -95,7 +98,8 @@ export async function POST(req: NextRequest) {
     const { data: inserted, error: insertError } = await ((supabase.from("tasks")))
       .insert({
         id: taskId,
-        home_id: homeId ?? null,
+        // tasks.home_id is NOT NULL on live — a null here was a latent hard-reject.
+        home_id: homeId ?? homeIdDefault(),
         title: taskPayload.title.trim(),
         description: taskPayload.description ?? "",
         priority: taskPayload.priority ?? "medium",
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest) {
 
       // Link to Cara output if provided
       if (outputId) {
-        await ((supabase.from("cara_task_links"))).insert({
+        await (((supabase.from("cara_task_links") as SB))).insert({
           id: `cara_tl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           output_id: outputId,
           task_id: inserted.id,
