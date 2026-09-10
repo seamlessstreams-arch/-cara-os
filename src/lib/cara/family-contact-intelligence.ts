@@ -27,8 +27,10 @@ export interface FamilyContact {
   contactType: "face_to_face" | "phone" | "video" | "letter" | "supervised" | "unsupervised";
   familyMember: string;
   familyMemberRelation: "mother" | "father" | "sibling" | "grandparent" | "other_family";
-  planned: boolean;
-  occurred: boolean;
+  /** null = not recorded. A contact nobody wrote up neither happened nor
+   *  was cancelled — it is unknown, and must not be counted as either. */
+  planned: boolean | null;
+  occurred: boolean | null;
   cancelledBy?: "family" | "child" | "home" | "social_worker" | "court_order";
   cancellationReason?: string;
   duration?: number;               // minutes
@@ -204,9 +206,9 @@ function analyseMemberContacts(
     const relation = requirement?.relation ??
       memberContacts[0]?.familyMemberRelation ?? "other_family";
 
-    const planned = memberContacts.filter(c => c.planned);
-    const occurred = memberContacts.filter(c => c.occurred);
-    const cancelled = memberContacts.filter(c => !c.occurred && c.planned);
+    const planned = memberContacts.filter(c => c.planned === true);
+    const occurred = memberContacts.filter(c => c.occurred === true);
+    const cancelled = memberContacts.filter(c => c.occurred === false && c.planned === true);
 
     const cancelledByFamily = cancelled.filter(c => c.cancelledBy === "family").length;
     const cancelledByChild = cancelled.filter(c => c.cancelledBy === "child").length;
@@ -318,7 +320,7 @@ function getExpectedCount(frequency: ContactPlanRequirement["requiredFrequency"]
 // ── Quality Score ───────────────────────────────────────────────────────────
 
 function calculateQualityScore(contacts: FamilyContact[]): number {
-  const occurred = contacts.filter(c => c.occurred);
+  const occurred = contacts.filter(c => c.occurred === true);
   if (occurred.length === 0) return 50; // No data = neutral
 
   let score = 0;
@@ -344,7 +346,7 @@ function calculateQualityScore(contacts: FamilyContact[]): number {
 // ── Emotional Impact Score ──────────────────────────────────────────────────
 
 function calculateEmotionalImpactScore(contacts: FamilyContact[]): number {
-  const withMood = contacts.filter(c => c.occurred && c.childMoodBefore != null && c.childMoodAfter != null);
+  const withMood = contacts.filter(c => c.occurred === true && c.childMoodBefore != null && c.childMoodAfter != null);
   if (withMood.length === 0) return 50; // No data
 
   let positiveImpacts = 0;
@@ -374,8 +376,8 @@ function detectPatterns(
   memberAnalysis: MemberContactAnalysis[],
 ): ContactPattern[] {
   const patterns: ContactPattern[] = [];
-  const occurred = contacts.filter(c => c.occurred);
-  const cancelled = contacts.filter(c => !c.occurred && c.planned);
+  const occurred = contacts.filter(c => c.occurred === true);
+  const cancelled = contacts.filter(c => c.occurred === false && c.planned === true);
 
   // Pattern: Repeated family cancellations
   const familyCancellations = cancelled.filter(c => c.cancelledBy === "family");
@@ -447,7 +449,7 @@ function detectPatterns(
   }
 
   // Pattern: No sibling contact
-  const siblingReqs = contacts.filter(c => c.familyMemberRelation === "sibling" && c.occurred);
+  const siblingReqs = contacts.filter(c => c.familyMemberRelation === "sibling" && c.occurred === true);
   const hasSiblingReq = memberAnalysis.some(m => m.relation === "sibling");
   if (hasSiblingReq && siblingReqs.length === 0) {
     patterns.push({
@@ -521,7 +523,7 @@ function identifyConcerns(
   }
 
   // Post-contact incidents
-  const incidentContacts = contacts.filter(c => c.occurred && (c.incidentDuring || c.incidentAfter));
+  const incidentContacts = contacts.filter(c => c.occurred === true && (c.incidentDuring || c.incidentAfter));
   if (incidentContacts.length >= 3) {
     concerns.push({
       severity: "significant",
@@ -533,7 +535,7 @@ function identifyConcerns(
 
   // Significant mood drops
   const moodDrops = contacts.filter(c =>
-    c.occurred && c.childMoodBefore != null && c.childMoodAfter != null &&
+    c.occurred === true && c.childMoodBefore != null && c.childMoodAfter != null &&
     (c.childMoodAfter - c.childMoodBefore) <= -2
   );
   if (moodDrops.length >= 3) {
@@ -577,11 +579,11 @@ function assessRegulatoryCompliance(
   });
 
   // Reg 7(2)(a): Promote contact in child's best interests
-  const hasPositiveContacts = contacts.some(c => c.occurred && c.quality === "positive");
+  const hasPositiveContacts = contacts.some(c => c.occurred === true && c.quality === "positive");
   flags.push({
     regulation: "CHR 2015 Reg 7(2)(a)",
     description: "Promote contact unless not in best interests — evidence of quality contact facilitation",
-    status: hasPositiveContacts ? "met" : contacts.some(c => c.occurred) ? "partially_met" : "not_met",
+    status: hasPositiveContacts ? "met" : contacts.some(c => c.occurred === true) ? "partially_met" : "not_met",
   });
 
   // Children Act 1989 Schedule 2, Para 15: Sibling contact
