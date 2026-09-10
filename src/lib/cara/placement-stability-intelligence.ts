@@ -71,17 +71,17 @@ export interface PlacementStabilityInput {
   incidentsLast30Days: number;
   incidentsTrend: "increasing" | "stable" | "decreasing";
   missingEpisodesLast30Days: number;
-  childFeelsSettled: boolean;
-  childWantsToStay: boolean;
-  childHasRoomPersonalised: boolean;
-  regularRoutineEstablished: boolean;
-  positiveStaffRelationships: boolean;
-  peerRelationshipsGood: boolean;
-  placementReviewCurrent: boolean;
+  childFeelsSettled: boolean | null;
+  childWantsToStay: boolean | null;
+  childHasRoomPersonalised: boolean | null;
+  regularRoutineEstablished: boolean | null;
+  positiveStaffRelationships: boolean | null;
+  peerRelationshipsGood: boolean | null;
+  placementReviewCurrent: boolean | null;
   placementReviewLastDate?: string;
-  matchingAssessmentDone: boolean;
-  impactRiskAssessmentDone: boolean;
-  contingencyPlanInPlace: boolean;
+  matchingAssessmentDone: boolean | null;
+  impactRiskAssessmentDone: boolean | null;
+  contingencyPlanInPlace: boolean | null;
   stayingPutOptionExplored: boolean;
 }
 
@@ -120,7 +120,7 @@ export interface StabilityStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -220,8 +220,9 @@ function assessDisruptionRisk(input: PlacementStabilityInput): "low" | "medium" 
   if (input.missingEpisodesLast30Days >= 3) points += 2;
   else if (input.missingEpisodesLast30Days >= 1) points += 1;
 
-  // Child doesn't want to stay
-  if (!input.childWantsToStay) points += 2;
+  // Child doesn't want to stay. A child who has never been asked is not a
+  // child who said no — adding risk points for silence is a false red.
+  if (input.childWantsToStay === false) points += 2;
 
   // Short placement (still settling)
   if (input.currentPlacementDays < 30) points += 1;
@@ -286,7 +287,7 @@ function scoreDisruptionRisk(input: PlacementStabilityInput): number {
   score -= Math.min(20, input.missingEpisodesLast30Days * 8);
 
   // Child not wanting to stay
-  if (!input.childWantsToStay) score -= 15;
+  if (input.childWantsToStay === false) score -= 15;
 
   return Math.max(0, Math.min(100, score));
 }
@@ -294,12 +295,12 @@ function scoreDisruptionRisk(input: PlacementStabilityInput): number {
 function scoreBelonging(input: PlacementStabilityInput): number {
   let score = 0;
 
-  if (input.childFeelsSettled) score += 25;
-  if (input.childWantsToStay) score += 20;
-  if (input.childHasRoomPersonalised) score += 15;
-  if (input.regularRoutineEstablished) score += 15;
-  if (input.positiveStaffRelationships) score += 15;
-  if (input.peerRelationshipsGood) score += 10;
+  if (input.childFeelsSettled === true) score += 25;
+  if (input.childWantsToStay === true) score += 20;
+  if (input.childHasRoomPersonalised === true) score += 15;
+  if (input.regularRoutineEstablished === true) score += 15;
+  if (input.positiveStaffRelationships === true) score += 15;
+  if (input.peerRelationshipsGood === true) score += 10;
 
   return Math.min(100, score);
 }
@@ -307,10 +308,10 @@ function scoreBelonging(input: PlacementStabilityInput): number {
 function scorePlanning(input: PlacementStabilityInput): number {
   let score = 0;
 
-  if (input.placementReviewCurrent) score += 25;
-  if (input.matchingAssessmentDone) score += 25;
-  if (input.impactRiskAssessmentDone) score += 20;
-  if (input.contingencyPlanInPlace) score += 15;
+  if (input.placementReviewCurrent === true) score += 25;
+  if (input.matchingAssessmentDone === true) score += 25;
+  if (input.impactRiskAssessmentDone === true) score += 20;
+  if (input.contingencyPlanInPlace === true) score += 15;
   if (input.stayingPutOptionExplored) score += 15;
 
   return Math.min(100, score);
@@ -356,7 +357,7 @@ function identifyConcerns(
   }
 
   // Child doesn't feel settled
-  if (!input.childFeelsSettled && input.currentPlacementDays > 60) {
+  if (input.childFeelsSettled === false && input.currentPlacementDays > 60) {
     concerns.push({
       severity: "significant",
       category: "belonging",
@@ -365,7 +366,7 @@ function identifyConcerns(
   }
 
   // Child doesn't want to stay
-  if (!input.childWantsToStay) {
+  if (input.childWantsToStay === false) {
     concerns.push({
       severity: "significant",
       category: "voice",
@@ -383,7 +384,7 @@ function identifyConcerns(
   }
 
   // No matching assessment
-  if (!input.matchingAssessmentDone) {
+  if (input.matchingAssessmentDone === false) {
     concerns.push({
       severity: "moderate",
       category: "matching",
@@ -392,7 +393,7 @@ function identifyConcerns(
   }
 
   // No contingency plan
-  if (!input.contingencyPlanInPlace && (riskLevel === "high" || riskLevel === "very_high")) {
+  if (input.contingencyPlanInPlace === false && (riskLevel === "high" || riskLevel === "very_high")) {
     concerns.push({
       severity: "significant",
       category: "planning",
@@ -401,7 +402,7 @@ function identifyConcerns(
   }
 
   // No placement review
-  if (!input.placementReviewCurrent) {
+  if (input.placementReviewCurrent === false) {
     concerns.push({
       severity: "moderate",
       category: "oversight",
@@ -441,21 +442,21 @@ function identifyStrengths(
     });
   }
 
-  if (input.childFeelsSettled && input.childWantsToStay) {
+  if (input.childFeelsSettled === true && input.childWantsToStay === true) {
     strengths.push({
       category: "belonging",
       description: "Child feels settled and wants to remain — sense of belonging",
     });
   }
 
-  if (input.positiveStaffRelationships && input.peerRelationshipsGood) {
+  if (input.positiveStaffRelationships === true && input.peerRelationshipsGood === true) {
     strengths.push({
       category: "relationships",
       description: "Positive relationships with staff and peers",
     });
   }
 
-  if (input.childHasRoomPersonalised && input.regularRoutineEstablished) {
+  if (input.childHasRoomPersonalised === true && input.regularRoutineEstablished === true) {
     strengths.push({
       category: "home",
       description: "Personalised space and established routine — feels like home",
@@ -495,7 +496,7 @@ function assessRegulatory(
   const flags: RegulatoryFlag[] = [];
 
   // CHR 2015 Reg 11 — Care planning / avoiding disruption
-  const stabilityGood = riskLevel === "low" && input.placementReviewCurrent;
+  const stabilityGood = riskLevel === "low" && input.placementReviewCurrent === true;
   flags.push({
     regulation: "CHR 2015 Reg 11",
     area: "Placement Stability",
@@ -509,14 +510,16 @@ function assessRegulatory(
   flags.push({
     regulation: "CHR 2015 Reg 12",
     area: "Matching & Suitability",
-    status: input.matchingAssessmentDone ? "met" : "not_met",
-    detail: input.matchingAssessmentDone
+    status: input.matchingAssessmentDone === true ? "met"
+      : input.matchingAssessmentDone === null ? "not_evidenced"
+      : "not_met",
+    detail: input.matchingAssessmentDone === true
       ? "Matching assessment completed"
       : "No matching assessment — placement suitability not formally evidenced",
   });
 
   // SCCIF — Stability and permanence
-  const permanenceGood = input.childFeelsSettled && input.currentPlacementDays >= 90;
+  const permanenceGood = input.childFeelsSettled === true && input.currentPlacementDays >= 90;
   flags.push({
     regulation: "SCCIF",
     area: "Stability",
@@ -530,8 +533,10 @@ function assessRegulatory(
   flags.push({
     regulation: "s22G CA 1989",
     area: "Sufficiency",
-    status: input.contingencyPlanInPlace || riskLevel === "low" ? "met" : "partially_met",
-    detail: input.contingencyPlanInPlace
+    status: input.contingencyPlanInPlace === true || riskLevel === "low" ? "met"
+      : input.contingencyPlanInPlace === null ? "not_evidenced"
+      : "partially_met",
+    detail: input.contingencyPlanInPlace === true
       ? "Contingency planning in place"
       : "Contingency plan not in place should disruption occur",
   });
@@ -552,23 +557,23 @@ function buildRecommendations(
     recs.push("URGENT: Convene placement stability meeting — multi-agency response needed");
   }
 
-  if (!input.contingencyPlanInPlace && (riskLevel === "high" || riskLevel === "very_high")) {
+  if (input.contingencyPlanInPlace === false && (riskLevel === "high" || riskLevel === "very_high")) {
     recs.push("Develop contingency plan immediately in case of disruption");
   }
 
-  if (!input.matchingAssessmentDone) {
+  if (input.matchingAssessmentDone === false) {
     recs.push("Complete matching assessment to evidence placement suitability");
   }
 
-  if (!input.placementReviewCurrent) {
+  if (input.placementReviewCurrent === false) {
     recs.push("Schedule placement review — overdue");
   }
 
-  if (!input.childFeelsSettled && input.currentPlacementDays > 30) {
+  if (input.childFeelsSettled === false && input.currentPlacementDays > 30) {
     recs.push("Explore why child does not feel settled — consider environmental or relational factors");
   }
 
-  if (!input.childWantsToStay) {
+  if (input.childWantsToStay === false) {
     recs.push("Record child's wishes about placement — ensure views inform planning");
   }
 
@@ -580,11 +585,11 @@ function buildRecommendations(
     recs.push("Address missing episodes as placement disruption risk factor");
   }
 
-  if (!input.childHasRoomPersonalised && input.currentPlacementDays > 14) {
+  if (input.childHasRoomPersonalised === false && input.currentPlacementDays > 14) {
     recs.push("Support child to personalise their room — builds sense of belonging");
   }
 
-  if (!input.impactRiskAssessmentDone) {
+  if (input.impactRiskAssessmentDone === false) {
     recs.push("Complete impact risk assessment for placement group");
   }
 
