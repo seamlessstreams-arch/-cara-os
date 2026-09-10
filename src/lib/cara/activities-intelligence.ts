@@ -40,7 +40,7 @@ export interface Activity {
   name: string;
   category: ActivityCategory;
   duration: number; // minutes
-  childChose: boolean;
+  childChose: boolean | null;
   childEngagement: "high" | "moderate" | "low" | "refused";
   communityBased: boolean; // outside the home, in the community
   peerInteraction: boolean; // involves non-LAC peers
@@ -54,13 +54,13 @@ export interface ActivityInput {
   childName: string;
   age: number;
   activities: Activity[];
-  hobbiesIdentified: boolean;
-  interestsExplored: boolean;
-  activityBudgetAvailable: boolean;
+  hobbiesIdentified: boolean | null;
+  interestsExplored: boolean | null;
+  activityBudgetAvailable: boolean | null;
   memberOfClubOrGroup: boolean;
   attendsCommunityActivities: boolean;
   hasAchievementsRecorded: boolean;
-  pocketMoneyForActivities: boolean;
+  pocketMoneyForActivities: boolean | null;
   restrictedFromActivities: boolean;
   restrictionReason?: string;
 }
@@ -137,7 +137,7 @@ export function analyseActivities(input: ActivityInput): ActivityAssessment {
     ? Math.round((peerActivities.length / totalActivities) * 100) / 100
     : null;
 
-  const childChoseActivities = activities.filter(a => a.childChose);
+  const childChoseActivities = activities.filter(a => a.childChose === true);
   const childChoiceRate = totalActivities > 0
     ? Math.round((childChoseActivities.length / totalActivities) * 100) / 100
     : null;
@@ -362,7 +362,7 @@ function identifyConcerns(
   }
 
   // Hobbies not identified
-  if (!input.hobbiesIdentified) {
+  if (input.hobbiesIdentified === false) {
     concerns.push({
       severity: "moderate",
       category: "interests",
@@ -371,7 +371,7 @@ function identifyConcerns(
   }
 
   // No budget
-  if (!input.activityBudgetAvailable) {
+  if (input.activityBudgetAvailable === false) {
     concerns.push({
       severity: "moderate",
       category: "access",
@@ -540,7 +540,7 @@ function buildRecommendations(
     recs.push("Give child more choice in activities — explore personal interests");
   }
 
-  if (!input.hobbiesIdentified) {
+  if (input.hobbiesIdentified === false) {
     recs.push("Identify hobbies and interests to personalise activity programme");
   }
 
