@@ -33,6 +33,7 @@ export async function GET() {
     direction: e.direction,
     reward_type: e.reward_type ?? null,
     sanction_type: e.sanction_type ?? null,
+    // absence-ok: dead default — SanctionRewardRecord.proportionate is a required boolean (verified 2026-08-31), so the fallback is unreachable
     proportionate: e.proportionate ?? true,
     recorded_by: e.recorded_by,
     created_at: e.created_at,
