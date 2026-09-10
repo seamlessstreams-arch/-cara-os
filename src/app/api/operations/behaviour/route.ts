@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -86,6 +87,16 @@ export async function POST(request: NextRequest) {
 
     if (!homeId) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
+    }
+
+    // A behaviour entry that records a physical intervention must say whether
+    // it injured anyone. `?? false` answered that for the recorder, writing
+    // "no injuries" onto a restraint nobody had been asked about. Only required
+    // when a physical intervention is actually being recorded — a de-escalated
+    // incident has no injuries to declare.
+    if (action === "create_entry" && body.physicalIntervention === true) {
+      const __claims = requireFields(body, ["piInjuriesChild", "piInjuriesStaff"]);
+      if (__claims) return __claims;
     }
 
     if (!isSupabaseEnabled()) {
