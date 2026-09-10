@@ -94,7 +94,7 @@ export interface StaffSupportPlanRecord {
   staff_agreed: boolean;
   review_date_set: boolean;
   approved_by_senior: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -417,7 +417,7 @@ export async function createSupportPlan(
       staff_agreed: input.staffAgreed ?? false,
       review_date_set: input.reviewDateSet ?? false,
       approved_by_senior: input.approvedBySenior ?? false,
-      recorded_promptly: input.recordedPromptly ?? true,
+      recorded_promptly: input.recordedPromptly ?? null,
       issues_found: input.issuesFound ?? [],
       actions_taken: input.actionsTaken ?? [],
       next_review_date: input.nextReviewDate ?? null,

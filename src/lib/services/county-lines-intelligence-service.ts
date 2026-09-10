@@ -137,14 +137,14 @@ export interface CountyLinesIntelligenceRow {
   intelligence_type: IntelligenceType;
   risk_level: RiskLevel;
   indicators_present: string;
-  travel_patterns_noted: boolean;
-  new_possessions_noted: boolean;
-  phone_activity_concerns: boolean;
-  missing_episodes_linked: boolean;
-  peer_association_concerns: boolean;
-  drug_related_concerns: boolean;
-  debt_bondage_suspected: boolean;
-  violence_intimidation_present: boolean;
+  travel_patterns_noted: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  new_possessions_noted: boolean | null;
+  phone_activity_concerns: boolean | null;
+  missing_episodes_linked: boolean | null;
+  peer_association_concerns: boolean | null;
+  drug_related_concerns: boolean | null;
+  debt_bondage_suspected: boolean | null;
+  violence_intimidation_present: boolean | null;
   nrm_referral_made: boolean;
   nrm_referral_date: string | null;
   police_notified: boolean;
@@ -700,14 +700,14 @@ export async function createCountyLinesIntelligence(input: {
       intelligence_type: input.intelligenceType,
       risk_level: input.riskLevel,
       indicators_present: input.indicatorsPresent,
-      travel_patterns_noted: input.travelPatternsNoted ?? false,
-      new_possessions_noted: input.newPossessionsNoted ?? false,
-      phone_activity_concerns: input.phoneActivityConcerns ?? false,
-      missing_episodes_linked: input.missingEpisodesLinked ?? false,
-      peer_association_concerns: input.peerAssociationConcerns ?? false,
-      drug_related_concerns: input.drugRelatedConcerns ?? false,
-      debt_bondage_suspected: input.debtBondageSuspected ?? false,
-      violence_intimidation_present: input.violenceIntimidationPresent ?? false,
+      travel_patterns_noted: input.travelPatternsNoted ?? null,
+      new_possessions_noted: input.newPossessionsNoted ?? null,
+      phone_activity_concerns: input.phoneActivityConcerns ?? null,
+      missing_episodes_linked: input.missingEpisodesLinked ?? null,
+      peer_association_concerns: input.peerAssociationConcerns ?? null,
+      drug_related_concerns: input.drugRelatedConcerns ?? null,
+      debt_bondage_suspected: input.debtBondageSuspected ?? null,
+      violence_intimidation_present: input.violenceIntimidationPresent ?? null,
       nrm_referral_made: input.nrmReferralMade ?? false,
       nrm_referral_date: input.nrmReferralDate ?? null,
       police_notified: input.policeNotified ?? false,

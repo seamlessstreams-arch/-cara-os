@@ -67,18 +67,18 @@ export interface WorkExperienceEmploymentRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  child_consented: boolean;
-  age_appropriate: boolean;
-  risk_assessed: boolean;
-  safeguarding_checked: boolean;
-  dbs_verified: boolean;
-  insurance_confirmed: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  pathway_plan_updated: boolean;
-  transport_arranged: boolean;
-  recorded_promptly: boolean;
+  child_consented: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate: boolean | null;
+  risk_assessed: boolean | null;
+  safeguarding_checked: boolean | null;
+  dbs_verified: boolean | null;
+  insurance_confirmed: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  pathway_plan_updated: boolean | null;
+  transport_arranged: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -238,45 +238,45 @@ export function identifyWorkExperienceAlerts(
   }
 
   // No safeguarding check
-  const noSafeguarding = records.filter((r) => !r.safeguarding_checked).length;
+  const noSafeguarding = records.filter((r) => r.safeguarding_checked !== true).length;
   if (noSafeguarding >= 1) {
     alerts.push({
       type: "no_safeguarding_check",
       severity: "high",
-      message: `${noSafeguarding} ${noSafeguarding === 1 ? "placement has" : "placements have"} no safeguarding check — all placements must be safeguarded`,
+      message: `${noSafeguarding} ${noSafeguarding === 1 ? "placement has" : "placements have"} no safeguarding check evidenced — all placements must be safeguarded`,
       id: "no_safeguarding_check",
     });
   }
 
   // No DBS verification
-  const noDbs = records.filter((r) => !r.dbs_verified).length;
+  const noDbs = records.filter((r) => r.dbs_verified !== true).length;
   if (noDbs >= 1) {
     alerts.push({
       type: "no_dbs_verified",
       severity: "high",
-      message: `${noDbs} ${noDbs === 1 ? "placement has" : "placements have"} DBS not verified — employer checks essential`,
+      message: `${noDbs} ${noDbs === 1 ? "placement has" : "placements have"} no DBS verification evidenced — employer checks essential`,
       id: "no_dbs_verified",
     });
   }
 
   // No risk assessment
-  const noRisk = records.filter((r) => !r.risk_assessed).length;
+  const noRisk = records.filter((r) => r.risk_assessed !== true).length;
   if (noRisk >= 2) {
     alerts.push({
       type: "no_risk_assessment",
       severity: "medium",
-      message: `${noRisk} placements without risk assessment — workplace safety must be evaluated`,
+      message: `${noRisk} placements without an evidenced risk assessment — workplace safety must be evaluated`,
       id: "no_risk_assessment",
     });
   }
 
   // Pathway plan not updated
-  const noPathway = records.filter((r) => !r.pathway_plan_updated).length;
+  const noPathway = records.filter((r) => r.pathway_plan_updated !== true).length;
   if (noPathway >= 2) {
     alerts.push({
       type: "no_pathway_plan",
       severity: "medium",
-      message: `${noPathway} placements without pathway plan updated — ensure transition planning reflects work experience`,
+      message: `${noPathway} placements without an evidenced pathway plan update — ensure transition planning reflects work experience`,
       id: "no_pathway_plan",
     });
   }
@@ -350,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      child_consented: payload.childConsented ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      risk_assessed: payload.riskAssessed ?? true,
-      safeguarding_checked: payload.safeguardingChecked ?? true,
-      dbs_verified: payload.dbsVerified ?? true,
-      insurance_confirmed: payload.insuranceConfirmed ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      pathway_plan_updated: payload.pathwayPlanUpdated ?? true,
-      transport_arranged: payload.transportArranged ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_consented: payload.childConsented ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      risk_assessed: payload.riskAssessed ?? null,
+      safeguarding_checked: payload.safeguardingChecked ?? null,
+      dbs_verified: payload.dbsVerified ?? null,
+      insurance_confirmed: payload.insuranceConfirmed ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      pathway_plan_updated: payload.pathwayPlanUpdated ?? null,
+      transport_arranged: payload.transportArranged ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

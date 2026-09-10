@@ -129,3 +129,24 @@ describe("work-experience-employment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  const { computeWorkExperienceMetrics: metrics, identifyWorkExperienceAlerts: alertsOf } = _testing;
+
+  it("counts an unrecorded safeguarding check in the gap alert, worded as unevidenced", () => {
+    const alerts = alertsOf([makeRecord({ safeguarding_checked: null })]);
+    const alert = alerts.find((a) => a.type === "no_safeguarding_check");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+
+  it("raises no safeguarding gap when the check is recorded as done", () => {
+    const alerts = alertsOf([makeRecord({ safeguarding_checked: true })]);
+    expect(alerts.some((a) => a.type === "no_safeguarding_check")).toBe(false);
+  });
+
+  it("does not dilute the DBS rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `w-${i}`, dbs_verified: v }));
+    expect(metrics(rows).dbs_verified_rate).toBe(100);
+  });
+});
