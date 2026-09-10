@@ -125,3 +125,20 @@ describe("staff-debrief-support-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded timely debrief in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyStaffDebriefAlerts([makeRecord({ timely_debrief: null })]);
+    const alert = alerts.find((a) => a.type === "not_timely");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no timeliness gap when the debrief is recorded as timely", () => {
+    const alerts = identifyStaffDebriefAlerts([makeRecord({ timely_debrief: true })]);
+    expect(alerts.some((a) => a.type === "not_timely")).toBe(false);
+  });
+  it("does not dilute the timely-debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, timely_debrief: v }));
+    expect(computeStaffDebriefMetrics(rows).timely_debrief_rate).toBe(100);
+  });
+});
