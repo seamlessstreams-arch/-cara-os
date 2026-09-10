@@ -130,3 +130,20 @@ describe("consent-capacity-monitoring-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded decision-respected judgement in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyConsentCapacityAlerts([makeRecord({ decision_respected: null })]);
+    const alert = alerts.find((a) => a.type === "decision_not_respected");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no decision gap when respect is recorded", () => {
+    const alerts = identifyConsentCapacityAlerts([makeRecord({ decision_respected: true })]);
+    expect(alerts.some((a) => a.type === "decision_not_respected")).toBe(false);
+  });
+  it("does not dilute the decision-respected rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, decision_respected: v }));
+    expect(computeConsentCapacityMetrics(rows).decision_respected_rate).toBe(100);
+  });
+});
