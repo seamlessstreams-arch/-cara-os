@@ -29,7 +29,7 @@ import {
 interface StatutoryCheck {
   type: string;
   description: string;
-  status: "met" | "overdue" | "not_applicable" | "due_soon";
+  status: "met" | "overdue" | "not_applicable" | "due_soon" | "late";
   lastDate?: string;
   nextDue?: string;
   daysOverdue?: number;
@@ -69,6 +69,7 @@ const CHECK_STATUS_ICON: Record<string, { icon: React.ElementType; color: string
   overdue: { icon: XCircle, color: "text-red-500" },
   due_soon: { icon: Clock, color: "text-amber-500" },
   not_applicable: { icon: Minus, color: "text-gray-400" },
+  late: { icon: AlertTriangle, color: "text-amber-600" },
 };
 
 export function HealthAppointmentsIntelligenceCard({ childId }: HealthAppointmentsIntelligenceCardProps) {
@@ -127,7 +128,9 @@ export function HealthAppointmentsIntelligenceCard({ childId }: HealthAppointmen
         {/* Statutory checks grid */}
         <div className="grid grid-cols-3 gap-2">
           {data.statutoryChecks.slice(0, 6).map((check) => {
-            const statusInfo = CHECK_STATUS_ICON[check.status] ?? CHECK_STATUS_ICON.met;
+            // An unrecognised status is unknown, not met — falling back to the
+            // green tick would state compliance the payload never claimed.
+            const statusInfo = CHECK_STATUS_ICON[check.status] ?? CHECK_STATUS_ICON.not_applicable;
             const Icon = statusInfo.icon;
             return (
               <div key={check.type} className="flex items-center gap-1.5 py-1">

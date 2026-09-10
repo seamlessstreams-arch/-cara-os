@@ -110,7 +110,7 @@ async function fetchHealthData(sb: NonNullable<ReturnType<typeof createServerCli
     sdqScore: healthRecord?.sdq_score ?? undefined,
     immunisationsUpToDate: healthRecord?.immunisations_up_to_date ?? false,
     appointments,
-    registeredWithGP: healthRecord?.registered_gp ?? true,
+    registeredWithGP: healthRecord?.registered_gp ?? null,
     registeredWithDentist: healthRecord?.registered_dentist ?? false,
     hasHealthPlan: healthRecord?.has_health_plan ?? false,
     healthPlanUpToDate: healthRecord?.health_plan_up_to_date ?? false,
