@@ -20,7 +20,8 @@ import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
+import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
 // was collapsing the union — so every consumer had to annotate `(x: any)`.
@@ -476,6 +477,29 @@ function restraintRowToRecord(r: Database["public"]["Tables"]["cs_restraint_reco
     medical_check_completed: null,
     recorded_by: r.created_by ?? "",
     created_at: r.created_at,
+  };
+}
+
+// Phase 3: cs_education_events row → EducationRecord (the event-log intelligence
+// shape). Columns map 1:1; record_type falls back to the generic "concern"
+// (never an off-rolling type) and status to "open" (the unresolved, chase-it
+// state) only if a malformed row omitted them — the recorder's answer otherwise.
+function eduEventRowToRecord(r: Database["public"]["Tables"]["cs_education_events"]["Row"]): EducationRecord {
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    record_type: (r.record_type ?? "concern") as EducationRecord["record_type"],
+    title: r.title ?? "",
+    date: r.date ?? r.created_at.slice(0, 10),
+    school: r.school ?? undefined,
+    details: r.details ?? undefined,
+    outcome: r.outcome ?? undefined,
+    follow_up_date: r.follow_up_date ?? undefined,
+    attendance_status: (r.attendance_status ?? null) as EducationRecord["attendance_status"],
+    linked_pep: r.linked_pep ?? undefined,
+    staff_id: r.staff_id ?? "",
+    status: (r.status ?? "open") as EducationRecord["status"],
+    home_id: r.home_id ?? undefined,    created_at: r.created_at,
   };
 }
 
@@ -1331,27 +1355,83 @@ export const dal = {
     async create(data: Parameters<typeof db.lacReviews.create>[0]) { return db.lacReviews.create(data); },
   },
 
-  // ── Education consolidation (6 of 6) — the ONE brief pick that does NOT
-  // consolidate here. store.educationRecords is an education EVENT LOG
-  // (suspensions, managed moves, PEP meetings — the off-rolling scrutiny
-  // triggers), a different model from cs_education_records, which is a
-  // per-child status PROFILE read directly by education-service. No honest
-  // projection bridges a profile back into dated typed events, and the event
-  // log's only live-shaped writer is the care-events processor, which is
-  // sync-over-store BY DESIGN. So this arm stays demo-only until that spine
-  // can persist; the education CAPTURE surface (4 tables) is promoted and
-  // typed under #108, exercised by the write-contract proofs, not here.
+  // Phase 3: the education EVENT LOG goes live via cs_education_events (distinct
+  // from #108's cs_education_records profile). All reads round-trip through the
+  // dedicated table on live, so the off-rolling triggers and education
+  // intelligence see events created from care events instead of an empty store.
   educationRecords: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<EducationRecord[]> {
+      const c = sb();
+      if (c) return (await sq.getEducationEvents(c, homeId(), filters?.child_id)).map(eduEventRowToRecord);
       let list = db.educationRecords.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.educationRecords.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.educationRecords.findByChild(childId); },
-    async create(data: Parameters<typeof db.educationRecords.create>[0]) { return db.educationRecords.create(data); },
-    async update(id: string, data: Parameters<typeof db.educationRecords.update>[1]) { return db.educationRecords.update(id, data); },
+    async findById(id: string): Promise<EducationRecord | null> {
+      const c = sb();
+      if (c) {
+        try { const r = await sq.getEducationEventById(c, id); return r ? eduEventRowToRecord(r) : null; } catch { return null; }
+      }
+      return db.educationRecords.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<EducationRecord[]> {
+      const c = sb();
+      if (c) return (await sq.getEducationEvents(c, homeId(), childId)).map(eduEventRowToRecord);
+      return db.educationRecords.findByChild(childId);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any): Promise<EducationRecord> {
+      const c = sb();
+      if (c) {
+        const created = await sq.createEducationEvent(c, { ...data, home_id: homeId() });
+        if (!created) throw new Error("cs_education_events insert returned no row");
+        return eduEventRowToRecord(created);
+      }
+      return db.educationRecords.create(data);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any): Promise<EducationRecord | null> {
+      const c = sb();
+      if (c) { const r = await sq.updateEducationEvent(c, id, data); return r ? eduEventRowToRecord(r) : null; }
+      return db.educationRecords.update(id, data);
+    },
   },
+
+  // Phase 4: filing cabinet + saved-time metrics have no dedicated table and are
+  // simply-read idempotent records — they persist to the generic_records
+  // catch-all (the processor's best-effort write-through target), and these read
+  // arms reconstruct the item verbatim from the record `data`. The sync primary
+  // surfaces (the filing-cabinet index, the saved-time dashboard) call these on
+  // live via their async loaders; the inspection snapshot keeps a sync store read.
+  filingCabinet: {
+    async findByHome(homeId_: string): Promise<FilingCabinetItem[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "filingCabinet");
+        return rows.map((r) => ({ id: r.id, ...(r.data as Record<string, unknown>), created_at: r.created_at } as unknown as FilingCabinetItem));
+      }
+      return db.filingCabinet.findByHome(homeId_);
+    },
+    async findByCareEvent(careEventId: string): Promise<FilingCabinetItem[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "filingCabinet");
+        return rows
+          .map((r) => ({ id: r.id, ...(r.data as Record<string, unknown>), created_at: r.created_at } as unknown as FilingCabinetItem))
+          .filter((i) => i.care_event_id === careEventId);
+      }
+      return db.filingCabinet.findByCareEvent(careEventId);
+    },
+  },
+  savedTimeMetrics: {
+    async findByHome(homeId_: string): Promise<SavedTimeMetric[]> {
+      const c = sb();
+      if (c) {
+        const rows = await sq.getGenericRecords(c, homeId(), "savedTimeMetrics");
+        return rows.map((r) => ({ id: r.id, ...(r.data as Record<string, unknown>), created_at: r.created_at } as unknown as SavedTimeMetric));
+      }
+      return db.savedTimeMetrics.findByHome(homeId_);
+    },  },
 
   trainingRecords: {
     async findAll(filters?: { staff_id?: string }) {
@@ -1870,9 +1950,17 @@ export const dal = {
     async findByChild(childId: string) { return db.contactPlans.findByChild(childId); },
   },
 
-  healthRecordEntries: {
-    async findAll() { return db.healthRecordEntries.getAll(); },
-  },
+  // Phase 2: healthRecordEntries has no dedicated table — it round-trips through
+  // the generic_records catch-all (record_type "healthRecordEntries") on live,
+  // the same home the care-events processor's best-effort write-through targets,
+  // so a health record created from a care event survives a cold start and
+  // surfaces in the health-intelligence engine instead of evaporating.
+  healthRecordEntries: genericTable(
+    () => db.healthRecordEntries.getAll(),
+    (data) => db.healthRecordEntries.create(data as Parameters<typeof db.healthRecordEntries.create>[0]),
+    (id, data) => db.healthRecordEntries.update(id, data as Parameters<typeof db.healthRecordEntries.update>[1]),
+    "healthRecordEntries",
+  ),
 
   homePolicies: {
     async findAll() { return db.homePolicies.getAll(); },
@@ -2524,7 +2612,7 @@ export function genericTable<T extends { id: string }>(
         try {
           const r = (await sq.getGenericRecordById(c, id)) as GenericRecordRow | null;
           if (!r) return null;
-          return { id: r.id, ...r.data, created_at: r.created_at } as unknown as T;
+          return { id: r.id, ...(r.data as Record<string, unknown>), created_at: r.created_at } as unknown as T;
         } catch { return null; }
       }
       return memoryGetAll().find((item) => item.id === id) ?? null;

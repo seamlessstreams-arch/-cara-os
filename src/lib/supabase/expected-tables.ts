@@ -272,6 +272,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cs_education_events",
+    migration: "20260909160000_education_events.sql",
+    columns: [],
+  },
+  {
     table: "cs_education_records",
     migration: "20260909140000_education_consolidation.sql",
     columns: [],

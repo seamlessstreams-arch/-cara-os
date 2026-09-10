@@ -12,6 +12,7 @@ import { createServerClient } from "./server";
 import type {
   CareEvent,
   CareEventRoute,
+  CareEventJob,
   CareEventAuditLog,
   Reg45EvidenceItem,
   AnnexAEvidenceItem,
@@ -401,6 +402,95 @@ function rowToAuditLog(row: Tables["care_event_audit_log"]["Row"]): CareEventAud
     created_at: row.performed_at,
   };
 }
+
+// ── Care event jobs (Phase 6) ────────────────────────────────────────────────
+// The care_event_jobs table exists but careEventsDb never wired it — the whole
+// queue lived in memDb. The table's columns differ from the CareEventJob type
+// (attempts/max_attempts/run_after vs retry_count/max_retries/scheduled_at), so
+// this layer maps both ways. upsert is a manual find-then-insert/update keyed by
+// (care_event_id, job_type) — no ON CONFLICT, so it needs no unique constraint.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToCareEventJob(row: any): CareEventJob {
+  return {
+    id: row.id,
+    care_event_id: row.care_event_id,
+    home_id: row.home_id,
+    job_type: row.job_type,
+    status: row.status,
+    payload: row.payload ?? {},
+    result: row.result ?? null,
+    error_message: row.error_message ?? null,
+    retry_count: Number(row.attempts ?? 0),
+    max_retries: Number(row.max_attempts ?? 3),
+    scheduled_at: row.run_after ?? row.created_at,
+    started_at: row.started_at ?? null,
+    completed_at: row.completed_at ?? null,
+    last_retried_at: null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function careEventJobToRow(data: Partial<CareEventJob>): Record<string, unknown> {
+  const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (data.care_event_id !== undefined) row.care_event_id = data.care_event_id;
+  if (data.home_id !== undefined) row.home_id = data.home_id;
+  if (data.job_type !== undefined) row.job_type = data.job_type;
+  if (data.status !== undefined) row.status = data.status;
+  if (data.payload !== undefined) row.payload = data.payload;
+  if (data.result !== undefined) row.result = data.result;
+  if (data.error_message !== undefined) row.error_message = data.error_message;
+  if (data.retry_count !== undefined) row.attempts = data.retry_count;
+  if (data.max_retries !== undefined) row.max_attempts = data.max_retries;
+  if (data.scheduled_at !== undefined) row.run_after = data.scheduled_at;
+  if (data.started_at !== undefined) row.started_at = data.started_at;
+  if (data.completed_at !== undefined) row.completed_at = data.completed_at;
+  return row;
+}
+
+export const sbCareEventJobs = {
+  async findAll(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async findPending(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").eq("status", "pending");
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async findFailed(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").in("status", ["failed", "retry_required"]);
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async upsert(data: Omit<CareEventJob, "id" | "created_at" | "updated_at">): Promise<CareEventJob> {
+    const sb = supabase();
+    const { data: existing } = await sb
+      .from("care_event_jobs").select("id")
+      .eq("care_event_id", data.care_event_id).eq("job_type", data.job_type).limit(1);
+    if (existing && existing.length > 0) {
+      const { data: up, error } = await sb
+        .from("care_event_jobs").update(careEventJobToRow(data) as never).eq("id", existing[0].id).select().single();
+      if (error) throw error;
+      return rowToCareEventJob(up);
+    }
+    const { data: ins, error } = await sb
+      .from("care_event_jobs").insert(careEventJobToRow(data) as never).select().single();
+    if (error) throw error;
+    return rowToCareEventJob(ins);
+  },
+  async patch(id: string, data: Partial<CareEventJob>): Promise<CareEventJob | null> {
+    const sb = supabase();
+    const { data: up, error } = await sb
+      .from("care_event_jobs").update(careEventJobToRow(data) as never).eq("id", id).select().single();
+    if (error) throw error;
+    return up ? rowToCareEventJob(up) : null;
+  },
+};
 
 export const sbCareEventAuditLog = {
   async findAll(): Promise<CareEventAuditLog[]> {

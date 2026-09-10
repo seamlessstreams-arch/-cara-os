@@ -601,6 +601,28 @@ export async function createChronologyEntry(sb: SB, data: Database["public"]["Ta
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EDUCATION EVENTS (the event log — Phase 3; distinct from cs_education_records)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getEducationEvents(sb: SB, homeId: string, childId?: string) {
+  let query = sb.from("cs_education_events").select("*").eq("home_id", homeId);
+  if (childId) query = query.eq("child_id", childId);
+  return unwrap(await query.order("date", { ascending: false }));
+}
+
+export async function getEducationEventById(sb: SB, id: string) {
+  return unwrap(await sb.from("cs_education_events").select("*").eq("id", id).single());
+}
+
+export async function createEducationEvent(sb: SB, data: Database["public"]["Tables"]["cs_education_events"]["Insert"]) {
+  return unwrap(await sb.from("cs_education_events").insert(data).select().single());
+}
+
+export async function updateEducationEvent(sb: SB, id: string, data: Database["public"]["Tables"]["cs_education_events"]["Update"]) {
+  return unwrap(await sb.from("cs_education_events").update(data).eq("id", id).select().single());
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HANDOVERS
 // ─────────────────────────────────────────────────────────────────────────────
 

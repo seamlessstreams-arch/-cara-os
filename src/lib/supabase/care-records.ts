@@ -15,6 +15,7 @@
 import { db } from "@/lib/db/store";
 import { isSupabaseEnabled, createServerClient } from "./server";
 import * as sq from "./queries";
+import { sbChildDailySummaries, sbAnnexAEvidenceQueue } from "./care-events";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -30,6 +31,172 @@ export async function persistDailyLog(entry: object): Promise<void> {
   try {
     const { id: _id, ...rest } = entry as Record<string, unknown>;
     await sq.createDailyLogEntry(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createDailyLogEntry>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+// ── Care-events processor write-throughs (Phase 1) ──────────────────────────
+// The care-events processor is a SYNC orchestrator that writes the records it
+// routes to the in-memory store (demo + immediate read-back). These best-effort
+// mirrors carry those records to the real tables when Supabase is on — the same
+// fire-and-forget pattern as persistDailyLog / createIncidentRecord above, so
+// the processor stays sync and its 47 test call-sites are untouched. Group-B
+// records (education events, filing cabinet, saved-time, restraints, health,
+// the job queue and the route state-machine) have no live table yet and remain
+// in-memory — see the processor-persistence decision doc.
+
+/** Best-effort write-through of a chronology entry created by the sync processor. */
+export async function persistChronologyEntry(entry: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = entry as Record<string, unknown>;
+    await sq.createChronologyEntry(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createChronologyEntry>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a missing episode created by the sync processor. */
+export async function persistMissingEpisode(episode: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = episode as Record<string, unknown>;
+    await sq.createMissingEpisode(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createMissingEpisode>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a notification created by the sync processor. */
+export async function persistNotification(notif: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = notif as Record<string, unknown>;
+    await sq.createNotification(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createNotification>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a child daily summary upserted by the sync processor. */
+export async function persistChildDailySummary(summary: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const { id: _id, ...rest } = summary as Record<string, unknown>;
+    await sbChildDailySummaries.upsert(
+      { ...rest, home_id: homeId() } as Parameters<typeof sbChildDailySummaries.upsert>[0],
+    );
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of an Annex A evidence item upserted by the sync processor. */
+export async function persistAnnexAEvidence(item: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const { id: _id, ...rest } = item as Record<string, unknown>;
+    await sbAnnexAEvidenceQueue.upsert(
+      { ...rest, home_id: homeId() } as Parameters<typeof sbAnnexAEvidenceQueue.upsert>[0],
+    );
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/**
+ * Best-effort write-through of a health record entry created by the sync processor.
+ * Phase 2: healthRecordEntries has no dedicated table, so — like risk assessments —
+ * it persists to the `generic_records` catch-all under its record_type. child_id
+ * and staff_id are kept INSIDE `data` (as well as passed as columns) so the
+ * dal's genericTable read reconstructs them; without that the child grouping in
+ * the health-intelligence engine would silently lose its subject.
+ */
+export async function persistHealthRecordEntry(record: Record<string, unknown>): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id: _id, home_id: _home, ...rest } = record as any;
+    void _id; void _home;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "healthRecordEntries",
+      data: rest,
+      child_id: (rest.child_id as string) ?? undefined,
+      staff_id: (rest.staff_id as string) ?? undefined,
+      created_by: (rest.staff_id as string) ?? undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/**
+ * Best-effort write-through of an education EVENT created by the sync processor.
+ * Phase 3: the education event log has its own dedicated table (cs_education_events,
+ * distinct from #108's cs_education_records profile), so the record persists there
+ * — the same home dal.educationRecords now reads from on live, so it round-trips
+ * into the off-rolling triggers and education intelligence.
+ */
+export async function persistEducationEvent(record: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = record as Record<string, unknown>;
+    await sq.createEducationEvent(c, { ...rest, home_id: homeId() } as Parameters<typeof sq.createEducationEvent>[1]);
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/**
+ * Best-effort write-through of a filing-cabinet item auto-filed by the sync
+ * processor. Phase 4: filing items are idempotent (keyed by care_event_id, and
+ * the processor de-dupes before re-processing) and simply read (list by home),
+ * so — like health — they persist to the generic_records catch-all under
+ * record_type "filingCabinet". The whole item is kept in `data` (child_id also
+ * as a column) so dal.filingCabinet.findByHome reconstructs it verbatim.
+ */
+export async function persistFilingCabinetItem(item: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = item as Record<string, unknown>;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "filingCabinet",
+      data: rest,
+      child_id: (rest.child_id as string) ?? undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/** Best-effort write-through of a saved-time metric recorded by the sync processor (Phase 4). */
+export async function persistSavedTimeMetric(metric: object): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    const { id: _id, ...rest } = metric as Record<string, unknown>;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "savedTimeMetrics",
+      data: rest,
+      staff_id: (rest.staff_id as string) ?? undefined,
+    });
   } catch {
     // best-effort — the in-memory write already succeeded; never block the caller
   }

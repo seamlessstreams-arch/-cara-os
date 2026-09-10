@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   );
   if (!guard.ok) return guard.response;
 
-  const fullIndex = loadFilingCabinetIndex(homeId);
+  const fullIndex = await loadFilingCabinetIndex(homeId);
   const payload = body.category
     ? {
         ...fullIndex,
