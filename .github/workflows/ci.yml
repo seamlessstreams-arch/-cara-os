@@ -165,6 +165,9 @@ jobs:
       - name: Label-association guard (a visible field label is tied to its control)
         run: node scripts/check-label-association.js
 
+      - name: Defaulted-judgement guard (an unrecorded judgement must not read as a yes)
+        run: node scripts/check-defaulted-judgements.js
+
       - name: Retrospective-date guard (a record of a past event cannot be future-dated)
         run: node scripts/check-retrospective-dates.js
 
