@@ -136,3 +136,20 @@ describe("outdoor-spaces-play-areas-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded fencing security in the gap alert without asserting a breach", () => {
+    const alerts = identifyOutdoorSpacesAlerts([makeRecord({ fencing_secure: null })]);
+    const alert = alerts.find((a) => a.type === "fencing_not_secure");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no fencing gap when security is recorded", () => {
+    const alerts = identifyOutdoorSpacesAlerts([makeRecord({ fencing_secure: true })]);
+    expect(alerts.some((a) => a.type === "fencing_not_secure")).toBe(false);
+  });
+  it("does not dilute the fencing rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, fencing_secure: v }));
+    expect(computeOutdoorSpacesMetrics(rows).fencing_secure_rate).toBe(100);
+  });
+});

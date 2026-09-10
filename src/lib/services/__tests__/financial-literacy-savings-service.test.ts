@@ -132,3 +132,20 @@ describe("financial-literacy-savings-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded savings account in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: null })]);
+    const alert = alerts.find((a) => a.type === "no_savings_account");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no account gap when the account is recorded as active", () => {
+    const alerts = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: true })]);
+    expect(alerts.some((a) => a.type === "no_savings_account")).toBe(false);
+  });
+  it("does not dilute the savings-account rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, savings_account_active: v }));
+    expect(computeFinancialLiteracyMetrics(rows).savings_account_rate).toBe(100);
+  });
+});
