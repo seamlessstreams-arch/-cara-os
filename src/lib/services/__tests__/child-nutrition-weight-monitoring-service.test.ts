@@ -587,3 +587,23 @@ describe("child-nutrition-weight-monitoring-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the dietary alert between recorded not-met and unrecorded", () => {
+    const nullAlert = computeNutritionAlerts([makeRow({ dietary_needs_met: null })])
+      .find((a) => a.type === "dietary_needs_not_met");
+    const falseAlert = computeNutritionAlerts([makeRow({ dietary_needs_met: false })])
+      .find((a) => a.type === "dietary_needs_not_met");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no dietary alert when needs are recorded as met", () => {
+    const alerts = computeNutritionAlerts([makeRow({ dietary_needs_met: true })]);
+    expect(alerts.some((a) => a.type === "dietary_needs_not_met")).toBe(false);
+  });
+  it("does not dilute the dietary rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRow({ id: `r-${i}`, dietary_needs_met: v }));
+    expect(computeNutritionMetrics(rows).dietary_needs_met_rate).toBe(100);
+  });
+});

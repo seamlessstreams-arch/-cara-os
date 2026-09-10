@@ -152,3 +152,23 @@ describe("parental-contact-arrangement-service", () => {
     it("insight 3 contains reflective question", () => { const m = computeParentalContactMetrics([]); const a = computeParentalContactAlerts([]); const i = generateParentalContactCaraInsights(m, a)[2]; expect(i).toContain("contact arrangements"); expect(i).toContain("child"); });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the court-order critical between recorded non-compliance and unrecorded", () => {
+    const nullAlert = computeParentalContactAlerts([
+      makeRow({ court_order_status: "court_ordered", court_order_complied: null, contact_outcome: "negative" }),
+    ]).find((a) => a.type === "court_order_breach_negative");
+    const falseAlert = computeParentalContactAlerts([
+      makeRow({ court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative" }),
+    ]).find((a) => a.type === "court_order_breach_negative");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("counts only recorded non-compliance in the court-order metric", () => {
+    const rows = [null, null, false].map((v, i) =>
+      makeRow({ id: `r-${i}`, court_order_status: "court_ordered", court_order_complied: v }),
+    );
+    expect(computeParentalContactMetrics(rows).court_order_non_compliant_count).toBe(1);
+  });
+});
