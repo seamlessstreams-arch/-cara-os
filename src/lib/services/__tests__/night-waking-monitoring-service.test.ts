@@ -136,3 +136,21 @@ describe("night-waking-monitoring-service", () => {
     });
   });
 });
+
+// ── Tri-state: unrecorded comfort response is not "was not comforted" ──
+describe("tri-state judgements", () => {
+  it("surfaces the gap without asserting neglect", () => {
+    const alerts = _testing.identifyNightWakingAlerts([
+      makeRecord({ child_emotional_state: "distressed", child_comforted: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "distressed_not_comforted");
+    expect(a?.message).toMatch(/no comfort response recorded/i);
+    expect(a?.message).not.toMatch(/was not comforted/i);
+  });
+  it("still asserts a recorded not-comforted", () => {
+    const alerts = _testing.identifyNightWakingAlerts([
+      makeRecord({ child_emotional_state: "distressed", child_comforted: false }),
+    ]);
+    expect(alerts.some((x) => /was not comforted/i.test(x.message))).toBe(true);
+  });
+});
