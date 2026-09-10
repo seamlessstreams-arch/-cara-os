@@ -26,7 +26,7 @@ export interface MissingEpisodeInput {
   reported_to_la: boolean;
   return_interview_completed: boolean;
   return_interview_date: string | null;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
   status: string;            // active, returned, closed
   pattern_notes: string | null;
 }

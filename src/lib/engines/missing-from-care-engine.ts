@@ -37,7 +37,7 @@ export interface MissingEpisodeInput {
   return_interview_by?: string | null;
   return_interview_date?: string | null;
   return_interview_notes?: string | null;
-  contextual_safeguarding_risk?: boolean;
+  contextual_safeguarding_risk?: boolean | null;
   linked_incident_id?: string | null;
   pattern_notes?: string | null;
   status: string;
@@ -66,7 +66,7 @@ export interface RecentEpisode {
   duration: string;
   return_interview: "completed" | "pending" | "refused" | "n/a";
   trigger: string;
-  contextual_safeguarding: boolean;
+  contextual_safeguarding: boolean | null;
 }
 
 export interface PushPullFactor {
@@ -282,7 +282,7 @@ export function computeMissingIntelligence(input: MissingEngineInput): MissingIn
       duration: formatDuration(ep.duration_hours),
       return_interview: classifyInterview(ep),
       trigger: primaryTrigger,
-      contextual_safeguarding: ep.contextual_safeguarding_risk ?? false,
+      contextual_safeguarding: ep.contextual_safeguarding_risk ?? null,
     };
   });
 

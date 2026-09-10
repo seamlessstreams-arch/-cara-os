@@ -18,7 +18,7 @@ export interface MissingEpisodeInput {
   reported_to_police: boolean;
   reported_to_la: boolean;
   return_interview_completed: boolean;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
   status: string;                        // "open" | "closed"
 }
 

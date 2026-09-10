@@ -67,7 +67,7 @@ export interface MissingEpisodeInput {
   duration_hours: number;
   risk_level: string;
   return_interview_completed: boolean;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
   status: string;
 }
 
