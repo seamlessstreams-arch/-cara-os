@@ -1882,3 +1882,17 @@ describe("Edge cases", () => {
     expect(m.compliance_rate).toBe(100);
   });
 });
+
+describe("tri-state judgements", () => {
+  it("does not credit compliance nobody recorded", () => {
+    const m = computeSafetyMetrics([makeCheck({ compliance_status: null })], []);
+    expect(m.compliant_count).toBe(0);
+    expect(m.non_compliant_checks).toBe(0);
+  });
+  it("does not dilute the compliance rate with unrecorded checks", () => {
+    const checks = ["compliant", null, null, null].map((v, i) =>
+      makeCheck({ id: `c-${i}`, compliance_status: v as never }),
+    );
+    expect(computeSafetyMetrics(checks, []).compliance_rate).toBe(100);
+  });
+});
