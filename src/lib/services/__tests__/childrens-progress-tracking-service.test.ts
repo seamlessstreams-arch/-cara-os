@@ -128,3 +128,15 @@ describe("childrens-progress-tracking-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded baseline_established as a failure", () => {
+    const alerts = _testing.identifyChildrensProgressAlerts([makeRecord({ baseline_established: null }), makeRecord({ id: "r-2", baseline_established: null })]);
+    expect(alerts.some((a) => a.type === "no_baseline")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyChildrensProgressAlerts([makeRecord({ baseline_established: false }), makeRecord({ id: "r-2", baseline_established: false })]);
+    expect(alerts.some((a) => a.type === "no_baseline")).toBe(true);
+  });
+});

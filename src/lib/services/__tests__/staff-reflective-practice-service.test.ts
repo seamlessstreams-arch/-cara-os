@@ -128,3 +128,15 @@ describe("staff-reflective-practice-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded child_impact_considered as a failure", () => {
+    const alerts = _testing.identifyStaffReflectiveAlerts([makeRecord({ child_impact_considered: null }), makeRecord({ id: "r-2", child_impact_considered: null })]);
+    expect(alerts.some((a) => a.type === "no_child_impact")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyStaffReflectiveAlerts([makeRecord({ child_impact_considered: false }), makeRecord({ id: "r-2", child_impact_considered: false })]);
+    expect(alerts.some((a) => a.type === "no_child_impact")).toBe(true);
+  });
+});

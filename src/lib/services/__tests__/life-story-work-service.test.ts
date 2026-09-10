@@ -129,3 +129,15 @@ describe("life-story-work-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded trauma_informed as a failure", () => {
+    const alerts = _testing.identifyLifeStoryWorkAlerts([makeRecord({ trauma_informed: null }), makeRecord({ id: "r-2", trauma_informed: null })]);
+    expect(alerts.some((a) => a.type === "not_trauma_informed")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyLifeStoryWorkAlerts([makeRecord({ trauma_informed: false }), makeRecord({ id: "r-2", trauma_informed: false })]);
+    expect(alerts.some((a) => a.type === "not_trauma_informed")).toBe(true);
+  });
+});
