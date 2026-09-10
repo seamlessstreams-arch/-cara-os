@@ -131,3 +131,20 @@ describe("social-skills-development-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded targets judgement in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySocialSkillsAlerts([makeRecord({ targets_set: null })]);
+    const alert = alerts.find((a) => a.type === "no_targets_set");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no targets gap when targets are recorded as set", () => {
+    const alerts = identifySocialSkillsAlerts([makeRecord({ targets_set: true })]);
+    expect(alerts.some((a) => a.type === "no_targets_set")).toBe(false);
+  });
+  it("does not dilute engagement rates with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `s-${i}`, child_engaged: v }));
+    expect(computeSocialSkillsMetrics(rows).child_engaged_rate).toBe(100);
+  });
+});
