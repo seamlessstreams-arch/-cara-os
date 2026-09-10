@@ -129,3 +129,27 @@ describe("cultural-identity-support-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the declined-support critical between recorded not-sought and unrecorded", () => {
+    const nullAlert = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: null }),
+    ]).find((a) => a.type === "declined_views_not_sought");
+    const falseAlert = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: false }),
+    ]).find((a) => a.type === "declined_views_not_sought");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when views are recorded as sought", () => {
+    const alerts = identifyCulturalIdentityAlerts([
+      makeRecord({ engagement_level: "declined", child_views_sought: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "declined_views_not_sought")).toBe(false);
+  });
+  it("does not dilute the staff-trained rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, staff_trained: v }));
+    expect(computeCulturalIdentityMetrics(rows).staff_trained_rate).toBe(100);
+  });
+});
