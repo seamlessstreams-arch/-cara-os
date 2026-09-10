@@ -133,3 +133,27 @@ describe("room-sharing-assessment-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the unacceptable-risk critical between recorded no-check and unrecorded", () => {
+    const nullAlert = identifyRoomSharingAlerts([
+      makeRecord({ room_risk_level: "unacceptable", safeguarding_check_done: null }),
+    ]).find((a) => a.type === "unacceptable_no_safeguarding");
+    const falseAlert = identifyRoomSharingAlerts([
+      makeRecord({ room_risk_level: "unacceptable", safeguarding_check_done: false }),
+    ]).find((a) => a.type === "unacceptable_no_safeguarding");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when the safeguarding check is recorded as done", () => {
+    const alerts = identifyRoomSharingAlerts([
+      makeRecord({ room_risk_level: "unacceptable", safeguarding_check_done: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "unacceptable_no_safeguarding")).toBe(false);
+  });
+  it("does not dilute the safeguarding-check rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, safeguarding_check_done: v }));
+    expect(computeRoomSharingMetrics(rows).safeguarding_check_rate).toBe(100);
+  });
+});
