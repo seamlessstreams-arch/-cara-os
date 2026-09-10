@@ -71,19 +71,21 @@ export interface VisitorFeedbackCollectionRecord {
   visit_date: string;
   visitor_name: string;
   collected_by: string;
-  feedback_sought_proactively: boolean;
-  child_views_included: boolean;
-  environment_commented: boolean;
-  staff_interaction_positive: boolean;
-  concerns_raised: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  feedback_sought_proactively: boolean | null;
+  child_views_included: boolean | null;
+  environment_commented: boolean | null;
+  staff_interaction_positive: boolean | null;
+  concerns_raised: boolean | null;
   complaints_linked: boolean;
-  action_plan_created: boolean;
-  feedback_shared_with_team: boolean;
-  improvement_identified: boolean;
-  follow_up_arranged: boolean;
-  anonymity_offered: boolean;
-  manager_reviewed: boolean;
-  recorded_promptly: boolean;
+  action_plan_created: boolean | null;
+  feedback_shared_with_team: boolean | null;
+  improvement_identified: boolean | null;
+  follow_up_arranged: boolean | null;
+  anonymity_offered: boolean | null;
+  manager_reviewed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -238,7 +240,9 @@ export function identifyVisitorFeedbackAlerts(
   }
 
   // Improvement not identified
-  const noImprovement = records.filter((r) => !r.improvement_identified).length;
+  // A recorded "no" is a finding; an unanswered question is not. `!r.x` would
+  // count every unrecorded judgement as a breach the moment nulls arrive.
+  const noImprovement = records.filter((r) => r.improvement_identified === false).length;
   if (noImprovement >= 1) {
     alerts.push({
       type: "no_improvement_identified",
@@ -249,7 +253,7 @@ export function identifyVisitorFeedbackAlerts(
   }
 
   // Feedback not shared with team
-  const notShared = records.filter((r) => !r.feedback_shared_with_team).length;
+  const notShared = records.filter((r) => r.feedback_shared_with_team === false).length;
   if (notShared >= 1) {
     alerts.push({
       type: "feedback_not_shared",
@@ -260,7 +264,7 @@ export function identifyVisitorFeedbackAlerts(
   }
 
   // Follow-up not arranged
-  const noFollowUp = records.filter((r) => !r.follow_up_arranged).length;
+  const noFollowUp = records.filter((r) => r.follow_up_arranged === false).length;
   if (noFollowUp >= 2) {
     alerts.push({
       type: "no_follow_up",
@@ -271,7 +275,7 @@ export function identifyVisitorFeedbackAlerts(
   }
 
   // Manager not reviewed
-  const noManagerReview = records.filter((r) => !r.manager_reviewed).length;
+  const noManagerReview = records.filter((r) => r.manager_reviewed === false).length;
   if (noManagerReview >= 2) {
     alerts.push({
       type: "manager_not_reviewed",
@@ -357,19 +361,19 @@ export async function createRecord(
       visit_date: payload.visitDate,
       visitor_name: payload.visitorName,
       collected_by: payload.collectedBy,
-      feedback_sought_proactively: payload.feedbackSoughtProactively ?? true,
-      child_views_included: payload.childViewsIncluded ?? true,
-      environment_commented: payload.environmentCommented ?? true,
-      staff_interaction_positive: payload.staffInteractionPositive ?? true,
-      concerns_raised: payload.concernsRaised ?? false,
+      feedback_sought_proactively: payload.feedbackSoughtProactively ?? null,
+      child_views_included: payload.childViewsIncluded ?? null,
+      environment_commented: payload.environmentCommented ?? null,
+      staff_interaction_positive: payload.staffInteractionPositive ?? null,
+      concerns_raised: payload.concernsRaised ?? null,
       complaints_linked: payload.complaintsLinked ?? false,
-      action_plan_created: payload.actionPlanCreated ?? true,
-      feedback_shared_with_team: payload.feedbackSharedWithTeam ?? true,
-      improvement_identified: payload.improvementIdentified ?? true,
-      follow_up_arranged: payload.followUpArranged ?? true,
-      anonymity_offered: payload.anonymityOffered ?? true,
-      manager_reviewed: payload.managerReviewed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      action_plan_created: payload.actionPlanCreated ?? null,
+      feedback_shared_with_team: payload.feedbackSharedWithTeam ?? null,
+      improvement_identified: payload.improvementIdentified ?? null,
+      follow_up_arranged: payload.followUpArranged ?? null,
+      anonymity_offered: payload.anonymityOffered ?? null,
+      manager_reviewed: payload.managerReviewed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

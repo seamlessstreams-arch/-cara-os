@@ -9,7 +9,7 @@ function makeRecord(
   overrides: Partial<ShiftHandoverQualityRecord> = {},
 ): ShiftHandoverQualityRecord {
   return {
-    id: overrides.id ?? "rec-1",
+    id: "rec-1",
     home_id: "home-1",
     handover_type: "day_to_night",
     quality_rating: "good",

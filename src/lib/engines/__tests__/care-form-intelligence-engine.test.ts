@@ -26,7 +26,7 @@ function uid(): string {
 
 function makeForm(overrides: Partial<CareFormInput> = {}): CareFormInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     title: "Test Form",
     form_type: "daily_check",
     status: "submitted",

@@ -32,29 +32,32 @@ function makeRow(
 ): ChildGangsAffiliationRiskRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    risk_level: overrides?.risk_level ?? "Low",
-    gang_involvement_indicators: overrides?.gang_involvement_indicators ?? 0,
-    county_lines_risk: overrides?.county_lines_risk ?? false,
-    nrm_referral_made: overrides?.nrm_referral_made ?? false,
-    police_notified: overrides?.police_notified ?? false,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
+    home_id: "home-1",
+    child_name: "Child A",
+    assessment_date: todayStr(),
+    risk_level: "Low",
+    gang_involvement_indicators: 0,
+    county_lines_risk: false,
+    nrm_referral_made: false,
+    police_notified: false,
+    social_worker_notified: true,
     disruption_strategy: "disruption_strategy" in (overrides ?? {})
       ? (overrides!.disruption_strategy ?? null)
       : null,
-    multi_agency_meeting_held: overrides?.multi_agency_meeting_held ?? false,
-    safety_plan_in_place: overrides?.safety_plan_in_place ?? true,
-    exploitation_screening_completed: overrides?.exploitation_screening_completed ?? true,
-    missing_episodes_linked: overrides?.missing_episodes_linked ?? 0,
+    multi_agency_meeting_held: false,
+    safety_plan_in_place: true,
+    exploitation_screening_completed: true,
+    missing_episodes_linked: 0,
     review_date: "review_date" in (overrides ?? {})
       ? (overrides!.review_date ?? null)
       : null,
-    assessor_name: overrides?.assessor_name ?? "Assessor X",
+    assessor_name: "Assessor X",
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

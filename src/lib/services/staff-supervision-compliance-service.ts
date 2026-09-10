@@ -66,18 +66,20 @@ export interface StaffSupervisionComplianceRecord {
   supervision_date: string;
   staff_name: string;
   supervisor_name: string;
-  agenda_prepared: boolean;
-  safeguarding_discussed: boolean;
-  wellbeing_discussed: boolean;
-  training_needs_reviewed: boolean;
-  actions_agreed: boolean;
-  previous_actions_reviewed: boolean;
-  professional_development_planned: boolean;
-  concerns_raised: boolean;
-  confidentiality_maintained: boolean;
-  notes_shared: boolean;
-  manager_oversight: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  agenda_prepared: boolean | null;
+  safeguarding_discussed: boolean | null;
+  wellbeing_discussed: boolean | null;
+  training_needs_reviewed: boolean | null;
+  actions_agreed: boolean | null;
+  previous_actions_reviewed: boolean | null;
+  professional_development_planned: boolean | null;
+  concerns_raised: boolean | null;
+  confidentiality_maintained: boolean | null;
+  notes_shared: boolean | null;
+  manager_oversight: boolean | null;
+  recorded_promptly: boolean | null;
   supervision_duration_minutes: number;
   issues_found: string[];
   actions_taken: string[];
@@ -252,7 +254,9 @@ export function identifyStaffSupervisionComplianceAlerts(
   }
 
   // Safeguarding not discussed
-  const noSafeguarding = records.filter((r) => !r.safeguarding_discussed).length;
+  // A recorded "no" is a finding; an unanswered question is not. `!r.x` would
+  // count every unrecorded judgement as a breach the moment nulls arrive.
+  const noSafeguarding = records.filter((r) => r.safeguarding_discussed === false).length;
   if (noSafeguarding >= 1) {
     alerts.push({
       type: "safeguarding_not_discussed",
@@ -263,7 +267,7 @@ export function identifyStaffSupervisionComplianceAlerts(
   }
 
   // Previous actions not reviewed
-  const noReview = records.filter((r) => !r.previous_actions_reviewed).length;
+  const noReview = records.filter((r) => r.previous_actions_reviewed === false).length;
   if (noReview >= 2) {
     alerts.push({
       type: "actions_not_reviewed",
@@ -274,7 +278,7 @@ export function identifyStaffSupervisionComplianceAlerts(
   }
 
   // Training needs not reviewed
-  const noTraining = records.filter((r) => !r.training_needs_reviewed).length;
+  const noTraining = records.filter((r) => r.training_needs_reviewed === false).length;
   if (noTraining >= 2) {
     alerts.push({
       type: "training_not_reviewed",
@@ -360,18 +364,18 @@ export async function createRecord(
       supervision_date: payload.supervisionDate,
       staff_name: payload.staffName,
       supervisor_name: payload.supervisorName,
-      agenda_prepared: payload.agendaPrepared ?? true,
-      safeguarding_discussed: payload.safeguardingDiscussed ?? true,
-      wellbeing_discussed: payload.wellbeingDiscussed ?? true,
-      training_needs_reviewed: payload.trainingNeedsReviewed ?? true,
-      actions_agreed: payload.actionsAgreed ?? true,
-      previous_actions_reviewed: payload.previousActionsReviewed ?? true,
-      professional_development_planned: payload.professionalDevelopmentPlanned ?? true,
-      concerns_raised: payload.concernsRaised ?? false,
-      confidentiality_maintained: payload.confidentialityMaintained ?? true,
-      notes_shared: payload.notesShared ?? true,
-      manager_oversight: payload.managerOversight ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      agenda_prepared: payload.agendaPrepared ?? null,
+      safeguarding_discussed: payload.safeguardingDiscussed ?? null,
+      wellbeing_discussed: payload.wellbeingDiscussed ?? null,
+      training_needs_reviewed: payload.trainingNeedsReviewed ?? null,
+      actions_agreed: payload.actionsAgreed ?? null,
+      previous_actions_reviewed: payload.previousActionsReviewed ?? null,
+      professional_development_planned: payload.professionalDevelopmentPlanned ?? null,
+      concerns_raised: payload.concernsRaised ?? null,
+      confidentiality_maintained: payload.confidentialityMaintained ?? null,
+      notes_shared: payload.notesShared ?? null,
+      manager_oversight: payload.managerOversight ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       supervision_duration_minutes: payload.supervisionDurationMinutes,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

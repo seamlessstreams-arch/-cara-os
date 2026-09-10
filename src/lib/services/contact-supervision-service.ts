@@ -68,18 +68,20 @@ export interface ContactSupervisionRecord {
   child_name: string;
   child_id: string | null;
   supervised_by: string;
-  risk_assessment_current: boolean;
-  child_prepared: boolean;
-  child_debriefed: boolean;
-  court_order_complied: boolean;
-  safeguarding_concerns: boolean;
-  transport_arranged: boolean;
-  venue_appropriate: boolean;
-  social_worker_informed: boolean;
-  care_plan_linked: boolean;
-  child_views_sought: boolean;
-  recorded_within_24h: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  risk_assessment_current: boolean | null;
+  child_prepared: boolean | null;
+  child_debriefed: boolean | null;
+  court_order_complied: boolean | null;
+  safeguarding_concerns: boolean | null;
+  transport_arranged: boolean | null;
+  venue_appropriate: boolean | null;
+  social_worker_informed: boolean | null;
+  care_plan_linked: boolean | null;
+  child_views_sought: boolean | null;
+  recorded_within_24h: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   contact_duration_minutes: number;
@@ -243,7 +245,9 @@ export function identifyContactSupervisionAlerts(
   }
 
   // Child not debriefed
-  const noDebrief = records.filter((r) => !r.child_debriefed).length;
+  // A recorded "no" is a finding; an unanswered question is not. `!r.x` would
+  // count every unrecorded judgement as a breach the moment nulls arrive.
+  const noDebrief = records.filter((r) => r.child_debriefed === false).length;
   if (noDebrief >= 1) {
     alerts.push({
       type: "child_not_debriefed",
@@ -254,7 +258,7 @@ export function identifyContactSupervisionAlerts(
   }
 
   // Risk assessment not current
-  const noRisk = records.filter((r) => !r.risk_assessment_current).length;
+  const noRisk = records.filter((r) => r.risk_assessment_current === false).length;
   if (noRisk >= 1) {
     alerts.push({
       type: "risk_assessment_outdated",
@@ -265,7 +269,7 @@ export function identifyContactSupervisionAlerts(
   }
 
   // Child not prepared
-  const noPrepared = records.filter((r) => !r.child_prepared).length;
+  const noPrepared = records.filter((r) => r.child_prepared === false).length;
   if (noPrepared >= 2) {
     alerts.push({
       type: "child_not_prepared",
@@ -276,7 +280,7 @@ export function identifyContactSupervisionAlerts(
   }
 
   // Venue not appropriate
-  const noVenue = records.filter((r) => !r.venue_appropriate).length;
+  const noVenue = records.filter((r) => r.venue_appropriate === false).length;
   if (noVenue >= 2) {
     alerts.push({
       type: "venue_not_appropriate",
@@ -364,18 +368,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supervised_by: payload.supervisedBy,
-      risk_assessment_current: payload.riskAssessmentCurrent ?? true,
-      child_prepared: payload.childPrepared ?? true,
-      child_debriefed: payload.childDebriefed ?? true,
-      court_order_complied: payload.courtOrderComplied ?? true,
-      safeguarding_concerns: payload.safeguardingConcerns ?? false,
-      transport_arranged: payload.transportArranged ?? true,
-      venue_appropriate: payload.venueAppropriate ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      care_plan_linked: payload.carePlanLinked ?? true,
-      child_views_sought: payload.childViewsSought ?? true,
-      recorded_within_24h: payload.recordedWithin24h ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      risk_assessment_current: payload.riskAssessmentCurrent ?? null,
+      child_prepared: payload.childPrepared ?? null,
+      child_debriefed: payload.childDebriefed ?? null,
+      court_order_complied: payload.courtOrderComplied ?? null,
+      safeguarding_concerns: payload.safeguardingConcerns ?? null,
+      transport_arranged: payload.transportArranged ?? null,
+      venue_appropriate: payload.venueAppropriate ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      care_plan_linked: payload.carePlanLinked ?? null,
+      child_views_sought: payload.childViewsSought ?? null,
+      recorded_within_24h: payload.recordedWithin24h ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       contact_duration_minutes: payload.contactDurationMinutes,

@@ -43,39 +43,42 @@ function makeRecord(
   overrides?: Partial<HealthAppointmentRecord>,
 ): HealthAppointmentRecord {
   return {
-    id: overrides?.id ?? crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Alice Smith",
+    id: crypto.randomUUID(),
+    home_id: "home-1",
+    child_name: "Alice Smith",
     child_id:
       "child_id" in (overrides ?? {})
         ? (overrides!.child_id ?? null)
         : null,
-    appointment_type: overrides?.appointment_type ?? "gp_visit",
-    appointment_date: overrides?.appointment_date ?? daysAgo(3),
-    appointment_status: overrides?.appointment_status ?? "attended",
-    appointment_outcome: overrides?.appointment_outcome ?? "no_concerns",
-    consent_status: overrides?.consent_status ?? "consent_given",
-    child_accompanied: overrides?.child_accompanied ?? true,
+    appointment_type: "gp_visit",
+    appointment_date: daysAgo(3),
+    appointment_status: "attended",
+    appointment_outcome: "no_concerns",
+    consent_status: "consent_given",
+    child_accompanied: true,
     accompanied_by:
       "accompanied_by" in (overrides ?? {})
         ? (overrides!.accompanied_by ?? null)
         : null,
-    child_views_captured: overrides?.child_views_captured ?? true,
-    child_anxious: overrides?.child_anxious ?? false,
+    child_views_captured: true,
+    child_anxious: false,
     follow_up_date:
       "follow_up_date" in (overrides ?? {})
         ? (overrides!.follow_up_date ?? null)
         : null,
-    follow_up_actions: overrides?.follow_up_actions ?? [],
-    health_plan_updated: overrides?.health_plan_updated ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_carer_informed: overrides?.parent_carer_informed ?? true,
+    follow_up_actions: [],
+    health_plan_updated: true,
+    social_worker_informed: true,
+    parent_carer_informed: true,
     notes:
       "notes" in (overrides ?? {})
         ? (overrides!.notes ?? null)
         : null,
-    created_at: overrides?.created_at ?? daysAgoISO(3),
-    updated_at: overrides?.updated_at ?? daysAgoISO(3),
+    created_at: daysAgoISO(3),
+    updated_at: daysAgoISO(3),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
