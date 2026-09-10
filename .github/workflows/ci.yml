@@ -162,6 +162,9 @@ jobs:
       - name: Seed-decay guard (seed dates float; fixed dates are declared real-world facts)
         run: node scripts/check-seed-decay.js
 
+      - name: Migration-defaults guard (a column default must not answer a judgement)
+        run: node scripts/check-migration-defaults.js
+
       - name: Label-association guard (a visible field label is tied to its control)
         run: node scripts/check-label-association.js
 
