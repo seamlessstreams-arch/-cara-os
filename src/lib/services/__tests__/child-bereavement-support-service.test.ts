@@ -1517,3 +1517,19 @@ describe("child-bereavement-support-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the school-notification alert between recorded not-notified and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ school_notified: null })])
+      .find((a) => a.type === "school_not_notified");
+    const falseAlert = computeAlerts([makeRow({ school_notified: false })])
+      .find((a) => a.type === "school_not_notified");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("does not dilute the school-notification rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRow({ id: `r-${i}`, school_notified: v }));
+    expect(computeMetrics(rows).school_notification_rate).toBe(100);
+  });
+});

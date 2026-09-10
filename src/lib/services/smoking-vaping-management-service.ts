@@ -201,12 +201,12 @@ export interface SmokingVapingManagementRow {
   motivation_to_quit: MotivationStage;
   nrt_provided: boolean;
   gp_consulted: boolean;
-  young_person_engaged: boolean;
+  young_person_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   harm_reduction_approach: boolean;
   education_provided: boolean;
   peer_influence_addressed: boolean;
-  smoke_free_premises_compliant: boolean;
-  age_verified: boolean;
+  smoke_free_premises_compliant: boolean | null;
+  age_verified: boolean | null;
   social_worker_informed: boolean;
   next_review_date: string | null;
   notes: string | null;
@@ -521,11 +521,13 @@ export function computeAlerts(
 
   // Critical: Smoke-free premises non-compliance
   for (const r of rows) {
-    if (!r.smoke_free_premises_compliant) {
+    if (r.smoke_free_premises_compliant !== true) {
       alerts.push({
         type: "premises_non_compliant",
         severity: "critical",
-        message: `Smoke-free premises non-compliance recorded on ${r.record_date} by ${r.recorded_by} — Health Act 2006 requires children's homes to be completely smoke-free in all enclosed and substantially enclosed areas. This is a legal requirement with potential for prosecution and fines. Immediate action required`,
+        message: r.smoke_free_premises_compliant === null
+          ? `No record of smoke-free premises compliance on ${r.record_date} (recorded by ${r.recorded_by}) — confirm and evidence compliance; the Health Act 2006 requires children's homes to be completely smoke-free`
+          : `Smoke-free premises non-compliance recorded on ${r.record_date} by ${r.recorded_by} — Health Act 2006 requires children's homes to be completely smoke-free in all enclosed and substantially enclosed areas. This is a legal requirement with potential for prosecution and fines. Immediate action required`,
         record_id: r.id,
       });
     }
@@ -560,7 +562,7 @@ export function computeAlerts(
 
   // Critical: Age verification not confirmed
   for (const r of rows) {
-    if (!r.age_verified) {
+    if (r.age_verified !== true) {
       alerts.push({
         type: "age_not_verified",
         severity: "critical",
@@ -608,13 +610,15 @@ export function computeAlerts(
   // High: Young person not engaged
   for (const r of rows) {
     if (
-      !r.young_person_engaged &&
+      r.young_person_engaged !== true &&
       (ACTIVE_USER_FREQUENCIES as string[]).includes(r.usage_frequency)
     ) {
       alerts.push({
         type: "active_user_disengaged",
         severity: "high",
-        message: `${r.child_name} is an active ${r.substance} user but is not engaged in cessation support (${r.record_date}) — explore motivational interviewing approaches per NICE PH23. The young person's autonomy must be respected but the home has a duty to promote health under CHR 2015 Reg 10`,
+        message: r.young_person_engaged === null
+          ? `${r.child_name} is an active ${r.substance} user with no record of engagement in cessation support (${r.record_date}) — offer support and record the young person's response`
+          : `${r.child_name} is an active ${r.substance} user but is not engaged in cessation support (${r.record_date}) — explore motivational interviewing approaches per NICE PH23. The young person's autonomy must be respected but the home has a duty to promote health under CHR 2015 Reg 10`,
         record_id: r.id,
       });
     }
@@ -940,12 +944,12 @@ export async function createRecord(input: {
       motivation_to_quit: input.motivationToQuit,
       nrt_provided: input.nrtProvided ?? false,
       gp_consulted: input.gpConsulted ?? false,
-      young_person_engaged: input.youngPersonEngaged ?? true,
+      young_person_engaged: input.youngPersonEngaged ?? null,
       harm_reduction_approach: input.harmReductionApproach ?? false,
       education_provided: input.educationProvided ?? false,
       peer_influence_addressed: input.peerInfluenceAddressed ?? false,
-      smoke_free_premises_compliant: input.smokeFreePremisesCompliant ?? true,
-      age_verified: input.ageVerified ?? true,
+      smoke_free_premises_compliant: input.smokeFreePremisesCompliant ?? null,
+      age_verified: input.ageVerified ?? null,
       social_worker_informed: input.socialWorkerInformed ?? false,
       next_review_date: input.nextReviewDate ?? null,
       notes: input.notes ?? null,

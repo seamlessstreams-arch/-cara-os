@@ -121,13 +121,13 @@ export interface ClothingAllowanceRow {
   amount: number;
   budget_period: BudgetPeriod | null;
   child_chose: boolean;
-  age_appropriate: boolean;
-  good_condition: boolean;
-  sufficient_quantity: boolean;
+  age_appropriate: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  good_condition: boolean | null;
+  sufficient_quantity: boolean | null;
   brand_preference_respected: boolean;
   cultural_needs_met: boolean;
   receipt_kept: boolean;
-  season_appropriate: boolean;
+  season_appropriate: boolean | null;
   school_requirements_met: boolean | null;
   notes: string | null;
   created_at: string;
@@ -305,14 +305,22 @@ export function computeMetrics(
   const pct = (filter: (r: ClothingAllowanceRow) => boolean) =>
     total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
+  // Tri-state columns rate over the recorded subset — an unrecorded judgement
+  // must not read as a quiet "no".
+  const recordedRate = (field: keyof ClothingAllowanceRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+
   const childChoiceRate = pct((r) => r.child_chose);
-  const ageAppropriateRate = pct((r) => r.age_appropriate);
-  const goodConditionRate = pct((r) => r.good_condition);
-  const sufficientQuantityRate = pct((r) => r.sufficient_quantity);
+  const ageAppropriateRate = recordedRate("age_appropriate");
+  const goodConditionRate = recordedRate("good_condition");
+  const sufficientQuantityRate = recordedRate("sufficient_quantity");
   const brandPreferenceRate = pct((r) => r.brand_preference_respected);
   const culturalNeedsRate = pct((r) => r.cultural_needs_met);
   const receiptKeptRate = pct((r) => r.receipt_kept);
-  const seasonAppropriateRate = pct((r) => r.season_appropriate);
+  const seasonAppropriateRate = recordedRate("season_appropriate");
 
   const schoolRows = rows.filter((r) => r.school_requirements_met !== null);
   const schoolRequirementsRate = schoolRows.length > 0
@@ -374,11 +382,13 @@ export function computeAlerts(
 
   // Critical: Insufficient clothing quantity
   for (const r of rows) {
-    if (!r.sufficient_quantity) {
+    if (r.sufficient_quantity !== true) {
       alerts.push({
         type: "insufficient_quantity",
         severity: "critical",
-        message: `${r.child_name}'s clothing flagged as insufficient quantity (${r.record_type}, ${r.record_date}) — CHR 2015 Reg 9 requires that children are well-clothed. Corporate Parenting Principles require that looked-after children have the same as their peers. A child without enough clothing faces daily dignity issues — not enough options for different occasions, insufficient changes during laundry cycles, and potential embarrassment. The Registered Manager must ensure this child's wardrobe is supplemented immediately`,
+        message: r.sufficient_quantity === null
+          ? `No record that ${r.child_name}'s clothing quantity is sufficient (${r.record_type}, ${r.record_date}) — review the wardrobe and evidence the check; CHR 2015 Reg 9 requires that children are well-clothed`
+          : `${r.child_name}'s clothing flagged as insufficient quantity (${r.record_type}, ${r.record_date}) — CHR 2015 Reg 9 requires that children are well-clothed. Corporate Parenting Principles require that looked-after children have the same as their peers. A child without enough clothing faces daily dignity issues — not enough options for different occasions, insufficient changes during laundry cycles, and potential embarrassment. The Registered Manager must ensure this child's wardrobe is supplemented immediately`,
         record_id: r.id,
       });
     }
@@ -386,11 +396,13 @@ export function computeAlerts(
 
   // Critical: Clothing not in good condition
   for (const r of rows) {
-    if (!r.good_condition) {
+    if (r.good_condition !== true) {
       alerts.push({
         type: "poor_condition",
         severity: "critical",
-        message: `${r.child_name}'s clothing flagged as not in good condition (${r.record_type}, ${r.record_date}) — children in care should never be wearing worn, damaged, stained, or ill-fitting clothing. This is a fundamental indicator of care quality that SCCIF inspectors will assess. Corporate Parenting Principles require that looked-after children are not distinguishable from their peers by the quality of their clothing. Replace or repair items immediately`,
+        message: r.good_condition === null
+          ? `No record that ${r.child_name}'s clothing is in good condition (${r.record_type}, ${r.record_date}) — inspect and evidence the check; worn or damaged clothing is a fundamental care-quality indicator`
+          : `${r.child_name}'s clothing flagged as not in good condition (${r.record_type}, ${r.record_date}) — children in care should never be wearing worn, damaged, stained, or ill-fitting clothing. This is a fundamental indicator of care quality that SCCIF inspectors will assess. Corporate Parenting Principles require that looked-after children are not distinguishable from their peers by the quality of their clothing. Replace or repair items immediately`,
         record_id: r.id,
       });
     }
@@ -398,11 +410,13 @@ export function computeAlerts(
 
   // Critical: Not season-appropriate
   for (const r of rows) {
-    if (!r.season_appropriate) {
+    if (r.season_appropriate !== true) {
       alerts.push({
         type: "not_season_appropriate",
         severity: "critical",
-        message: `${r.child_name}'s clothing flagged as not season-appropriate (${r.record_type}, ${r.record_date}) — a child without suitable clothing for current weather conditions (no winter coat, no waterproof, no warm layers) is a serious welfare concern. CHR 2015 Reg 9 requires that children's physical needs are met. This must be addressed same-day; a child should never leave the home inadequately dressed for the weather`,
+        message: r.season_appropriate === null
+          ? `No record that ${r.child_name}'s clothing is season-appropriate (${r.record_type}, ${r.record_date}) — check for suitable weather clothing and evidence it; CHR 2015 Reg 9 requires physical needs are met`
+          : `${r.child_name}'s clothing flagged as not season-appropriate (${r.record_type}, ${r.record_date}) — a child without suitable clothing for current weather conditions (no winter coat, no waterproof, no warm layers) is a serious welfare concern. CHR 2015 Reg 9 requires that children's physical needs are met. This must be addressed same-day; a child should never leave the home inadequately dressed for the weather`,
         record_id: r.id,
       });
     }
@@ -464,11 +478,13 @@ export function computeAlerts(
 
   // High: Age-inappropriate clothing
   for (const r of rows) {
-    if (!r.age_appropriate) {
+    if (r.age_appropriate !== true) {
       alerts.push({
         type: "age_inappropriate",
         severity: "high",
-        message: `${r.child_name}'s clothing flagged as not age-appropriate (${r.record_type}, ${r.record_date}) — while children should have choice (especially teenagers expressing their identity), staff have a responsibility to ensure clothing is developmentally appropriate. CHR 2015 Reg 5 requires that individual needs are met. This requires sensitive conversation with the child, not dictation, but genuine dialogue about appropriate dressing`,
+        message: r.age_appropriate === null
+          ? `No record that ${r.child_name}'s clothing is age-appropriate (${r.record_type}, ${r.record_date}) — review with the child and evidence it; CHR 2015 Reg 5 requires individual needs are met`
+          : `${r.child_name}'s clothing flagged as not age-appropriate (${r.record_type}, ${r.record_date}) — while children should have choice (especially teenagers expressing their identity), staff have a responsibility to ensure clothing is developmentally appropriate. CHR 2015 Reg 5 requires that individual needs are met. This requires sensitive conversation with the child, not dictation, but genuine dialogue about appropriate dressing`,
         record_id: r.id,
       });
     }
@@ -753,13 +769,13 @@ export async function createRecord(input: {
       amount: input.amount ?? 0,
       budget_period: input.budgetPeriod ?? null,
       child_chose: input.childChose ?? false,
-      age_appropriate: input.ageAppropriate ?? true,
-      good_condition: input.goodCondition ?? true,
-      sufficient_quantity: input.sufficientQuantity ?? true,
+      age_appropriate: input.ageAppropriate ?? null,
+      good_condition: input.goodCondition ?? null,
+      sufficient_quantity: input.sufficientQuantity ?? null,
       brand_preference_respected: input.brandPreferenceRespected ?? false,
       cultural_needs_met: input.culturalNeedsMet ?? false,
       receipt_kept: input.receiptKept ?? false,
-      season_appropriate: input.seasonAppropriate ?? true,
+      season_appropriate: input.seasonAppropriate ?? null,
       school_requirements_met: input.schoolRequirementsMet ?? null,
       notes: input.notes ?? null,
     })
