@@ -81,8 +81,11 @@ export async function POST(request: NextRequest) {
     // record asserting something nobody had stated. Checked here, before the
     // storage check: whether a request is complete does not depend on whether
     // Supabase happens to be configured.
+    // durationMinutes joined the list later: `?? 0` recorded a sanction of
+    // unstated length as lasting no time at all. An explicit 0 still passes —
+    // requireFields rejects only undefined, null and empty strings.
     const CLAIM_FIELDS: Record<string, readonly string[]> = {
-      create_sanction: ["proportionate", "ageAppropriate", "consistentWithPlan", "childInformed"],
+      create_sanction: ["proportionate", "ageAppropriate", "consistentWithPlan", "childInformed", "durationMinutes"],
     };
     const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
     if (__claims) return __claims;
@@ -101,7 +104,7 @@ export async function POST(request: NextRequest) {
         description: body.description ?? "",
         incident_date: body.incidentDate,
         incident_time: body.incidentTime,
-        duration_minutes: body.durationMinutes ?? 0,
+        duration_minutes: body.durationMinutes,
         privilege_removed: body.privilegeRemoved,
         proportionate: body.proportionate,
         age_appropriate: body.ageAppropriate,
