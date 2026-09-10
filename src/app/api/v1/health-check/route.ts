@@ -21,10 +21,20 @@ async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
 }
 
 const BUILD = () => ({
-  // Platform-agnostic: Northflank has no VERCEL_* vars — the Dockerfile stamps
-  // GIT_COMMIT_SHA from the build's commit so the deployed SHA is verifiable.
-  commit: (process.env.GIT_COMMIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown").slice(0, 9),
-  ref: process.env.GIT_COMMIT_REF ?? process.env.VERCEL_GIT_COMMIT_REF ?? null,
+  // Platform-agnostic build stamp. Northflank auto-injects NF_DEPLOYMENT_SHA /
+  // NF_DEPLOYMENT_BRANCH at runtime (no build arg or dashboard wiring needed);
+  // GIT_COMMIT_SHA (Dockerfile build arg) and the VERCEL_* vars are fallbacks.
+  commit: (
+    process.env.NF_DEPLOYMENT_SHA ??
+    process.env.GIT_COMMIT_SHA ??
+    process.env.VERCEL_GIT_COMMIT_SHA ??
+    "unknown"
+  ).slice(0, 9),
+  ref:
+    process.env.NF_DEPLOYMENT_BRANCH ??
+    process.env.GIT_COMMIT_REF ??
+    process.env.VERCEL_GIT_COMMIT_REF ??
+    null,
 });
 
 export async function GET(_req: NextRequest) {
