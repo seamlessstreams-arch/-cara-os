@@ -165,7 +165,7 @@ export function HomeTherapeuticClimateIntelligenceCard() {
                   (d.pattern_profile.calm_rate ?? 0) >= 75 ? "text-[--cs-success]" :
                   (d.pattern_profile.calm_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.pattern_profile.calm_rate}%
+                  {formatRate(d.pattern_profile.calm_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Calm</p>
@@ -199,7 +199,7 @@ export function HomeTherapeuticClimateIntelligenceCard() {
                 <p>Child debrief: <span className={cn("font-medium",
                   !hasRestraints ? "text-slate-600" :
                   (d.restraint_profile.child_debrief_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{hasRestraints ? `${d.restraint_profile.child_debrief_rate}%` : "N/A"}</span></p>
+                )}>{hasRestraints ? `${formatRate(d.restraint_profile.child_debrief_rate)}` : "N/A"}</span></p>
                 <p>Injuries: <span className={cn("font-medium",
                   d.restraint_profile.injuries_count > 0 ? "text-[--cs-risk]" : "text-[--cs-success]"
                 )}>{d.restraint_profile.injuries_count}</span></p>

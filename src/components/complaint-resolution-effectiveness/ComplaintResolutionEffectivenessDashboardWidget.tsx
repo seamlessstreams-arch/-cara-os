@@ -1,5 +1,6 @@
-import type { JSX } from "react";
 "use client";
+
+import type { JSX } from "react";
 
 // ==============================================================================
 // COMPLAINT RESOLUTION EFFECTIVENESS DASHBOARD WIDGET
@@ -486,8 +487,8 @@ export default function ComplaintResolutionEffectivenessDashboardWidget() {
                           </span>
                           <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                             <span>Complaints: {profile.complaintCount}</span>
-                            <span>Resolved: {profile.resolutionRate}%</span>
-                            <span>Informed: {profile.childInformedRate}%</span>
+                            <span>Resolved: {formatRate(profile.resolutionRate)}</span>
+                            <span>Informed: {formatRate(profile.childInformedRate)}</span>
                             <span>Sources: {profile.sourceDiversity}</span>
                           </div>
                         </div>

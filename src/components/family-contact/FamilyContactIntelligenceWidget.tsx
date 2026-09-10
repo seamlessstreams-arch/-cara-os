@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -65,8 +66,8 @@ export function FamilyContactIntelligenceWidget() {
 
       <Section title="Contact Compliance" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completion Rate" value={`${compliance.completionRate}%`} />
-          <Stat label="Court Order Compliance" value={`${compliance.courtOrderedComplianceRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRate(compliance.completionRate)}`} />
+          <Stat label="Court Order Compliance" value={`${formatRateLoose(compliance.courtOrderedComplianceRate)}`} />
           <Stat label="Cancelled (Home)" value={compliance.cancellationsByHome} />
           <Stat label="Child Refusals" value={compliance.childRefusals} />
           <Stat label="No Shows" value={compliance.noShows} />
@@ -77,10 +78,10 @@ export function FamilyContactIntelligenceWidget() {
       <Section title="Contact Quality">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Sessions" value={quality.totalSessions} />
-          <Stat label="Positive Rate" value={`${quality.positiveRate}%`} />
-          <Stat label="Child Prepared" value={`${quality.childPreparedRate}%`} />
-          <Stat label="Child Voice Recorded" value={`${quality.childVoiceRecordedRate}%`} />
-          <Stat label="PA Informed" value={`${quality.placingAuthorityInformedRate}%`} />
+          <Stat label="Positive Rate" value={`${formatRate(quality.positiveRate)}`} />
+          <Stat label="Child Prepared" value={`${formatRate(quality.childPreparedRate)}`} />
+          <Stat label="Child Voice Recorded" value={`${formatRateLoose(quality.childVoiceRecordedRate)}`} />
+          <Stat label="PA Informed" value={`${formatRateLoose(quality.placingAuthorityInformedRate)}`} />
           <Stat label="Avg Duration" value={`${quality.averageDurationMinutes} min`} />
         </div>
       </Section>
@@ -88,8 +89,8 @@ export function FamilyContactIntelligenceWidget() {
       <Section title="Contact Impact">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Sessions with Impact Data" value={impact.sessionsWithImpactData as number} />
-          <Stat label="Settled After" value={`${impact.settledAfterRate}%`} />
-          <Stat label="Dysregulated After" value={`${impact.dysregulatedAfterRate}%`} />
+          <Stat label="Settled After" value={`${formatRateLoose(impact.settledAfterRate)}`} />
+          <Stat label="Dysregulated After" value={`${formatRateLoose(impact.dysregulatedAfterRate)}`} />
         </div>
         {highRiskImpacts.length > 0 && (
           <div className="mt-2">

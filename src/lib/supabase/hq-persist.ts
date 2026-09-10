@@ -17,8 +17,7 @@ import type {
 
 // Generated Database types don't know the 414 tables yet — narrow untyped
 // escape hatch, payload shapes mirrored from the migration.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RawClient = { from(table: string): any };
+import type { RawClient } from "@/lib/supabase/loose-client";
 function raw(c: NonNullable<ReturnType<typeof createServerClient>>): RawClient {
   return c as unknown as RawClient;
 }

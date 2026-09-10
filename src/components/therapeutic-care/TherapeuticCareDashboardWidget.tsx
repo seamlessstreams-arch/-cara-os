@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { TherapeuticCareIntelligence } from "@/lib/therapeutic-care";
 
@@ -103,11 +104,11 @@ export function TherapeuticCareDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sessionQuality.attendanceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.sessionQuality.attendanceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sessionQuality.positiveOutcomeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.sessionQuality.positiveOutcomeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Positive Outcomes</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -135,12 +136,12 @@ export function TherapeuticCareDashboardWidget() {
         <Section title="Session Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Sessions:</span> <span className="font-medium">{data.sessionQuality.totalSessions}</span></div>
-            <div><span className="text-gray-500">Attendance:</span> <span className="font-medium">{data.sessionQuality.attendanceRate}%</span></div>
-            <div><span className="text-gray-500">Positive Outcomes:</span> <span className="font-medium">{data.sessionQuality.positiveOutcomeRate}%</span></div>
-            <div><span className="text-gray-500">Engagement:</span> <span className="font-medium">{data.sessionQuality.childEngagementRate}%</span></div>
-            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{data.sessionQuality.consentRate}%</span></div>
-            <div><span className="text-gray-500">Key Worker Briefed:</span> <span className="font-medium">{data.sessionQuality.keyWorkerBriefingRate}%</span></div>
-            <div><span className="text-gray-500">Goals Addressed:</span> <span className="font-medium">{data.sessionQuality.goalsAddressedRate}%</span></div>
+            <div><span className="text-gray-500">Attendance:</span> <span className="font-medium">{formatRate(data.sessionQuality.attendanceRate)}</span></div>
+            <div><span className="text-gray-500">Positive Outcomes:</span> <span className="font-medium">{formatRate(data.sessionQuality.positiveOutcomeRate)}</span></div>
+            <div><span className="text-gray-500">Engagement:</span> <span className="font-medium">{formatRate(data.sessionQuality.childEngagementRate)}</span></div>
+            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{formatRate(data.sessionQuality.consentRate)}</span></div>
+            <div><span className="text-gray-500">Key Worker Briefed:</span> <span className="font-medium">{formatRate(data.sessionQuality.keyWorkerBriefingRate)}</span></div>
+            <div><span className="text-gray-500">Goals Addressed:</span> <span className="font-medium">{formatRate(data.sessionQuality.goalsAddressedRate)}</span></div>
           </div>
         </Section>
 
@@ -148,7 +149,7 @@ export function TherapeuticCareDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Referrals:</span> <span className="font-medium">{data.referralEfficiency.totalReferrals}</span></div>
             <div><span className="text-gray-500">Avg Wait Time:</span> <span className="font-medium">{data.referralEfficiency.averageWaitTimeDays} days</span></div>
-            <div><span className="text-gray-500">Acceptance Rate:</span> <span className="font-medium">{data.referralEfficiency.acceptanceRate}%</span></div>
+            <div><span className="text-gray-500">Acceptance Rate:</span> <span className="font-medium">{formatRate(data.referralEfficiency.acceptanceRate)}</span></div>
             <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.referralEfficiency.activeReferrals}</span></div>
             <div><span className="text-gray-500">Waitlisted:</span> <span className={`font-medium ${data.referralEfficiency.waitlistedCount === 0 ? "text-green-600" : "text-amber-600"}`}>{data.referralEfficiency.waitlistedCount}</span></div>
           </div>
@@ -157,10 +158,10 @@ export function TherapeuticCareDashboardWidget() {
         <Section title="Therapy Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.therapyPlanning.totalPlans}</span></div>
-            <div><span className="text-gray-500">Review Rate:</span> <span className="font-medium">{data.therapyPlanning.planReviewRate}%</span></div>
-            <div><span className="text-gray-500">Co-Produced:</span> <span className="font-medium">{data.therapyPlanning.coProducedRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.therapyPlanning.childViewsIncludedRate}%</span></div>
-            <div><span className="text-gray-500">Goals Achieved:</span> <span className="font-medium">{data.therapyPlanning.goalsAchievedRate}%</span></div>
+            <div><span className="text-gray-500">Review Rate:</span> <span className="font-medium">{formatRate(data.therapyPlanning.planReviewRate)}</span></div>
+            <div><span className="text-gray-500">Co-Produced:</span> <span className="font-medium">{formatRate(data.therapyPlanning.coProducedRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.therapyPlanning.childViewsIncludedRate)}</span></div>
+            <div><span className="text-gray-500">Goals Achieved:</span> <span className="font-medium">{formatRate(data.therapyPlanning.goalsAchievedRate)}</span></div>
           </div>
         </Section>
 

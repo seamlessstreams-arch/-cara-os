@@ -7,6 +7,7 @@
 // SCCIF Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -190,7 +191,7 @@ export function StaffDisciplinaryCard() {
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
               <p className={cn("font-bold tabular-nums", (o.support_offered_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.support_offered_rate}%
+                {formatRate(o.support_offered_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Support</p>
             </div>

@@ -6,6 +6,7 @@
 // CHR 2015 Reg 32, Reg 33. SCCIF: "The effectiveness of leaders and managers."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -161,7 +162,7 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
                   (d.readiness.staff_with_target_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.readiness.staff_with_target_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.readiness.staff_with_target > 0 ? `${d.readiness.staff_with_target_rate}%` : "—"}
+                  {d.readiness.staff_with_target > 0 ? `${formatRate(d.readiness.staff_with_target_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">On Pathway</p>
@@ -192,7 +193,7 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
                 <p>Plan coverage: <span className={cn("font-medium",
                   (d.progression.plan_coverage_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.progression.plan_coverage_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.progression.plan_coverage_rate}%</span></p>
+                )}>{formatRate(d.progression.plan_coverage_rate)}</span></p>
                 <p>Actions done: <span className="font-medium text-slate-600">{d.progression.completed_actions}/{d.progression.total_actions}</span></p>
                 <p>Overdue actions: <span className={cn("font-medium",
                   d.progression.overdue_actions === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"

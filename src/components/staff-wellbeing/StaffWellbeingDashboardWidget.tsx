@@ -124,7 +124,7 @@ export default function StaffWellbeingDashboardWidget() {
             {data.staffProfiles.map((sp) => (
               <div key={sp.staffId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{sp.staffName}</span><span className="text-sm font-semibold text-gray-600">{sp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {sp.totalRecords}</span><span>Supervision: {sp.supervisionReceivedRate}%</span><span>Wellbeing: {sp.wellbeingCheckedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {sp.totalRecords}</span><span>Supervision: {formatRate(sp.supervisionReceivedRate)}</span><span>Wellbeing: {formatRate(sp.wellbeingCheckedRate)}</span></div>
               </div>
             ))}
           </div>

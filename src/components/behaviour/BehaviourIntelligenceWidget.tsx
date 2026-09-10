@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function BehaviourIntelligenceWidget() {
       <Section title="Behaviour Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child View Included" value={`${quality.childViewIncludedRate}%`} />
-          <Stat label="De-escalation Attempted" value={`${quality.deEscalationAttemptedRate}%`} />
-          <Stat label="Positive Reinforcement" value={`${quality.positiveReinforcementUsedRate}%`} />
-          <Stat label="Support Plan Followed" value={`${quality.supportPlanFollowedRate}%`} />
+          <Stat label="Child View Included" value={`${formatRate(quality.childViewIncludedRate)}`} />
+          <Stat label="De-escalation Attempted" value={`${formatRate(quality.deEscalationAttemptedRate)}`} />
+          <Stat label="Positive Reinforcement" value={`${formatRate(quality.positiveReinforcementUsedRate)}`} />
+          <Stat label="Support Plan Followed" value={`${formatRate(quality.supportPlanFollowedRate)}`} />
         </div>
       </Section>
 
       <Section title="Behaviour Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Child View Included" value={`${compliance.childViewIncludedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Child View Included" value={`${formatRate(compliance.childViewIncludedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function BehaviourIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Behaviour Management" value={`${staffReadiness.behaviourManagementKnowledgeRate}%`} />
-          <Stat label="De-escalation Skills" value={`${staffReadiness.deEscalationSkillsRate}%`} />
-          <Stat label="Restorative Practice" value={`${staffReadiness.restorativePracticeSkillsRate}%`} />
-          <Stat label="Physical Intervention" value={`${staffReadiness.physicalInterventionTrainingRate}%`} />
-          <Stat label="Trauma-Informed" value={`${staffReadiness.traumaInformedApproachRate}%`} />
-          <Stat label="Behaviour Analysis" value={`${staffReadiness.behaviourAnalysisSkillsRate}%`} />
+          <Stat label="Behaviour Management" value={`${formatRate(staffReadiness.behaviourManagementKnowledgeRate)}`} />
+          <Stat label="De-escalation Skills" value={`${formatRate(staffReadiness.deEscalationSkillsRate)}`} />
+          <Stat label="Restorative Practice" value={`${formatRate(staffReadiness.restorativePracticeSkillsRate)}`} />
+          <Stat label="Physical Intervention" value={`${formatRate(staffReadiness.physicalInterventionTrainingRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(staffReadiness.traumaInformedApproachRate)}`} />
+          <Stat label="Behaviour Analysis" value={`${formatRate(staffReadiness.behaviourAnalysisSkillsRate)}`} />
         </div>
       </Section>
 

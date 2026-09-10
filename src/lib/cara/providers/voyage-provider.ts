@@ -20,6 +20,15 @@ import {
   type ProviderRerankResponse,
 } from "./base-provider";
 
+/** Minimal shapes of the Voyage API responses — only the fields we read. */
+interface VoyageRerankResult {
+  index: number;
+  relevance_score: number;
+}
+interface VoyageErrorBody {
+  detail?: string;
+}
+
 export class VoyageProvider extends BaseCaraProvider {
   readonly name = "voyage" as const;
   readonly displayName = "Voyage AI";
@@ -141,7 +150,7 @@ export class VoyageProvider extends BaseCaraProvider {
     if (!response.ok) this.handleAPIError(data, response.status);
 
     return {
-      results: (data.data ?? []).map((r: any) => ({
+      results: (data.data ?? []).map((r: VoyageRerankResult) => ({
         index: r.index,
         relevanceScore: r.relevance_score,
       })),
@@ -178,7 +187,7 @@ export class VoyageProvider extends BaseCaraProvider {
     }
   }
 
-  private handleAPIError(data: any, status: number): never {
+  private handleAPIError(data: VoyageErrorBody | null | undefined, status: number): never {
     if (status === 429) throw new CaraRateLimitError("voyage");
     throw new CaraProviderError(`Voyage API error: ${data?.detail ?? "Unknown"}`, "voyage", status >= 500);
   }

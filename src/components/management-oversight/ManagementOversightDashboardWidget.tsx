@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -255,20 +256,20 @@ export default function ManagementOversightDashboardWidget() {
       {/* Oversight Quality Section */}
       <Section title="Oversight Quality" defaultOpen>
         <Stat label="Total Records" value={oversightQuality.totalRecords} />
-        <Stat label="Thorough Rate" value={`${oversightQuality.thoroughRate}%`} />
-        <Stat label="Action Plan Rate" value={`${oversightQuality.actionPlanRate}%`} />
-        <Stat label="Follow-Up Rate" value={`${oversightQuality.followUpRate}%`} />
-        <Stat label="Child Impact Assessed" value={`${oversightQuality.childImpactRate}%`} />
-        <Stat label="Staff Feedback Given" value={`${oversightQuality.staffFeedbackRate}%`} />
-        <Stat label="Documentation Rate" value={`${oversightQuality.documentationRate}%`} />
+        <Stat label="Thorough Rate" value={`${formatRate(oversightQuality.thoroughRate)}`} />
+        <Stat label="Action Plan Rate" value={`${formatRate(oversightQuality.actionPlanRate)}`} />
+        <Stat label="Follow-Up Rate" value={`${formatRate(oversightQuality.followUpRate)}`} />
+        <Stat label="Child Impact Assessed" value={`${formatRate(oversightQuality.childImpactRate)}`} />
+        <Stat label="Staff Feedback Given" value={`${formatRate(oversightQuality.staffFeedbackRate)}`} />
+        <Stat label="Documentation Rate" value={`${formatRate(oversightQuality.documentationRate)}`} />
       </Section>
 
       {/* Compliance Section */}
       <Section title="Compliance">
-        <Stat label="Frequency Rate" value={`${compliance.frequencyRate}%`} />
-        <Stat label="Coverage Rate" value={`${compliance.coverageRate}%`} />
-        <Stat label="Timeliness Rate" value={`${compliance.timelinessRate}%`} />
-        <Stat label="Category Diversity" value={`${compliance.categoryDiversityRate}%`} />
+        <Stat label="Frequency Rate" value={`${formatRate(compliance.frequencyRate)}`} />
+        <Stat label="Coverage Rate" value={`${formatRate(compliance.coverageRate)}`} />
+        <Stat label="Timeliness Rate" value={`${formatRate(compliance.timelinessRate)}`} />
+        <Stat label="Category Diversity" value={`${formatRate(compliance.categoryDiversityRate)}`} />
       </Section>
 
       {/* Policy Framework Section */}
@@ -285,12 +286,12 @@ export default function ManagementOversightDashboardWidget() {
       {/* Staff Readiness Section */}
       <Section title="Staff Readiness">
         <Stat label="Total Staff" value={staffReadiness.totalStaff} />
-        <Stat label="Audit Skills" value={`${staffReadiness.auditSkillsRate}%`} />
-        <Stat label="QA Knowledge" value={`${staffReadiness.qualityAssuranceRate}%`} />
-        <Stat label="Regulatory Awareness" value={`${staffReadiness.regulatoryAwarenessRate}%`} />
-        <Stat label="Leadership Capability" value={`${staffReadiness.leadershipRate}%`} />
-        <Stat label="Data Analysis" value={`${staffReadiness.dataAnalysisRate}%`} />
-        <Stat label="Reflective Practice" value={`${staffReadiness.reflectivePracticeRate}%`} />
+        <Stat label="Audit Skills" value={`${formatRate(staffReadiness.auditSkillsRate)}`} />
+        <Stat label="QA Knowledge" value={`${formatRate(staffReadiness.qualityAssuranceRate)}`} />
+        <Stat label="Regulatory Awareness" value={`${formatRate(staffReadiness.regulatoryAwarenessRate)}`} />
+        <Stat label="Leadership Capability" value={`${formatRate(staffReadiness.leadershipRate)}`} />
+        <Stat label="Data Analysis" value={`${formatRate(staffReadiness.dataAnalysisRate)}`} />
+        <Stat label="Reflective Practice" value={`${formatRate(staffReadiness.reflectivePracticeRate)}`} />
       </Section>
 
       {/* Child Profiles Section */}

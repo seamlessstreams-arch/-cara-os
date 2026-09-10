@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -113,7 +114,7 @@ function StaffApproachBar({ profile }: { profile: StaffApproachProfile }) {
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-medium text-gray-700 truncate max-w-[120px]">{profile.staffName}</p>
         <span className={`text-xs font-semibold ${profile.therapeuticRate >= 60 ? "text-emerald-600" : profile.therapeuticRate >= 30 ? "text-amber-600" : "text-red-500"}`}>
-          {profile.therapeuticRate}% therapeutic
+          {formatRate(profile.therapeuticRate)} therapeutic
         </span>
       </div>
       <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
@@ -162,10 +163,10 @@ function ChildCard({ profile }: { profile: ChildConsistencyProfile }) {
         <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full ${profile.overallTherapeuticRate >= 60 ? "bg-emerald-500" : profile.overallTherapeuticRate >= 30 ? "bg-amber-400" : "bg-red-400"}`}
-            style={{ width: `${profile.overallTherapeuticRate}%` }}
+            style={{ width: `${formatRate(profile.overallTherapeuticRate)}` }}
           />
         </div>
-        <p className="text-xs font-semibold text-gray-600 shrink-0">{profile.overallTherapeuticRate}% overall</p>
+        <p className="text-xs font-semibold text-gray-600 shrink-0">{formatRate(profile.overallTherapeuticRate)} overall</p>
       </div>
 
       {/* Supervision prompt */}
@@ -217,7 +218,7 @@ export default function TeamApproachConsistencyPage() {
             {/* ── Summary tiles ─────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className={`rounded-xl border p-4 ${summary.overallTherapeuticRate >= 60 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
-                <p className="text-2xl font-bold text-gray-800">{summary.overallTherapeuticRate}%</p>
+                <p className="text-2xl font-bold text-gray-800">{formatRate(summary.overallTherapeuticRate)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Overall therapeutic rate</p>
               </div>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">

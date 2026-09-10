@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface RecentVisit {
@@ -142,7 +143,7 @@ export function Reg44DashboardWidget({ homeId = "home-oak" }: Props) {
       <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${metrics.reportCompletionRate === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.reportCompletionRate}%
+            {formatRate(metrics.reportCompletionRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Reports</p>
         </div>
@@ -152,7 +153,7 @@ export function Reg44DashboardWidget({ homeId = "home-oak" }: Props) {
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${metrics.actionCompletionRate >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.actionCompletionRate}%
+            {formatRate(metrics.actionCompletionRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Actions done</p>
         </div>
@@ -208,7 +209,7 @@ export function Reg44DashboardWidget({ homeId = "home-oak" }: Props) {
         <div className="flex justify-between text-[10px] mb-1">
           <span className="text-muted-foreground">Ofsted submissions</span>
           <span className={`font-medium ${metrics.ofstedSubmissionRate === 100 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.ofstedSubmissionRate}%
+            {formatRate(metrics.ofstedSubmissionRate)}
           </span>
         </div>
         <div className="flex justify-between text-[10px] mb-1">

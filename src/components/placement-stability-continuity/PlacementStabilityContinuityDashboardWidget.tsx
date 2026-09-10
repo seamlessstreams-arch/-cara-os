@@ -136,7 +136,7 @@ export default function PlacementStabilityContinuityDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Reviews: {cp.totalReviews}</span><span>Stability: {cp.stabilityRate}%</span><span>Participated: {cp.childParticipatedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Reviews: {cp.totalReviews}</span><span>Stability: {formatRate(cp.stabilityRate)}</span><span>Participated: {formatRate(cp.childParticipatedRate)}</span></div>
               </div>
             ))}
           </div>

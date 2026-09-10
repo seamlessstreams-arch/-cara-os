@@ -6,6 +6,7 @@
 // Reg 8, Reg 9, Reg 14, SCCIF Experiences & Progress.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -193,10 +194,10 @@ export function LifeSkillsCard() {
                         "h-full rounded-full",
                         (d.avg_pct ?? 0) >= 60 ? "bg-green-400" : (d.avg_pct ?? 0) >= 40 ? "bg-amber-400" : "bg-red-400",
                       )}
-                      style={{ width: `${d.avg_pct}%` }}
+                      style={{ width: `${formatRate(d.avg_pct)}` }}
                     />
                   </div>
-                  <span className="w-8 text-right tabular-nums font-medium">{d.avg_pct}%</span>
+                  <span className="w-8 text-right tabular-nums font-medium">{formatRate(d.avg_pct)}</span>
                 </div>
               ))}
             </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -70,26 +71,26 @@ export function QualityOfCareIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Reviews" value={reviewQuality.totalReviews} />
-        <Stat label="Meets Standard" value={`${reviewQuality.meetsStandardRate}%`} />
+        <Stat label="Meets Standard" value={`${formatRate(reviewQuality.meetsStandardRate)}`} />
         <Stat label="Staff" value={staffReadiness.totalStaff} />
       </div>
 
       <Section title="Review Quality" defaultOpen>
         <ScoreBar label="Review Quality" value={reviewQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Meets Standard" value={`${reviewQuality.meetsStandardRate}%`} />
-          <Stat label="Evidence Documented" value={`${reviewQuality.evidenceDocumentedRate}%`} />
-          <Stat label="Child View" value={`${reviewQuality.childViewRate}%`} />
-          <Stat label="Action Plan" value={`${reviewQuality.actionPlanRate}%`} />
+          <Stat label="Meets Standard" value={`${formatRate(reviewQuality.meetsStandardRate)}`} />
+          <Stat label="Evidence Documented" value={`${formatRate(reviewQuality.evidenceDocumentedRate)}`} />
+          <Stat label="Child View" value={`${formatRate(reviewQuality.childViewRate)}`} />
+          <Stat label="Action Plan" value={`${formatRate(reviewQuality.actionPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Review Compliance">
         <ScoreBar label="Review Compliance" value={reviewCompliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Follow-Up" value={`${reviewCompliance.followUpRate}%`} />
-          <Stat label="Regulatory Aligned" value={`${reviewCompliance.regulatoryAlignedRate}%`} />
-          <Stat label="Improvement" value={`${reviewCompliance.improvementRate}%`} />
+          <Stat label="Follow-Up" value={`${formatRate(reviewCompliance.followUpRate)}`} />
+          <Stat label="Regulatory Aligned" value={`${formatRate(reviewCompliance.regulatoryAlignedRate)}`} />
+          <Stat label="Improvement" value={`${formatRate(reviewCompliance.improvementRate)}`} />
           <Stat label="Domain Diversity" value={`${reviewCompliance.domainDiversityRatio}%`} />
         </div>
       </Section>
@@ -109,12 +110,12 @@ export function QualityOfCareIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="QA Skills" value={`${staffReadiness.qualityAssuranceRate}%`} />
-          <Stat label="Outcomes Monitoring" value={`${staffReadiness.outcomesMonitoringRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${staffReadiness.regulatoryKnowledgeRate}%`} />
-          <Stat label="Reflective Practice" value={`${staffReadiness.reflectivePracticeRate}%`} />
-          <Stat label="Data Analysis" value={`${staffReadiness.dataAnalysisRate}%`} />
-          <Stat label="Child Participation" value={`${staffReadiness.childParticipationRate}%`} />
+          <Stat label="QA Skills" value={`${formatRate(staffReadiness.qualityAssuranceRate)}`} />
+          <Stat label="Outcomes Monitoring" value={`${formatRate(staffReadiness.outcomesMonitoringRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(staffReadiness.regulatoryKnowledgeRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(staffReadiness.reflectivePracticeRate)}`} />
+          <Stat label="Data Analysis" value={`${formatRate(staffReadiness.dataAnalysisRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(staffReadiness.childParticipationRate)}`} />
         </div>
       </Section>
 

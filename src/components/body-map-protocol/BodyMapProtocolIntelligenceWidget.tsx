@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,12 +78,12 @@ export function BodyMapProtocolIntelligenceWidget() {
       <Section title="Recording Quality" defaultOpen>
         <ScoreBar label="Recording Quality Score" value={recording.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Thorough Rate" value={`${recording.thoroughRate}%`} />
-          <Stat label="Child Explanation" value={`${recording.childExplanationRate}%`} />
-          <Stat label="Timely Recording" value={`${recording.timelyRecordingRate}%`} />
-          <Stat label="Photograph Rate" value={`${recording.photographRate}%`} />
-          <Stat label="Manager Informed" value={`${recording.managerInformedRate}%`} />
-          <Stat label="Follow-Up Done" value={`${recording.followUpCompletedRate}%`} />
+          <Stat label="Thorough Rate" value={`${formatRate(recording.thoroughRate)}`} />
+          <Stat label="Child Explanation" value={`${formatRate(recording.childExplanationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(recording.timelyRecordingRate)}`} />
+          <Stat label="Photograph Rate" value={`${formatRate(recording.photographRate)}`} />
+          <Stat label="Manager Informed" value={`${formatRate(recording.managerInformedRate)}`} />
+          <Stat label="Follow-Up Done" value={`${formatRate(recording.followUpCompletedRate)}`} />
         </div>
       </Section>
 
@@ -90,11 +91,11 @@ export function BodyMapProtocolIntelligenceWidget() {
         <ScoreBar label="Audit Compliance Score" value={audit.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Audits" value={audit.totalAudits} />
-          <Stat label="Protocol Accessible" value={`${audit.protocolAccessibleRate}%`} />
-          <Stat label="Staff Trained" value={`${audit.staffTrainedRate}%`} />
-          <Stat label="Storage Secure" value={`${audit.storageSecureRate}%`} />
-          <Stat label="Cross-Referenced" value={`${audit.crossReferencedRate}%`} />
-          <Stat label="Overall Compliant" value={`${audit.overallCompliantRate}%`} />
+          <Stat label="Protocol Accessible" value={`${formatRate(audit.protocolAccessibleRate)}`} />
+          <Stat label="Staff Trained" value={`${formatRate(audit.staffTrainedRate)}`} />
+          <Stat label="Storage Secure" value={`${formatRate(audit.storageSecureRate)}`} />
+          <Stat label="Cross-Referenced" value={`${formatRate(audit.crossReferencedRate)}`} />
+          <Stat label="Overall Compliant" value={`${formatRate(audit.overallCompliantRate)}`} />
         </div>
       </Section>
 
@@ -102,11 +103,11 @@ export function BodyMapProtocolIntelligenceWidget() {
         <ScoreBar label="Staff Competence Score" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Body Map Trained" value={`${staff.bodyMapTrainedRate}%`} />
-          <Stat label="Safeguarding" value={`${staff.safeguardingRate}%`} />
-          <Stat label="Photography Protocol" value={`${staff.photographyRate}%`} />
-          <Stat label="Documentation" value={`${staff.documentationRate}%`} />
-          <Stat label="Escalation" value={`${staff.escalationRate}%`} />
+          <Stat label="Body Map Trained" value={`${formatRate(staff.bodyMapTrainedRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staff.safeguardingRate)}`} />
+          <Stat label="Photography Protocol" value={`${formatRate(staff.photographyRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staff.documentationRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(staff.escalationRate)}`} />
         </div>
       </Section>
 
@@ -114,10 +115,10 @@ export function BodyMapProtocolIntelligenceWidget() {
         <ScoreBar label="Escalation Effectiveness Score" value={escalation.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Escalations" value={escalation.totalEscalations} />
-          <Stat label="Referral Made" value={`${escalation.referralMadeRate}%`} />
-          <Stat label="Outcome Recorded" value={`${escalation.outcomeRecordedRate}%`} />
-          <Stat label="Timely" value={`${escalation.timelyRate}%`} />
-          <Stat label="Appropriate" value={`${escalation.appropriateRate}%`} />
+          <Stat label="Referral Made" value={`${formatRate(escalation.referralMadeRate)}`} />
+          <Stat label="Outcome Recorded" value={`${formatRate(escalation.outcomeRecordedRate)}`} />
+          <Stat label="Timely" value={`${formatRate(escalation.timelyRate)}`} />
+          <Stat label="Appropriate" value={`${formatRate(escalation.appropriateRate)}`} />
         </div>
       </Section>
 

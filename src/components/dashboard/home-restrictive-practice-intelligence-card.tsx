@@ -7,6 +7,7 @@
 // CHR 2015 Reg 19, 20. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -142,7 +143,7 @@ export function HomeRestrictivePracticeIntelligenceCard() {
                   d.restraint_profile.de_escalation_rate === 100 ? "text-[--cs-success]" :
                   d.restraint_profile.de_escalation_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.restraint_profile.de_escalation_rate}%
+                  {formatRate(d.restraint_profile.de_escalation_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">De-escalation</p>
@@ -156,7 +157,7 @@ export function HomeRestrictivePracticeIntelligenceCard() {
                   d.restraint_profile.child_debrief_rate === 100 ? "text-[--cs-success]" :
                   d.restraint_profile.child_debrief_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.restraint_profile.child_debrief_rate}%
+                  {formatRate(d.restraint_profile.child_debrief_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child Debrief</p>
@@ -170,7 +171,7 @@ export function HomeRestrictivePracticeIntelligenceCard() {
                   d.restraint_profile.training_compliance_rate === 100 ? "text-[--cs-success]" :
                   d.restraint_profile.training_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.restraint_profile.training_compliance_rate}%
+                  {formatRate(d.restraint_profile.training_compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Staff Trained</p>
@@ -184,8 +185,8 @@ export function HomeRestrictivePracticeIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Reviews: <span className={cn("font-medium", d.restraint_profile.review_completion_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restraint_profile.review_completion_rate}%</span></p>
-                <p>Body maps: <span className={cn("font-medium", d.restraint_profile.body_map_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restraint_profile.body_map_rate}%</span></p>
+                <p>Reviews: <span className={cn("font-medium", d.restraint_profile.review_completion_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.restraint_profile.review_completion_rate)}</span></p>
+                <p>Body maps: <span className={cn("font-medium", d.restraint_profile.body_map_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.restraint_profile.body_map_rate)}</span></p>
                 {hasPending && <p>Pending: <span className="font-medium text-red-600">{d.restraint_profile.pending_reviews}</span></p>}
               </div>
             </div>

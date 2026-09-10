@@ -9,6 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import {
   computeRecordingQualityIntelligence,
@@ -17,15 +18,6 @@ import {
   type ChildRef,
 } from "@/lib/engines/recording-quality-intelligence-engine";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET() {
   const [dailyLog, staffList, youngPeople] = await Promise.all([

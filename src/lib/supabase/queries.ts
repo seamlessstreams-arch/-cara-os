@@ -10,15 +10,16 @@
 
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
+import type { Database, Json } from "./types";
 import { todayStr, daysFromNow } from "@/lib/utils";
 
-// Use `any` to bypass Supabase SDK generic type narrowing issues when the
-// Database schema type doesn't include Relationships[] (required by the SDK
-// but not yet generated via `supabase gen types`). Once real credentials are
-// wired and types are auto-generated this should be removed.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = SupabaseClient<any>;
+// The Database type now satisfies the SDK's GenericSchema (Relationships[]
+// per table), so the facade runs fully typed — selects and inserts are
+// compiler-checked against the live schema.
+type SB = SupabaseClient<Database>;
+type Tbl = Database["public"]["Tables"];
+type Ins<T extends keyof Tbl> = Tbl[T]["Insert"];
+type Upd<T extends keyof Tbl> = Tbl[T]["Update"];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -97,7 +98,8 @@ export async function updateStaffSaferRecruitment(
   id: string,
   input: Record<string, unknown>,
 ) {
-  const updates = saferRecruitmentColumns(input);
+  // saferRecruitmentColumns allowlists real staff_members columns.
+  const updates = saferRecruitmentColumns(input) as Upd<"staff_members">;
   if (Object.keys(updates).length === 0) return null;
   return unwrap(
     await sb.from("staff_members").update(updates).eq("id", id).select().single(),
@@ -399,8 +401,23 @@ export async function getDocuments(sb: SB, homeId: string, filters?: {
   return unwrap(await query.order("title"));
 }
 
-export async function createDocument(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("documents").insert(data as never).select().single());
+export async function createDocument(
+  sb: SB,
+  data: { home_id: string } & Partial<Ins<"documents">>,
+) {
+  // Facade contract: callers supply what they have; no-file sentinels ("" / 0),
+  // visible placeholders and DB-defaulted fields fill the rest of the strict
+  // Insert — before this, a payload missing a NOT NULL column failed the whole
+  // insert silently behind an `as never` cast.
+  const row: Ins<"documents"> = {
+    title: "Untitled document", category: "general",
+    description: null, file_url: "", file_name: "", file_size: 0, mime_type: null,
+    version: 1, previous_version_id: null, requires_read_sign: false,
+    linked_child_id: null, linked_staff_id: null, linked_incident_id: null,
+    expiry_date: null, tags: [], created_by: null,
+    ...data,
+  };
+  return unwrap(await sb.from("documents").insert(row).select().single());
 }
 
 export async function getDocumentReadReceipts(sb: SB, documentIds: string[]) {
@@ -891,10 +908,18 @@ export async function createGenericRecord(sb: SB, data: {
   staff_id?: string;
   created_by?: string;
 }) {
-  return unwrap(await sb.from("generic_records").insert(data).select().single());
+  return unwrap(await sb.from("generic_records").insert({
+    home_id: data.home_id,
+    record_type: data.record_type,
+    data: data.data as Json, // JSON-serialised at the wire; boundary cast only
+    child_id: data.child_id ?? null,
+    staff_id: data.staff_id ?? null,
+    created_by: data.created_by ?? null,
+    updated_by: null,
+  }).select().single());
 }
 
-export async function updateGenericRecord(sb: SB, id: string, data: Record<string, unknown>) {
+export async function updateGenericRecord(sb: SB, id: string, data: Upd<"generic_records">) {
   return unwrap(await sb.from("generic_records").update(data).eq("id", id).select().single());
 }
 
@@ -906,10 +931,12 @@ export async function updateGenericRecord(sb: SB, id: string, data: Record<strin
 // UI-only fields — that combination is exactly how "admit a child" silently
 // failed on the live tenant. Ids are deliberately excluded so the DB mints a
 // uuid (store-shaped ids like "yp_x" are not valid uuids).
-function pickColumns(data: Record<string, unknown>, cols: readonly string[]) {
+function pickColumns<T>(data: Record<string, unknown>, cols: readonly string[]): T {
   const out: Record<string, unknown> = {};
   for (const k of cols) if (data[k] !== undefined) out[k] = data[k];
-  return out;
+  // The allowlist IS the table's column contract; NOT NULL gaps are filled by
+  // callers or PG defaults, so the cast asserts nothing the DB won't enforce.
+  return out as T;
 }
 
 const YOUNG_PERSON_COLS = [
@@ -922,14 +949,14 @@ const YOUNG_PERSON_COLS = [
 ] as const;
 
 export async function createYoungPerson(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("young_people").insert(pickColumns(data, YOUNG_PERSON_COLS)).select().single());
+  return unwrap(await sb.from("young_people").insert(pickColumns<Ins<"young_people">>(data, YOUNG_PERSON_COLS)).select().single());
 }
 
 export async function updateYoungPerson(sb: SB, id: string, data: Record<string, unknown>) {
   // Column-allowlisted like the insert: id/home_id and any GET-computed fields
   // (age, key_worker, …) are silently dropped, so only real young_people columns
   // are written.
-  return unwrap(await sb.from("young_people").update(pickColumns(data, YOUNG_PERSON_COLS)).eq("id", id).select().single());
+  return unwrap(await sb.from("young_people").update(pickColumns<Upd<"young_people">>(data, YOUNG_PERSON_COLS)).eq("id", id).select().single());
 }
 
 // full_name is a GENERATED column (first + last) — never insert it.
@@ -943,7 +970,7 @@ const STAFF_MEMBER_COLS = [
 ] as const;
 
 export async function createStaffMember(sb: SB, data: Record<string, unknown>) {
-  const row = pickColumns(data, STAFF_MEMBER_COLS);
+  const row = pickColumns<Ins<"staff_members">>(data, STAFF_MEMBER_COLS);
   // NOT NULL columns get working defaults so a minimal form can create a seat.
   row.role ??= "residential_care_worker";
   row.job_title ??= "Care Worker";
@@ -963,7 +990,7 @@ const MEDICATION_COLS = [
 ] as const;
 
 export async function createMedication(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("medications").insert(pickColumns(data, MEDICATION_COLS)).select().single());
+  return unwrap(await sb.from("medications").insert(pickColumns<Ins<"medications">>(data, MEDICATION_COLS)).select().single());
 }
 
 const LEAVE_REQUEST_COLS = [
@@ -973,7 +1000,7 @@ const LEAVE_REQUEST_COLS = [
 ] as const;
 
 export async function createLeaveRequest(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("leave_requests").insert(pickColumns(data, LEAVE_REQUEST_COLS)).select().single());
+  return unwrap(await sb.from("leave_requests").insert(pickColumns<Ins<"leave_requests">>(data, LEAVE_REQUEST_COLS)).select().single());
 }
 
 const BUILDING_COLS = [
@@ -982,7 +1009,7 @@ const BUILDING_COLS = [
 ] as const;
 
 export async function createBuilding(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("buildings").insert(pickColumns(data, BUILDING_COLS)).select().single());
+  return unwrap(await sb.from("buildings").insert(pickColumns<Ins<"buildings">>(data, BUILDING_COLS)).select().single());
 }
 
 const VEHICLE_COLS = [
@@ -992,5 +1019,5 @@ const VEHICLE_COLS = [
 ] as const;
 
 export async function createVehicle(sb: SB, data: Record<string, unknown>) {
-  return unwrap(await sb.from("vehicles").insert(pickColumns(data, VEHICLE_COLS)).select().single());
+  return unwrap(await sb.from("vehicles").insert(pickColumns<Ins<"vehicles">>(data, VEHICLE_COLS)).select().single());
 }

@@ -122,7 +122,7 @@ export function HomeMedicationManagementIntelligenceCard() {
                   (d.administration.compliance_rate ?? 0) >= 95 ? "text-[--cs-success]" :
                   (d.administration.compliance_rate ?? 0) >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.administration.compliance_rate}%
+                  {formatRate(d.administration.compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Compliance</p>
@@ -136,7 +136,7 @@ export function HomeMedicationManagementIntelligenceCard() {
                   (d.witnessing.witnessing_rate ?? 0) >= 95 ? "text-[--cs-success]" :
                   (d.witnessing.witnessing_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.witnessing.witnessing_rate}%
+                  {formatRate(d.witnessing.witnessing_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Witnessed</p>
@@ -191,7 +191,7 @@ export function HomeMedicationManagementIntelligenceCard() {
                 <p>Low stock: <span className={cn("font-medium", d.stock.low_stock_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.stock.low_stock_count}</span></p>
                 <p>Stock checks: <span className={cn("font-medium",
                   (d.stock.stock_check_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.stock.stock_check_rate}%</span></p>
+                )}>{formatRate(d.stock.stock_check_rate)}</span></p>
                 <p>Children on meds: <span className="font-medium text-slate-600">{d.coverage.children_on_medication}</span></p>
               </div>
             </div>

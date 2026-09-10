@@ -72,8 +72,123 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cara_agent_runs",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_audit_events",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
     table: "cara_interactions",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_actions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_reviews",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_sources",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifact_versions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_artifacts",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_audit_log",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_care_graph_edges",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_care_graph_nodes",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_commit_links",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_contradictions",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_decision_support",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_early_warnings",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_evidence_assessments",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_formulations",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_gaps",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_generations",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_home_dynamics",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_profiles",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_quality_checks",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_safeguarding_patterns",
+    migration: "20260906210000_cara_studio_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "cara_studio_sources",
+    migration: "20260906210000_cara_studio_promotion.sql",
     columns: [],
   },
   {
@@ -104,6 +219,26 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "child_daily_summaries",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "child_report_actions",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_report_evidence",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_report_sections",
+    migration: "20260907090000_child_reports_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "child_reports",
+    migration: "20260907090000_child_reports_promotion.sql",
     columns: [],
   },
   {
@@ -142,6 +277,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "framework_mappings",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "generated_sessions",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "generic_records",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -152,8 +297,58 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "hr_audit_log",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_case_actions",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_case_chronology",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_cases",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_letters",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_process_guardian_audit_log",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_process_guardian_reviews",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_safer_recruitment",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "hr_staff_profiles",
+    migration: "20260907130000_hr_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "incidents",
     migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "learning_resources",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {
@@ -164,6 +359,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "maintenance_items",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "management_oversight_drafts",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {
@@ -192,6 +392,16 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "practice_intelligence_scans",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
+    table: "practice_workflow_triggers",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
+    columns: [],
+  },
+  {
     table: "qa_audits",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -204,6 +414,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "reg45_evidence_queue",
     migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "regulation45_evidence_items",
+    migration: "20260907090000_child_reports_promotion.sql",
     columns: [],
   },
   {
@@ -236,6 +451,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "tasks",
     migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "therapeutic_profiles",
+    migration: "20260907110000_practice_intelligence_promotion.sql",
     columns: [],
   },
   {

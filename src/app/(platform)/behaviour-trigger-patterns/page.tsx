@@ -5,6 +5,7 @@
 // Per-child triggers, intensity trajectory, de-escalation coverage, balance.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,7 +173,7 @@ export default function BehaviourTriggerPatternsPage() {
                       </div>
                     )}
                     <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--cs-text-muted)]">
-                      <span>De-escalation strategy recorded: <span className={cn("font-semibold", (c.strategy_coverage_pct ?? 0) < 50 ? "text-amber-700" : "text-green-700")}>{c.strategy_coverage_pct}%</span></span>
+                      <span>De-escalation strategy recorded: <span className={cn("font-semibold", (c.strategy_coverage_pct ?? 0) < 50 ? "text-amber-700" : "text-green-700")}>{formatRate(c.strategy_coverage_pct)}</span></span>
                       {c.high_intensity_unsupported > 0 && (
                         <span className="text-red-700 font-medium">{c.high_intensity_unsupported} high-intensity without strategy</span>
                       )}

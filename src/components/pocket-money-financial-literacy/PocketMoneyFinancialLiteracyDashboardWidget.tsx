@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildFinancialProfile { childId: string; childName: string; totalSessions: number; competencyRate: number; engagementRate: number; overallScore: number; }
@@ -85,18 +86,18 @@ export default function PocketMoneyFinancialLiteracyDashboardWidget() {
       <Section title="Financial Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.financialQuality.totalSessions} />
-          <Stat label="Competency" value={`${data.financialQuality.competencyRate}%`} />
-          <Stat label="Engagement" value={`${data.financialQuality.engagementRate}%`} />
+          <Stat label="Competency" value={`${formatRate(data.financialQuality.competencyRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(data.financialQuality.engagementRate)}`} />
           <Stat label="Practical Application" value={`${data.financialQuality.practicalApplicationRate}%`} />
-          <Stat label="Progress" value={`${data.financialQuality.progressRate}%`} />
+          <Stat label="Progress" value={`${formatRate(data.financialQuality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="Financial Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.financialCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.financialCompliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${data.financialCompliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(data.financialCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.financialCompliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.financialCompliance.feedbackRate)}`} />
           <Stat label="Skill Diversity" value={`${data.financialCompliance.skillTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -125,7 +126,7 @@ export default function PocketMoneyFinancialLiteracyDashboardWidget() {
           <Stat label="Age-Appropriate Teaching" value={`${data.staffFinancialReadiness.ageAppropriateTeachingRate}%`} />
           <Stat label="Safeguarding" value={`${data.staffFinancialReadiness.safeguardingFinancialAbuseRate}%`} />
           <Stat label="Independence Promotion" value={`${data.staffFinancialReadiness.independencePromotionSkillsRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffFinancialReadiness.recordKeepingRate}%`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffFinancialReadiness.recordKeepingRate)}`} />
         </div>
       </Section>
 
@@ -135,7 +136,7 @@ export default function PocketMoneyFinancialLiteracyDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Competency: {cp.competencyRate}%</span><span>Engagement: {cp.engagementRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Competency: {formatRate(cp.competencyRate)}</span><span>Engagement: {formatRate(cp.engagementRate)}</span></div>
               </div>
             ))}
           </div>

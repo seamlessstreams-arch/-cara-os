@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -316,7 +317,7 @@ export default function ContactDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalContacts} contacts, {child.uniqueCategories} categories, {child.childPreparedRate}% prepared, {child.childViewCapturedRate}% views captured
+                    {child.totalContacts} contacts, {child.uniqueCategories} categories, {formatRate(child.childPreparedRate)} prepared, {formatRate(child.childViewCapturedRate)} views captured
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.contactScore, 10)}`}>

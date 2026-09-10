@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,8 +78,8 @@ export function IndependenceLifeSkillsIntelligenceWidget() {
       <Section title="Skill Development" defaultOpen>
         <ScoreBar label="Skill Development" value={skill.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Independent/Mostly" value={`${skill.independentMostlyRate}%`} />
-          <Stat label="Improvement Rate" value={`${skill.improvementRate}%`} />
+          <Stat label="Independent/Mostly" value={`${formatRate(skill.independentMostlyRate)}`} />
+          <Stat label="Improvement Rate" value={`${formatRate(skill.improvementRate)}`} />
           <Stat label="Domains Assessed" value={skill.domainsAssessed} />
           <Stat label="Avg Domains/Child" value={skill.averageDomainsPerChild} />
           <Stat label="Not Yet Started" value={skill.notYetStartedCount} />
@@ -88,11 +89,11 @@ export function IndependenceLifeSkillsIntelligenceWidget() {
       <Section title="Goal Progress">
         <ScoreBar label="Goal Progress" value={goal.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Achieved/On Track" value={`${goal.achievedOnTrackRate}%`} />
+          <Stat label="Achieved/On Track" value={`${formatRate(goal.achievedOnTrackRate)}`} />
           <Stat label="Behind" value={goal.behindCount} />
           <Stat label="Abandoned" value={goal.abandonedCount} />
-          <Stat label="Child Involvement" value={`${goal.childInvolvementRate}%`} />
-          <Stat label="Age Appropriate" value={`${goal.ageAppropriateRate}%`} />
+          <Stat label="Child Involvement" value={`${formatRate(goal.childInvolvementRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(goal.ageAppropriateRate)}`} />
         </div>
       </Section>
 
@@ -100,9 +101,9 @@ export function IndependenceLifeSkillsIntelligenceWidget() {
         <ScoreBar label="Practical Learning" value={practical.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Sessions" value={practical.totalSessions} />
-          <Stat label="Engagement" value={`${practical.engagementRate}%`} />
-          <Stat label="Progress" value={`${practical.progressRate}%`} />
-          <Stat label="Community-Based" value={`${practical.communityBasedRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(practical.engagementRate)}`} />
+          <Stat label="Progress" value={`${formatRate(practical.progressRate)}`} />
+          <Stat label="Community-Based" value={`${formatRate(practical.communityBasedRate)}`} />
           <Stat label="Avg Duration (min)" value={practical.averageDurationMinutes} />
           <Stat label="Method Variety" value={practical.teachingMethodVariety} />
           <Stat label="Domains Active" value={practical.domainsActive} />
@@ -113,12 +114,12 @@ export function IndependenceLifeSkillsIntelligenceWidget() {
         <ScoreBar label="Pathway Preparation" value={pathway.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Children" value={pathway.totalChildren} />
-          <Stat label="Pathway Plan" value={`${pathway.pathwayPlanRate}%`} />
-          <Stat label="Independence Section" value={`${pathway.independenceSectionRate}%`} />
-          <Stat label="Accommodation" value={`${pathway.accommodationPlannedRate}%`} />
-          <Stat label="Financial Literacy" value={`${pathway.financialLiteracyRate}%`} />
-          <Stat label="Health Passport" value={`${pathway.healthPassportRate}%`} />
-          <Stat label="Child Contribution" value={`${pathway.childContributionRate}%`} />
+          <Stat label="Pathway Plan" value={`${formatRate(pathway.pathwayPlanRate)}`} />
+          <Stat label="Independence Section" value={`${formatRate(pathway.independenceSectionRate)}`} />
+          <Stat label="Accommodation" value={`${formatRate(pathway.accommodationPlannedRate)}`} />
+          <Stat label="Financial Literacy" value={`${formatRate(pathway.financialLiteracyRate)}`} />
+          <Stat label="Health Passport" value={`${formatRate(pathway.healthPassportRate)}`} />
+          <Stat label="Child Contribution" value={`${formatRate(pathway.childContributionRate)}`} />
         </div>
       </Section>
 

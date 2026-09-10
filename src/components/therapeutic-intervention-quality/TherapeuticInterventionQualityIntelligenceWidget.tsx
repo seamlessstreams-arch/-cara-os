@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function TherapeuticInterventionQualityIntelligenceWidget() {
       <Section title="Session Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
-          <Stat label="Engagement" value={`${quality.engagementRate}%`} />
-          <Stat label="Goals Reviewed" value={`${quality.goalsReviewedRate}%`} />
-          <Stat label="Relationship" value={`${quality.relationshipRate}%`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(quality.engagementRate)}`} />
+          <Stat label="Goals Reviewed" value={`${formatRate(quality.goalsReviewedRate)}`} />
+          <Stat label="Relationship" value={`${formatRate(quality.relationshipRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Therapy Diversity" value={`${compliance.therapyDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function TherapeuticInterventionQualityIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Therapeutic Awareness" value={`${staffReadiness.therapeuticAwarenessRate}%`} />
-          <Stat label="Trauma-Informed" value={`${staffReadiness.traumaInformedPracticeRate}%`} />
-          <Stat label="Attachment Theory" value={`${staffReadiness.attachmentTheoryRate}%`} />
-          <Stat label="Communication" value={`${staffReadiness.therapeuticCommunicationRate}%`} />
-          <Stat label="Boundary Mgmt" value={`${staffReadiness.boundaryManagementRate}%`} />
-          <Stat label="Reflective Practice" value={`${staffReadiness.reflectivePracticeRate}%`} />
+          <Stat label="Therapeutic Awareness" value={`${formatRate(staffReadiness.therapeuticAwarenessRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(staffReadiness.traumaInformedPracticeRate)}`} />
+          <Stat label="Attachment Theory" value={`${formatRate(staffReadiness.attachmentTheoryRate)}`} />
+          <Stat label="Communication" value={`${formatRate(staffReadiness.therapeuticCommunicationRate)}`} />
+          <Stat label="Boundary Mgmt" value={`${formatRate(staffReadiness.boundaryManagementRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(staffReadiness.reflectivePracticeRate)}`} />
         </div>
       </Section>
 

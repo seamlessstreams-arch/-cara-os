@@ -16,7 +16,7 @@ import { TONES, GENERATION_TYPES } from "@/lib/cara-studio/types";
 import type { GenerationRequest, GroundingSource } from "@/lib/cara-studio/types";
 import { gatherSourcesForRequest } from "@/lib/cara/cara-studio-sources";
 import type { CaraGenerationRequest } from "@/types/cara-studio";
-import type { SB } from "@/lib/supabase/loose-client";
+import type { Json } from "@/lib/supabase/types";
 
 // The standalone Studio page offers a richer artifact catalogue
 // (CARA_ARTIFACT_TYPE_LABELS — 31 entries) than the generator's GenerationType
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled() && result.output) {
-      const { data: inserted } = await (sb.from("cara_studio_generations") as SB)
+      const { data: inserted } = await sb.from("cara_studio_generations")
         .insert({
           organisation_id: organisationId,
           home_id: homeId,
@@ -169,9 +169,9 @@ export async function POST(req: NextRequest) {
           tone: input.tone,
           audience: input.audience ?? "staff",
           status: result.success ? "draft" : "rejected",
-          output_json: result.output,
-          safety_json: result.safety,
-          profile_json: result.profile ?? null,
+          output_json: result.output as unknown as Json,
+          safety_json: result.safety as unknown as Json,
+          profile_json: (result.profile ?? null) as unknown as Json,
           model: result.model,
           created_by: userId,
           error: result.error ?? null,

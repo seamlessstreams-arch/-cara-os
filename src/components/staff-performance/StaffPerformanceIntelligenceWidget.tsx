@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,21 +78,21 @@ export function StaffPerformanceIntelligenceWidget() {
       <Section title="Qualification Compliance" defaultOpen>
         <ScoreBar label="Qualifications" value={qualComp.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Achieved Rate" value={`${qualComp.achievedRate}%`} />
+          <Stat label="Achieved Rate" value={`${formatRateLoose(qualComp.achievedRate)}`} />
           <Stat label="Expired" value={qualComp.expiredCount as number} />
-          <Stat label="Mandatory Compliance" value={`${qualComp.mandatoryComplianceRate}%`} />
-          <Stat label="Renewal Rate" value={typeof qualComp.renewalRate === "number" ? `${qualComp.renewalRate}%` : "—"} />
+          <Stat label="Mandatory Compliance" value={`${formatRateLoose(qualComp.mandatoryComplianceRate)}`} />
+          <Stat label="Renewal Rate" value={typeof qualComp.renewalRate === "number" ? `${formatRate(qualComp.renewalRate)}` : "—"} />
         </div>
       </Section>
 
       <Section title="Review Quality">
         <ScoreBar label="Review Quality" value={review.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completion Rate" value={`${review.completionRate}%`} />
-          <Stat label="Objectives Met" value={`${review.objectivesMetRate}%`} />
-          <Stat label="Staff Views Recorded" value={`${review.staffViewsRate}%`} />
-          <Stat label="Action Plans" value={`${review.actionPlanRate}%`} />
-          <Stat label="Positive Rating Rate" value={`${review.positiveRatingRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRateLoose(review.completionRate)}`} />
+          <Stat label="Objectives Met" value={`${formatRateLoose(review.objectivesMetRate)}`} />
+          <Stat label="Staff Views Recorded" value={`${formatRateLoose(review.staffViewsRate)}`} />
+          <Stat label="Action Plans" value={`${formatRateLoose(review.actionPlanRate)}`} />
+          <Stat label="Positive Rating Rate" value={`${formatRateLoose(review.positiveRatingRate)}`} />
           <Stat label="Negative Ratings" value={review.negativeRatingCount as number} />
         </div>
       </Section>
@@ -99,9 +100,9 @@ export function StaffPerformanceIntelligenceWidget() {
       <Section title="PDP Progress">
         <ScoreBar label="PDP Progress" value={pdp.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Achievement Rate" value={`${pdp.achievementRate}%`} />
-          <Stat label="Linked to Training" value={`${pdp.linkedToTrainingRate}%`} />
-          <Stat label="Missed Goals" value={`${pdp.missedGoalRate}%`} />
+          <Stat label="Achievement Rate" value={`${formatRateLoose(pdp.achievementRate)}`} />
+          <Stat label="Linked to Training" value={`${formatRateLoose(pdp.linkedToTrainingRate)}`} />
+          <Stat label="Missed Goals" value={`${formatRateLoose(pdp.missedGoalRate)}`} />
           <Stat label="All Staff 2+ Goals" value={pdp.staffWithMinGoals ? "Yes" : "No"} />
         </div>
       </Section>
@@ -109,10 +110,10 @@ export function StaffPerformanceIntelligenceWidget() {
       <Section title="Competency Development">
         <ScoreBar label="Competency" value={competency.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Staff Coverage" value={`${competency.staffCoverageRate}%`} />
+          <Stat label="Staff Coverage" value={`${formatRateLoose(competency.staffCoverageRate)}`} />
           <Stat label="Avg Competency" value={competency.averageCompetencyScore as number} />
-          <Stat label="Improvement Rate" value={`${competency.improvementRate}%`} />
-          <Stat label="High Competency" value={`${competency.highCompetencyRate}%`} />
+          <Stat label="Improvement Rate" value={`${formatRateLoose(competency.improvementRate)}`} />
+          <Stat label="High Competency" value={`${formatRateLoose(competency.highCompetencyRate)}`} />
           <Stat label="Critical Areas Covered" value={competency.criticalAreasCovered ? "Yes" : "No"} />
         </div>
       </Section>

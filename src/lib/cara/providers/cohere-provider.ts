@@ -20,6 +20,19 @@ import {
   type ProviderRerankResponse,
 } from "./base-provider";
 
+/** Minimal shapes of the Cohere API responses — only the fields we read. */
+interface CohereContentBlock {
+  type: string;
+  text?: string;
+}
+interface CohereRerankResult {
+  index: number;
+  relevance_score: number;
+}
+interface CohereErrorBody {
+  message?: string;
+}
+
 export class CohereProvider extends BaseCaraProvider {
   readonly name = "cohere" as const;
   readonly displayName = "Cohere";
@@ -98,7 +111,7 @@ export class CohereProvider extends BaseCaraProvider {
     const data = await response.json();
     if (!response.ok) this.handleAPIError(data, response.status);
 
-    const textContent = data.message?.content?.find((c: any) => c.type === "text");
+    const textContent = data.message?.content?.find((c: CohereContentBlock) => c.type === "text");
 
     return {
       text: textContent?.text ?? "",
@@ -223,7 +236,7 @@ export class CohereProvider extends BaseCaraProvider {
     if (!response.ok) this.handleAPIError(data, response.status);
 
     return {
-      results: (data.results ?? []).map((r: any) => ({
+      results: (data.results ?? []).map((r: CohereRerankResult) => ({
         index: r.index,
         relevanceScore: r.relevance_score,
       })),
@@ -255,7 +268,7 @@ export class CohereProvider extends BaseCaraProvider {
     }
   }
 
-  private handleAPIError(data: any, status: number): never {
+  private handleAPIError(data: CohereErrorBody | null | undefined, status: number): never {
     if (status === 429) throw new CaraRateLimitError("cohere");
     throw new CaraProviderError(`Cohere API error: ${data?.message ?? "Unknown"}`, "cohere", status >= 500);
   }

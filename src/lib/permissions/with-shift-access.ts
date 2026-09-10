@@ -24,12 +24,14 @@ import { buildShiftAwareUserContext } from "./shift-enforcement";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import type { ResourceType, Action } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RouteHandler = (req: NextRequest, routeCtx?: any) => Promise<NextResponse> | NextResponse;
+/** Handlers may require their route context; the wrapped fn keeps it optional
+ *  (Next always supplies it for dynamic routes; tests may omit it). */
+type RouteHandler<Ctx = unknown> = (req: NextRequest, routeCtx: Ctx) => Promise<NextResponse> | NextResponse;
+type WrappedHandler<Ctx> = (req: NextRequest, routeCtx?: Ctx) => Promise<NextResponse> | NextResponse;
 
 const DEFAULT_USER_ID = "staff_darren";
 
-export function withShiftAccess(resourceType: ResourceType, action: Action, handler: RouteHandler): RouteHandler {
+export function withShiftAccess<Ctx>(resourceType: ResourceType, action: Action, handler: RouteHandler<Ctx>): WrappedHandler<Ctx> {
   return async (req: NextRequest, routeCtx) => {
     const staffId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
     const user = buildShiftAwareUserContext(staffId);
@@ -49,6 +51,6 @@ export function withShiftAccess(resourceType: ResourceType, action: Action, hand
         { status: 403 },
       );
     }
-    return handler(req, routeCtx);
+    return handler(req, routeCtx as Ctx);
   };
 }

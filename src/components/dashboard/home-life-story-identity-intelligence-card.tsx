@@ -74,7 +74,7 @@ export function HomeLifeStoryIdentityIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">Story Voice</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.passports.child_authored_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.passports.child_authored_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.passports.total > 0 ? `${d.passports.child_authored_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.passports.child_authored_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.passports.child_authored_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.passports.total > 0 ? `${formatRate(d.passports.child_authored_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Passports</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
@@ -82,7 +82,7 @@ export function HomeLifeStoryIdentityIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">High Isolation</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.aspirations.child_chosen_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.aspirations.child_chosen_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.aspirations.total > 0 ? `${d.aspirations.child_chosen_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.aspirations.child_chosen_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.aspirations.child_chosen_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.aspirations.total > 0 ? `${formatRate(d.aspirations.child_chosen_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Child-Led Goals</p>
             </div>
           </div>

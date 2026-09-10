@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -79,7 +80,7 @@ export function StaffTrainingIntelligenceWidget() {
         <ScoreBar label="Mandatory Compliance" value={mandatory.overallComplianceRate as number} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={mandatory.totalStaff as number} />
-          <Stat label="Compliance Rate" value={`${mandatory.overallComplianceRate}%`} />
+          <Stat label="Compliance Rate" value={`${formatRateLoose(mandatory.overallComplianceRate)}`} />
         </div>
         {((mandatory.staffCompliance ?? []) as Record<string, unknown>[]).length > 0 && (
           <div className="mt-2 space-y-1">
@@ -98,7 +99,7 @@ export function StaffTrainingIntelligenceWidget() {
           <Stat label="Valid" value={certs.valid as number} />
           <Stat label="Expiring Soon" value={certs.expiringSoon as number} />
           <Stat label="Expired" value={certs.expired as number} />
-          <Stat label="Validity Rate" value={`${certs.validityRate}%`} />
+          <Stat label="Validity Rate" value={`${formatRateLoose(certs.validityRate)}`} />
         </div>
         {((certs.expiredDetails ?? []) as Record<string, unknown>[]).length > 0 && (
           <div className="mt-2">
@@ -117,14 +118,14 @@ export function StaffTrainingIntelligenceWidget() {
           <Stat label="Target Hours/Year" value={cpd.targetHoursPerYear as number} />
           <Stat label="Average Hours" value={cpd.averageHours as number} />
           <Stat label="Meeting Target" value={cpd.staffMeetingTarget as number} />
-          <Stat label="Target Met Rate" value={`${cpd.targetMetRate}%`} />
+          <Stat label="Target Met Rate" value={`${formatRateLoose(cpd.targetMetRate)}`} />
         </div>
       </Section>
 
       <Section title="Qualifications">
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Total Staff" value={quals.totalStaff as number} />
-          <Stat label="Compliance Rate" value={`${quals.qualificationComplianceRate}%`} />
+          <Stat label="Compliance Rate" value={`${formatRateLoose(quals.qualificationComplianceRate)}`} />
         </div>
       </Section>
 
@@ -133,7 +134,7 @@ export function StaffTrainingIntelligenceWidget() {
           <Stat label="Total Needs" value={specialist.totalChildNeeds as number} />
           <Stat label="Covered" value={specialist.coveredNeeds as number} />
           <Stat label="Uncovered" value={specialist.uncoveredNeeds as number} />
-          <Stat label="Coverage Rate" value={`${specialist.coverageRate}%`} />
+          <Stat label="Coverage Rate" value={`${formatRateLoose(specialist.coverageRate)}`} />
         </div>
       </Section>
 

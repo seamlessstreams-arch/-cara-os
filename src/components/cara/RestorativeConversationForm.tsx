@@ -11,10 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, HeartHandshake, Check, Sparkles } from "lucide-react";
 
+import type { PostIncidentReflectionRecord, RestorativeConversationRecord } from "@/lib/cara-incident/post-incident-engine";
+
 // ── Inlined from the former use-cara-incident hook ────────────────────────────
 interface PostIncidentData {
-  restorative: any[];
-  reflections: any[];
+  restorative: RestorativeConversationRecord[];
+  reflections: PostIncidentReflectionRecord[];
   templates: {
     restorative_questions: { key: string; label: string }[];
     readiness_checks: string[];

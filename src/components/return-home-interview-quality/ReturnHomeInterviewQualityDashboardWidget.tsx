@@ -193,7 +193,7 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
                   </div>
                   <div>
                     <span className="text-gray-400">RHI Completed:</span>{" "}
-                    <span className="font-medium">{profile.rhiCompletedRate}%</span>
+                    <span className="font-medium">{formatRate(profile.rhiCompletedRate)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Avg Duration:</span>{" "}

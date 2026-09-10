@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -79,10 +80,10 @@ export function AftercareOutcomesTrackingIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Contacts" value={kit.totalContacts} />
           <Stat label="Contact Frequency" value={kit.contactFrequencyScore} />
-          <Stat label="Regular Contact" value={`${kit.regularContactRate}%`} />
-          <Stat label="Child-Initiated" value={`${kit.childInitiatedRate}%`} />
-          <Stat label="Concerns Followed Up" value={`${kit.concernsFollowedUpRate}%`} />
-          <Stat label="Wellbeing Recorded" value={`${kit.wellbeingRecordedRate}%`} />
+          <Stat label="Regular Contact" value={`${formatRate(kit.regularContactRate)}`} />
+          <Stat label="Child-Initiated" value={`${formatRate(kit.childInitiatedRate)}`} />
+          <Stat label="Concerns Followed Up" value={`${formatRate(kit.concernsFollowedUpRate)}`} />
+          <Stat label="Wellbeing Recorded" value={`${formatRate(kit.wellbeingRecordedRate)}`} />
         </div>
       </Section>
 
@@ -90,10 +91,10 @@ export function AftercareOutcomesTrackingIntelligenceWidget() {
         <ScoreBar label="Housing Stability" value={housing.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Leavers" value={housing.totalLeavers} />
-          <Stat label="Stable Housing" value={`${housing.stableHousingRate}%`} />
-          <Stat label="Pathway Plan" value={`${housing.pathwayPlanRate}%`} />
-          <Stat label="Personal Adviser" value={`${housing.personalAdviserRate}%`} />
-          <Stat label="Homelessness" value={`${housing.homelessnessRate}%`} />
+          <Stat label="Stable Housing" value={`${formatRate(housing.stableHousingRate)}`} />
+          <Stat label="Pathway Plan" value={`${formatRate(housing.pathwayPlanRate)}`} />
+          <Stat label="Personal Adviser" value={`${formatRate(housing.personalAdviserRate)}`} />
+          <Stat label="Homelessness" value={`${formatRate(housing.homelessnessRate)}`} />
         </div>
       </Section>
 
@@ -101,10 +102,10 @@ export function AftercareOutcomesTrackingIntelligenceWidget() {
         <ScoreBar label="Education & Employment" value={edu.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Leavers" value={edu.totalLeavers} />
-          <Stat label="Engaged" value={`${edu.engagedRate}%`} />
-          <Stat label="NEET Rate" value={`${edu.neetRate}%`} />
-          <Stat label="Education Continued" value={`${edu.educationContinuedRate}%`} />
-          <Stat label="Training Access" value={`${edu.trainingAccessRate}%`} />
+          <Stat label="Engaged" value={`${formatRate(edu.engagedRate)}`} />
+          <Stat label="NEET Rate" value={`${formatRate(edu.neetRate)}`} />
+          <Stat label="Education Continued" value={`${formatRate(edu.educationContinuedRate)}`} />
+          <Stat label="Training Access" value={`${formatRate(edu.trainingAccessRate)}`} />
         </div>
       </Section>
 
@@ -112,10 +113,10 @@ export function AftercareOutcomesTrackingIntelligenceWidget() {
         <ScoreBar label="Wellbeing Support" value={wellbeing.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={wellbeing.totalAssessments} />
-          <Stat label="Assessments Done" value={`${wellbeing.assessmentsDoneRate}%`} />
-          <Stat label="Thriving/Stable" value={`${wellbeing.thrivingStableRate}%`} />
-          <Stat label="Support Services" value={`${wellbeing.supportServicesAccessedRate}%`} />
-          <Stat label="Mental Health Supported" value={`${wellbeing.mentalHealthSupportedRate}%`} />
+          <Stat label="Assessments Done" value={`${formatRate(wellbeing.assessmentsDoneRate)}`} />
+          <Stat label="Thriving/Stable" value={`${formatRate(wellbeing.thrivingStableRate)}`} />
+          <Stat label="Support Services" value={`${formatRate(wellbeing.supportServicesAccessedRate)}`} />
+          <Stat label="Mental Health Supported" value={`${formatRate(wellbeing.mentalHealthSupportedRate)}`} />
         </div>
       </Section>
 

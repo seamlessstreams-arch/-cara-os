@@ -11,7 +11,6 @@
 // an LLM. Mock mode still creates real suggestions, audit logs and queue items.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   generateText,
@@ -35,8 +34,7 @@ import type {
   IncidentInput,
 } from "@/lib/cara/cara-suggestions-types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }
@@ -681,8 +679,73 @@ export async function writeAuditEntry(args: WriteAuditArgs): Promise<void> {
 
 // ─── Row mappers ────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToSuggestion(row: any): CaraSuggestion {
+/** Snake-case DB rows for the three cara_suggestion tables — only the columns
+ *  the mappers read. Nullable where the DB may hold NULL. */
+interface SuggestionRow {
+  id: string;
+  organisation_id: string | null;
+  home_id: string | null;
+  child_id: string | null;
+  staff_id: string | null;
+  related_record_type: string;
+  related_record_id: string | null;
+  suggestion_type: CaraSuggestion["suggestionType"];
+  title: string;
+  summary: string | null;
+  reason: string | null;
+  suggested_action: string | null;
+  draft_text: string | null;
+  final_text: string | null;
+  risk_level: CaraSuggestion["riskLevel"];
+  confidence_level: CaraSuggestion["confidenceLevel"];
+  status: CaraSuggestion["status"];
+  requires_approval: boolean;
+  reviewer_role: string | null;
+  created_by: string | null;
+  reviewed_by: string | null;
+  approved_by: string | null;
+  rejected_by: string | null;
+  committed_by: string | null;
+  rejection_reason: string | null;
+  ai_provider: string | null;
+  mock_mode: boolean | null;
+  created_at: string;
+  reviewed_at: string | null;
+  approved_at: string | null;
+  rejected_at: string | null;
+  committed_at: string | null;
+  updated_at: string;
+}
+
+interface SuggestionLinkRow {
+  id: string;
+  suggestion_id: string;
+  linked_record_type: CaraSuggestionLink["linkedRecordType"];
+  linked_record_id: string | null;
+  relationship_type: string | null;
+  reason: string | null;
+  suggested_action: string | null;
+  risk_level: string | null;
+  // NULL defaults to requiring approval — the protective direction.
+  requires_approval: boolean | null;
+  created_at: string;
+}
+
+interface SuggestionAuditRow {
+  id: string;
+  organisation_id: string | null;
+  home_id: string | null;
+  suggestion_id: string | null;
+  actor_user_id: string | null;
+  actor_role: string | null;
+  action: CaraSuggestionAuditEntry["action"];
+  before_state: Record<string, unknown> | null;
+  after_state: Record<string, unknown> | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+function rowToSuggestion(row: SuggestionRow): CaraSuggestion {
   return {
     id: row.id,
     organisationId: row.organisation_id ?? undefined,
@@ -720,8 +783,7 @@ function rowToSuggestion(row: any): CaraSuggestion {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToLink(row: any): CaraSuggestionLink {
+function rowToLink(row: SuggestionLinkRow): CaraSuggestionLink {
   return {
     id: row.id,
     suggestionId: row.suggestion_id,
@@ -736,8 +798,7 @@ function rowToLink(row: any): CaraSuggestionLink {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAudit(row: any): CaraSuggestionAuditEntry {
+function rowToAudit(row: SuggestionAuditRow): CaraSuggestionAuditEntry {
   return {
     id: row.id,
     organisationId: row.organisation_id ?? undefined,

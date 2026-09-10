@@ -7,6 +7,7 @@
 // SCCIF: "Records are clear, up to date, and stored safely."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -181,7 +182,7 @@ export function HomeDailyLogIntelligenceCard() {
                 <p>Types used: <span className="font-medium text-slate-600">{d.entry_types.types_used.length}/{d.entry_types.types_used.length + d.entry_types.types_missing.length}</span></p>
                 <p>Mood tracked: <span className={cn("font-medium",
                   (d.mood.mood_tracking_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.mood.mood_tracking_rate}%</span></p>
+                )}>{formatRate(d.mood.mood_tracking_rate)}</span></p>
                 <p>Significant: <span className="font-medium text-slate-600">{d.quality.significant_entries}</span></p>
               </div>
             </div>

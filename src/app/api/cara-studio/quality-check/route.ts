@@ -19,8 +19,7 @@ export async function POST(req: NextRequest) {
     if (!content) {
       const sb = createServerClient();
       if (sb) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (sb.from("cara_studio_artifacts") as any)
+        const { data } = await sb.from("cara_studio_artifacts")
           .select("generated_content").eq("id", body.artifact_id).single();
         content = data?.generated_content ?? "";
       }

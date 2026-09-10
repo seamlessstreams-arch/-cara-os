@@ -7,6 +7,7 @@
 // CHR 2015 Reg 19, 20, 35. SCCIF: "Safety of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -140,7 +141,7 @@ export function ChildRestrictivePracticeIntelligenceCard({ childId }: { childId:
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", (d.compliance.child_debrief_rate ?? 0) >= 90 ? "text-green-600" : (d.compliance.child_debrief_rate ?? 0) >= 70 ? "text-amber-600" : "text-red-600")}>
-                  {d.compliance.child_debrief_rate}%
+                  {formatRate(d.compliance.child_debrief_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Debriefed</p>
@@ -173,9 +174,9 @@ export function ChildRestrictivePracticeIntelligenceCard({ childId }: { childId:
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Body maps: <span className={(d.compliance.body_map_rate ?? 0) >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.compliance.body_map_rate}%</span></p>
-                <p>Reviews done: <span className={(d.compliance.review_completion_rate ?? 0) >= 80 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.compliance.review_completion_rate}%</span></p>
-                <p>De-escalation: <span className={(d.compliance.de_escalation_documented_rate ?? 0) >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.compliance.de_escalation_documented_rate}%</span></p>
+                <p>Body maps: <span className={(d.compliance.body_map_rate ?? 0) >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.compliance.body_map_rate)}</span></p>
+                <p>Reviews done: <span className={(d.compliance.review_completion_rate ?? 0) >= 80 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.compliance.review_completion_rate)}</span></p>
+                <p>De-escalation: <span className={(d.compliance.de_escalation_documented_rate ?? 0) >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.compliance.de_escalation_documented_rate)}</span></p>
                 {d.compliance.pending_reviews > 0 && (
                   <p className="text-amber-600 font-medium">{d.compliance.pending_reviews} pending review(s)</p>
                 )}

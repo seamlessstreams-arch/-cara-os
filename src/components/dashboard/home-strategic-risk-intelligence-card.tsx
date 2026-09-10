@@ -83,7 +83,7 @@ export function HomeStrategicRiskIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">Worsening</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.plans.child_views_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.plans.child_views_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.plans.total > 0 ? `${d.plans.child_views_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.plans.child_views_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.plans.child_views_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.plans.total > 0 ? `${formatRate(d.plans.child_views_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Child Voice</p>
             </div>
           </div>

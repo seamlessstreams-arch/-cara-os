@@ -7,6 +7,7 @@
 // read-only projection — detects and advises, changes no record and never edits
 // the rota. Posture mirrors the sibling /staff-compliance route (demo).
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import { computeStaffCompliance } from "@/lib/engines/staff-compliance-engine";
 import {
@@ -28,15 +29,6 @@ function addDays(isoDate: string, days: number): string {
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(req: NextRequest) {
   const today = todayStr();
@@ -59,7 +51,7 @@ export async function GET(req: NextRequest) {
       full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       role: String(s.role ?? ""),
       job_title: String(s.job_title ?? ""),
-      is_active: s.is_active !== false && s.employment_status !== "inactive",
+      is_active: s.is_active !== false,
       start_date: s.start_date ?? null,
       probation_end_date: s.probation_end_date ?? null,
       dbs_issue_date: s.dbs_issue_date ?? null,

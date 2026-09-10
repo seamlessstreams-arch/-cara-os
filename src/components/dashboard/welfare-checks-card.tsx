@@ -1,4 +1,5 @@
 "use client";
+import type { WelfareCheck, WelfareCheckRound } from "@/types/extended";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — WELFARE CHECKS CARD
@@ -17,8 +18,8 @@ import { cn, todayStr } from "@/lib/utils";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface WelfareChecksResponse {
-  data: any[];
-  checks: any[];
+  data: WelfareCheckRound[];
+  checks: WelfareCheck[];
   meta: {
     total_rounds: number;
     today_rounds: number;

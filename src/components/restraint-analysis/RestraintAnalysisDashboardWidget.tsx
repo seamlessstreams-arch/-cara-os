@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { above, meets } from "@/lib/metrics/rate";
+import { above, meets, formatRate } from "@/lib/metrics/rate";
 import type { RestraintAnalysisIntelligence } from "@/lib/restraint-analysis";
 
 const ratingColors: Record<string, string> = {
@@ -116,12 +116,12 @@ export function RestraintAnalysisDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Avg Duration</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.deEscalation.deEscalationAttemptedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.deEscalation.deEscalationAttemptedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">De-escalation Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className={`text-2xl font-bold ${data.proportionality.injuryToChildRate === 0 ? "text-green-600" : "text-red-600"}`}>
-            {data.proportionality.injuryToChildRate}%
+            {formatRate(data.proportionality.injuryToChildRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Injury Rate</div>
         </div>
@@ -151,16 +151,16 @@ export function RestraintAnalysisDashboardWidget() {
                     <span className="text-sm text-gray-500">{child.overallScore}/10</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    <StatusBadge ok={meets(child.deEscalationAttemptedRate, 90)} label={`De-esc ${child.deEscalationAttemptedRate}%`} />
-                    <StatusBadge ok={meets(child.childViewsRecordedRate, 80)} label={`Views ${child.childViewsRecordedRate}%`} />
-                    <StatusBadge ok={child.injuryRate === 0} label={`Injuries ${child.injuryRate}%`} />
+                    <StatusBadge ok={meets(child.deEscalationAttemptedRate, 90)} label={`De-esc ${formatRate(child.deEscalationAttemptedRate)}`} />
+                    <StatusBadge ok={meets(child.childViewsRecordedRate, 80)} label={`Views ${formatRate(child.childViewsRecordedRate)}`} />
+                    <StatusBadge ok={child.injuryRate === 0} label={`Injuries ${formatRate(child.injuryRate)}`} />
                     <StatusBadge ok={child.reductionPlanInPlace} label="Reduction Plan" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Restraints: <span className="font-medium">{child.totalRestraints}</span></div>
                     <div>Avg Duration: <span className="font-medium">{child.averageDurationMinutes}m</span></div>
                     <div>Common Reason: <span className="font-medium capitalize">{child.mostCommonReason.replace(/_/g, " ")}</span></div>
-                    <div>Post-Incident: <span className="font-medium">{child.postIncidentCompletionRate}%</span></div>
+                    <div>Post-Incident: <span className="font-medium">{formatRate(child.postIncidentCompletionRate)}</span></div>
                   </div>
                 </div>
               ))}
@@ -171,19 +171,19 @@ export function RestraintAnalysisDashboardWidget() {
         <Section title="Proportionality & Safety">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.proportionality.totalRestraints}</span></div>
-            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{data.proportionality.proportionalityAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Approved Technique:</span> <span className="font-medium">{data.proportionality.approvedTechniqueRate}%</span></div>
+            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{formatRate(data.proportionality.proportionalityAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Approved Technique:</span> <span className="font-medium">{formatRate(data.proportionality.approvedTechniqueRate)}</span></div>
             <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.proportionality.averageDurationMinutes}m</span></div>
             <div><span className="text-gray-500">Long ({">"}10m):</span> <span className={`font-medium ${data.proportionality.longDurationCount > 0 ? "text-red-600" : "text-gray-900"}`}>{data.proportionality.longDurationCount}</span></div>
-            <div><span className="text-gray-500">Child Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToChildRate, 0) ? "text-red-600" : "text-green-600"}`}>{data.proportionality.injuryToChildRate}%</span></div>
-            <div><span className="text-gray-500">Staff Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToStaffRate, 0) ? "text-amber-600" : "text-green-600"}`}>{data.proportionality.injuryToStaffRate}%</span></div>
-            <div><span className="text-gray-500">Manager Notified:</span> <span className="font-medium">{data.proportionality.managerNotifiedRate}%</span></div>
+            <div><span className="text-gray-500">Child Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToChildRate, 0) ? "text-red-600" : "text-green-600"}`}>{formatRate(data.proportionality.injuryToChildRate)}</span></div>
+            <div><span className="text-gray-500">Staff Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToStaffRate, 0) ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.proportionality.injuryToStaffRate)}</span></div>
+            <div><span className="text-gray-500">Manager Notified:</span> <span className="font-medium">{formatRate(data.proportionality.managerNotifiedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="De-escalation Practice">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-3">
-            <div><span className="text-gray-500">Attempted:</span> <span className="font-medium">{data.deEscalation.deEscalationAttemptedRate}%</span></div>
+            <div><span className="text-gray-500">Attempted:</span> <span className="font-medium">{formatRate(data.deEscalation.deEscalationAttemptedRate)}</span></div>
             <div><span className="text-gray-500">Avg Techniques:</span> <span className="font-medium">{data.deEscalation.averageTechniquesPerIncident}</span></div>
             <div><span className="text-gray-500">Unique Techniques:</span> <span className="font-medium">{Object.keys(data.deEscalation.techniquesUsed).length}</span></div>
           </div>
@@ -202,14 +202,14 @@ export function RestraintAnalysisDashboardWidget() {
 
         <Section title="Post-Incident Support">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Child Debrief:</span> <span className="font-medium">{data.postIncident.childDebriefRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.postIncident.childViewsRecordedRate}%</span></div>
-            <div><span className="text-gray-500">Medical Check:</span> <span className="font-medium">{data.postIncident.medicalCheckRate}%</span></div>
-            <div><span className="text-gray-500">Body Map:</span> <span className="font-medium">{data.postIncident.bodyMapRate}%</span></div>
-            <div><span className="text-gray-500">Written Record:</span> <span className="font-medium">{data.postIncident.writtenRecordRate}%</span></div>
-            <div><span className="text-gray-500">Manager Review:</span> <span className="font-medium">{data.postIncident.managerReviewRate}%</span></div>
-            <div><span className="text-gray-500">Ofsted Notified:</span> <span className="font-medium">{data.postIncident.ofstedNotifiedRate}%</span></div>
-            <div><span className="text-gray-500">Parent Notified:</span> <span className="font-medium">{data.postIncident.parentNotifiedRate}%</span></div>
+            <div><span className="text-gray-500">Child Debrief:</span> <span className="font-medium">{formatRate(data.postIncident.childDebriefRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.postIncident.childViewsRecordedRate)}</span></div>
+            <div><span className="text-gray-500">Medical Check:</span> <span className="font-medium">{formatRate(data.postIncident.medicalCheckRate)}</span></div>
+            <div><span className="text-gray-500">Body Map:</span> <span className="font-medium">{formatRate(data.postIncident.bodyMapRate)}</span></div>
+            <div><span className="text-gray-500">Written Record:</span> <span className="font-medium">{formatRate(data.postIncident.writtenRecordRate)}</span></div>
+            <div><span className="text-gray-500">Manager Review:</span> <span className="font-medium">{formatRate(data.postIncident.managerReviewRate)}</span></div>
+            <div><span className="text-gray-500">Ofsted Notified:</span> <span className="font-medium">{formatRate(data.postIncident.ofstedNotifiedRate)}</span></div>
+            <div><span className="text-gray-500">Parent Notified:</span> <span className="font-medium">{formatRate(data.postIncident.parentNotifiedRate)}</span></div>
           </div>
         </Section>
 
@@ -217,9 +217,9 @@ export function RestraintAnalysisDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Children Restrained:</span> <span className="font-medium">{data.reduction.childrenWithRestraints}</span></div>
             <div><span className="text-gray-500">Reduction Plans:</span> <span className="font-medium">{data.reduction.reductionPlansInPlace}/{data.reduction.childrenWithRestraints}</span></div>
-            <div><span className="text-gray-500">Trigger Awareness:</span> <span className="font-medium">{data.reduction.triggerAwarenessRate}%</span></div>
+            <div><span className="text-gray-500">Trigger Awareness:</span> <span className="font-medium">{formatRate(data.reduction.triggerAwarenessRate)}</span></div>
             <div><span className="text-gray-500">Avg Alternatives:</span> <span className="font-medium">{data.reduction.alternativeStrategiesAverage}</span></div>
-            <div><span className="text-gray-500">Sensory Profiles:</span> <span className="font-medium">{data.reduction.sensoryProfileRate}%</span></div>
+            <div><span className="text-gray-500">Sensory Profiles:</span> <span className="font-medium">{formatRate(data.reduction.sensoryProfileRate)}</span></div>
             <div><span className="text-gray-500">Training Current:</span> <span className="font-medium">{data.reduction.staffTrainingCompliance}%</span></div>
           </div>
         </Section>

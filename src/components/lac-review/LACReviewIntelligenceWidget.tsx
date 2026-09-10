@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,25 +82,25 @@ export function LACReviewIntelligenceWidget() {
 
       <Section title="Review Timeliness" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Timeliness Rate" value={`${timeliness.timelinessRate}%`} />
+          <Stat label="Timeliness Rate" value={`${formatRate(timeliness.timelinessRate)}`} />
           <Stat label="Avg Delay (days)" value={timeliness.averageDelayDays} />
           <Stat label="Initial Timeliness" value={`${timeliness.initialReviewTimeliness}%`} />
           <Stat label="Subsequent Timeliness" value={`${timeliness.subsequentReviewTimeliness}%`} />
           <Stat label="Emergency Reviews" value={timeliness.emergencyReviewsHeld} />
-          <Stat label="Minutes On Time" value={`${timeliness.minutesDistributedOnTimeRate}%`} />
+          <Stat label="Minutes On Time" value={`${formatRate(timeliness.minutesDistributedOnTimeRate)}`} />
         </div>
       </Section>
 
       <Section title="Child Participation">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Meaningful Participation" value={`${participation.meaningfulParticipationRate}%`} />
+          <Stat label="Meaningful Participation" value={`${formatRate(participation.meaningfulParticipationRate)}`} />
           <Stat label="Child Attended" value={participation.childAttended} />
           <Stat label="Written Views" value={participation.writtenViews} />
           <Stat label="Advocate Attended" value={participation.advocateAttended} />
-          <Stat label="Child Views Captured" value={`${participation.childViewsCapturedRate}%`} />
+          <Stat label="Child Views Captured" value={`${formatRate(participation.childViewsCapturedRate)}`} />
           <Stat label="Not Invited" value={participation.notInvited} />
-          <Stat label="Parent Invited" value={`${participation.parentInvitedRate}%`} />
-          <Stat label="SW Attended" value={`${participation.socialWorkerAttendedRate}%`} />
+          <Stat label="Parent Invited" value={`${formatRate(participation.parentInvitedRate)}`} />
+          <Stat label="SW Attended" value={`${formatRate(participation.socialWorkerAttendedRate)}`} />
         </div>
       </Section>
 
@@ -109,9 +110,9 @@ export function LACReviewIntelligenceWidget() {
           <Stat label="Completed" value={recommendations.completed} />
           <Stat label="In Progress" value={recommendations.inProgress} />
           <Stat label="Overdue" value={recommendations.overdue} />
-          <Stat label="Completion Rate" value={`${recommendations.completionRate}%`} />
-          <Stat label="Overdue Rate" value={`${recommendations.overdueRate}%`} />
-          <Stat label="Urgent Completion" value={`${recommendations.urgentCompletionRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRate(recommendations.completionRate)}`} />
+          <Stat label="Overdue Rate" value={`${formatRate(recommendations.overdueRate)}`} />
+          <Stat label="Urgent Completion" value={`${formatRate(recommendations.urgentCompletionRate)}`} />
         </div>
       </Section>
 
@@ -121,8 +122,8 @@ export function LACReviewIntelligenceWidget() {
           <Stat label="Mid-Point Checks" value={iro.midPointChecks} />
           <Stat label="Monitoring Visits" value={iro.monitoringVisits} />
           <Stat label="Escalations" value={iro.escalations} />
-          <Stat label="Child Spoken To" value={`${iro.childSpokenToRate}%`} />
-          <Stat label="IRO Independence" value={`${iro.iroIndependenceRate}%`} />
+          <Stat label="Child Spoken To" value={`${formatRate(iro.childSpokenToRate)}`} />
+          <Stat label="IRO Independence" value={`${formatRate(iro.iroIndependenceRate)}`} />
         </div>
       </Section>
 

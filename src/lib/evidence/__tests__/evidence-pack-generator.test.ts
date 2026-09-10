@@ -365,3 +365,126 @@ describe("education notes", () => {
     expect(section?.summary).toContain("100%");
   });
 });
+
+describe("typed collections (dead-read fixes)", () => {
+  it("reports the recorded risk level, not 'unknown'", () => {
+    const input = emptyInput();
+    input.riskAssessments = [
+      {
+        id: "ra-1",
+        child_id: "yp-1",
+        domain: "self_harm",
+        current_level: "high",
+        previous_level: "medium",
+        trend: "increasing",
+        status: "current",
+        assessed_by: "Alex Morgan",
+        assessed_date: "2026-06-01",
+        review_date: "2026-09-01",
+        triggers: [],
+        indicators: [],
+        mitigations: [],
+        contingency_plan: "",
+        child_views: "",
+        history_notes: "",
+        linked_incidents: [],
+        home_id: "home_oak",
+        created_at: "2026-06-01T10:00:00Z",
+      },
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const allItems = pack.sections.flatMap((s) => s.items);
+    const ra = allItems.find((i) => i.linked_record_id === "ra-1");
+    expect(ra).toBeTruthy();
+    expect(ra!.summary).toContain("high");
+    expect(ra!.summary).not.toContain("unknown");
+    expect(ra!.tags).toContain("high");
+  });
+});
+
+describe("typed collections (sweep 4)", () => {
+  it("reports a disclosure's type, referral state and severity from the real fields", () => {
+    const input = emptyInput();
+    input.disclosures = [
+      {
+        id: "disc-1",
+        child_id: "yp-1",
+        disclosure_date: "2026-06-02",
+        disclosure_time: "14:00",
+        location: "Kitchen",
+        context_of_disclosure: "During cooking",
+        heard_by: "Alex Morgan",
+        disclosure_summary: "Summary",
+        disclosure_type: "physical_abuse" as never,
+        child_words_used: "",
+        staff_response_at_time: "",
+        reassurance_given: "",
+        questions_asked: "none" as never,
+        disclosure_severity: "critical" as never,
+        immediate_actions_taken: [],
+        reported_to_dsl: true,
+        reported_to_dsl_date: "2026-06-02",
+        reported_to_lado: false,
+        reported_to_police: false,
+        referrals_made: ["MASH"],
+        child_informed_of_actions: true,
+        child_given_agency: "",
+        support_provided_to_child: [],
+        staff_debrief: false,
+        parallel_process_noted: "",
+        status: "open" as never,
+        created_at: "2026-06-05T10:00:00Z",
+      },
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const item = pack.sections.flatMap((s) => s.items).find((i) => i.linked_record_id === "disc-1");
+    expect(item).toBeTruthy();
+    expect(item!.title).toContain("physical_abuse");
+    expect(item!.summary).toContain("yes");
+    expect(item!.date).toBe("2026-06-02");
+  });
+});
+
+describe("typed collections (sweep 5)", () => {
+  it("summarises family time from the real supervision and safety fields", () => {
+    const input = emptyInput();
+    input.familyTimeSessions = [
+      {
+        id: "ft-1",
+        child_id: "yp-1",
+        date: "2026-06-03",
+        time: "14:00",
+        duration_minutes: 60,
+        location: "Contact centre",
+        family_member: "mother" as never,
+        family_member_name: "Sam",
+        supervised_by: "Alex Morgan",
+        supervision_level: "supervised" as never,
+        child_presentation_before: "settled",
+        child_presentation_during: "engaged",
+        child_presentation_after: "settled",
+        interactions_observed: "",
+        warmth_affection_shown: "",
+        boundary_issues: "",
+        concerns_raised: "",
+        positive_observations: "",
+        child_voice_after: "",
+        parent_engagement: "",
+        gifts_exchanged: "",
+        food_shared_who: "",
+        was_it_safe: "yes" as never,
+        incidents_during: "",
+        recommendations_for_next: "",
+        report_sent_to_sw: false,
+        report_sent_date: "",
+        created_at: "2026-06-03T15:00:00Z",
+      } as never,
+    ];
+    const pack = computeInspectionEvidencePack(input);
+    const item = pack.sections.flatMap((s) => s.items).find((i) => i.linked_record_id === "ft-1");
+    expect(item).toBeTruthy();
+    expect(item!.title).toContain("Sam");
+    expect(item!.summary).toContain("supervised");
+    expect(item!.summary).not.toContain("not assessed");
+  });
+});

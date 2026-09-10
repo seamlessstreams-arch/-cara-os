@@ -8,12 +8,10 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraStudioEngine } from "@/lib/cara/studio/studio-engine";
-import { CaraAuditLogger } from "@/lib/cara/audit/audit-logger";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
 import type { CaraStudioRequest } from "@/lib/cara/core/types";
 
 const studioEngine = new CaraStudioEngine();
-const auditLogger = new CaraAuditLogger();
 
 export async function POST(req: NextRequest) {
   try {

@@ -330,28 +330,28 @@ export function ReflectivePracticeDashboardWidget() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Practice Change Rate</span>
-                <span className="font-medium">{data.learningOutcomes.practiceChangeRate}%</span>
+                <span className="font-medium">{formatRate(data.learningOutcomes.practiceChangeRate)}</span>
               </div>
               <ProgressBar value={data.learningOutcomes.practiceChangeRate} max={100} color="bg-purple-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Skill Development Rate</span>
-                <span className="font-medium">{data.learningOutcomes.skillDevelopmentRate}%</span>
+                <span className="font-medium">{formatRate(data.learningOutcomes.skillDevelopmentRate)}</span>
               </div>
               <ProgressBar value={data.learningOutcomes.skillDevelopmentRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Shared with Team</span>
-                <span className="font-medium">{data.learningOutcomes.sharedWithTeamRate}%</span>
+                <span className="font-medium">{formatRate(data.learningOutcomes.sharedWithTeamRate)}</span>
               </div>
               <ProgressBar value={data.learningOutcomes.sharedWithTeamRate} max={100} color="bg-teal-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Linked to Child Outcomes</span>
-                <span className="font-medium">{data.learningOutcomes.linkedToChildOutcomeRate}%</span>
+                <span className="font-medium">{formatRate(data.learningOutcomes.linkedToChildOutcomeRate)}</span>
               </div>
               <ProgressBar value={data.learningOutcomes.linkedToChildOutcomeRate} max={100} color="bg-green-500" />
             </div>
@@ -359,7 +359,7 @@ export function ReflectivePracticeDashboardWidget() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">No Clear Outcome</span>
-                  <span className="font-medium text-red-600">{data.learningOutcomes.noOutcomeRate}%</span>
+                  <span className="font-medium text-red-600">{formatRate(data.learningOutcomes.noOutcomeRate)}</span>
                 </div>
                 <ProgressBar value={data.learningOutcomes.noOutcomeRate} max={100} color="bg-red-400" />
               </div>
@@ -389,7 +389,7 @@ export function ReflectivePracticeDashboardWidget() {
                 <p className="text-xs text-gray-500">Avg Attendance</p>
               </div>
               <div>
-                <span className="text-xl font-bold text-gray-900">{data.teamLearning.sharedLearningRate}%</span>
+                <span className="text-xl font-bold text-gray-900">{formatRate(data.teamLearning.sharedLearningRate)}</span>
                 <p className="text-xs text-gray-500">Shared Rate</p>
               </div>
             </div>

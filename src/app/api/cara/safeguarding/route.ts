@@ -56,8 +56,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<SafeguardingInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -69,7 +69,7 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
 
   // Missing episodes (last 6 months)
   const cutoff6m = new Date(Date.now() - 180 * 86400000).toISOString().slice(0, 10);
-  const { data: rawMissing } = await (sb.from("missing_episodes") as SB)
+  const { data: rawMissing } = await sb.from("missing_episodes")
     .select("*")
     .eq("child_id", childId)
     .gte("date", cutoff6m)

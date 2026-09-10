@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function ConsentManagementIntelligenceWidget() {
       <Section title="Consent Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Obtained" value={`${quality.obtainedRate}%`} />
-          <Stat label="Child Views" value={`${quality.childViewsRate}%`} />
-          <Stat label="Documented" value={`${quality.documentedRate}%`} />
-          <Stat label="Expiry Tracked" value={`${quality.expiryTrackedRate}%`} />
+          <Stat label="Obtained" value={`${formatRate(quality.obtainedRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(quality.childViewsRate)}`} />
+          <Stat label="Documented" value={`${formatRate(quality.documentedRate)}`} />
+          <Stat label="Expiry Tracked" value={`${formatRate(quality.expiryTrackedRate)}`} />
         </div>
       </Section>
 
       <Section title="Consent Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Parent Consulted" value={`${compliance.parentConsultedRate}%`} />
-          <Stat label="Staff Recorded" value={`${compliance.staffRecordedRate}%`} />
-          <Stat label="Review Scheduled" value={`${compliance.reviewScheduledRate}%`} />
+          <Stat label="Parent Consulted" value={`${formatRate(compliance.parentConsultedRate)}`} />
+          <Stat label="Staff Recorded" value={`${formatRate(compliance.staffRecordedRate)}`} />
+          <Stat label="Review Scheduled" value={`${formatRate(compliance.reviewScheduledRate)}`} />
           <Stat label="Category Diversity" value={`${Math.round(compliance.categoryDiversityRatio * 100)}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function ConsentManagementIntelligenceWidget() {
       <Section title="Staff Consent Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Consent Law" value={`${staffReadiness.consentLawRate}%`} />
-          <Stat label="Capacity Assessment" value={`${staffReadiness.capacityAssessmentRate}%`} />
-          <Stat label="Gillick Competence" value={`${staffReadiness.gillikCompetenceRate}%`} />
-          <Stat label="Documentation" value={`${staffReadiness.documentationSkillsRate}%`} />
-          <Stat label="Child Participation" value={`${staffReadiness.childParticipationRate}%`} />
-          <Stat label="Escalation" value={`${staffReadiness.escalationProcessRate}%`} />
+          <Stat label="Consent Law" value={`${formatRate(staffReadiness.consentLawRate)}`} />
+          <Stat label="Capacity Assessment" value={`${formatRate(staffReadiness.capacityAssessmentRate)}`} />
+          <Stat label="Gillick Competence" value={`${formatRate(staffReadiness.gillikCompetenceRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staffReadiness.documentationSkillsRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(staffReadiness.childParticipationRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(staffReadiness.escalationProcessRate)}`} />
         </div>
       </Section>
 

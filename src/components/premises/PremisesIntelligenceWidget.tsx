@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function PremisesIntelligenceWidget() {
       <Section title="Premises Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Hazard Identified" value={`${quality.hazardIdentifiedRate}%`} />
-          <Stat label="Risk Mitigated" value={`${quality.riskMitigatedRate}%`} />
-          <Stat label="Maintenance Done" value={`${quality.maintenanceCompletedRate}%`} />
-          <Stat label="Child-Friendly" value={`${quality.childFriendlyAssessedRate}%`} />
+          <Stat label="Hazard Identified" value={`${formatRate(quality.hazardIdentifiedRate)}`} />
+          <Stat label="Risk Mitigated" value={`${formatRate(quality.riskMitigatedRate)}`} />
+          <Stat label="Maintenance Done" value={`${formatRate(quality.maintenanceCompletedRate)}`} />
+          <Stat label="Child-Friendly" value={`${formatRate(quality.childFriendlyAssessedRate)}`} />
         </div>
       </Section>
 
       <Section title="Premises Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Hazard ID Rate" value={`${compliance.hazardIdentifiedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Hazard ID Rate" value={`${formatRate(compliance.hazardIdentifiedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function PremisesIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="H&S Knowledge" value={`${staff.healthSafetyKnowledgeRate}%`} />
-          <Stat label="Fire Safety" value={`${staff.fireSafetyTrainingRate}%`} />
-          <Stat label="Maintenance" value={`${staff.maintenanceSkillsRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentSkillsRate}%`} />
-          <Stat label="First Aid" value={`${staff.firstAidTrainingRate}%`} />
-          <Stat label="Accessibility" value={`${staff.accessibilityAwarenessRate}%`} />
+          <Stat label="H&S Knowledge" value={`${formatRate(staff.healthSafetyKnowledgeRate)}`} />
+          <Stat label="Fire Safety" value={`${formatRate(staff.fireSafetyTrainingRate)}`} />
+          <Stat label="Maintenance" value={`${formatRate(staff.maintenanceSkillsRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(staff.riskAssessmentSkillsRate)}`} />
+          <Stat label="First Aid" value={`${formatRate(staff.firstAidTrainingRate)}`} />
+          <Stat label="Accessibility" value={`${formatRate(staff.accessibilityAwarenessRate)}`} />
         </div>
       </Section>
 

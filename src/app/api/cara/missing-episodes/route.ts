@@ -54,8 +54,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchMissingData(sb: any, childId: string): Promise<MissingInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchMissingData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<MissingInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth, placement_type")
     .eq("id", childId)
     .single();
@@ -75,7 +75,7 @@ async function fetchMissingData(sb: any, childId: string): Promise<MissingInput>
 
   // Fetch episodes (last 6 months)
   const cutoff = new Date(Date.now() - 180 * 86400000).toISOString().slice(0, 10);
-  const { data: rawEpisodes } = await (sb.from("missing_episodes") as SB)
+  const { data: rawEpisodes } = await sb.from("missing_episodes")
     .select("*")
     .eq("child_id", childId)
     .gte("date", cutoff)

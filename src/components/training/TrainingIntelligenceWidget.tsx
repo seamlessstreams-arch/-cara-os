@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function TrainingIntelligenceWidget() {
       <Section title="Training Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completed On Time" value={`${quality.completedOnTimeRate}%`} />
-          <Stat label="Assessment Passed" value={`${quality.assessmentPassedRate}%`} />
-          <Stat label="Practical Done" value={`${quality.practicalComponentDoneRate}%`} />
-          <Stat label="Certificate Obtained" value={`${quality.certificateObtainedRate}%`} />
+          <Stat label="Completed On Time" value={`${formatRate(quality.completedOnTimeRate)}`} />
+          <Stat label="Assessment Passed" value={`${formatRate(quality.assessmentPassedRate)}`} />
+          <Stat label="Practical Done" value={`${formatRate(quality.practicalComponentDoneRate)}`} />
+          <Stat label="Certificate Obtained" value={`${formatRate(quality.certificateObtainedRate)}`} />
         </div>
       </Section>
 
       <Section title="Training Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Completed On Time" value={`${compliance.completedOnTimeRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Completed On Time" value={`${formatRate(compliance.completedOnTimeRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function TrainingIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Needs Assessment" value={`${staff.trainingNeedsAssessmentRate}%`} />
-          <Stat label="Delivery Skills" value={`${staff.deliverySkillsRate}%`} />
-          <Stat label="Compliance Monitoring" value={`${staff.complianceMonitoringRate}%`} />
-          <Stat label="Record Management" value={`${staff.recordManagementRate}%`} />
-          <Stat label="Quality Assurance" value={`${staff.qualityAssuranceRate}%`} />
-          <Stat label="Budget Management" value={`${staff.budgetManagementRate}%`} />
+          <Stat label="Needs Assessment" value={`${formatRate(staff.trainingNeedsAssessmentRate)}`} />
+          <Stat label="Delivery Skills" value={`${formatRate(staff.deliverySkillsRate)}`} />
+          <Stat label="Compliance Monitoring" value={`${formatRate(staff.complianceMonitoringRate)}`} />
+          <Stat label="Record Management" value={`${formatRate(staff.recordManagementRate)}`} />
+          <Stat label="Quality Assurance" value={`${formatRate(staff.qualityAssuranceRate)}`} />
+          <Stat label="Budget Management" value={`${formatRate(staff.budgetManagementRate)}`} />
         </div>
       </Section>
 

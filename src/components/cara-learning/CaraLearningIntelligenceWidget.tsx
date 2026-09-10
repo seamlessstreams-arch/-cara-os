@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 /* ── tiny helpers (React + Tailwind only) ───────────────────── */
@@ -113,19 +114,19 @@ export function CaraLearningIntelligenceWidget() {
       <Section title="Cara Learning Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Task Accuracy" value={`${quality.taskCompletedAccuratelyRate}%`} />
-          <Stat label="Cost Efficiency" value={`${quality.costEfficiencyMaintainedRate}%`} />
-          <Stat label="Learning Documented" value={`${quality.learningDocumentedRate}%`} />
-          <Stat label="QA Passed" value={`${quality.qualityAssurancePassedRate}%`} />
+          <Stat label="Task Accuracy" value={`${formatRate(quality.taskCompletedAccuratelyRate)}`} />
+          <Stat label="Cost Efficiency" value={`${formatRate(quality.costEfficiencyMaintainedRate)}`} />
+          <Stat label="Learning Documented" value={`${formatRate(quality.learningDocumentedRate)}`} />
+          <Stat label="QA Passed" value={`${formatRate(quality.qualityAssurancePassedRate)}`} />
         </div>
       </Section>
 
       <Section title="Cara Learning Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Task Accuracy" value={`${compliance.taskCompletedAccuratelyRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Task Accuracy" value={`${formatRate(compliance.taskCompletedAccuratelyRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -153,12 +154,12 @@ export function CaraLearningIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Agent Management" value={`${staff.agentManagementKnowledgeRate}%`} />
-          <Stat label="Cost Analysis" value={`${staff.costAnalysisSkillsRate}%`} />
-          <Stat label="QA Skills" value={`${staff.qualityAssuranceSkillsRate}%`} />
-          <Stat label="Data Interpretation" value={`${staff.dataInterpretationSkillsRate}%`} />
-          <Stat label="Performance Monitoring" value={`${staff.performanceMonitoringSkillsRate}%`} />
-          <Stat label="Human Oversight" value={`${staff.humanOversightCapabilityRate}%`} />
+          <Stat label="Agent Management" value={`${formatRate(staff.agentManagementKnowledgeRate)}`} />
+          <Stat label="Cost Analysis" value={`${formatRate(staff.costAnalysisSkillsRate)}`} />
+          <Stat label="QA Skills" value={`${formatRate(staff.qualityAssuranceSkillsRate)}`} />
+          <Stat label="Data Interpretation" value={`${formatRate(staff.dataInterpretationSkillsRate)}`} />
+          <Stat label="Performance Monitoring" value={`${formatRate(staff.performanceMonitoringSkillsRate)}`} />
+          <Stat label="Human Oversight" value={`${formatRate(staff.humanOversightCapabilityRate)}`} />
         </div>
       </Section>
 

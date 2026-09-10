@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,8 +79,8 @@ export function KeyWorkerIntelligenceWidget() {
       <Section title="Session Consistency" defaultOpen>
         <ScoreBar label="Session Consistency" value={scoring.sessionConsistencyScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completion Rate" value={`${sc.completionRate}%`} />
-          <Stat label="Cancellation Rate" value={`${sc.cancellationRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRateLoose(sc.completionRate)}`} />
+          <Stat label="Cancellation Rate" value={`${formatRateLoose(sc.cancellationRate)}`} />
           <Stat label="Avg Duration (min)" value={sc.averageDuration as number} />
           <Stat label="Session Type Variety" value={sc.sessionTypeVariety as number} />
           <Stat label="Cancelled by Child" value={sc.cancelledByChild as number} />
@@ -94,7 +95,7 @@ export function KeyWorkerIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Voice Indicators" value={cv.totalVoiceIndicators as number} />
           <Stat label="Avg Voice Score" value={`${cv.averageVoiceScore}%`} />
-          <Stat label="Plan Influence" value={`${cv.planInfluenceRate}%`} />
+          <Stat label="Plan Influence" value={`${formatRateLoose(cv.planInfluenceRate)}`} />
           <Stat label="Low Voice Children" value={((cv.childrenWithLowVoice ?? []) as string[]).length} />
         </div>
       </Section>
@@ -104,8 +105,8 @@ export function KeyWorkerIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Quality Indicators" value={rq.totalIndicators as number} />
           <Stat label="Avg Quality Score" value={`${rq.averageQualityScore}%`} />
-          <Stat label="Trauma-Informed" value={`${rq.traumaInformedRate}%`} />
-          <Stat label="Culturally Responsive" value={`${rq.culturallyResponsiveRate}%`} />
+          <Stat label="Trauma-Informed" value={`${formatRateLoose(rq.traumaInformedRate)}`} />
+          <Stat label="Culturally Responsive" value={`${formatRateLoose(rq.culturallyResponsiveRate)}`} />
         </div>
       </Section>
 
@@ -114,7 +115,7 @@ export function KeyWorkerIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Goals" value={gp.totalGoals as number} />
           <Stat label="Achieved" value={gp.achievedGoals as number} />
-          <Stat label="Achievement Rate" value={`${gp.achievementRate}%`} />
+          <Stat label="Achievement Rate" value={`${formatRateLoose(gp.achievementRate)}`} />
           <Stat label="Partially Achieved" value={gp.partiallyAchieved as number} />
           <Stat label="Not Achieved" value={gp.notAchieved as number} />
           <Stat label="Deferred" value={gp.deferred as number} />

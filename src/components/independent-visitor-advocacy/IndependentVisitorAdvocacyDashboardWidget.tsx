@@ -259,8 +259,8 @@ export default function IndependentVisitorAdvocacyDashboardWidget() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                   <span>Visits: {cp.totalVisits}</span>
                   <span>Referrals: {cp.totalReferrals}</span>
-                  <span>Positive: {cp.positiveOutcomeRate}%</span>
-                  <span>Satisfied: {cp.satisfactionRate}%</span>
+                  <span>Positive: {formatRate(cp.positiveOutcomeRate)}</span>
+                  <span>Satisfied: {formatRate(cp.satisfactionRate)}</span>
                 </div>
               </div>
             ))}

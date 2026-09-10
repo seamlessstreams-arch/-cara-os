@@ -7,6 +7,7 @@
 // SCCIF: "Staff understand what decisions they can make day to day."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -117,7 +118,7 @@ export function HomeDelegatedAuthorityIntelligenceCard() {
                   (d.status_profile.granted_rate ?? 0) >= 70 ? "text-[--cs-success]" :
                   (d.status_profile.granted_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.status_profile.granted_rate}%
+                  {formatRate(d.status_profile.granted_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Granted</p>

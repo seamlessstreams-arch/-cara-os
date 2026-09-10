@@ -1,4 +1,5 @@
 "use client";
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -52,19 +53,19 @@ export function EnvironmentalRiskComplianceIntelligenceWidget() {
         <ScoreBar label="Risk Coverage" value={risk.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={risk.totalAssessments} />
-          <Stat label="Area Coverage" value={`${risk.areaCoverageRate}%`} />
-          <Stat label="Review Current" value={`${risk.reviewCurrentRate}%`} />
-          <Stat label="Mitigation in Place" value={`${risk.mitigationInPlaceRate}%`} />
-          <Stat label="High/Critical Mitigated" value={`${risk.highCriticalMitigatedRate}%`} />
+          <Stat label="Area Coverage" value={`${formatRate(risk.areaCoverageRate)}`} />
+          <Stat label="Review Current" value={`${formatRate(risk.reviewCurrentRate)}`} />
+          <Stat label="Mitigation in Place" value={`${formatRate(risk.mitigationInPlaceRate)}`} />
+          <Stat label="High/Critical Mitigated" value={`${formatRate(risk.highCriticalMitigatedRate)}`} />
         </div>
       </Section>
       <Section title="Safety Check Compliance">
         <ScoreBar label="Safety Checks" value={safety.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Checks" value={safety.totalChecks as number} />
-          <Stat label="Compliant" value={`${safety.compliantRate}%`} />
+          <Stat label="Compliant" value={`${formatRateLoose(safety.compliantRate)}`} />
           <Stat label="Non-Compliant" value={safety.nonCompliantCount as number} />
-          <Stat label="Actions Completed" value={`${safety.actionRequiredCompletedRate}%`} />
+          <Stat label="Actions Completed" value={`${formatRateLoose(safety.actionRequiredCompletedRate)}`} />
           <Stat label="Frequency Adequate" value={safety.checkFrequencyAdequate ? "✓" : "✗"} />
         </div>
       </Section>
@@ -72,9 +73,9 @@ export function EnvironmentalRiskComplianceIntelligenceWidget() {
         <ScoreBar label="Remediation" value={remediation.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Actions" value={remediation.totalActions} />
-          <Stat label="Completed On Time" value={`${remediation.completedOnTimeRate}%`} />
-          <Stat label="Overdue" value={`${remediation.overdueRate}%`} />
-          <Stat label="Verified" value={`${remediation.verifiedRate}%`} />
+          <Stat label="Completed On Time" value={`${formatRate(remediation.completedOnTimeRate)}`} />
+          <Stat label="Overdue" value={`${formatRate(remediation.overdueRate)}`} />
+          <Stat label="Verified" value={`${formatRate(remediation.verifiedRate)}`} />
           <Stat label="In Progress" value={remediation.inProgressCount} />
         </div>
       </Section>
@@ -82,11 +83,11 @@ export function EnvironmentalRiskComplianceIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Ligature Awareness" value={`${staff.ligatureAwarenessRate}%`} />
-          <Stat label="COSHH Trained" value={`${staff.coshhTrainedRate}%`} />
-          <Stat label="Fire Safety" value={`${staff.fireSafetyRate}%`} />
-          <Stat label="Water Safety" value={`${staff.waterSafetyRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentCompetentRate}%`} />
+          <Stat label="Ligature Awareness" value={`${formatRate(staff.ligatureAwarenessRate)}`} />
+          <Stat label="COSHH Trained" value={`${formatRate(staff.coshhTrainedRate)}`} />
+          <Stat label="Fire Safety" value={`${formatRate(staff.fireSafetyRate)}`} />
+          <Stat label="Water Safety" value={`${formatRate(staff.waterSafetyRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(staff.riskAssessmentCompetentRate)}`} />
         </div>
       </Section>
       {profiles.length > 0 && (<Section title={`Area Profiles (${profiles.length})`}>{profiles.map((p, i) => (<div key={i} className="mb-2 p-2 bg-gray-50 rounded"><div className="flex justify-between text-sm font-medium"><span>{p.areaName as string}</span><span>{p.overallScore as number}/100</span></div><p className="text-xs text-gray-500 mt-1">Type: {(p.areaType as string).replace(/_/g, " ")} · Assessments: {p.assessmentCount as number} · Checks: {p.checkCount as number} · Coverage: {p.assessmentCoverage ? "✓" : "✗"} · Compliance: {p.checkCompliance ? "✓" : "✗"}</p></div>))}</Section>)}

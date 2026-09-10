@@ -401,8 +401,7 @@ export async function linkReportToReg45(
         status: "suggested" as const,
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("regulation45_evidence_items") as any)
+      const { data } = await sb.from("regulation45_evidence_items")
         .insert(inserts)
         .select("*");
 
@@ -453,8 +452,7 @@ export async function getReg45Evidence(
 
   if (!sb) return getDemoReg45Evidence(homeId);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("regulation45_evidence_items") as any)
+  let query = sb.from("regulation45_evidence_items")
     .select("*")
     .eq("home_id", homeId)
     .order("source_date", { ascending: false });
@@ -490,16 +488,14 @@ async function fetchReportAndSections(reportId: string): Promise<{
     return getDemoReportAndSections(reportId);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: report, error: reportError } = await (sb.from("child_reports") as any)
+  const { data: report, error: reportError } = await sb.from("child_reports")
     .select("*")
     .eq("id", reportId)
     .single();
 
   if (reportError || !report) return { report: null, sections: [] };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: sections } = await (sb.from("child_report_sections") as any)
+  const { data: sections } = await sb.from("child_report_sections")
     .select("*")
     .eq("report_id", reportId)
     .order("order", { ascending: true });

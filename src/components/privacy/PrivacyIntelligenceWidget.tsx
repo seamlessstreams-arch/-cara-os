@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function PrivacyIntelligenceWidget() {
       <Section title="Privacy Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Personal Space" value={`${quality.personalSpaceRespectedRate}%`} />
-          <Stat label="Confidentiality" value={`${quality.confidentialityMaintainedRate}%`} />
-          <Stat label="Dignity Preserved" value={`${quality.dignityPreservedRate}%`} />
-          <Stat label="Consent Obtained" value={`${quality.consentObtainedRate}%`} />
+          <Stat label="Personal Space" value={`${formatRate(quality.personalSpaceRespectedRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(quality.confidentialityMaintainedRate)}`} />
+          <Stat label="Dignity Preserved" value={`${formatRate(quality.dignityPreservedRate)}`} />
+          <Stat label="Consent Obtained" value={`${formatRate(quality.consentObtainedRate)}`} />
         </div>
       </Section>
 
       <Section title="Privacy Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Confidentiality" value={`${compliance.confidentialityMaintainedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(compliance.confidentialityMaintainedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function PrivacyIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Data Protection" value={`${staff.dataProtectionTrainingRate}%`} />
-          <Stat label="Confidentiality" value={`${staff.confidentialityAwarenessRate}%`} />
-          <Stat label="Dignity in Care" value={`${staff.dignityInCareTrainingRate}%`} />
-          <Stat label="Consent Practice" value={`${staff.consentPracticeRate}%`} />
-          <Stat label="Digital Privacy" value={`${staff.digitalPrivacySkillsRate}%`} />
-          <Stat label="Info Sharing" value={`${staff.informationSharingKnowledgeRate}%`} />
+          <Stat label="Data Protection" value={`${formatRate(staff.dataProtectionTrainingRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(staff.confidentialityAwarenessRate)}`} />
+          <Stat label="Dignity in Care" value={`${formatRate(staff.dignityInCareTrainingRate)}`} />
+          <Stat label="Consent Practice" value={`${formatRate(staff.consentPracticeRate)}`} />
+          <Stat label="Digital Privacy" value={`${formatRate(staff.digitalPrivacySkillsRate)}`} />
+          <Stat label="Info Sharing" value={`${formatRate(staff.informationSharingKnowledgeRate)}`} />
         </div>
       </Section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,19 +79,19 @@ export function DelegatedAuthorityIntelligenceWidget() {
         <ScoreBar label="Quality" value={quality.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Decisions" value={quality.totalDecisions as number} />
-          <Stat label="Timely Approval" value={`${quality.timelyApprovalRate}%`} />
-          <Stat label="Child Consulted" value={`${quality.childConsultedRate}%`} />
-          <Stat label="Documented" value={`${quality.documentedRate}%`} />
-          <Stat label="Outcome Recorded" value={`${quality.outcomeRecordedRate}%`} />
+          <Stat label="Timely Approval" value={`${formatRateLoose(quality.timelyApprovalRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRateLoose(quality.childConsultedRate)}`} />
+          <Stat label="Documented" value={`${formatRateLoose(quality.documentedRate)}`} />
+          <Stat label="Outcome Recorded" value={`${formatRateLoose(quality.outcomeRecordedRate)}`} />
         </div>
       </Section>
 
       <Section title="Authority Compliance">
         <ScoreBar label="Compliance" value={compliance.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Parent Notified" value={`${compliance.parentNotifiedRate}%`} />
-          <Stat label="Within Scope" value={`${compliance.withinScopeRate}%`} />
-          <Stat label="Staff Decision" value={`${compliance.staffDecisionRate}%`} />
+          <Stat label="Parent Notified" value={`${formatRateLoose(compliance.parentNotifiedRate)}`} />
+          <Stat label="Within Scope" value={`${formatRateLoose(compliance.withinScopeRate)}`} />
+          <Stat label="Staff Decision" value={`${formatRateLoose(compliance.staffDecisionRate)}`} />
           <Stat label="Categories" value={compliance.uniqueCategories as number} />
         </div>
       </Section>
@@ -118,11 +119,11 @@ export function DelegatedAuthorityIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff as number} />
-          <Stat label="Understanding" value={`${staff.delegatedAuthorityUnderstandingRate}%`} />
-          <Stat label="Confidence" value={`${staff.decisionMakingConfidenceRate}%`} />
-          <Stat label="Scope Recognition" value={`${staff.scopeRecognitionRate}%`} />
-          <Stat label="Documentation" value={`${staff.documentationCompetencyRate}%`} />
-          <Stat label="Escalation" value={`${staff.escalationAwarenessRate}%`} />
+          <Stat label="Understanding" value={`${formatRateLoose(staff.delegatedAuthorityUnderstandingRate)}`} />
+          <Stat label="Confidence" value={`${formatRateLoose(staff.decisionMakingConfidenceRate)}`} />
+          <Stat label="Scope Recognition" value={`${formatRateLoose(staff.scopeRecognitionRate)}`} />
+          <Stat label="Documentation" value={`${formatRateLoose(staff.documentationCompetencyRate)}`} />
+          <Stat label="Escalation" value={`${formatRateLoose(staff.escalationAwarenessRate)}`} />
         </div>
       </Section>
 

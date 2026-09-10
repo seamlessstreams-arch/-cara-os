@@ -18,6 +18,16 @@ import {
   type ProviderImageRequest,
 } from "./base-provider";
 
+/** Minimal shapes of the Anthropic Messages API response — only the fields we read. */
+interface AnthropicContentBlock {
+  type: string;
+  text?: string;
+}
+interface AnthropicErrorBody {
+  message?: string;
+  error?: { message?: string };
+}
+
 export class AnthropicProvider extends BaseCaraProvider {
   readonly name = "anthropic" as const;
   readonly displayName = "Anthropic Claude";
@@ -110,7 +120,7 @@ export class AnthropicProvider extends BaseCaraProvider {
       this.handleAPIError(data, response.status);
     }
 
-    const textContent = data.content?.find((c: any) => c.type === "text");
+    const textContent = data.content?.find((c: AnthropicContentBlock) => c.type === "text");
 
     return {
       text: textContent?.text ?? "",
@@ -246,7 +256,7 @@ export class AnthropicProvider extends BaseCaraProvider {
       this.handleAPIError(data, response.status);
     }
 
-    const textContent = data.content?.find((c: any) => c.type === "text");
+    const textContent = data.content?.find((c: AnthropicContentBlock) => c.type === "text");
     return {
       text: textContent?.text ?? "",
       tokenUsage: {
@@ -298,7 +308,8 @@ export class AnthropicProvider extends BaseCaraProvider {
     }
   }
 
-  private handleAPIError(data: any, status: number): never {
+
+  private handleAPIError(data: AnthropicErrorBody | null | undefined, status: number): never {
     if (status === 429) {
       throw new CaraRateLimitError("anthropic");
     }

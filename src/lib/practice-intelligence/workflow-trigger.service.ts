@@ -8,6 +8,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
+
+// Zero code-vs-DDL drift (promotion census): the domain shape IS the column
+// contract, so one documented boundary cast per write replaces field-by-field.
+type Ins<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"];
 import type {
   WorkflowTrigger,
   WorkflowSuggestion,
@@ -333,9 +338,8 @@ export async function processWorkflowTrigger(
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_workflow_triggers") as any)
-    .insert(trigger)
+  const { data, error } = await sb.from("practice_workflow_triggers")
+    .insert(trigger as unknown as Ins<"practice_workflow_triggers">)
     .select("*")
     .single();
 
@@ -344,7 +348,7 @@ export async function processWorkflowTrigger(
     return { id: crypto.randomUUID(), ...trigger, created_at: new Date().toISOString() };
   }
 
-  return data as WorkflowTrigger;
+  return data as unknown as WorkflowTrigger;
 }
 
 // ── List pending triggers ───────────────────────────────────────────────────
@@ -355,8 +359,7 @@ export async function listPendingTriggers(hId?: string, limit: number = 20): Pro
 
   if (!sb) return getDemoTriggers(hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_workflow_triggers") as any)
+  const { data, error } = await sb.from("practice_workflow_triggers")
     .select("*")
     .eq("home_id", hid)
     .eq("status", "pending")
@@ -364,7 +367,7 @@ export async function listPendingTriggers(hId?: string, limit: number = 20): Pro
     .limit(limit);
 
   if (error) return getDemoTriggers(hid);
-  return (data ?? []) as WorkflowTrigger[];
+  return (data ?? []) as unknown as WorkflowTrigger[];
 }
 
 // ── List all triggers ───────────────────────────────────────────────────────
@@ -380,8 +383,7 @@ export async function listWorkflowTriggers(opts?: {
 
   if (!sb) return getDemoTriggers(hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("practice_workflow_triggers") as any)
+  let query = sb.from("practice_workflow_triggers")
     .select("*")
     .eq("home_id", hid)
     .order("created_at", { ascending: false })
@@ -392,7 +394,7 @@ export async function listWorkflowTriggers(opts?: {
 
   const { data, error } = await query;
   if (error) return getDemoTriggers(hid);
-  return (data ?? []) as WorkflowTrigger[];
+  return (data ?? []) as unknown as WorkflowTrigger[];
 }
 
 // ── Action trigger ──────────────────────────────────────────────────────────
@@ -404,8 +406,7 @@ export async function actionWorkflowTrigger(
   const sb = createServerClient();
   if (!sb) throw new Error("Database connection required");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_workflow_triggers") as any)
+  const { data, error } = await sb.from("practice_workflow_triggers")
     .update({
       status: "actioned",
       actioned_by: actionedBy,
@@ -416,7 +417,7 @@ export async function actionWorkflowTrigger(
     .single();
 
   if (error) throw new Error(`Failed to action trigger: ${error.message}`);
-  return data as WorkflowTrigger;
+  return data as unknown as WorkflowTrigger;
 }
 
 // ── Dismiss trigger ─────────────────────────────────────────────────────────
@@ -428,8 +429,7 @@ export async function dismissWorkflowTrigger(
   const sb = createServerClient();
   if (!sb) throw new Error("Database connection required");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_workflow_triggers") as any)
+  const { data, error } = await sb.from("practice_workflow_triggers")
     .update({
       status: "dismissed",
       actioned_by: dismissedBy,
@@ -440,7 +440,7 @@ export async function dismissWorkflowTrigger(
     .single();
 
   if (error) throw new Error(`Failed to dismiss trigger: ${error.message}`);
-  return data as WorkflowTrigger;
+  return data as unknown as WorkflowTrigger;
 }
 
 // ── Demo data ───────────────────────────────────────────────────────────────

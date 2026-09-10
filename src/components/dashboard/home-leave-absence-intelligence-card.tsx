@@ -6,6 +6,7 @@
 // CHR 2015 Reg 33. SCCIF: "Staffing arrangements — availability and adequacy."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -192,7 +193,7 @@ export function HomeLeaveAbsenceIntelligenceCard() {
                 <p>Absence rate: <span className={cn("font-medium",
                   d.planning.current_absent_rate === 0 ? "text-[--cs-success]" :
                   (d.planning.current_absent_rate ?? 0) <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.planning.current_absent_rate}%</span></p>
+                )}>{formatRate(d.planning.current_absent_rate)}</span></p>
               </div>
             </div>
           </div>

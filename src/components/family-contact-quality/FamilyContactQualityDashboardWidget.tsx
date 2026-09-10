@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local Interfaces (mirrors API shape) ──────────────────────────────────
@@ -247,10 +248,10 @@ export default function FamilyContactQualityDashboardWidget() {
         {/* Contact Quality */}
         <Section title="Contact Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Positive Outcomes" value={`${data.familyContactQuality.positiveOutcomeRate}%`} />
-            <Stat label="Children Prepared" value={`${data.familyContactQuality.childPreparedRate}%`} />
-            <Stat label="Children Consulted" value={`${data.familyContactQuality.childConsultedRate}%`} />
-            <Stat label="Support Provided" value={`${data.familyContactQuality.supportRate}%`} />
+            <Stat label="Positive Outcomes" value={`${formatRate(data.familyContactQuality.positiveOutcomeRate)}`} />
+            <Stat label="Children Prepared" value={`${formatRate(data.familyContactQuality.childPreparedRate)}`} />
+            <Stat label="Children Consulted" value={`${formatRate(data.familyContactQuality.childConsultedRate)}`} />
+            <Stat label="Support Provided" value={`${formatRate(data.familyContactQuality.supportRate)}`} />
           </div>
           <p className="text-xs text-gray-400">
             Total contacts: {data.familyContactQuality.totalContacts}
@@ -260,9 +261,9 @@ export default function FamilyContactQualityDashboardWidget() {
         {/* Contact Compliance */}
         <Section title="Contact Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Documented" value={`${data.familyContactCompliance.documentedRate}%`} />
-            <Stat label="Staff Supervised" value={`${data.familyContactCompliance.staffSupervisedRate}%`} />
-            <Stat label="Feedback Recorded" value={`${data.familyContactCompliance.feedbackRate}%`} />
+            <Stat label="Documented" value={`${formatRate(data.familyContactCompliance.documentedRate)}`} />
+            <Stat label="Staff Supervised" value={`${formatRate(data.familyContactCompliance.staffSupervisedRate)}`} />
+            <Stat label="Feedback Recorded" value={`${formatRate(data.familyContactCompliance.feedbackRate)}`} />
             <Stat label="Type Diversity" value={`${data.familyContactCompliance.contactTypeDiversityRatio}%`} />
           </div>
         </Section>
@@ -314,7 +315,7 @@ export default function FamilyContactQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Contact Supervision:</span>{" "}
-              <span className="font-medium">{data.staffFamilyContactReadiness.contactSupervisionRate}%</span>
+              <span className="font-medium">{formatRate(data.staffFamilyContactReadiness.contactSupervisionRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Safeguarding:</span>{" "}
@@ -326,11 +327,11 @@ export default function FamilyContactQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Conflict Management:</span>{" "}
-              <span className="font-medium">{data.staffFamilyContactReadiness.conflictManagementRate}%</span>
+              <span className="font-medium">{formatRate(data.staffFamilyContactReadiness.conflictManagementRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Record Keeping:</span>{" "}
-              <span className="font-medium">{data.staffFamilyContactReadiness.recordKeepingRate}%</span>
+              <span className="font-medium">{formatRate(data.staffFamilyContactReadiness.recordKeepingRate)}</span>
             </div>
           </div>
         </Section>
@@ -350,7 +351,7 @@ export default function FamilyContactQualityDashboardWidget() {
                       Contacts: <span className="font-medium">{child.totalContacts}</span>
                     </div>
                     <div>
-                      Positive: <span className="font-medium">{child.positiveOutcomeRate}%</span>
+                      Positive: <span className="font-medium">{formatRate(child.positiveOutcomeRate)}</span>
                     </div>
                     <div>
                       Prepared: <span className="font-medium">{child.preparedRate}%</span>

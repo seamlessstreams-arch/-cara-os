@@ -6,6 +6,7 @@
 // Reg 36 (records), SCCIF (evidence of day-to-day experiences).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,7 +128,7 @@ export function RecordingQualityCard() {
               "text-lg font-bold tabular-nums",
               (o.mood_capture_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.mood_capture_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.mood_capture_rate}%
+              {formatRate(o.mood_capture_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Mood</p>
           </div>

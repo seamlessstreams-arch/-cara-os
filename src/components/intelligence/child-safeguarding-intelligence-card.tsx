@@ -8,6 +8,7 @@
 // SCCIF: "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -194,7 +195,7 @@ export function ChildSafeguardingIntelligenceCard({ childId }: { childId: string
                 <p className="font-medium text-slate-700">Return Interviews</p>
                 <p className="text-[10px] text-muted-foreground">
                   <span className={mp.return_interview_rate === 100 ? "text-green-600" : "text-amber-600"}>
-                    {mp.return_interview_rate}% completed
+                    {formatRate(mp.return_interview_rate)} completed
                   </span>
                 </p>
               </div>
@@ -224,7 +225,7 @@ export function ChildSafeguardingIntelligenceCard({ childId }: { childId: string
                 <p className="font-medium text-slate-700">Child Debriefs</p>
                 <p className="text-[10px] text-muted-foreground">
                   <span className={rp.debrief_rate === 100 ? "text-green-600" : "text-amber-600"}>
-                    {rp.debrief_rate}% completed
+                    {formatRate(rp.debrief_rate)} completed
                   </span>
                 </p>
               </div>
@@ -235,7 +236,7 @@ export function ChildSafeguardingIntelligenceCard({ childId }: { childId: string
                 <p className="font-medium text-slate-700">Reviews Completed</p>
                 <p className="text-[10px] text-muted-foreground">
                   <span className={rp.review_rate === 100 ? "text-green-600" : "text-amber-600"}>
-                    {rp.review_rate}%
+                    {formatRate(rp.review_rate)}
                   </span>
                 </p>
               </div>

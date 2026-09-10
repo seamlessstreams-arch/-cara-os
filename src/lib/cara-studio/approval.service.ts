@@ -4,11 +4,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { SB } from "@/lib/supabase/loose-client";
 import { writeStudioAuditLog } from "./audit.service";
 import type { CaraStudioReviewStatus } from "@/types/cara-studio";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any {
+function sb(): SB {
   const client = createServerClient();
   if (!client) throw new Error("Supabase not available — approval workflow requires database.");
   return client;

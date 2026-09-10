@@ -56,13 +56,13 @@ function StrategyBar({ strategies }: { strategies: StrategyResult[] }) {
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium truncate mr-2">{s.strategy}</span>
             <span className="text-muted-foreground whitespace-nowrap">
-              {s.resolutionRate}% resolved ({s.usageCount}×)
+              {formatRate(s.resolutionRate)} resolved ({s.usageCount}×)
             </span>
           </div>
           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
               className={`h-2 rounded-full ${(s.resolutionRate ?? 0) >= 70 ? "bg-emerald-500" : (s.resolutionRate ?? 0) >= 40 ? "bg-amber-400" : "bg-red-500"}`}
-              style={{ width: `${s.resolutionRate}%` }}
+              style={{ width: `${formatRate(s.resolutionRate)}` }}
             />
           </div>
           {s.escalatedCount > 0 && (
@@ -326,11 +326,11 @@ export default function DeEscalationStrategyPage() {
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                       <div
                         className={`h-2 rounded-full ${(sp.positiveRate ?? 0) >= 60 ? "bg-emerald-500" : (sp.positiveRate ?? 0) >= 40 ? "bg-amber-400" : "bg-red-400"}`}
-                        style={{ width: `${sp.positiveRate}%` }}
+                        style={{ width: `${formatRate(sp.positiveRate)}` }}
                       />
                     </div>
                     <span className="text-xs text-muted-foreground w-20 text-right">
-                      {sp.positiveRate}% ({sp.totalEntries} entries)
+                      {formatRate(sp.positiveRate)} ({sp.totalEntries} entries)
                     </span>
                   </div>
                 ))}

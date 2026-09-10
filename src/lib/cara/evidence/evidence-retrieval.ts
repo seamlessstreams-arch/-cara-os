@@ -57,8 +57,7 @@ export async function retrieveEvidence(
   // ── Daily logs ───────────────────────────────────────────────────────────
   if (shouldFetch("daily_log")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("daily_log_entries") as any)
+      const { data } = await sb.from("daily_log_entries")
         .select("id, child_id, date, time, entry_type, content, mood_score, staff_id, is_significant")
         .eq("child_id", childId)
         .gte("date", dateRangeStart)
@@ -66,7 +65,7 @@ export async function retrieveEvidence(
         .order("date", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `daily_log_entries::${r.id}`,
         sourceTable: "daily_log_entries",
         sourceRecordId: r.id as string,
@@ -89,8 +88,7 @@ export async function retrieveEvidence(
   // ── Incidents ────────────────────────────────────────────────────────────
   if (shouldFetch("incident")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("incidents") as any)
+      const { data } = await sb.from("incidents")
         .select("id, home_id, child_id, reference, type, severity, date, description, immediate_action, status")
         .or(`child_id.eq.${childId},home_id.eq.${homeId}`)
         .gte("date", dateRangeStart)
@@ -98,7 +96,7 @@ export async function retrieveEvidence(
         .order("date", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `incidents::${r.id}`,
         sourceTable: "incidents",
         sourceRecordId: r.id as string,
@@ -117,8 +115,7 @@ export async function retrieveEvidence(
   // ── Missing episodes ─────────────────────────────────────────────────────
   if (shouldFetch("missing_episode")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("missing_episodes") as any)
+      const { data } = await sb.from("missing_episodes")
         .select("id, child_id, reference, date_missing, date_returned, duration_hours, risk_level, location_last_seen, status, return_interview_completed")
         .eq("child_id", childId)
         .gte("date_missing", dateRangeStart)
@@ -126,7 +123,7 @@ export async function retrieveEvidence(
         .order("date_missing", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `missing_episodes::${r.id}`,
         sourceTable: "missing_episodes",
         sourceRecordId: r.id as string,
@@ -148,8 +145,7 @@ export async function retrieveEvidence(
   // ── Generic records ──────────────────────────────────────────────────────
   if (shouldFetch("generic_record")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("generic_records") as any)
+      const { data } = await sb.from("generic_records")
         .select("id, home_id, record_type, data, child_id, staff_id, created_at")
         .eq("child_id", childId)
         .gte("created_at", dateRangeStart)
@@ -157,7 +153,7 @@ export async function retrieveEvidence(
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => {
+      return (data ?? []).map((r) => {
         const parsed = (r.data ?? {}) as Record<string, unknown>;
         return {
           id: `generic_records::${r.id}`,
@@ -179,8 +175,7 @@ export async function retrieveEvidence(
   // ── Handovers ────────────────────────────────────────────────────────────
   if (shouldFetch("handover")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("handovers") as any)
+      const { data } = await sb.from("handovers")
         .select("id, home_id, shift_date, shift_from, shift_to, general_notes, flags, created_at")
         .eq("home_id", homeId)
         .gte("shift_date", dateRangeStart)
@@ -188,7 +183,7 @@ export async function retrieveEvidence(
         .order("shift_date", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `handovers::${r.id}`,
         sourceTable: "handovers",
         sourceRecordId: r.id as string,
@@ -207,8 +202,7 @@ export async function retrieveEvidence(
   // ── Tasks ────────────────────────────────────────────────────────────────
   if (shouldFetch("task")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("tasks") as any)
+      const { data } = await sb.from("tasks")
         .select("id, home_id, title, description, category, priority, status, assigned_to, due_date, linked_child_id, created_at")
         .or(`linked_child_id.eq.${childId},home_id.eq.${homeId}`)
         .gte("created_at", dateRangeStart)
@@ -216,7 +210,7 @@ export async function retrieveEvidence(
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `tasks::${r.id}`,
         sourceTable: "tasks",
         sourceRecordId: r.id as string,
@@ -235,8 +229,7 @@ export async function retrieveEvidence(
   // ── Care forms ───────────────────────────────────────────────────────────
   if (shouldFetch("care_form")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("care_forms") as any)
+      const { data } = await sb.from("care_forms")
         .select("id, home_id, title, form_type, status, description, linked_child_id, submitted_at, created_at")
         .eq("linked_child_id", childId)
         .gte("created_at", dateRangeStart)
@@ -244,7 +237,7 @@ export async function retrieveEvidence(
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `care_forms::${r.id}`,
         sourceTable: "care_forms",
         sourceRecordId: r.id as string,
@@ -263,8 +256,7 @@ export async function retrieveEvidence(
   // ── Chronology entries ───────────────────────────────────────────────────
   if (shouldFetch("chronology")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("chronology_entries") as any)
+      const { data } = await sb.from("chronology_entries")
         .select("id, child_id, date, category, title, description, significance, recorded_by")
         .eq("child_id", childId)
         .gte("date", dateRangeStart)
@@ -272,7 +264,7 @@ export async function retrieveEvidence(
         .order("date", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `chronology_entries::${r.id}`,
         sourceTable: "chronology_entries",
         sourceRecordId: r.id as string,
@@ -291,15 +283,13 @@ export async function retrieveEvidence(
   // ── Medications ──────────────────────────────────────────────────────────
   if (shouldFetch("medication")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: meds } = await (sb.from("medications") as any)
+      const { data: meds } = await sb.from("medications")
         .select("id, child_id, name, type, dosage, frequency, start_date, end_date, is_active, special_instructions")
         .eq("child_id", childId)
         .eq("is_active", true)
         .limit(limit);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: admins } = await (sb.from("medication_administrations") as any)
+      const { data: admins } = await sb.from("medication_administrations")
         .select("id, child_id, medication_id, scheduled_time, actual_time, status, administered_by, dose_given, notes")
         .eq("child_id", childId)
         .gte("scheduled_time", dateRangeStart)
@@ -307,7 +297,7 @@ export async function retrieveEvidence(
         .order("scheduled_time", { ascending: false })
         .limit(limit);
 
-      const medItems = (meds ?? []).map((r: Record<string, unknown>) => ({
+      const medItems = (meds ?? []).map((r) => ({
         id: `medications::${r.id}`,
         sourceTable: "medications",
         sourceRecordId: r.id as string,
@@ -321,7 +311,7 @@ export async function retrieveEvidence(
         tags: [r.type as string, r.is_active ? "active" : "discontinued"].filter(Boolean),
       }));
 
-      const adminItems = (admins ?? []).map((r: Record<string, unknown>) => ({
+      const adminItems = (admins ?? []).map((r) => ({
         id: `medication_administrations::${r.id}`,
         sourceTable: "medication_administrations",
         sourceRecordId: r.id as string,
@@ -342,8 +332,7 @@ export async function retrieveEvidence(
   // ── Supervisions ─────────────────────────────────────────────────────────
   if (shouldFetch("supervision")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("supervisions") as any)
+      const { data } = await sb.from("supervisions")
         .select("id, home_id, staff_id, supervisor_id, type, scheduled_date, actual_date, status, discussion_points")
         .eq("home_id", homeId)
         .gte("scheduled_date", dateRangeStart)
@@ -351,7 +340,7 @@ export async function retrieveEvidence(
         .order("scheduled_date", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `supervisions::${r.id}`,
         sourceTable: "supervisions",
         sourceRecordId: r.id as string,
@@ -370,8 +359,7 @@ export async function retrieveEvidence(
   // ── Documents ────────────────────────────────────────────────────────────
   if (shouldFetch("document")) {
     fetchers.push(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sb.from("documents") as any)
+      const { data } = await sb.from("documents")
         .select("id, home_id, title, category, description, file_name, linked_child_id, linked_staff_id, tags, created_at")
         .eq("home_id", homeId)
         .gte("created_at", dateRangeStart)
@@ -379,7 +367,7 @@ export async function retrieveEvidence(
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      return (data ?? []).map((r: Record<string, unknown>) => ({
+      return (data ?? []).map((r) => ({
         id: `documents::${r.id}`,
         sourceTable: "documents",
         sourceRecordId: r.id as string,
@@ -431,8 +419,7 @@ export async function retrieveChildProfile(
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("young_people") as any)
+  const { data, error } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth, status, placement_start, key_worker_id")
     .eq("id", childId)
     .eq("home_id", homeId)

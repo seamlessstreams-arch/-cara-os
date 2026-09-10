@@ -5,11 +5,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
   return client as unknown as LooseSupabase;
 }
@@ -68,7 +66,6 @@ export function computeAvgConfidence(
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? undefined;
   const days = Math.min(
     Number.parseInt(url.searchParams.get("days") ?? "30", 10) || 30,
     90,

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
@@ -75,7 +76,7 @@ function ChildMedCard({ profile }: { profile: MedicationChildProfile }) {
             profile.complianceRate >= 80 ? "bg-amber-100 text-amber-700" :
             "bg-red-100 text-red-700"
           }`}>
-            {profile.complianceRate}% compliance
+            {formatRate(profile.complianceRate)} compliance
           </span>
         )}
       </div>
@@ -152,7 +153,7 @@ export default function MedicationSafetyPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <p className={`text-2xl font-bold ${data.complianceRate >= 95 ? "text-green-700" : data.complianceRate >= 80 ? "text-amber-700" : "text-red-700"}`}>
-              {data.complianceRate}%
+              {formatRate(data.complianceRate)}
             </p>
             <p className="text-xs text-slate-500">Compliance rate</p>
           </div>

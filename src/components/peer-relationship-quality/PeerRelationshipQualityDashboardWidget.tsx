@@ -136,7 +136,7 @@ export default function PeerRelationshipQualityDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Interactions: {cp.totalInteractions}</span><span>Positive: {cp.positiveRelationshipRate}%</span><span>Engagement: {cp.positiveEngagementRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Interactions: {cp.totalInteractions}</span><span>Positive: {formatRate(cp.positiveRelationshipRate)}</span><span>Engagement: {formatRate(cp.positiveEngagementRate)}</span></div>
               </div>
             ))}
           </div>

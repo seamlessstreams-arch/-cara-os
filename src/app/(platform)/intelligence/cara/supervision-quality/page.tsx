@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -182,13 +183,13 @@ function StaffCard({ profile }: { profile: StaffSupervisionProfile }) {
         <div className="flex justify-between items-center mb-0.5">
           <span className="text-xs text-gray-600">PACE in supervision</span>
           <span className={`text-xs font-semibold ${profile.paceEngagementRate >= 60 ? "text-emerald-600" : profile.paceEngagementRate >= 30 ? "text-amber-600" : "text-red-600"}`}>
-            {profile.paceEngagementRate}%
+            {formatRate(profile.paceEngagementRate)}
           </span>
         </div>
         <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
           <div
             className={`h-full rounded-full ${profile.paceEngagementRate >= 60 ? "bg-emerald-500" : profile.paceEngagementRate >= 30 ? "bg-amber-400" : "bg-red-400"}`}
-            style={{ width: `${profile.paceEngagementRate}%` }}
+            style={{ width: `${formatRate(profile.paceEngagementRate)}` }}
           />
         </div>
       </div>
@@ -285,7 +286,7 @@ export default function SupervisionQualityPage() {
             {/* ── Summary tiles ─────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className={`rounded-xl border p-4 ${summary.currentSupervisionRate >= 90 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
-                <p className="text-2xl font-bold text-gray-800">{summary.currentSupervisionRate}%</p>
+                <p className="text-2xl font-bold text-gray-800">{formatRate(summary.currentSupervisionRate)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Supervision current</p>
               </div>
               <div className={`rounded-xl border p-4 ${summary.staffOverdue + summary.staffNeverSupervised > 0 ? "border-red-200 bg-red-50" : "border-gray-200 bg-gray-50"}`}>

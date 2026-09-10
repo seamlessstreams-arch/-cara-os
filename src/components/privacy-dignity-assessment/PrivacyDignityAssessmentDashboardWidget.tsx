@@ -138,7 +138,7 @@ export function PrivacyDignityAssessmentDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Feedback: <span className="font-medium">{child.feedbackCount}</span></div>
-                    <div>Positive: <span className="font-medium">{child.positiveRate}%</span></div>
+                    <div>Positive: <span className="font-medium">{formatRate(child.positiveRate)}</span></div>
                     <div>Feels Respected: <span className={`font-medium ${child.feelsRespected ? "text-green-600" : "text-amber-600"}`}>{child.feelsRespected ? "Yes" : "No"}</span></div>
                     <div>Incidents: <span className={`font-medium ${child.incidentCount === 0 ? "text-green-600" : "text-red-600"}`}>{child.incidentCount}</span></div>
                   </div>

@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db/dal";
 import { isOnShiftNow } from "@/lib/permissions/build-user-context";
@@ -20,15 +21,6 @@ export const dynamic = "force-dynamic";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(req: NextRequest) {
   try {

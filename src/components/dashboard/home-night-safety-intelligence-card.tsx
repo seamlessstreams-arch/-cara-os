@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 34. SCCIF: "Safety of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -129,7 +130,7 @@ export function HomeNightSafetyIntelligenceCard() {
             <div className="flex items-center justify-center gap-1">
               <Eye className={cn("h-4 w-4", d.check_compliance.compliance_rate >= 80 ? "text-green-500" : d.check_compliance.compliance_rate >= 50 ? "text-amber-500" : "text-red-500")} />
               <p className={cn("text-lg font-bold tabular-nums", d.check_compliance.compliance_rate >= 80 ? "text-[--cs-success]" : d.check_compliance.compliance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                {d.check_compliance.compliance_rate}%
+                {formatRate(d.check_compliance.compliance_rate)}
               </p>
             </div>
             <p className="text-[10px] text-muted-foreground">Check Compliance</p>
@@ -139,7 +140,7 @@ export function HomeNightSafetyIntelligenceCard() {
             <div className="flex items-center justify-center gap-1">
               <Shield className={cn("h-4 w-4", d.check_compliance.all_children_checked_rate >= 80 ? "text-green-500" : "text-amber-500")} />
               <p className={cn("text-lg font-bold tabular-nums", d.check_compliance.all_children_checked_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {d.check_compliance.all_children_checked_rate}%
+                {formatRate(d.check_compliance.all_children_checked_rate)}
               </p>
             </div>
             <p className="text-[10px] text-muted-foreground">All Checked</p>

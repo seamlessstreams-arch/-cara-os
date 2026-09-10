@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function IncidentPatternAnalysisIntelligenceWidget() {
       <Section title="Incident Response" defaultOpen>
         <ScoreBar label="Incident Response" value={ir.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Response Quality" value={`${ir.responseQualityRate}%`} />
-          <Stat label="De-escalation" value={`${ir.deEscalationSuccessRate}%`} />
-          <Stat label="Child Debrief" value={`${ir.childDebriefRate}%`} />
-          <Stat label="Restraint Rate" value={`${ir.restraintRate}%`} />
+          <Stat label="Response Quality" value={`${formatRate(ir.responseQualityRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(ir.deEscalationSuccessRate)}`} />
+          <Stat label="Child Debrief" value={`${formatRate(ir.childDebriefRate)}`} />
+          <Stat label="Restraint Rate" value={`${formatRate(ir.restraintRate)}`} />
           <Stat label="Major Incidents" value={ir.majorIncidentCount} />
           <Stat label="Avg Response (min)" value={ir.averageResponseTimeMins} />
         </div>
@@ -90,10 +91,10 @@ export function IncidentPatternAnalysisIntelligenceWidget() {
         <ScoreBar label="Notification Compliance" value={nc.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Notifiable" value={nc.totalNotifiable} />
-          <Stat label="Timely & Complete" value={`${nc.timelyCompleteRate}%`} />
+          <Stat label="Timely & Complete" value={`${formatRate(nc.timelyCompleteRate)}`} />
           <Stat label="Late" value={nc.lateNotificationCount} />
           <Stat label="Not Notified" value={nc.notNotifiedCount} />
-          <Stat label="Managers Informed" value={`${nc.managersInformedRate}%`} />
+          <Stat label="Managers Informed" value={`${formatRate(nc.managersInformedRate)}`} />
         </div>
       </Section>
 
@@ -112,10 +113,10 @@ export function IncidentPatternAnalysisIntelligenceWidget() {
       <Section title="Post-Incident">
         <ScoreBar label="Post-Incident" value={pi.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Debrief Rate" value={`${pi.debriefCompletionRate}%`} />
-          <Stat label="Support Plan" value={`${pi.supportPlanUpdateRate}%`} />
-          <Stat label="Medical Attention" value={`${pi.medicalAttentionRate}%`} />
-          <Stat label="External Referral" value={`${pi.externalReferralRate}%`} />
+          <Stat label="Debrief Rate" value={`${formatRate(pi.debriefCompletionRate)}`} />
+          <Stat label="Support Plan" value={`${formatRate(pi.supportPlanUpdateRate)}`} />
+          <Stat label="Medical Attention" value={`${formatRate(pi.medicalAttentionRate)}`} />
+          <Stat label="External Referral" value={`${formatRate(pi.externalReferralRate)}`} />
           <Stat label="No Action" value={pi.noActionCount} />
         </div>
       </Section>

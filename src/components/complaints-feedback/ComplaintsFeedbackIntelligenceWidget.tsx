@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function ComplaintsFeedbackIntelligenceWidget() {
       <Section title="Complaint Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Resolution" value={`${quality.resolutionRate}%`} />
-          <Stat label="Child Views" value={`${quality.childViewsRate}%`} />
-          <Stat label="Timely Response" value={`${quality.timelyResponseRate}%`} />
-          <Stat label="Advocacy" value={`${quality.advocacyRate}%`} />
+          <Stat label="Resolution" value={`${formatRate(quality.resolutionRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(quality.childViewsRate)}`} />
+          <Stat label="Timely Response" value={`${formatRate(quality.timelyResponseRate)}`} />
+          <Stat label="Advocacy" value={`${formatRate(quality.advocacyRate)}`} />
         </div>
       </Section>
 
       <Section title="Complaint Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Complainant Informed" value={`${compliance.complainantInformedRate}%`} />
-          <Stat label="Lesson Learned" value={`${compliance.lessonLearnedRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Complainant Informed" value={`${formatRate(compliance.complainantInformedRate)}`} />
+          <Stat label="Lesson Learned" value={`${formatRate(compliance.lessonLearnedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function ComplaintsFeedbackIntelligenceWidget() {
       <Section title="Staff Complaint Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Complaints Handling" value={`${staffReadiness.complaintsHandlingRate}%`} />
-          <Stat label="Active Listening" value={`${staffReadiness.activeListeningRate}%`} />
-          <Stat label="Conflict Resolution" value={`${staffReadiness.conflictResolutionRate}%`} />
-          <Stat label="Child Rights" value={`${staffReadiness.childRightsRate}%`} />
-          <Stat label="Documentation" value={`${staffReadiness.documentationRate}%`} />
-          <Stat label="Escalation" value={`${staffReadiness.escalationRate}%`} />
+          <Stat label="Complaints Handling" value={`${formatRate(staffReadiness.complaintsHandlingRate)}`} />
+          <Stat label="Active Listening" value={`${formatRate(staffReadiness.activeListeningRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(staffReadiness.conflictResolutionRate)}`} />
+          <Stat label="Child Rights" value={`${formatRate(staffReadiness.childRightsRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staffReadiness.documentationRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(staffReadiness.escalationRate)}`} />
         </div>
       </Section>
 

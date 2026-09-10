@@ -12,8 +12,7 @@ import { db } from "@/lib/db/store";
 import { isSupabaseEnabled, createServerClient } from "./server";
 import type { CandidateCheck, CandidateProfile, CandidateReference, ConditionalOffer, RecruitmentAuditEntry } from "@/types/recruitment";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RawClient = { from(table: string): any };
+import type { RawClient } from "@/lib/supabase/loose-client";
 function raw(c: NonNullable<ReturnType<typeof createServerClient>>): RawClient {
   return c as unknown as RawClient;
 }

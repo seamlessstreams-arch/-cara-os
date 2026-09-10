@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -82,26 +83,26 @@ export function RiskAssessmentQualityIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Assessments" value={riskQuality.totalAssessments as number} />
-        <Stat label="Mitigation Rate" value={`${riskQuality.mitigationRate}%`} />
-        <Stat label="Child Consulted" value={`${riskQuality.childConsultedRate}%`} />
+        <Stat label="Mitigation Rate" value={`${formatRateLoose(riskQuality.mitigationRate)}`} />
+        <Stat label="Child Consulted" value={`${formatRateLoose(riskQuality.childConsultedRate)}`} />
       </div>
 
       <Section title="Risk Quality" defaultOpen>
         <ScoreBar label="Quality Score" value={riskQuality.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Mitigation Rate" value={`${riskQuality.mitigationRate}%`} />
-          <Stat label="Child Consulted" value={`${riskQuality.childConsultedRate}%`} />
-          <Stat label="Review Scheduled" value={`${riskQuality.reviewScheduledRate}%`} />
-          <Stat label="Comprehensive" value={`${riskQuality.comprehensiveRate}%`} />
+          <Stat label="Mitigation Rate" value={`${formatRateLoose(riskQuality.mitigationRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRateLoose(riskQuality.childConsultedRate)}`} />
+          <Stat label="Review Scheduled" value={`${formatRateLoose(riskQuality.reviewScheduledRate)}`} />
+          <Stat label="Comprehensive" value={`${formatRateLoose(riskQuality.comprehensiveRate)}`} />
         </div>
       </Section>
 
       <Section title="Risk Compliance">
         <ScoreBar label="Compliance Score" value={riskCompliance.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Documented" value={`${riskCompliance.documentedRate}%`} />
-          <Stat label="Staff Aware" value={`${riskCompliance.staffAwareRate}%`} />
-          <Stat label="Feedback Given" value={`${riskCompliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRateLoose(riskCompliance.documentedRate)}`} />
+          <Stat label="Staff Aware" value={`${formatRateLoose(riskCompliance.staffAwareRate)}`} />
+          <Stat label="Feedback Given" value={`${formatRateLoose(riskCompliance.feedbackRate)}`} />
         </div>
       </Section>
 
@@ -128,10 +129,10 @@ export function RiskAssessmentQualityIntelligenceWidget() {
       <Section title="Staff Risk Readiness">
         <ScoreBar label="Readiness Score" value={staffRiskReadiness.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Risk Identification" value={`${staffRiskReadiness.riskIdentificationRate}%`} />
-          <Stat label="Mitigation Planning" value={`${staffRiskReadiness.mitigationPlanningRate}%`} />
-          <Stat label="Dynamic Assessment" value={`${staffRiskReadiness.dynamicRiskAssessmentRate}%`} />
-          <Stat label="Positive Risk Taking" value={`${staffRiskReadiness.positiveRiskTakingRate}%`} />
+          <Stat label="Risk Identification" value={`${formatRateLoose(staffRiskReadiness.riskIdentificationRate)}`} />
+          <Stat label="Mitigation Planning" value={`${formatRateLoose(staffRiskReadiness.mitigationPlanningRate)}`} />
+          <Stat label="Dynamic Assessment" value={`${formatRateLoose(staffRiskReadiness.dynamicRiskAssessmentRate)}`} />
+          <Stat label="Positive Risk Taking" value={`${formatRateLoose(staffRiskReadiness.positiveRiskTakingRate)}`} />
         </div>
       </Section>
 

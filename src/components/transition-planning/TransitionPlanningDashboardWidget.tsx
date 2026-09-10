@@ -10,6 +10,7 @@
 // - Expandable sections for detailed analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Data Interfaces ────────────────────────────────────────────────────────
@@ -222,7 +223,7 @@ function ChildTransitionCard({ child, meta }: { child: ChildProfileData; meta?: 
         </div>
         <div>
           <div className="text-xs text-gray-500">Goals</div>
-          <div className={`text-sm font-bold ${rateColor(child.goalAchievementRate)}`}>{child.goalAchievementRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.goalAchievementRate)}`}>{formatRate(child.goalAchievementRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Placements</div>
@@ -316,11 +317,11 @@ export function TransitionPlanningDashboardWidget() {
       {/* Key Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.planningQuality.planCurrencyRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.planningQuality.planCurrencyRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Plan Currency</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.goalProgress.achievementRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.goalProgress.achievementRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Goal Achievement</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
@@ -407,15 +408,15 @@ export function TransitionPlanningDashboardWidget() {
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-2 bg-green-50 rounded">
-              <div className="text-sm font-bold text-green-700">{data.planningQuality.childVoiceRate}%</div>
+              <div className="text-sm font-bold text-green-700">{formatRate(data.planningQuality.childVoiceRate)}</div>
               <div className="text-[10px] text-gray-500">Child Voice</div>
             </div>
             <div className="text-center p-2 bg-blue-50 rounded">
-              <div className="text-sm font-bold text-blue-700">{data.planningQuality.multiAgencyRate}%</div>
+              <div className="text-sm font-bold text-blue-700">{formatRate(data.planningQuality.multiAgencyRate)}</div>
               <div className="text-[10px] text-gray-500">Multi-Agency</div>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded">
-              <div className="text-sm font-bold text-purple-700">{data.planningQuality.familyInvolvementRate}%</div>
+              <div className="text-sm font-bold text-purple-700">{formatRate(data.planningQuality.familyInvolvementRate)}</div>
               <div className="text-[10px] text-gray-500">Family Involved</div>
             </div>
           </div>

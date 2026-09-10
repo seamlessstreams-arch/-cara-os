@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 // ── Local Interfaces (mirror engine types for client) ──────────────────────
@@ -209,13 +210,13 @@ export function StaffDeploymentDashboardWidget({ homeId = "home-oak" }: Props) {
       <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.staffingAdequacy.fillRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : data.staffingAdequacy.fillRate >= 70 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {data.staffingAdequacy.fillRate}%
+            {formatRate(data.staffingAdequacy.fillRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Fill Rate</p>
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.agencyMinimisation.agencyUsageRate <= 10 ? "text-emerald-600 dark:text-emerald-400" : data.agencyMinimisation.agencyUsageRate <= 20 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {data.agencyMinimisation.agencyUsageRate}%
+            {formatRate(data.agencyMinimisation.agencyUsageRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Agency Usage</p>
         </div>
@@ -313,11 +314,11 @@ export function StaffDeploymentDashboardWidget({ homeId = "home-oak" }: Props) {
         {expanded.adequacy && (
           <div className="px-4 py-3 space-y-2">
             <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="flex justify-between"><span className="text-muted-foreground">Fill rate</span><span className="font-medium">{data.staffingAdequacy.fillRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Fill rate</span><span className="font-medium">{formatRate(data.staffingAdequacy.fillRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Staff:child ratio</span><span className="font-medium">{data.staffingAdequacy.averageStaffChildRatio}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Total shifts</span><span className="font-medium">{data.staffingAdequacy.shiftsTotal}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Unfilled shifts</span><span className={`font-medium ${data.staffingAdequacy.shiftsUnderstaffed > 0 ? "text-red-600 dark:text-red-400" : ""}`}>{data.staffingAdequacy.shiftsUnderstaffed}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Senior on shift</span><span className="font-medium">{data.staffingAdequacy.seniorOnShiftRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Senior on shift</span><span className="font-medium">{formatRate(data.staffingAdequacy.seniorOnShiftRate)}</span></div>
             </div>
             <div className="mt-2">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">Status breakdown</p>
@@ -345,10 +346,10 @@ export function StaffDeploymentDashboardWidget({ homeId = "home-oak" }: Props) {
         {expanded.agency && (
           <div className="px-4 py-3 space-y-2 text-[10px]">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex justify-between"><span className="text-muted-foreground">Agency usage rate</span><span className="font-medium">{data.agencyMinimisation.agencyUsageRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Agency usage rate</span><span className="font-medium">{formatRate(data.agencyMinimisation.agencyUsageRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Agency shifts</span><span className="font-medium">{data.agencyMinimisation.agencyShiftsCount}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Briefing completion</span><span className="font-medium">{data.agencyMinimisation.briefingCompletionRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Children known</span><span className="font-medium">{data.agencyMinimisation.childrenKnownRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Briefing completion</span><span className="font-medium">{formatRate(data.agencyMinimisation.briefingCompletionRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Children known</span><span className="font-medium">{formatRate(data.agencyMinimisation.childrenKnownRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Total shift staff</span><span className="font-medium">{data.agencyMinimisation.totalShiftStaff}</span></div>
             </div>
             {Object.keys(data.agencyMinimisation.agencyReasons).length > 0 && (
@@ -417,9 +418,9 @@ export function StaffDeploymentDashboardWidget({ homeId = "home-oak" }: Props) {
         {expanded.rota && (
           <div className="px-4 py-3 space-y-2 text-[10px]">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex justify-between"><span className="text-muted-foreground">Published on time</span><span className="font-medium">{data.rotaCompliance.rotaPublishedOnTimeRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Night cover rate</span><span className="font-medium">{data.rotaCompliance.nightCoverRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Long day compliance</span><span className="font-medium">{data.rotaCompliance.longDayComplianceRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Published on time</span><span className="font-medium">{formatRate(data.rotaCompliance.rotaPublishedOnTimeRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Night cover rate</span><span className="font-medium">{formatRate(data.rotaCompliance.nightCoverRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Long day compliance</span><span className="font-medium">{formatRate(data.rotaCompliance.longDayComplianceRate)}</span></div>
             </div>
             <div className="mt-2">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">Shift type distribution</p>
@@ -448,7 +449,7 @@ export function StaffDeploymentDashboardWidget({ homeId = "home-oak" }: Props) {
           <div className="px-4 py-3 space-y-2 text-[10px]">
             <div className="grid grid-cols-2 gap-2">
               <div className="flex justify-between"><span className="text-muted-foreground">Total incidents</span><span className={`font-medium ${data.incidentManagement.totalIncidents > 0 ? "text-amber-600 dark:text-amber-400" : ""}`}>{data.incidentManagement.totalIncidents}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Resolution rate</span><span className="font-medium">{data.incidentManagement.resolutionRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Resolution rate</span><span className="font-medium">{formatRate(data.incidentManagement.resolutionRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Lone working</span><span className={`font-medium ${data.incidentManagement.loneWorkingIncidents > 0 ? "text-red-600 dark:text-red-400" : ""}`}>{data.incidentManagement.loneWorkingIncidents}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Understaffed</span><span className={`font-medium ${data.incidentManagement.understaffedIncidents > 0 ? "text-amber-600 dark:text-amber-400" : ""}`}>{data.incidentManagement.understaffedIncidents}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">No senior on shift</span><span className={`font-medium ${data.incidentManagement.noSeniorIncidents > 0 ? "text-red-600 dark:text-red-400" : ""}`}>{data.incidentManagement.noSeniorIncidents}</span></div>

@@ -6,6 +6,7 @@
 // Tracks medical, dental, optician, and CAMHS appointments. Reg 23/33.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +93,7 @@ export function HealthAppointmentsCard() {
             <p className="text-[10px] text-muted-foreground">Missed</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", a.dna_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", a.dna_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{a.dna_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", a.dna_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(a.dna_rate)}</p>
             <p className="text-[10px] text-muted-foreground">DNA Rate</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

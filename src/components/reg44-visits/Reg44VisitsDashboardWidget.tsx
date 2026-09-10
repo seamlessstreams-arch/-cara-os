@@ -262,8 +262,8 @@ export default function Reg44VisitsDashboardWidget() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
                   <span>Records: {cp.totalRecords}</span>
-                  <span>Interviewed: {cp.childrenInterviewedRate}%</span>
-                  <span>Staff Int: {cp.staffInterviewedRate}%</span>
+                  <span>Interviewed: {formatRate(cp.childrenInterviewedRate)}</span>
+                  <span>Staff Int: {formatRate(cp.staffInterviewedRate)}</span>
                 </div>
               </div>
             ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function KeyWorkerRelationshipIntelligenceWidget() {
       <Section title="Key Worker Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Strong Relationship" value={`${quality.strongRelationshipRate}%`} />
-          <Stat label="Child Engaged" value={`${quality.childEngagedRate}%`} />
-          <Stat label="Goals Discussed" value={`${quality.goalsDiscussedRate}%`} />
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
+          <Stat label="Strong Relationship" value={`${formatRateLoose(quality.strongRelationshipRate)}`} />
+          <Stat label="Child Engaged" value={`${formatRate(quality.childEngagedRate)}`} />
+          <Stat label="Goals Discussed" value={`${formatRate(quality.goalsDiscussedRate)}`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="Key Worker Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Supervisor Reviewed" value={`${compliance.supervisorReviewedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Supervisor Reviewed" value={`${formatRateLoose(compliance.supervisorReviewedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Session Diversity" value={`${compliance.sessionTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -117,12 +118,12 @@ export function KeyWorkerRelationshipIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Relationship Building" value={`${staff.relationshipBuildingRate}%`} />
-          <Stat label="Child Advocacy" value={`${staff.childAdvocacyRate}%`} />
-          <Stat label="Goal Setting" value={`${staff.goalSettingSkillsRate}%`} />
-          <Stat label="Life Story Work" value={`${staff.lifeStoryWorkRate}%`} />
-          <Stat label="Transition Support" value={`${staff.transitionSupportRate}%`} />
-          <Stat label="Reflective Practice" value={`${staff.reflectivePracticeRate}%`} />
+          <Stat label="Relationship Building" value={`${formatRate(staff.relationshipBuildingRate)}`} />
+          <Stat label="Child Advocacy" value={`${formatRate(staff.childAdvocacyRate)}`} />
+          <Stat label="Goal Setting" value={`${formatRateLoose(staff.goalSettingSkillsRate)}`} />
+          <Stat label="Life Story Work" value={`${formatRate(staff.lifeStoryWorkRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(staff.transitionSupportRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(staff.reflectivePracticeRate)}`} />
         </div>
       </Section>
 

@@ -8,6 +8,7 @@
 // and training needs for the RM.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useEffect, useState } from "react";
 import {
   Loader2, Users2, AlertTriangle, CheckCircle2, Clock,
@@ -105,7 +106,7 @@ export function CaraSupervisionIntelligence({ homeId = "home_oak" }: { homeId?: 
           </div>
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold", reg33Cfg.bg, reg33Cfg.text)}>
             {reg33Cfg.icon}
-            {data.regulatoryStatus.compliancePercent}%
+            {formatRate(data.regulatoryStatus.compliancePercent)}
           </div>
         </div>
       </div>
@@ -120,7 +121,7 @@ export function CaraSupervisionIntelligence({ homeId = "home_oak" }: { homeId?: 
         </div>
         <div className="text-center">
           <div className="text-sm font-bold text-[var(--cs-navy)]">
-            {data.teamActionCompletionRate}%
+            {formatRate(data.teamActionCompletionRate)}
           </div>
           <div className="text-[9px] text-[var(--cs-text-muted)]">Actions done</div>
         </div>

@@ -25,9 +25,9 @@ export async function GET() {
   // ── Staff ─────────────────────────────────────────────────────────────────
   const staffMembers: StaffMemberInput[] = (staffList ?? []).map((s) => ({
     id: s.id,
-    name: `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.name || "Unknown",
+    name: `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
     role: s.role ?? s.job_title ?? "Residential Care Worker",
-    start_date: s.start_date ?? s.joined_date ?? s.created_at ?? "2024-01-01",
+    start_date: s.start_date ?? s.created_at ?? "2024-01-01",
     contracted_hours: s.contracted_hours ?? 37.5,
     is_active: s.is_active !== false,
   }));
@@ -35,7 +35,7 @@ export async function GET() {
   // ── Shifts ────────────────────────────────────────────────────────────────
   const shifts: ShiftInput[] = (shiftsList ?? []).map((s) => ({
     staff_id: s.staff_id,
-    date: (s.date ?? s.shift_date ?? "").slice(0, 10),
+    date: (s.date ?? "").slice(0, 10),
     shift_type: s.shift_type ?? "day",
     start_time: s.start_time ?? "07:00",
     end_time: s.end_time ?? "15:00",
@@ -56,7 +56,7 @@ export async function GET() {
   // ── Supervisions ──────────────────────────────────────────────────────────
   const supervisions: SupervisionInput[] = (supervisionsList ?? []).map((sv) => ({
     staff_id: sv.staff_id,
-    scheduled_date: (sv.scheduled_date ?? sv.date ?? "").slice(0, 10),
+    scheduled_date: (sv.scheduled_date ?? "").slice(0, 10),
     actual_date: sv.actual_date ? sv.actual_date.slice(0, 10) : null,
     status: sv.status ?? "scheduled",
     wellbeing_score: sv.wellbeing_score ?? null,

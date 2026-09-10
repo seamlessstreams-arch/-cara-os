@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -83,23 +84,23 @@ export function RestraintAnalysisIntelligenceWidget() {
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Total Restraints" value={proportionality.totalRestraints as number} />
         <Stat label="Avg Duration (min)" value={proportionality.averageDurationMinutes as number} />
-        <Stat label="De-escalation Rate" value={`${deEscalation.deEscalationAttemptedRate}%`} />
+        <Stat label="De-escalation Rate" value={`${formatRateLoose(deEscalation.deEscalationAttemptedRate)}`} />
       </div>
 
       <Section title="Proportionality (max 30)" defaultOpen>
         <ScoreBar label="Proportionality Score" value={proportionality.overallScore as number} max={30} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Assessed" value={`${proportionality.proportionalityAssessedRate}%`} />
-          <Stat label="Approved Technique" value={`${proportionality.approvedTechniqueRate}%`} />
-          <Stat label="Child Injury Rate" value={`${proportionality.injuryToChildRate}%`} />
-          <Stat label="Manager Notified" value={`${proportionality.managerNotifiedRate}%`} />
+          <Stat label="Assessed" value={`${formatRateLoose(proportionality.proportionalityAssessedRate)}`} />
+          <Stat label="Approved Technique" value={`${formatRateLoose(proportionality.approvedTechniqueRate)}`} />
+          <Stat label="Child Injury Rate" value={`${formatRateLoose(proportionality.injuryToChildRate)}`} />
+          <Stat label="Manager Notified" value={`${formatRateLoose(proportionality.managerNotifiedRate)}`} />
         </div>
       </Section>
 
       <Section title="De-escalation (max 25)">
         <ScoreBar label="De-escalation Score" value={deEscalation.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Attempted" value={`${deEscalation.deEscalationAttemptedRate}%`} />
+          <Stat label="Attempted" value={`${formatRateLoose(deEscalation.deEscalationAttemptedRate)}`} />
           <Stat label="Avg Techniques" value={deEscalation.averageTechniquesPerIncident as number} />
         </div>
       </Section>
@@ -107,12 +108,12 @@ export function RestraintAnalysisIntelligenceWidget() {
       <Section title="Post-Incident (max 25)">
         <ScoreBar label="Post-Incident Score" value={postIncident.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Child Debrief" value={`${postIncident.childDebriefRate}%`} />
-          <Stat label="Medical Check" value={`${postIncident.medicalCheckRate}%`} />
-          <Stat label="Body Map" value={`${postIncident.bodyMapRate}%`} />
-          <Stat label="Written Record" value={`${postIncident.writtenRecordRate}%`} />
-          <Stat label="Child Views" value={`${postIncident.childViewsRecordedRate}%`} />
-          <Stat label="Ofsted Notified" value={`${postIncident.ofstedNotifiedRate}%`} />
+          <Stat label="Child Debrief" value={`${formatRateLoose(postIncident.childDebriefRate)}`} />
+          <Stat label="Medical Check" value={`${formatRateLoose(postIncident.medicalCheckRate)}`} />
+          <Stat label="Body Map" value={`${formatRateLoose(postIncident.bodyMapRate)}`} />
+          <Stat label="Written Record" value={`${formatRateLoose(postIncident.writtenRecordRate)}`} />
+          <Stat label="Child Views" value={`${formatRateLoose(postIncident.childViewsRecordedRate)}`} />
+          <Stat label="Ofsted Notified" value={`${formatRateLoose(postIncident.ofstedNotifiedRate)}`} />
         </div>
       </Section>
 
@@ -120,8 +121,8 @@ export function RestraintAnalysisIntelligenceWidget() {
         <ScoreBar label="Reduction Score" value={reduction.overallScore as number} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
           <Stat label="Children with Restraints" value={reduction.childrenWithRestraints as number} />
-          <Stat label="Reduction Plans" value={`${reduction.reductionPlanRate}%`} />
-          <Stat label="Trigger Awareness" value={`${reduction.triggerAwarenessRate}%`} />
+          <Stat label="Reduction Plans" value={`${formatRateLoose(reduction.reductionPlanRate)}`} />
+          <Stat label="Trigger Awareness" value={`${formatRateLoose(reduction.triggerAwarenessRate)}`} />
           <Stat label="Training Compliance" value={`${reduction.staffTrainingCompliance}%`} />
         </div>
       </Section>

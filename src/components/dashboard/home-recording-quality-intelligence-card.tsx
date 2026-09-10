@@ -7,6 +7,7 @@
 // CHR 2015 Reg 36. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -127,7 +128,7 @@ export function HomeRecordingQualityIntelligenceCard() {
                   (d.submission_profile.submission_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.submission_profile.submission_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.submission_profile.submission_rate}%
+                  {formatRate(d.submission_profile.submission_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Submitted</p>
@@ -141,7 +142,7 @@ export function HomeRecordingQualityIntelligenceCard() {
                   (d.review_profile.review_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.review_profile.review_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.review_profile.review_rate}%
+                  {formatRate(d.review_profile.review_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Reviewed</p>
@@ -155,7 +156,7 @@ export function HomeRecordingQualityIntelligenceCard() {
                   (d.approval_profile.approval_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.approval_profile.approval_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.approval_profile.approval_rate}%
+                  {formatRate(d.approval_profile.approval_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Approved</p>

@@ -316,6 +316,7 @@ export default function InspectionReadinessPage() {
                 <MetricCard title="Returned" value={returnedEvents} colour={returnedEvents > 0 ? "red" : "neutral"} />
                 <MetricCard title="Significant" value={significantEvents} colour="purple" />
                 <MetricCard title="Reg 45 Contributing" value={reg45Contributing} colour="blue" />
+                <MetricCard title="Annex A Contributing" value={annexAContributing} colour="blue" />
               </div>
             </section>
 

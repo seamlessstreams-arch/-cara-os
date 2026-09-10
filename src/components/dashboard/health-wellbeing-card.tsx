@@ -7,6 +7,7 @@
 // Powered by the Health & Wellbeing Engine — live data (Reg 23).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +126,7 @@ export function HealthWellbeingCard() {
           </div>
           <div className={cn("text-center rounded-lg p-2", (intel.appointments.dna_rate ?? 0) <= 10 ? "bg-green-50" : "bg-red-50")}>
             <p className={cn("text-lg font-bold tabular-nums", (intel.appointments.dna_rate ?? 0) <= 10 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {intel.appointments.dna_rate}%
+              {formatRate(intel.appointments.dna_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DNA Rate</p>
           </div>

@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -82,16 +83,16 @@ export function ReturnHomeInterviewQualityIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Missing Episodes" value={interviewCompliance.totalEpisodes as number} />
-        <Stat label="RHI Completed" value={`${interviewCompliance.rhiCompletedRate}%`} />
+        <Stat label="RHI Completed" value={`${formatRateLoose(interviewCompliance.rhiCompletedRate)}`} />
         <Stat label="Within 72h" value={`${interviewCompliance.within72hRate}%`} />
       </div>
 
       <Section title="Interview Compliance" defaultOpen>
         <ScoreBar label="Compliance Score" value={interviewCompliance.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="RHI Completed" value={`${interviewCompliance.rhiCompletedRate}%`} />
+          <Stat label="RHI Completed" value={`${formatRateLoose(interviewCompliance.rhiCompletedRate)}`} />
           <Stat label="Within 72h" value={`${interviewCompliance.within72hRate}%`} />
-          <Stat label="Independent" value={`${interviewCompliance.independentRate}%`} />
+          <Stat label="Independent" value={`${formatRateLoose(interviewCompliance.independentRate)}`} />
           <Stat label="Declined" value={interviewCompliance.declinedCount as number} />
         </div>
       </Section>
@@ -99,19 +100,19 @@ export function ReturnHomeInterviewQualityIntelligenceWidget() {
       <Section title="Interview Depth">
         <ScoreBar label="Depth Score" value={interviewDepth.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Child Views" value={`${interviewDepth.childViewsRate}%`} />
-          <Stat label="Push Factors" value={`${interviewDepth.pushFactorsRate}%`} />
-          <Stat label="Pull Factors" value={`${interviewDepth.pullFactorsRate}%`} />
-          <Stat label="Safety Plan" value={`${interviewDepth.safetyPlanCreatedRate}%`} />
+          <Stat label="Child Views" value={`${formatRateLoose(interviewDepth.childViewsRate)}`} />
+          <Stat label="Push Factors" value={`${formatRateLoose(interviewDepth.pushFactorsRate)}`} />
+          <Stat label="Pull Factors" value={`${formatRateLoose(interviewDepth.pullFactorsRate)}`} />
+          <Stat label="Safety Plan" value={`${formatRateLoose(interviewDepth.safetyPlanCreatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Strategy Response">
         <ScoreBar label="Strategy Score" value={strategyResponse.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Multi-Agency" value={`${strategyResponse.multiAgencyRate}%`} />
-          <Stat label="Action Plan" value={`${strategyResponse.actionPlanRate}%`} />
-          <Stat label="Trigger Pattern" value={`${strategyResponse.triggerPatternRate}%`} />
+          <Stat label="Multi-Agency" value={`${formatRateLoose(strategyResponse.multiAgencyRate)}`} />
+          <Stat label="Action Plan" value={`${formatRateLoose(strategyResponse.actionPlanRate)}`} />
+          <Stat label="Trigger Pattern" value={`${formatRateLoose(strategyResponse.triggerPatternRate)}`} />
           <Stat label="Avg Attendees" value={strategyResponse.averageAttendees as number} />
         </div>
       </Section>
@@ -120,8 +121,8 @@ export function ReturnHomeInterviewQualityIntelligenceWidget() {
         <ScoreBar label="Prevention Score" value={preventionEffectiveness.overallScore as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
           <Stat label="Total Measures" value={preventionEffectiveness.totalMeasures as number} />
-          <Stat label="Effective" value={`${preventionEffectiveness.effectiveRate}%`} />
-          <Stat label="Reviewed" value={`${preventionEffectiveness.reviewedRate}%`} />
+          <Stat label="Effective" value={`${formatRateLoose(preventionEffectiveness.effectiveRate)}`} />
+          <Stat label="Reviewed" value={`${formatRateLoose(preventionEffectiveness.reviewedRate)}`} />
           <Stat label="Children Covered" value={preventionEffectiveness.uniqueChildren as number} />
         </div>
       </Section>

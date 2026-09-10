@@ -136,7 +136,7 @@ export default function CommunityEngagementParticipationDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Activities: {cp.totalActivities}</span><span>Participation: {cp.participationRate}%</span><span>Child Initiated: {cp.childInitiatedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Activities: {cp.totalActivities}</span><span>Participation: {formatRate(cp.participationRate)}</span><span>Child Initiated: {formatRate(cp.childInitiatedRate)}</span></div>
               </div>
             ))}
           </div>

@@ -7,6 +7,7 @@
 // SCCIF: "Children get a good night's sleep and feel rested."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -125,7 +126,7 @@ export function HomeSleepQualityIntelligenceCard() {
                   (d.disturbances.none_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.disturbances.none_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.disturbances.none_rate}%
+                  {formatRate(d.disturbances.none_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Undisturbed</p>
@@ -139,7 +140,7 @@ export function HomeSleepQualityIntelligenceCard() {
                   (d.check_compliance.check_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.check_compliance.check_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.check_compliance.check_compliance_rate}%
+                  {formatRate(d.check_compliance.check_compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Checks OK</p>
@@ -185,7 +186,7 @@ export function HomeSleepQualityIntelligenceCard() {
                 <p>Duration: <span className="font-medium text-slate-600">{d.disturbances.total_duration_mins}m</span></p>
                 <p>Significant: <span className={cn("font-medium",
                   d.disturbances.significant_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
-                )}>{d.disturbances.significant_rate}%</span></p>
+                )}>{formatRate(d.disturbances.significant_rate)}</span></p>
                 <p>Waking nights: <span className="font-medium text-slate-600">{d.shifts.waking_nights}</span></p>
               </div>
             </div>
@@ -195,10 +196,10 @@ export function HomeSleepQualityIntelligenceCard() {
                 <p>Avg checks: <span className="font-medium text-slate-600">{d.check_compliance.avg_checks_per_night}</span></p>
                 <p>Secure: <span className={cn("font-medium",
                   (d.check_compliance.building_secure_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]"
-                )}>{d.check_compliance.building_secure_rate}%</span></p>
+                )}>{formatRate(d.check_compliance.building_secure_rate)}</span></p>
                 <p>Handover: <span className={cn("font-medium",
                   (d.handover.handover_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.handover.handover_rate}%</span></p>
+                )}>{formatRate(d.handover.handover_rate)}</span></p>
                 <p>Staff: <span className="font-medium text-slate-600">{d.shifts.unique_staff}</span></p>
               </div>
             </div>

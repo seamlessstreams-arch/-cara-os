@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildSleepProfile { childId: string; childName: string; totalRecords: number; goodSleepRate: number; averageHours: number; routineAdherenceRate: number; overallScore: number; }
@@ -88,7 +89,7 @@ export default function SleepRoutineQualityDashboardWidget() {
           <Stat label="Good Sleep" value={`${data.sleepQuality.goodSleepRate}%`} />
           <Stat label="Avg Hours" value={data.sleepQuality.averageHours} />
           <Stat label="Night Issues" value={`${data.sleepQuality.nightIssueRate}%`} />
-          <Stat label="Satisfied" value={`${data.sleepQuality.childSatisfactionRate}%`} />
+          <Stat label="Satisfied" value={`${formatRate(data.sleepQuality.childSatisfactionRate)}`} />
         </div>
       </Section>
 
