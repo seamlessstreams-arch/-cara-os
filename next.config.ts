@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Emit a self-contained server bundle (.next/standalone/server.js) for the
+  // Northflank container image — only the traced deps ship, not all of
+  // node_modules. See Dockerfile. (Ignored by Vercel, which builds its own way.)
+  output: "standalone",
   typescript: {
     // Pre-existing type strictness issues in lib files — does not affect runtime.
     // TODO: resolve all TS errors and remove this flag.

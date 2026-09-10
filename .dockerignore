@@ -1,0 +1,32 @@
+# Rebuilt or unneeded in the image
+node_modules
+.next
+.git
+.github
+
+# Secrets — NEVER bake env files into the image (build args carry NEXT_PUBLIC_*)
+.env
+.env.*
+
+# Local tooling / sessions / editor
+.claude
+.vercel
+.vscode
+.idea
+
+# Tests, coverage, CI artefacts, reports
+coverage
+playwright-report
+test-results
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+
+# Docs, archives, misc that the build doesn't need
+supabase/migrations_archive
+*.log
+npm-debug.log*
+.DS_Store
+Dockerfile
+.dockerignore
