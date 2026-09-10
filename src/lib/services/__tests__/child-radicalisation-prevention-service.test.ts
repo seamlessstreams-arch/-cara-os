@@ -611,3 +611,19 @@ describe("child-radicalisation-prevention-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the child-views alert between recorded not-obtained and unrecorded", () => {
+    const nullAlert = computeRadicalisationAlerts([makeRow({ child_views_obtained: null })])
+      .find((a) => a.type === "child_views_not_obtained");
+    const falseAlert = computeRadicalisationAlerts([makeRow({ child_views_obtained: false })])
+      .find((a) => a.type === "child_views_not_obtained");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no views alert when views are recorded as obtained", () => {
+    const alerts = computeRadicalisationAlerts([makeRow({ child_views_obtained: true })]);
+    expect(alerts.some((a) => a.type === "child_views_not_obtained")).toBe(false);
+  });
+});

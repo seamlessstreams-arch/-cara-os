@@ -45,7 +45,7 @@ export interface ChildForcedMarriageRiskRow {
   risk_indicators_count: number;
   fmpo_in_place: boolean;
   police_notified: boolean;
-  social_worker_notified: boolean;
+  social_worker_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   forced_marriage_unit_contacted: boolean;
   multi_agency_referral: boolean;
   safety_plan_in_place: boolean;
@@ -285,7 +285,7 @@ export async function createChildForcedMarriageRisk(input: {
       risk_indicators_count: input.riskIndicatorsCount ?? 0,
       fmpo_in_place: input.fmpoInPlace ?? false,
       police_notified: input.policeNotified ?? false,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       forced_marriage_unit_contacted: input.forcedMarriageUnitContacted ?? false,
       multi_agency_referral: input.multiAgencyReferral ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,
