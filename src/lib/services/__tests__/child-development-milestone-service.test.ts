@@ -132,3 +132,20 @@ describe("child-development-milestone-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded next steps in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyChildDevelopmentAlerts([makeRecord({ next_steps_identified: null })]);
+    const alert = alerts.find((a) => a.type === "no_next_steps");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no next-steps gap when they are recorded", () => {
+    const alerts = identifyChildDevelopmentAlerts([makeRecord({ next_steps_identified: true })]);
+    expect(alerts.some((a) => a.type === "no_next_steps")).toBe(false);
+  });
+  it("does not dilute the next-steps rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, next_steps_identified: v }));
+    expect(computeChildDevelopmentMetrics(rows).next_steps_rate).toBe(100);
+  });
+});

@@ -135,3 +135,20 @@ describe("first-aid-medical-emergency-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded responder qualification in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyFirstAidAlerts([makeRecord({ first_aid_trained: null })]);
+    const alert = alerts.find((a) => a.type === "untrained_responder");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("counts only recorded untrained responders in the metric", () => {
+    const rows = [null, null, false].map((v, i) => makeRecord({ id: `r-${i}`, first_aid_trained: v }));
+    expect(computeFirstAidMetrics(rows).untrained_count).toBe(1);
+  });
+  it("does not dilute the trained rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, first_aid_trained: v }));
+    expect(computeFirstAidMetrics(rows).first_aid_trained_rate).toBe(100);
+  });
+});
