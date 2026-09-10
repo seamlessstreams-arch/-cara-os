@@ -126,3 +126,19 @@ describe("keyworker-sessions-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered recording question is not a missed recording ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded session_recorded as a failure", () => {
+    const alerts = _testing.identifyKeyworkerSessionAlerts([
+      makeRecord({ session_recorded: null }),
+    ]);
+    expect(alerts.some((a) => /not been recorded/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyKeyworkerSessionAlerts([
+      makeRecord({ session_recorded: false }),
+    ]);
+    expect(alerts.some((a) => /not been recorded/i.test(a.message))).toBe(true);
+  });
+});

@@ -118,3 +118,20 @@ describe("positive-handling-service", () => {
     });
   });
 });
+
+// ── Tri-state: escalation with unrecorded training alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded training as a gap", () => {
+    const alerts = _testing.identifyPositiveHandlingAlerts([
+      makeRecord({ review_outcome: "escalation_required", staff_trained: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "escalation_untrained");
+    expect(a?.message).toMatch(/no training status recorded/i);
+  });
+  it("still asserts a recorded not-trained", () => {
+    const alerts = _testing.identifyPositiveHandlingAlerts([
+      makeRecord({ review_outcome: "escalation_required", staff_trained: false }),
+    ]);
+    expect(alerts.some((x) => /staff not trained on plan/i.test(x.message))).toBe(true);
+  });
+});
