@@ -26,7 +26,7 @@ vi.mock("@/lib/supabase/server", () => {
   };
 });
 
-import { processCareEvent } from "../processor";
+import { processCareEvent, persistProcessorState } from "../processor";
 
 function makeEvent(overrides: Partial<CareEvent>): CareEvent {
   return {
@@ -104,6 +104,20 @@ describe("care-events processor — live persistence write-through (Phase 1)", (
     // the filing item keeps its category/care-event linkage in data (round-trips)
     const fd = (filing!.payload as Record<string, unknown>).data as Record<string, unknown>;
     expect(fd.care_event_id).toBeTruthy();
+  });
+
+  it("persistProcessorState mirrors the routing bookkeeping to careEventsDb on live (Phase 5)", async () => {
+    const ev = makeEvent({
+      category: "safeguarding", is_safeguarding: true, child_id: "yp_alex",
+      title: "Disclosure", content: "A safeguarding disclosure.", requires_manager_review: true,
+    });
+    processCareEvent(ev);          // populates the route state machine in memDb
+    await persistProcessorState(ev.id); // the async post-pass mirrors it through careEventsDb
+    await flush();
+    const routeWrites = recorded.filter(
+      (w) => w.table === "care_event_routes" && (w.op === "upsert" || w.op === "insert"),
+    );
+    expect(routeWrites.length, "no care_event_routes write from persistProcessorState").toBeGreaterThan(0);
   });
 
   it("mirrors an education event to cs_education_events, not the profile or the catch-all (Phase 3)", async () => {

@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { loadRoutingHealth, retryJob } from "@/lib/care-events/routing-health";
-import { retryFailedRoutes } from "@/lib/care-events/processor";
+import { retryFailedRoutes, persistProcessorState } from "@/lib/care-events/processor";
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
     let result: ReturnType<typeof retryFailedRoutes>;
     try {
       result = retryFailedRoutes(careEventId);
+      await persistProcessorState(careEventId);
     } catch (_e) {
       return NextResponse.json(
         { error: "Retry failed" },

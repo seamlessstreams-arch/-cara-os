@@ -14,6 +14,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateId, todayStr } from "@/lib/utils";
 import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
 import {
@@ -80,9 +82,9 @@ const HOME_ID = "home_oak";
 // (demo + immediate read-back) and fire a best-effort write-through to the real
 // table when Supabase is on — the same fire-and-forget pattern as
 // persistDailyLog / createIncidentRecord, so the processor stays sync. The still
-// -uncovered records (restraints, the job queue and the route state-machine) have
-// no live home yet and keep using db.* directly — restraints waits on #106's
-// cs_restraint_records reaching main.
+// -uncovered records (restraints, the job queue) keep using db.* directly —
+// restraints waits on #106's cs_restraint_records reaching main. The route
+// state-machine is now mirrored to careEventsDb by persistProcessorState (below).
 function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
   const e = db.chronology.create(d);
   void persistChronologyEntry(e);
@@ -1320,6 +1322,50 @@ export function processCareEvent(event: CareEvent): ProcessResult {
 }
 
 // ── Retry failed routes ───────────────────────────────────────────────────────
+
+// ── Phase 5: persist the routing bookkeeping ────────────────────────────────
+// processCareEvent / retryFailedRoutes run their state machine synchronously
+// against the in-memory store; on live the route records and the event's final
+// status stayed in memDb while the route handler's response reads them back
+// through careEventsDb (Supabase) — so the routing summary came back empty after
+// a cold start, and the event kept its pre-routing status. This async post-pass
+// (called by the already-async route handlers AFTER the sync processor) mirrors
+// the final state through careEventsDb. Best-effort: never blocks the response,
+// and a no-op in demo where memDb already IS the source of truth.
+export async function persistProcessorState(careEventId: string): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const ev = db.careEvents.findById(careEventId);
+    if (ev) {
+      await careEventsDb.careEvents.patch(careEventId, {
+        status: ev.status,
+        requires_manager_review: ev.requires_manager_review,
+        requires_reg40_triage: ev.requires_reg40_triage,
+        contributes_to_reg45: ev.contributes_to_reg45,
+        contributes_to_annex_a: ev.contributes_to_annex_a,
+        is_safeguarding: ev.is_safeguarding,
+        evidence_prompts: ev.evidence_prompts,
+      });
+    }
+    for (const r of db.careEventRoutes.findByCareEvent(careEventId)) {
+      await careEventsDb.careEventRoutes.upsert({
+        care_event_id: r.care_event_id,
+        home_id: r.home_id,
+        route_type: r.route_type,
+        status: r.status,
+        linked_record_id: r.linked_record_id,
+        linked_record_table: r.linked_record_table,
+        processing_notes: r.processing_notes,
+        error_message: r.error_message,
+        retry_count: r.retry_count,
+        last_retried_at: r.last_retried_at,
+        time_saved_minutes: r.time_saved_minutes,
+      });
+    }
+  } catch {
+    // best-effort — memDb already holds the state; never block the caller
+  }
+}
 
 export function retryFailedRoutes(careEventId: string): ProcessResult {
   const event = db.careEvents.findById(careEventId);
