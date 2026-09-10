@@ -42,7 +42,7 @@ export interface KeyworkSession {
   keyworkerName: string;
   plannedDuration: number; // minutes
   actualDuration: number;
-  occurred: boolean;
+  occurred: boolean | null;
   cancelledBy?: "child" | "staff" | "other";
   topicsCovered: SessionTopic[];
   childLed: boolean; // child chose topics or led discussion
@@ -51,7 +51,7 @@ export interface KeyworkSession {
   actionsCompleted: number;
   childEngagement: "high" | "moderate" | "low" | "refused";
   childFeedback?: "positive" | "neutral" | "negative";
-  privateTime: boolean; // Was there 1:1 private time?
+  privateTime: boolean | null; // Was there 1:1 private time?
   location: "in_home" | "out_of_home" | "activity_based" | "other";
 }
 
@@ -65,11 +65,11 @@ export interface KeyworkingInput {
   currentKeyworkerName: string;
   keyworkerChangesLast12Months: number;
   keyworkerRelationshipMonths: number; // how long current KW assigned
-  childCanChooseTopics: boolean;
-  childKnowsKeyworker: boolean;
-  keyworkPolicyInPlace: boolean;
-  reg44VisitorMeetsChild: boolean;
-  reg44VisitsCurrent: boolean;
+  childCanChooseTopics: boolean | null;
+  childKnowsKeyworker: boolean | null;
+  keyworkPolicyInPlace: boolean | null;
+  reg44VisitorMeetsChild: boolean | null;
+  reg44VisitsCurrent: boolean | null;
 }
 
 export interface KeyworkingAssessment {
@@ -116,7 +116,7 @@ export interface KeyworkStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -127,9 +127,12 @@ export function analyseKeyworking(input: KeyworkingInput): KeyworkingAssessment 
 
   // ── Basic counts ────────────────────────────────────────────────────
   const totalSessions = sessions.length;
-  const occurredSessions = sessions.filter(s => s.occurred).length;
-  const missedSessions = totalSessions - occurredSessions;
-  const occurred = sessions.filter(s => s.occurred);
+  const occurredSessions = sessions.filter(s => s.occurred === true).length;
+  // A session nobody wrote up was not missed — subtracting the occurred count
+  // from the total would report every unrecorded session as a missed one, which
+  // is the same fabrication as counting it as held.
+  const missedSessions = sessions.filter(s => s.occurred === false).length;
+  const occurred = sessions.filter(s => s.occurred === true);
 
   // ── Compliance ──────────────────────────────────────────────────────
   // Assume 3-month window
@@ -260,7 +263,11 @@ function scoreQuality(occurred: KeyworkSession[], avgDuration: number, actionRat
   score += Math.round(engagementScore * 30);
 
   // Private time (20 points)
-  const privateRate = occurred.filter(s => s.privateTime).length / occurred.length;
+  // Rated over the sessions where private time was recorded either way.
+  const privateRecorded = occurred.filter(s => s.privateTime !== null);
+  const privateRate = privateRecorded.length > 0
+    ? privateRecorded.filter(s => s.privateTime === true).length / privateRecorded.length
+    : 0;
   score += Math.round(privateRate * 20);
 
   // Action completion (20 points)
@@ -285,10 +292,10 @@ function scoreRelationship(input: KeyworkingInput): number {
   else score += 0;
 
   // Child knows keyworker (20 points)
-  if (input.childKnowsKeyworker) score += 20;
+  if (input.childKnowsKeyworker === true) score += 20;
 
   // Policy in place (20 points)
-  if (input.keyworkPolicyInPlace) score += 20;
+  if (input.keyworkPolicyInPlace === true) score += 20;
 
   return Math.min(100, score);
 }
@@ -303,10 +310,10 @@ function scoreVoice(childLedRate: number, wishesRate: number, input: KeyworkingI
   score += Math.round(wishesRate * 35);
 
   // Can choose topics (15 points)
-  if (input.childCanChooseTopics) score += 15;
+  if (input.childCanChooseTopics === true) score += 15;
 
   // Positive feedback (15 points)
-  const occurred = input.sessions.filter(s => s.occurred);
+  const occurred = input.sessions.filter(s => s.occurred === true);
   const withFeedback = occurred.filter(s => s.childFeedback);
   if (withFeedback.length > 0) {
     const positiveRate = withFeedback.filter(s => s.childFeedback === "positive").length / withFeedback.length;
@@ -395,7 +402,8 @@ function identifyConcerns(
   }
 
   // Staff cancelling
-  const staffCancelled = input.sessions.filter(s => !s.occurred && s.cancelledBy === "staff");
+  // A cancellation is a recorded non-occurrence, not an unanswered question.
+  const staffCancelled = input.sessions.filter(s => s.occurred === false && s.cancelledBy === "staff");
   if (staffCancelled.length >= 3) {
     concerns.push({
       severity: "significant",
@@ -405,7 +413,7 @@ function identifyConcerns(
   }
 
   // Reg 44 not current
-  if (!input.reg44VisitsCurrent) {
+  if (input.reg44VisitsCurrent === false) {
     concerns.push({
       severity: "significant",
       category: "oversight",
@@ -463,7 +471,7 @@ function identifyStrengths(
     });
   }
 
-  if (input.reg44VisitsCurrent && input.reg44VisitorMeetsChild) {
+  if (input.reg44VisitsCurrent === true && input.reg44VisitorMeetsChild === true) {
     strengths.push({
       category: "oversight",
       description: "Regulation 44 visitor meets with child — independent voice",
@@ -484,7 +492,7 @@ function assessRegulatory(
 
   // CHR 2015 Reg 5(a) — Quality of relationships
   const relGood = input.keyworkerRelationshipMonths >= 3 &&
-    input.childKnowsKeyworker &&
+    input.childKnowsKeyworker === true &&
     compliance >= 0.6;
   flags.push({
     regulation: "CHR 2015 Reg 5(a)",
@@ -496,7 +504,7 @@ function assessRegulatory(
   });
 
   // SCCIF — Child's voice
-  const voiceGood = wishesRate >= 0.6 && input.childCanChooseTopics;
+  const voiceGood = wishesRate >= 0.6 && input.childCanChooseTopics === true;
   flags.push({
     regulation: "SCCIF",
     area: "Child's Voice",
@@ -510,14 +518,16 @@ function assessRegulatory(
   flags.push({
     regulation: "Reg 44",
     area: "Independent Visits",
-    status: input.reg44VisitsCurrent ? "met" : "not_met",
-    detail: input.reg44VisitsCurrent
+    status: input.reg44VisitsCurrent === true ? "met"
+      : input.reg44VisitsCurrent === null ? "not_evidenced"
+      : "not_met",
+    detail: input.reg44VisitsCurrent === true
       ? "Regulation 44 visits current"
       : "Regulation 44 visits not current — independent oversight required",
   });
 
   // CHR 2015 Reg 10 — Wellbeing
-  const occurred = input.sessions.filter(s => s.occurred);
+  const occurred = input.sessions.filter(s => s.occurred === true);
   const wellbeingCovered = occurred.some(s => s.topicsCovered.includes("wellbeing"));
   const healthCovered = occurred.some(s => s.topicsCovered.includes("health"));
   flags.push({
@@ -570,7 +580,7 @@ function buildRecommendations(
     recs.push(`Cover ${missing.map(t => t.replace(/_/g, " ")).join(", ")} in upcoming sessions`);
   }
 
-  if (!input.reg44VisitsCurrent) {
+  if (input.reg44VisitsCurrent === false) {
     recs.push("Ensure Regulation 44 visits are current and visitor meets child");
   }
 
@@ -581,11 +591,16 @@ function buildRecommendations(
   }
 
   // Private time
-  const privateRate = occurred.length > 0
-    ? occurred.filter(s => s.privateTime).length / occurred.length
+  const privateRecorded = occurred.filter(s => s.privateTime !== null);
+  const privateRate = privateRecorded.length > 0
+    ? privateRecorded.filter(s => s.privateTime === true).length / privateRecorded.length
     : null;
-  if ((privateRate ?? 0) < 0.5 && occurred.length >= 2) {
+  // `?? 0` here would read an unmeasured rate as 0% and recommend fixing a
+  // shortfall nobody has evidenced.
+  if (privateRate !== null && privateRate < 0.5 && occurred.length >= 2) {
     recs.push("Ensure private 1:1 time in every keywork session");
+  } else if (privateRate === null && occurred.length >= 2) {
+    recs.push("Record whether keywork sessions include private 1:1 time — it cannot currently be evidenced");
   }
 
   return recs;
