@@ -133,3 +133,20 @@ describe("garden-horticulture-activities-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded tool-safety check in the gap alert without asserting a hazard", () => {
+    const alerts = identifyGardenHorticultureAlerts([makeRecord({ tools_safe: null })]);
+    const alert = alerts.find((a) => a.type === "tools_not_safe");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no tools gap when the check is recorded as safe", () => {
+    const alerts = identifyGardenHorticultureAlerts([makeRecord({ tools_safe: true })]);
+    expect(alerts.some((a) => a.type === "tools_not_safe")).toBe(false);
+  });
+  it("does not dilute the tools-safe rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, tools_safe: v }));
+    expect(computeGardenHorticultureMetrics(rows).tools_safe_rate).toBe(100);
+  });
+});

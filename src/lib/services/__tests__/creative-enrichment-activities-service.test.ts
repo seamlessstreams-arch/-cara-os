@@ -130,3 +130,27 @@ describe("creative-enrichment-activities-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the refused-child critical between recorded no-support and unrecorded", () => {
+    const nullAlert = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: null }),
+    ]).find((a) => a.type === "refused_no_expression");
+    const falseAlert = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: false }),
+    ]).find((a) => a.type === "refused_no_expression");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no refused critical when support is recorded", () => {
+    const alerts = identifyCreativeEnrichmentAlerts([
+      makeRecord({ engagement_level: "refused", self_expression_supported: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "refused_no_expression")).toBe(false);
+  });
+  it("does not dilute the self-expression rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, self_expression_supported: v }));
+    expect(computeCreativeEnrichmentMetrics(rows).self_expression_rate).toBe(100);
+  });
+});
