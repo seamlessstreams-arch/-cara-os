@@ -33,8 +33,13 @@ const ALLOWED = new Set([
   "src/lib/utils.ts", // londonDayDiff's own implementation divides by 86400000
 ]);
 
+// The trailing \b applied to every alternative, including the parenthesised
+// ones — and a word boundary cannot match after a closing paren, so
+// `/ (1000 * 60 * 60 * 24)` was never recognised as a day divisor at all.
+// 66 sites write it that way. The boundary now applies only to the
+// alternatives that end in a word character, where it is doing real work.
 const DAY_MS =
-  /\/\s*(?:86400000|86_400_000|864e5|\(1000 \* 60 \* 60 \* 24\)|\(24 \* 60 \* 60 \* 1000\)|\(60 \* 60 \* 24 \* 1000\)|msPerDay|MS_PER_DAY|DAY_MS)\b/;
+  /\/\s*(?:(?:86400000|86_400_000|864e5|msPerDay|MS_PER_DAY|DAY_MS)\b|\(1000 \* 60 \* 60 \* 24\)|\(24 \* 60 \* 60 \* 1000\)|\(60 \* 60 \* 24 \* 1000\))/;
 const NOW_ANCHOR =
   /Date\.now\(\)|new Date\(\)|\bnow(?:Ms)?\s*\.getTime\(\)|\btoday\s*\.getTime\(\)|\(\s*now(?:Ms)?\s*-|-\s*now(?:Ms)?\s*\)/;
 
