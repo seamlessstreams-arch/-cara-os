@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { storageFailure } from "@/lib/http/storage-error";
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
@@ -168,15 +169,24 @@ export async function POST(request: Request) {
           status: status || "draft",
         }).select().single();
 
-        if (!error && data) {
-          return NextResponse.json({ ok: true, data });
+        if (error) {
+          // `cara_write_to_child` has no migration, so on live this insert
+          // fails — and the fall-through below used to answer ok:true with a
+          // synthetic id. A practitioner was told a child's record had been
+          // saved when nothing had been stored anywhere.
+          return storageFailure("Writing to the child", error);
+        }
+        if (data) {
+          return NextResponse.json({ ok: true, data, persisted: true });
         }
       }
     }
 
-    // Demo fallback
+    // Demo fallback — Supabase is not configured, so nothing is persisted and
+    // the response says so rather than implying a save.
     return NextResponse.json({
       ok: true,
+      persisted: false,
       data: {
         id: `wtc_${Date.now()}`,
         source_type: source,
