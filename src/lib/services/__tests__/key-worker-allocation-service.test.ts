@@ -132,3 +132,15 @@ describe("key-worker-allocation-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded regular_sessions_held as a failure", () => {
+    const alerts = _testing.identifyKeyWorkerAllocationAlerts([makeRecord({ regular_sessions_held: null }), makeRecord({ id: "r-2", regular_sessions_held: null })]);
+    expect(alerts.some((a) => a.type === "no_regular_sessions")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyKeyWorkerAllocationAlerts([makeRecord({ regular_sessions_held: false }), makeRecord({ id: "r-2", regular_sessions_held: false })]);
+    expect(alerts.some((a) => a.type === "no_regular_sessions")).toBe(true);
+  });
+});
