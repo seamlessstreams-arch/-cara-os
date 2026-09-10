@@ -150,7 +150,13 @@ export async function POST(request: NextRequest) {
         notes: body.notes,
       });
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
-      return NextResponse.json({ ok: true, data: result.data }, { status: 201 });
+      // A controlled-drug stock decrement can fail after the administration is
+      // recorded. The record stands; the caller still has to be told, or the
+      // running balance drifts from the cabinet unnoticed.
+      return NextResponse.json(
+        { ok: true, data: result.data, ...(result.warning ? { warning: result.warning } : {}) },
+        { status: 201 },
+      );
     }
 
     if (action === "report_error") {
