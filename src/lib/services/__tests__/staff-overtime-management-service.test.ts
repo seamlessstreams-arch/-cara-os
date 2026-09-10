@@ -1464,3 +1464,19 @@ describe("edge cases", () => {
     expect(a3.filter((x) => x.type === "exceeds_48_review_required").length).toBe(1);
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the rest-break alert between recorded non-compliance and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ rest_break_compliant: null })])
+      .find((a) => a.type === "rest_break_non_compliant");
+    const falseAlert = computeAlerts([makeRow({ rest_break_compliant: false })])
+      .find((a) => a.type === "rest_break_non_compliant");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no rest-break alert when compliance is recorded", () => {
+    const alerts = computeAlerts([makeRow({ rest_break_compliant: true })]);
+    expect(alerts.some((a) => a.type === "rest_break_non_compliant")).toBe(false);
+  });
+});

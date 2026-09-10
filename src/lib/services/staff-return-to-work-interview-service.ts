@@ -33,7 +33,7 @@ export interface StaffReturnToWorkInterviewRow {
   absence_type: string;
   absence_duration_days: number;
   interviewer_name: string;
-  fit_to_return: boolean;
+  fit_to_return: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   phased_return: boolean;
   adjustments_required: boolean;
   adjustment_details: string | null;
@@ -41,7 +41,7 @@ export interface StaffReturnToWorkInterviewRow {
   support_plan_agreed: boolean;
   trigger_level_reached: boolean;
   trigger_level: string | null;
-  welfare_check_completed: boolean;
+  welfare_check_completed: boolean | null;
   follow_up_date: string | null;
   notes: string | null;
   created_at: string;
@@ -78,7 +78,7 @@ export function computeMetrics(rows: StaffReturnToWorkInterviewRow[]): {
   unique_staff: number;
   absence_type_breakdown: Record<string, number>;
 } {
-  const notFitCount = rows.filter((r) => !r.fit_to_return).length;
+  const notFitCount = rows.filter((r) => r.fit_to_return === false).length;
   const phasedReturnCount = rows.filter((r) => r.phased_return).length;
   const adjustmentsCount = rows.filter((r) => r.adjustments_required).length;
   const ohReferralCount = rows.filter(
@@ -151,11 +151,13 @@ export function computeAlerts(rows: StaffReturnToWorkInterviewRow[]): {
 
   // Critical: not fit to return without adjustments required
   for (const r of rows) {
-    if (!r.fit_to_return && !r.adjustments_required) {
+    if (r.fit_to_return !== true && !r.adjustments_required) {
       alerts.push({
         type: "not_fit_no_adjustments",
         severity: "critical",
-        message: `${r.staff_name} is not fit to return without any adjustments recorded — immediate action required`,
+        message: r.fit_to_return === false
+          ? `${r.staff_name} is not fit to return without any adjustments recorded — immediate action required`
+          : `${r.staff_name} has no fitness-to-return decision recorded and no adjustments — record the decision before further shifts`,
         record_id: r.id,
       });
     }
@@ -319,7 +321,7 @@ export async function createStaffReturnToWorkInterview(input: {
       absence_type: input.absenceType,
       absence_duration_days: input.absenceDurationDays,
       interviewer_name: input.interviewerName,
-      fit_to_return: input.fitToReturn ?? true,
+      fit_to_return: input.fitToReturn ?? null,
       phased_return: input.phasedReturn ?? false,
       adjustments_required: input.adjustmentsRequired ?? false,
       adjustment_details: input.adjustmentDetails ?? null,
@@ -327,7 +329,7 @@ export async function createStaffReturnToWorkInterview(input: {
       support_plan_agreed: input.supportPlanAgreed ?? false,
       trigger_level_reached: input.triggerLevelReached ?? false,
       trigger_level: input.triggerLevel ?? null,
-      welfare_check_completed: input.welfareCheckCompleted ?? true,
+      welfare_check_completed: input.welfareCheckCompleted ?? null,
       follow_up_date: input.followUpDate ?? null,
       notes: input.notes ?? null,
     })

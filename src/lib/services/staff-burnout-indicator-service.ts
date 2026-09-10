@@ -85,7 +85,7 @@ export interface StaffBurnoutIndicatorRecord {
   peer_support_arranged: boolean;
   care_plan_reflects: boolean;
   team_informed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -395,7 +395,7 @@ export async function createBurnoutIndicator(
       peer_support_arranged: payload.peerSupportArranged ?? false,
       care_plan_reflects: payload.carePlanReflects ?? false,
       team_informed: payload.teamInformed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
