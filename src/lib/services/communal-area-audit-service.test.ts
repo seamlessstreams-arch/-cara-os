@@ -5,6 +5,14 @@ import {
   type CommunalAreaRecord,
 } from "./communal-area-audit-service";
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function makeRecord(overrides: Partial<CommunalAreaRecord> = {}): CommunalAreaRecord {
   return {
     id: "rec-1",
@@ -80,7 +88,7 @@ describe("computeCommunalAreaMetrics", () => {
   it("counts overdue audits and area type breakdowns", () => {
     const records = [
       makeRecord({ id: "r1", area_type: "lounge", next_audit_date: "2026-01-01" }),
-      makeRecord({ id: "r2", area_type: "kitchen", next_audit_date: "2027-01-01" }),
+      makeRecord({ id: "r2", area_type: "kitchen", next_audit_date: daysFromNow(120) }),
       makeRecord({ id: "r3", area_type: "lounge", next_audit_date: null }),
     ];
     const m = computeCommunalAreaMetrics(records);
