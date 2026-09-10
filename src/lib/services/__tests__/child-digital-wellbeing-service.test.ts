@@ -132,3 +132,15 @@ describe("child-digital-wellbeing-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded cyberbullying_screened as a failure", () => {
+    const alerts = _testing.identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: null })]);
+    expect(alerts.some((a) => /cyberbullying/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: false })]);
+    expect(alerts.some((a) => /cyberbullying/i.test(a.message))).toBe(true);
+  });
+});
