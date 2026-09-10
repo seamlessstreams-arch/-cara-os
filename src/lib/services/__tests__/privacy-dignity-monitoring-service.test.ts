@@ -131,3 +131,20 @@ describe("privacy-dignity-monitoring-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded confidentiality in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: null })]);
+    const alert = alerts.find((a) => a.type === "confidentiality_breach");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no confidentiality gap when it is recorded as maintained", () => {
+    const alerts = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: true })]);
+    expect(alerts.some((a) => a.type === "confidentiality_breach")).toBe(false);
+  });
+  it("does not dilute the confidentiality rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, confidentiality_maintained: v }));
+    expect(computePrivacyDignityMetrics(rows).confidentiality_rate).toBe(100);
+  });
+});
