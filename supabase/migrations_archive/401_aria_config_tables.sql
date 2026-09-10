@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS aria_tool_registry (
   description       TEXT NOT NULL,
   allowed_roles     JSONB NOT NULL DEFAULT '[]'::jsonb,
   requires_approval BOOLEAN NOT NULL DEFAULT false,
-  audit_required    BOOLEAN NOT NULL DEFAULT true,
+  audit_required    boolean,
   enabled           BOOLEAN NOT NULL DEFAULT true,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),

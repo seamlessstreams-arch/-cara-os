@@ -18,7 +18,7 @@ create table if not exists cs_water_safety (
   tmv_operational boolean not null default false,
   flushing_completed boolean not null default false,
   legionella_assessment_current boolean not null default false,
-  scalding_risk_mitigated boolean not null default false,
+  scalding_risk_mitigated boolean,
   issues_found    jsonb not null default '[]'::jsonb,
   actions_taken   jsonb not null default '[]'::jsonb,
   checked_by      text not null default '',

@@ -23,10 +23,10 @@ CREATE TABLE IF NOT EXISTS cs_county_lines_intelligence (
   indicators_present          text        NOT NULL,
   travel_patterns_noted       boolean     NOT NULL DEFAULT false,
   new_possessions_noted       boolean     NOT NULL DEFAULT false,
-  phone_activity_concerns     boolean     NOT NULL DEFAULT false,
+  phone_activity_concerns     boolean,
   missing_episodes_linked     boolean     NOT NULL DEFAULT false,
-  peer_association_concerns   boolean     NOT NULL DEFAULT false,
-  drug_related_concerns       boolean     NOT NULL DEFAULT false,
+  peer_association_concerns   boolean,
+  drug_related_concerns       boolean,
   debt_bondage_suspected      boolean     NOT NULL DEFAULT false,
   violence_intimidation_present boolean   NOT NULL DEFAULT false,
 

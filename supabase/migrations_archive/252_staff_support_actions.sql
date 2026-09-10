@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_support_actions (
   manager_approved boolean NOT NULL DEFAULT false,
   impact_assessed boolean NOT NULL DEFAULT false,
   linked_to_plan boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

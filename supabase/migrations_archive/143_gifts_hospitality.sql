@@ -19,7 +19,7 @@ create table if not exists cs_gifts_hospitality (
   conflict_of_interest boolean not null default false,
   child_involved  boolean not null default false,
   receipt_kept    boolean not null default false,
-  policy_compliant boolean not null default true,
+  policy_compliant boolean,
   notes           text,
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()

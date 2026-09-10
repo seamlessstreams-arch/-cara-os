@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cs_professional_network_directory (
   emergency_contact_confirmed boolean NOT NULL DEFAULT false,
   statutory_requirements_met boolean NOT NULL DEFAULT false,
   relationship_quality_reviewed boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

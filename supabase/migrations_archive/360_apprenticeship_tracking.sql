@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS cs_apprenticeship_tracking (
   personal_adviser_involved   boolean NOT NULL DEFAULT false,
   pathway_plan_linked         boolean NOT NULL DEFAULT false,
   social_worker_informed      boolean NOT NULL DEFAULT false,
-  at_risk_of_dropping_out     boolean NOT NULL DEFAULT false,
+  at_risk_of_dropping_out     boolean,
   support_plan_in_place       boolean NULL,
   notes                       text NULL,
   created_at                  timestamptz NOT NULL DEFAULT now(),

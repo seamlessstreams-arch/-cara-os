@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS cs_family_contact_arrangements (
   child_mood_after        text        NOT NULL CHECK (child_mood_after IN ('Happy','Anxious','Upset','Distressed','Neutral','Unsettled','Positive')),
 
   contact_quality         text        NOT NULL CHECK (contact_quality IN ('Positive','Mixed','Difficult','Did Not Proceed')),
-  risk_assessed           boolean     NOT NULL DEFAULT false,
-  concerns_raised         boolean     NOT NULL DEFAULT false,
+  risk_assessed           boolean,
+  concerns_raised         boolean,
   concern_details         text        NULL,
   social_worker_notified  boolean     NOT NULL DEFAULT false,
 

@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS cs_family_relationships (
   contact_frequency_actual  text NOT NULL,
   last_contact_date         date,
   court_order_restrictions  boolean NOT NULL DEFAULT false,
-  risk_assessment_in_place  boolean NOT NULL DEFAULT false,
+  risk_assessment_in_place  boolean,
   notes                     text,
   created_at                timestamptz NOT NULL DEFAULT now(),
   updated_at                timestamptz NOT NULL DEFAULT now()

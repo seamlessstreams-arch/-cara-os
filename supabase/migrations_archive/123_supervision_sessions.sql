@@ -18,7 +18,7 @@ create table if not exists cs_supervision_sessions (
   cases_discussed_count     integer not null default 0,
   safeguarding_discussed    boolean not null default false,
   wellbeing_rating          text not null default 'satisfactory',
-  wellbeing_concerns_raised boolean not null default false,
+  wellbeing_concerns_raised boolean,
   actions_set               integer not null default 0,
   actions_completed_from_last integer not null default 0,
   actions_outstanding_from_last integer not null default 0,
