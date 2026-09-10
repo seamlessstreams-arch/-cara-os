@@ -21,8 +21,10 @@ async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
 }
 
 const BUILD = () => ({
-  commit: (process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown").slice(0, 9),
-  ref: process.env.VERCEL_GIT_COMMIT_REF ?? null,
+  // Platform-agnostic: Northflank has no VERCEL_* vars — the Dockerfile stamps
+  // GIT_COMMIT_SHA from the build's commit so the deployed SHA is verifiable.
+  commit: (process.env.GIT_COMMIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown").slice(0, 9),
+  ref: process.env.GIT_COMMIT_REF ?? process.env.VERCEL_GIT_COMMIT_REF ?? null,
 });
 
 export async function GET(_req: NextRequest) {
