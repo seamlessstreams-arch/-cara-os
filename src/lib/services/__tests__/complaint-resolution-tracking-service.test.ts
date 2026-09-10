@@ -130,3 +130,15 @@ describe("complaint-resolution-tracking-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded learning_identified as a failure", () => {
+    const alerts = _testing.identifyComplaintResolutionAlerts([makeRecord({ learning_identified: null })]);
+    expect(alerts.some((a) => /learning/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyComplaintResolutionAlerts([makeRecord({ learning_identified: false })]);
+    expect(alerts.some((a) => /learning/i.test(a.message))).toBe(true);
+  });
+});

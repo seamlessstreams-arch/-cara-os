@@ -127,3 +127,15 @@ describe("home-environment-inspection-service", () => {
     });
   });
 });
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded fire_safety_checked as a failure", () => {
+    const alerts = _testing.identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: null })]);
+    expect(alerts.some((a) => /fire/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: false })]);
+    expect(alerts.some((a) => /fire/i.test(a.message))).toBe(true);
+  });
+});
