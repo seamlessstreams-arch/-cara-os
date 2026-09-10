@@ -135,7 +135,7 @@ export interface HarmfulSexualBehaviourRow {
   referral_source: ReferralSource;
   behaviour_category: BehaviourCategory;
   behaviour_description: string;
-  victim_involved: boolean;
+  victim_involved: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   victim_support_provided: boolean;
   aim_assessment_completed: boolean;
   brook_traffic_light_used: boolean;
@@ -380,7 +380,7 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (r.behaviour_category === "Abusive" || r.behaviour_category === "Violent") &&
-      r.victim_involved &&
+      r.victim_involved === true &&
       !r.victim_support_provided &&
       r.status === "Active"
     ) {
@@ -388,6 +388,24 @@ export function computeAlerts(
         type: "victim_no_support",
         severity: "critical",
         message: `${r.child_name}: Victim identified in ${r.behaviour_category} HSB incident but no victim support provided — KCSIE 2023 requires immediate support for all victims of peer-on-peer abuse`,
+        record_id: r.id,
+      });
+    }
+  }
+
+  // Whether a victim was involved is an incident FACT — an Abusive/Violent
+  // case where it was never established is itself a gap, worded as a gap,
+  // never as "no victim".
+  for (const r of rows) {
+    if (
+      (r.behaviour_category === "Abusive" || r.behaviour_category === "Violent") &&
+      r.victim_involved === null &&
+      r.status === "Active"
+    ) {
+      alerts.push({
+        type: "victim_involvement_not_recorded",
+        severity: "high",
+        message: `${r.child_name}: ${r.behaviour_category} HSB incident with victim involvement not recorded — establish whether a victim was involved and record it; victim support duties under KCSIE cannot be assessed until this is known`,
         record_id: r.id,
       });
     }
@@ -736,7 +754,7 @@ export async function createHarmfulSexualBehaviour(input: {
       referral_source: input.referralSource,
       behaviour_category: input.behaviourCategory,
       behaviour_description: input.behaviourDescription,
-      victim_involved: input.victimInvolved ?? false,
+      victim_involved: input.victimInvolved ?? null,
       victim_support_provided: input.victimSupportProvided ?? false,
       aim_assessment_completed: input.aimAssessmentCompleted ?? false,
       brook_traffic_light_used: input.brookTrafficLightUsed ?? false,
