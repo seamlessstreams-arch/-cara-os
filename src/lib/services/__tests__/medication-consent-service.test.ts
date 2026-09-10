@@ -132,3 +132,20 @@ describe("medication-consent-service", () => {
     });
   });
 });
+
+// ── Tri-state: controlled-drug consent gap alerts with honest wording ──
+describe("tri-state judgements", () => {
+  it("flags an unrecorded consent as unevidenced, not as recorded-absent", () => {
+    const alerts = _testing.identifyMedicationConsentAlerts([
+      makeRecord({ medication_type: "controlled_drug", consent_documented: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "controlled_drug_no_consent");
+    expect(a?.message).toMatch(/no consent documentation recorded/i);
+  });
+  it("still asserts a recorded refusal-to-document", () => {
+    const alerts = _testing.identifyMedicationConsentAlerts([
+      makeRecord({ medication_type: "controlled_drug", consent_documented: false }),
+    ]);
+    expect(alerts.some((x) => /recorded as NOT documented/i.test(x.message))).toBe(true);
+  });
+});
