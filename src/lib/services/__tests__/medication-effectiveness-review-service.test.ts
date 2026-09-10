@@ -130,3 +130,20 @@ describe("medication-effectiveness-review-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded side-effect monitoring in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: null })]);
+    const alert = alerts.find((a) => a.type === "side_effects_not_monitored");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no monitoring gap when it is recorded as done", () => {
+    const alerts = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: true })]);
+    expect(alerts.some((a) => a.type === "side_effects_not_monitored")).toBe(false);
+  });
+  it("does not dilute the side-effects rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, side_effects_monitored: v }));
+    expect(computeMedicationEffectivenessMetrics(rows).side_effects_rate).toBe(100);
+  });
+});

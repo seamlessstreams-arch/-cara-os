@@ -131,3 +131,20 @@ describe("homework-academic-support-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded PEP update in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: null })]);
+    const alert = alerts.find((a) => a.type === "pep_not_updated");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no PEP gap when the update is recorded as done", () => {
+    const alerts = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: true })]);
+    expect(alerts.some((a) => a.type === "pep_not_updated")).toBe(false);
+  });
+  it("does not dilute the PEP rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, pep_updated: v }));
+    expect(computeHomeworkAcademicMetrics(rows).pep_updated_rate).toBe(100);
+  });
+});
