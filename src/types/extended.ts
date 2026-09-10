@@ -2197,8 +2197,8 @@ export interface OutcomeReview {
 // LAC REVIEWS — Looked-After Children statutory review meetings
 // ══════════════════════════════════════════════════════════════════════════════
 
-export type LACReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption";
-export type LACReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home";
+export type LACReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption" | "additional" | "pre_discharge";
+export type LACReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home" | "escalation_required";
 export type LACChildParticipation = "attended" | "views_submitted" | "advocate_attended" | "did_not_participate";
 export type LACPlacementStability = "stable" | "some_concerns" | "at_risk";
 
@@ -2226,11 +2226,11 @@ export interface LACReview {
   child_views: string;
   key_discussions: string[];
   recommendations: string[];
-  outcome: LACReviewOutcome;
+  outcome: LACReviewOutcome | null;
   actions_agreed: LACReviewAction[];
   next_review_date: string;
-  placement_stability: LACPlacementStability;
-  care_plan_updated: boolean;
+  placement_stability: LACPlacementStability | null;
+  care_plan_updated: boolean | null;
   notes: string;
   recorded_by: string;
   home_id: string;
@@ -2350,13 +2350,13 @@ export interface KeyWorkingSession {
   child_voice: string;
   worker_observations: string;
   actions_agreed: string[];
-  mood_before: 1 | 2 | 3 | 4 | 5;
-  mood_after: 1 | 2 | 3 | 4 | 5;
-  follow_up: string;
-  follow_up_date: string;
-  follow_up_completed: boolean;
+  mood_before: 1 | 2 | 3 | 4 | 5 | null;
+  mood_after: 1 | 2 | 3 | 4 | 5 | null;
+  follow_up: string | null;
+  follow_up_date: string | null;
+  follow_up_completed: boolean | null;
   linked_goals: string[];
-  confidential: boolean;
+  confidential: boolean | null;
   home_id: string;
   created_at: string;
 }
@@ -2646,7 +2646,7 @@ export interface RestraintRecord {
   duration: number;
   child_id: string;
   staff_involved: RestraintStaffEntry[];
-  reason: RestraintReason;
+  reason: RestraintReason | null;
   restraint_type: RestraintType;
   antecedent: string;
   behaviour: string;
@@ -2656,7 +2656,7 @@ export interface RestraintRecord {
   injuries: RestraintInjury[];
   child_debriefed: boolean;
   child_debrief_notes: string;
-  staff_debriefed: boolean;
+  staff_debriefed: boolean | null;
   witnessed_by: string[];
   review_status: RestraintReviewStatus;
   review_notes: string;
@@ -2664,7 +2664,7 @@ export interface RestraintRecord {
   linked_incident_id: string;
   notifications_sent: { party: string; date: string }[];
   body_map_completed: boolean;
-  medical_check_completed: boolean;
+  medical_check_completed: boolean | null;
   recorded_by: string;
   created_at: string;
 }

@@ -25,7 +25,7 @@ export async function GET(req: Request) {
   const from = url.searchParams.get("from") ?? undefined;
   const to = url.searchParams.get("to") ?? undefined;
   const sources = parseSources(url.searchParams.get("sources"));
-  const feed = getCalendarFeed({ from, to, sources });
+  const feed = await getCalendarFeed({ from, to, sources });
   return NextResponse.json({ data: feed });
 }
 

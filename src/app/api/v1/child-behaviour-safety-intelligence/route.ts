@@ -115,7 +115,9 @@ export async function GET(request: NextRequest) {
     reason: r.reason ?? "",
     type: r.restraint_type,
     de_escalation_attempted: r.de_escalation_attempts.length > 0,
-    debrief_completed: r.child_debriefed && r.staff_debriefed,
+    // Where the staff debrief was never recorded as a question, completion is
+    // the child debrief; where it was recorded, both must hold.
+    debrief_completed: r.staff_debriefed === null ? r.child_debriefed : r.child_debriefed && r.staff_debriefed,
     injuries: r.injuries.length,
     reviewed: r.review_status === "reviewed",
   }));

@@ -17,6 +17,7 @@
 import { db, getStore, type EarlyAccessRequest } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan } from "@/types/extended";
@@ -29,7 +30,16 @@ import type {
   Supervision, Document, Expense, CareForm, DocumentReadReceipt,
 } from "@/types";
 import type {
-  MissingEpisode, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
+  BehaviourEntry,
+  KeyWorkingSession,
+  MissingEpisode,
+  RiskAssessment,
+  LACReview,
+  LACReviewAttendee,
+  LACReviewAction,
+  RestraintRecord,
+  RestraintStaffEntry,
+  RestraintInjury, Audit, ChronologyEntry, HandoverEntry, MaintenanceItem,
   Building, BuildingCheck, Vehicle, VehicleCheck, Notification as AppNotification,
 } from "@/types/extended";
 
@@ -67,6 +77,406 @@ interface GenericRecordRow {
 // and the app contract; field drift is caught by the census, not per-site.
 function asApp<T>(rows: unknown): T {
   return rows as T;
+}
+
+
+/** Keywork consolidation: cs_key_work_sessions (what key-working-service
+ *  captures) projected into the KeyWorkingSession shape the 30+ intelligence
+ *  readers expect. Honest mapping only — moods come from the single recorded
+ *  child_mood (before == after: no improvement is ever fabricated), and the
+ *  fields capture never records (follow-up tracking, confidentiality) stay
+ *  null rather than defaulting to a credit. care_plan_review projects as
+ *  "review".
+ */
+function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessions"]["Row"]): KeyWorkingSession {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const mood = (r.child_mood != null && r.child_mood >= 1 && r.child_mood <= 5
+    ? (r.child_mood as 1 | 2 | 3 | 4 | 5) : null);
+  const typeMap: Record<string, KeyWorkingSession["type"]> = {
+    one_to_one: "one_to_one", group: "group", informal: "informal",
+    therapeutic: "therapeutic", life_skills: "life_skills", care_plan_review: "review",
+  };
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    staff_id: r.key_worker_id ?? "",
+    date: r.completed_date ?? r.planned_date ?? r.created_at.slice(0, 10),
+    type: typeMap[r.session_type ?? ""] ?? "one_to_one",
+    duration: r.duration_minutes ?? 0,
+    location: r.location ?? "",
+    topics: strings(r.topics_covered),
+    child_voice: r.child_voice ?? "",
+    worker_observations: strings(r.positive_observations).join("; "),
+    actions_agreed: strings(r.actions),
+    mood_before: mood,
+    mood_after: mood,
+    follow_up: strings(r.next_session_topics).join(", ") || null,
+    follow_up_date: null,
+    follow_up_completed: null,
+    confidential: r.safeguarding_concerns != null && r.safeguarding_concerns.trim() !== "" ? true : null,
+    linked_goals: [],
+    home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
+}
+
+
+/** Behaviour consolidation: cs_behaviour_entries (the ABC capture) projected
+ *  into the BehaviourEntry shape the intelligence readers expect. direction
+ *  is binary (only the 'positive' category is positive); intensity is a
+ *  DOCUMENTED translation of the recorder's own category — safety-first, so
+ *  self-harm and aggression never under-alarm: crisis→critical,
+ *  self_harm/aggression/escalating→high, positive→low, the rest→moderate.
+ *  trigger is the recorded antecedent (the A of ABC), strategy_used the
+ *  de-escalation list — nothing here is invented.
+ */
+function behaviourRowToEntry(r: Database["public"]["Tables"]["cs_behaviour_entries"]["Row"]): BehaviourEntry {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const cat = r.category ?? "";
+  const intensity: BehaviourEntry["intensity"] =
+    cat === "crisis" ? "critical"
+    : cat === "self_harm" || cat === "aggression" || cat === "escalating" ? "high"
+    : cat === "positive" ? "low"
+    : "moderate";
+  return {
+    id: r.id,
+    child_id: r.child_id ?? "",
+    date: r.date ?? r.created_at.slice(0, 10),
+    time: (r.time ?? "").slice(0, 5),
+    direction: cat === "positive" ? "positive" : "concern",
+    intensity,
+    title: (r.description ?? r.behaviour ?? "").slice(0, 80),
+    antecedent: r.antecedent ?? "",
+    behaviour: r.behaviour ?? r.description ?? "",
+    consequence: r.consequence ?? "",
+    trigger: r.antecedent ?? "",
+    strategy_used: strings(r.de_escalation_used).join(", "),
+    outcome: r.outcome ?? "",
+    recorded_by: r.recorded_by ?? "",
+    created_at: r.created_at,
+  };
+}
+
+
+// ── Risk consolidation (3 of 6): cs_risk_assessments → RiskAssessment ───────
+// Capture records likelihood×impact per category; intelligence reads a
+// domain-keyed assessment. Honest projection rules:
+//  • category → domain only where exact or professionally standard
+//    (radicalisation is exploitation-shaped harm under Prevent/EFH). bullying
+//    (direction-ambiguous: being bullied ≠ bullying others) and the
+//    operational categories (environmental, health_medical, transport,
+//    activities) stay capture-only, as do home-level rows with no child — a
+//    premises risk cannot wear a child-harm domain. All remain fully visible
+//    in the capture surfaces.
+//  • current_level = the residual level where the assessor recorded one (the
+//    risk as it stands WITH mitigations), else the inherent band; very_low
+//    joins low (the intelligence union has no very_low). A row with no
+//    recorded level is skipped — it cannot honestly wear one.
+//  • previous_level/trend are DERIVED from real history — earlier assessments
+//    of the same child+category, compared on the raw five-band scale. A first
+//    assessment spans its single reading (previous = current, trend stable):
+//    the least-claiming members of the required unions.
+//  • status: active/escalated → current (escalated is live — dropping it
+//    would under-alarm), mitigated/closed → superseded. An unrecognised
+//    status also maps to current: a risk record must never disappear from
+//    safety counts because its status string is malformed.
+//  • review_date = next_review_date (what the currency engine does overdue
+//    arithmetic on; required at capture). Never invented: indicators,
+//    contingency_plan, child_views, history_notes and linked_incidents are
+//    empty — capture does not record them — and mitigation strings carry
+//    effectiveness "not_yet_assessed".
+const RISK_CATEGORY_TO_DOMAIN: Record<string, RiskAssessment["domain"]> = {
+  self_harm: "self_harm",
+  violence_aggression: "aggression",
+  absconding: "absconding",
+  exploitation: "exploitation",
+  radicalisation: "exploitation",
+  substance_misuse: "substance_use",
+  online_safety: "online_safety",
+  fire_setting: "fire_setting",
+  sexual_behaviour: "sexual_behaviour",
+  emotional_wellbeing: "emotional_harm",
+};
+const RISK_LEVEL_RANK: Record<string, number> = { very_low: 0, low: 1, medium: 2, high: 3, very_high: 4 };
+const RISK_LEVEL_BAND: Record<string, RiskAssessment["current_level"]> = {
+  very_low: "low", low: "low", medium: "medium", high: "high", very_high: "very_high",
+};
+const RISK_STATUS_MAP: Record<string, RiskAssessment["status"]> = {
+  active: "current", escalated: "current", under_review: "under_review", mitigated: "superseded", closed: "superseded",
+};
+
+function riskRowsToAssessments(rows: Database["public"]["Tables"]["cs_risk_assessments"]["Row"][]): RiskAssessment[] {
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const usable = rows.flatMap((r) => {
+    const domain = RISK_CATEGORY_TO_DOMAIN[r.category ?? ""];
+    const rawLevel = r.residual_risk_level ?? r.current_risk_level;
+    if (!r.child_id || !domain || !rawLevel || RISK_LEVEL_RANK[rawLevel] === undefined) return [];
+    return [{ r, childId: r.child_id, domain, rawLevel }];
+  });
+  const threads = new Map<string, typeof usable>();
+  for (const u of usable) {
+    const key = `${u.childId}|${u.r.category}`;
+    const t = threads.get(key);
+    if (t) t.push(u); else threads.set(key, [u]);
+  }
+  const out: RiskAssessment[] = [];
+  for (const thread of threads.values()) {
+    thread.sort((a, b) => a.r.created_at.localeCompare(b.r.created_at));
+    for (let i = 0; i < thread.length; i++) {
+      const { r, childId, domain, rawLevel } = thread[i];
+      const prevRaw = i > 0 ? thread[i - 1].rawLevel : rawLevel;
+      const trend: RiskAssessment["trend"] =
+        RISK_LEVEL_RANK[rawLevel] > RISK_LEVEL_RANK[prevRaw] ? "increasing"
+        : RISK_LEVEL_RANK[rawLevel] < RISK_LEVEL_RANK[prevRaw] ? "decreasing"
+        : "stable";
+      out.push({
+        id: r.id,
+        child_id: childId,
+        domain,
+        current_level: RISK_LEVEL_BAND[rawLevel],
+        previous_level: RISK_LEVEL_BAND[prevRaw],
+        trend,
+        status: RISK_STATUS_MAP[r.status ?? ""] ?? "current",
+        assessed_by: r.assessor_id ?? "",
+        assessed_date: r.created_at.slice(0, 10),
+        review_date: r.next_review_date ?? r.review_date ?? "",
+        triggers: strings(r.triggers),
+        indicators: [],
+        mitigations: strings(r.mitigations).map((strategy) => ({
+          strategy, responsible: "", effectiveness: "not_yet_assessed" as const,
+        })),
+        contingency_plan: "",
+        child_views: "",
+        history_notes: "",
+        linked_incidents: [],
+        home_id: r.home_id ?? "",
+        created_at: r.created_at,
+      });
+    }
+  }
+  out.sort((a, b) => b.assessed_date.localeCompare(a.assessed_date));
+  return out;
+}
+
+// ── LAC reviews consolidation (4 of 6): cs_lac_reviews → LACReview ──────────
+// TWO services write this table in different vocabularies — lac-review-service
+// (IRO, six-member participation scale, domain-reviewed flags, an 8-member
+// outcome) and placement-service (chair, attendee names, plan changes,
+// boolean participation). Honest projection rules:
+//  • only COMPLETED rows project — a scheduled/cancelled/overdue row is not a
+//    held review, and projecting one would forge statutory compliance.
+//  • vocabulary translation is exact or least-claiming: "second" is the
+//    3-month review, which the intelligence union names first_review (its own
+//    label says "(3 months)"); too_young keeps the recorded FACT
+//    (did_not_participate) and loses only the reason; an unknown review_type
+//    label projects as "additional" rather than claim a statutory slot.
+//  • outcome: the recorded member translated (escalation_required survives —
+//    losing the one alarm member would under-alarm; plan_endorsed /
+//    permanence_confirmed / no_change all state the placement continues);
+//    where no outcome was recorded it is DERIVED from the completion record
+//    (plan changes → care_plan_amended, agreed actions → actions_agreed) or
+//    stays null — never defaulted.
+//  • attendees carry exactly what was recorded: role-only entries from the
+//    attendance booleans, name-only entries from the chair's list.
+//  • care_plan_updated: the jsonb columns have no '[]' default, so a null
+//    plan_changes means the question was never asked (→ null) while a
+//    recorded empty list from the completion form means no changes (→ false).
+//  • never invented: venue, child views text (the capture records only THAT
+//    views were recorded, not the words), placement_stability (no capture
+//    field judges it — stays null), recorded_by. A-side action strings carry
+//    completed: false — an action with no completion record is outstanding.
+const LAC_TYPE_MAP: Record<string, LACReview["review_type"]> = {
+  initial: "initial",
+  second: "first_review",
+  first_review: "first_review",
+  subsequent: "subsequent",
+  emergency: "emergency",
+  disruption: "disruption",
+  additional: "additional",
+  pre_discharge: "pre_discharge",
+};
+const LAC_PART_MAP: Record<string, LACReview["child_participation"]> = {
+  attended_spoke: "attended",
+  attended: "attended",
+  attended_advocate: "advocate_attended",
+  advocate_attended: "advocate_attended",
+  written_views: "views_submitted",
+  views_via_worker: "views_submitted",
+  views_submitted: "views_submitted",
+  did_not_participate: "did_not_participate",
+  too_young: "did_not_participate",
+};
+const LAC_OUTCOME_MAP: Record<string, NonNullable<LACReview["outcome"]>> = {
+  plan_endorsed: "placement_continues",
+  permanence_confirmed: "placement_continues",
+  no_change: "placement_continues",
+  placement_continues: "placement_continues",
+  plan_amended: "care_plan_amended",
+  care_plan_amended: "care_plan_amended",
+  placement_change: "placement_change",
+  return_home: "return_home",
+  further_assessment: "actions_agreed",
+  actions_agreed: "actions_agreed",
+  escalation_required: "escalation_required",
+};
+
+function lacRowToReview(r: Database["public"]["Tables"]["cs_lac_reviews"]["Row"]): LACReview | null {
+  if ((r.status ?? "scheduled") !== "completed" || !r.child_id) return null;
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+
+  const attendees: LACReviewAttendee[] = [];
+  if (r.parent_attended) attendees.push({ name: "", role: "Parent" });
+  if (r.social_worker_attended) attendees.push({ name: "", role: "Social Worker" });
+  if (r.key_worker_attended) attendees.push({ name: "", role: "Key Worker" });
+  for (const name of strings(r.attendees)) attendees.push({ name, role: "" });
+
+  const discussions: string[] = [];
+  if (r.placement_stability_discussed) discussions.push("Placement stability");
+  if (r.permanence_plan_reviewed) discussions.push("Permanence plan");
+  if (r.health_reviewed) discussions.push("Health");
+  if (r.education_reviewed) discussions.push("Education");
+
+  const actions: LACReviewAction[] = strings(r.actions_agreed).map((action) => ({
+    action, owner: "", due_date: "", completed: false,
+  }));
+  for (const j of Array.isArray(r.actions) ? r.actions : []) {
+    const o = (j ?? {}) as Record<string, unknown>;
+    actions.push({
+      action: String(o.action ?? ""),
+      owner: String(o.responsible ?? ""),
+      due_date: String(o.due_date ?? ""),
+      completed: o.completed === true,
+    });
+  }
+
+  const planChanges = Array.isArray(r.plan_changes) ? strings(r.plan_changes) : null;
+  const outcome: LACReview["outcome"] =
+    LAC_OUTCOME_MAP[r.outcome ?? ""]
+    ?? (planChanges && planChanges.length > 0 ? "care_plan_amended"
+      : actions.length > 0 ? "actions_agreed"
+      : null);
+
+  return {
+    id: r.id,
+    child_id: r.child_id,
+    date: r.review_date ?? r.created_at.slice(0, 10),
+    review_type: LAC_TYPE_MAP[r.review_type ?? ""] ?? "additional",
+    iro: r.iro_name ?? r.chaired_by ?? "",
+    venue: "",
+    attendees,
+    child_participation:
+      LAC_PART_MAP[r.child_participation ?? ""]
+      ?? (r.child_participated === true ? "attended" : "did_not_participate"),
+    child_views: "",
+    key_discussions: discussions,
+    recommendations: strings(r.recommendations),
+    outcome,
+    actions_agreed: actions,
+    next_review_date: r.next_review_due ?? r.next_review_date ?? "",
+    placement_stability: null,
+    care_plan_updated: planChanges ? planChanges.length > 0 : null,
+    notes: r.notes ?? "",
+    recorded_by: "",
+    home_id: r.home_id ?? "",
+    created_at: r.created_at,
+  };
+}
+
+// ── Restraints consolidation (5 of 6): cs_restraint_records → RestraintRecord
+// Single writer (restraint-service). cs_restraint_debriefs is promoted
+// alongside as a standalone capture read through its own service — the two
+// tables share no FK and are NEVER joined by child+date inference. Honest
+// projection rules:
+//  • reason stays null — no capture field records the statutory ground, and
+//    a physical intervention must never wear a legal justification the
+//    recorder did not give. staff_debriefed and medical_check_completed stay
+//    null for the same shape: the form never asks, and an unasked question
+//    is a form gap, not a compliance failure (readers use recorded-subset
+//    denominators).
+//  • end_time is DERIVED from the recorded start + recorded duration — pure
+//    wall-clock arithmetic on two recorded facts; absent either, "".
+//  • description composes the recorded technique and outcome text — real
+//    prose only, joined with a dash, nothing authored.
+//  • review_status: manager_reviewed true → reviewed; otherwise pending_rm —
+//    not-yet-reviewed is the honest state of an unreviewed record.
+//  • notifications_sent carries one entry per recorded-true notified flag,
+//    with the date "" (the capture records WHETHER, not when).
+//  • child_debriefed is the record's own debrief_completed answer; an absent
+//    answer reads false — the chase-it direction, never assurance.
+//  • never invented: justification, witnessed_by, linked incident, per-staff
+//    technique; the child's own views text has no intelligence field and
+//    stays capture-visible (noted for the recording-philosophy call).
+const RESTRAINT_TYPE_SET = new Set<RestraintRecord["restraint_type"]>(["standing", "seated", "ground", "escort", "other"]);
+
+function restraintRowToRecord(r: Database["public"]["Tables"]["cs_restraint_records"]["Row"]): RestraintRecord | null {
+  if (!r.child_id) return null;
+  const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
+  const objs = (j: unknown): Record<string, unknown>[] =>
+    Array.isArray(j) ? j.map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {})) : [];
+
+  const staff: RestraintStaffEntry[] = objs(r.staff_involved).map((o) => ({
+    staff_id: String(o.staff_name ?? o.staff_id ?? ""),
+    role: String(o.role_in_incident ?? o.role ?? ""),
+    technique: "",
+    ...(typeof o.trained === "boolean" ? { team_teach_trained: o.trained } : {}),
+  }));
+
+  const injury = (person: string) => (o: Record<string, unknown>): RestraintInjury => ({
+    person: String(o.person_name ?? person),
+    injury: [o.description, o.body_location].filter(Boolean).map(String).join(" — "),
+    treatment: String(o.treatment_given ?? ""),
+  });
+  const injuries = [
+    ...objs(r.injuries_child).map(injury("Child")),
+    ...objs(r.injuries_staff).map(injury("Staff")),
+  ];
+
+  const start = (r.incident_time ?? "").slice(0, 5);
+  let end = "";
+  if (start && typeof r.duration_minutes === "number") {
+    const [h, m] = start.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) {
+      const t = (h * 60 + m + r.duration_minutes) % 1440;
+      end = `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+    }
+  }
+
+  const notifications: RestraintRecord["notifications_sent"] = [];
+  if (r.ofsted_notified) notifications.push({ party: "Ofsted", date: "" });
+  if (r.parent_carer_notified) notifications.push({ party: "Parent/Carer", date: "" });
+  if (r.social_worker_notified) notifications.push({ party: "Social Worker", date: "" });
+
+  const rawType = r.restraint_type ?? "";
+  return {
+    id: r.id,
+    date: r.incident_date ?? r.created_at.slice(0, 10),
+    start_time: start,
+    end_time: end,
+    duration: r.duration_minutes ?? 0,
+    child_id: r.child_id,
+    staff_involved: staff,
+    reason: null,
+    restraint_type: (RESTRAINT_TYPE_SET.has(rawType as RestraintRecord["restraint_type"]) ? rawType : "other") as RestraintRecord["restraint_type"],
+    antecedent: r.antecedent ?? "",
+    behaviour: r.behaviour_description ?? "",
+    de_escalation_attempts: strings(r.de_escalation_attempted),
+    justification: "",
+    description: [r.technique_used, r.outcome].filter(Boolean).join(" — "),
+    injuries,
+    child_debriefed: r.debrief_completed === true,
+    child_debrief_notes: r.debrief_notes ?? "",
+    staff_debriefed: null,
+    witnessed_by: [],
+    review_status: r.manager_reviewed === true ? "reviewed" : "pending_rm",
+    review_notes: r.manager_review_notes ?? "",
+    reviewed_by: "",
+    linked_incident_id: "",
+    notifications_sent: notifications,
+    body_map_completed: r.body_map_completed === true,
+    medical_check_completed: null,
+    recorded_by: r.created_by ?? "",
+    created_at: r.created_at,
+  };
 }
 
 export const dal = {
@@ -787,53 +1197,150 @@ export const dal = {
   // ─────────────────────────────────────────────────────────────────────────
 
   keyWorkingSessions: {
-    async findAll(filters?: { child_id?: string; staff_id?: string }) {
+    async findAll(filters?: { child_id?: string; staff_id?: string }): Promise<KeyWorkingSession[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_key_work_sessions").select("*").order("planned_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        if (filters?.staff_id) q = q.eq("key_worker_id", filters.staff_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(keyworkRowToSession);
+      }
       let list = db.keyWorkingSessions.findAll();
       if (filters?.child_id) list = list.filter((s) => s.child_id === filters.child_id);
       if (filters?.staff_id) list = list.filter((s) => s.staff_id === filters.staff_id);
       return list;
     },
-    async findById(id: string) { return db.keyWorkingSessions.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.keyWorkingSessions.findByChild(childId); },
+    async findById(id: string): Promise<KeyWorkingSession | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("id", id).single();
+        if (!error && data) return keyworkRowToSession(data);
+      }
+      return db.keyWorkingSessions.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<KeyWorkingSession[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("child_id", childId).order("planned_date", { ascending: false });
+        if (!error && data) return data.map(keyworkRowToSession);
+      }
+      return db.keyWorkingSessions.findByChild(childId);
+    },
     async create(data: Parameters<typeof db.keyWorkingSessions.create>[0]) { return db.keyWorkingSessions.create(data); },
     async update(id: string, data: Parameters<typeof db.keyWorkingSessions.update>[1]) { return db.keyWorkingSessions.update(id, data); },
   },
 
   behaviourLog: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<BehaviourEntry[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_behaviour_entries").select("*").order("date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(behaviourRowToEntry);
+      }
       let list = db.behaviourLog.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.behaviourLog.findById(id) ?? null; },
+    async findById(id: string): Promise<BehaviourEntry | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_behaviour_entries").select("*").eq("id", id).single();
+        if (!error && data) return behaviourRowToEntry(data);
+      }
+      return db.behaviourLog.findById(id) ?? null;
+    },
     async findByChild(childId: string) { return db.behaviourLog.findByChild(childId); },
     async create(data: Parameters<typeof db.behaviourLog.create>[0]) { return db.behaviourLog.create(data); },
     async update(id: string, data: Parameters<typeof db.behaviourLog.update>[1]) { return db.behaviourLog.update(id, data); },
   },
 
   riskAssessments: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<RiskAssessment[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_risk_assessments").select("*");
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return riskRowsToAssessments(data);
+      }
       let list = db.riskAssessments.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.riskAssessments.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.riskAssessments.findByChild(childId); },
+    async findById(id: string): Promise<RiskAssessment | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_risk_assessments").select("*").eq("id", id).single();
+        if (!error && data) {
+          // previous_level/trend come from the row's real thread, not the row alone.
+          const sib = data.child_id && data.category
+            ? await c.from("cs_risk_assessments").select("*").eq("child_id", data.child_id).eq("category", data.category)
+            : null;
+          const rows = sib && !sib.error && sib.data ? sib.data : [data];
+          return riskRowsToAssessments(rows).find((a) => a.id === id) ?? null;
+        }
+      }
+      return db.riskAssessments.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<RiskAssessment[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_risk_assessments").select("*").eq("child_id", childId);
+        if (!error && data) return riskRowsToAssessments(data);
+      }
+      return db.riskAssessments.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through risk-assessment-service.
     async create(data: Parameters<typeof db.riskAssessments.create>[0]) { return db.riskAssessments.create(data); },
     async update(id: string, data: Parameters<typeof db.riskAssessments.update>[1]) { return db.riskAssessments.update(id, data); },
   },
 
   lacReviews: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<LACReview[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_lac_reviews").select("*").order("review_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.flatMap((r) => lacRowToReview(r) ?? []);
+      }
       let list = db.lacReviews.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.lacReviews.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.lacReviews.findByChild(childId); },
+    async findById(id: string): Promise<LACReview | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_lac_reviews").select("*").eq("id", id).single();
+        if (!error && data) return lacRowToReview(data);
+      }
+      return db.lacReviews.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<LACReview[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_lac_reviews").select("*").eq("child_id", childId).order("review_date", { ascending: false });
+        if (!error && data) return data.flatMap((r) => lacRowToReview(r) ?? []);
+      }
+      return db.lacReviews.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through the two services.
     async create(data: Parameters<typeof db.lacReviews.create>[0]) { return db.lacReviews.create(data); },
   },
 
+  // ── Education consolidation (6 of 6) — the ONE brief pick that does NOT
+  // consolidate here. store.educationRecords is an education EVENT LOG
+  // (suspensions, managed moves, PEP meetings — the off-rolling scrutiny
+  // triggers), a different model from cs_education_records, which is a
+  // per-child status PROFILE read directly by education-service. No honest
+  // projection bridges a profile back into dated typed events, and the event
+  // log's only live-shaped writer is the care-events processor, which is
+  // sync-over-store BY DESIGN. So this arm stays demo-only until that spine
+  // can persist; the education CAPTURE surface (4 tables) is promoted and
+  // typed under #108, exercised by the write-contract proofs, not here.
   educationRecords: {
     async findAll(filters?: { child_id?: string }) {
       let list = db.educationRecords.findAll();
@@ -857,13 +1364,35 @@ export const dal = {
   },
 
   restraints: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<RestraintRecord[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_restraint_records").select("*").order("incident_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.flatMap((r) => restraintRowToRecord(r) ?? []);
+      }
       let list = db.restraints.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.restraints.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.restraints.findByChild(childId); },
+    async findById(id: string): Promise<RestraintRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_restraint_records").select("*").eq("id", id).single();
+        if (!error && data) return restraintRowToRecord(data);
+      }
+      return db.restraints.findById(id) ?? null;
+    },
+    async findByChild(childId: string): Promise<RestraintRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_restraint_records").select("*").eq("child_id", childId).order("incident_date", { ascending: false });
+        if (!error && data) return data.flatMap((r) => restraintRowToRecord(r) ?? []);
+      }
+      return db.restraints.findByChild(childId);
+    },
+    // Writes stay on the demo store; live capture goes through restraint-service.
     async create(data: Parameters<typeof db.restraints.create>[0]) { return db.restraints.create(data); },
   },
 

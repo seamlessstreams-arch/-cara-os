@@ -361,6 +361,7 @@ export async function createDefinition(
       target_value: input.targetValue,
       threshold_amber: input.thresholdAmber,
       threshold_red: input.thresholdRed,
+      // absence-ok: metric direction is a definition choice (visible and editable on the KPI), not a recorded judgement
       higher_is_better: input.higherIsBetter ?? true,
       frequency: input.frequency,
       data_source: input.dataSource,

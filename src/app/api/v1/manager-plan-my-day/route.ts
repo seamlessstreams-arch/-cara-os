@@ -34,7 +34,7 @@ async function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): Promis
   const staffById = new Map((staffList ?? []).map((s) => [s.id, s.full_name || `${s.first_name} ${s.last_name}`.trim()]));
 
   // ── Fixed commitments: today's calendar minus task/training/shift noise ──
-  const feed = getCalendarFeed({ from: today, to: today });
+  const feed = await getCalendarFeed({ from: today, to: today });
   const calendar = feed.items
     .filter((i) => !FIXED_EXCLUDE.has(i.source))
     .map((i) => ({

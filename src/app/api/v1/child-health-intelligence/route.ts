@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       type: m.type ?? "regular",
       dosage: m.dosage ?? "",
       frequency: m.frequency ?? "daily",
-      is_active: m.is_active ?? true,
+      is_active: m.is_active,
       start_date: (m.start_date ?? "").slice(0, 10),
       end_date: m.end_date ? m.end_date.slice(0, 10) : null,
     }));

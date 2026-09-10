@@ -17,7 +17,7 @@ import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-ob
 import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 import { pronounsForChild } from "@/lib/cpie/pronouns";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
-import { getCalendarFeed } from "@/lib/calendar/calendar-service";
+import { getCalendarFeedFromStore } from "@/lib/calendar/calendar-service";
 import { buildRecordCatalogue } from "@/lib/ask-cara/record-catalogue";
 import type { AskCaraChildCalendar } from "@/lib/ask-cara/types";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
@@ -311,8 +311,8 @@ function buildChildCalendars(childIds: string[]): AskCaraChildCalendar[] | undef
     const today = todayStr();
     const clean = (items: Array<{ child_id: string | null; source: string; date: string; title: string }>) =>
       items.filter((i) => i.child_id && String(i.source) !== "shift");
-    const upcoming = clean(getCalendarFeed({ from: today, to: addDays(today, 14) }).items);
-    const attended = clean(getCalendarFeed({ from: addDays(today, -30), to: addDays(today, -1) }).items);
+    const upcoming = clean(getCalendarFeedFromStore({ from: today, to: addDays(today, 14) }).items);
+    const attended = clean(getCalendarFeedFromStore({ from: addDays(today, -30), to: addDays(today, -1) }).items);
     return childIds
       .map((id) => ({
         childId: id,

@@ -48,8 +48,8 @@ export interface KeyworkSessionInput {
   date: string;
   type: string;
   duration: number;
-  mood_before: number;
-  mood_after: number;
+  mood_before: number | null;
+  mood_after: number | null;
   topics: string[];
   child_voice: string;
   actions_agreed: string[];
@@ -365,8 +365,8 @@ function computeMoodTrajectory(input: TherapeuticProgressInput): MoodTrajectory 
     }
   }
   for (const ks of input.keywork_sessions) {
-    if (ks.mood_after > 0) {
-      moodPoints.push({ date: ks.date, score: ks.mood_after });
+    if ((ks.mood_after ?? 0) > 0) {
+      moodPoints.push({ date: ks.date, score: ks.mood_after ?? 0 });
     }
   }
   for (const mh of input.mental_health_check_ins) {
@@ -495,8 +495,8 @@ function computeKeyworkEffectiveness(input: TherapeuticProgressInput): KeyworkEf
   const sessions30d = sessions.filter((s) => withinDays(s.date, input.today, 30)).length;
 
   const moodLifts = sessions
-    .filter((s) => s.mood_before > 0 && s.mood_after > 0)
-    .map((s) => s.mood_after - s.mood_before);
+    .filter((s) => (s.mood_before ?? 0) > 0 && (s.mood_after ?? 0) > 0)
+    .map((s) => (s.mood_after ?? 0) - (s.mood_before ?? 0));
   const avgLift = average(moodLifts);
 
   const withActions = sessions.filter((s) => s.actions_agreed.length > 0);

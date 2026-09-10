@@ -55,7 +55,7 @@ export interface MedErrorSource {
 }
 export interface KeyworkSource {
   id: string; child_id: string; staff_id: string; date: string; type?: string;
-  mood_before?: number; mood_after?: number; home_id?: string; created_at?: string;
+  mood_before?: number | null; mood_after?: number | null; home_id?: string; created_at?: string;
 }
 export interface EducationSource {
   id: string; child_id: string; staff_id?: string; date: string; record_type?: string;

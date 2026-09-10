@@ -247,8 +247,58 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "cs_activities",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_attendance_entries",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_behaviour_entries",
+    migration: "20260908120000_behaviour_consolidation.sql",
+    columns: [],
+  },
+  {
     table: "cs_communication_drafts",
     migration: "20260816210000_persist_communication_drafts.sql",
+    columns: [],
+  },
+  {
+    table: "cs_education_attendance_tracking",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_education_records",
+    migration: "20260909140000_education_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_key_work_sessions",
+    migration: "20260908090000_keywork_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_lac_reviews",
+    migration: "20260909100000_lac_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_restraint_debriefs",
+    migration: "20260909120000_restraints_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_restraint_records",
+    migration: "20260909120000_restraints_consolidation.sql",
+    columns: [],
+  },
+  {
+    table: "cs_risk_assessments",
+    migration: "20260909080000_risk_consolidation.sql",
     columns: [],
   },
   {
