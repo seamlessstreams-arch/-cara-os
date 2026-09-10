@@ -24,6 +24,7 @@ export { dal, genericTable } from "./dal";
 import {
   sbCareEvents,
   sbCareEventRoutes,
+  sbCareEventJobs,
   sbCareEventAuditLog,
   sbReg45EvidenceQueue,
   sbAnnexAEvidenceQueue,
@@ -68,6 +69,18 @@ export const careEventsDb = {
           memDb.careEventRoutes.upsert(data),
         patch: async (id: string, data: Parameters<typeof memDb.careEventRoutes.patch>[1]) =>
           memDb.careEventRoutes.patch(id, data),
+      },
+
+  careEventJobs: isSupabaseEnabled()
+    ? sbCareEventJobs
+    : {
+        findAll: async () => memDb.careEventJobs.findAll(),
+        findPending: async () => memDb.careEventJobs.findPending(),
+        findFailed: async () => memDb.careEventJobs.findFailed(),
+        upsert: async (data: Parameters<typeof memDb.careEventJobs.upsert>[0]) =>
+          memDb.careEventJobs.upsert(data),
+        patch: async (id: string, data: Parameters<typeof memDb.careEventJobs.patch>[1]) =>
+          memDb.careEventJobs.patch(id, data),
       },
 
   careEventAuditLog: isSupabaseEnabled()

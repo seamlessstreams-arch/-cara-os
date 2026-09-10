@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { CareEventJob, JobType } from "@/types/care-events";
@@ -20,8 +21,8 @@ export async function GET(req: NextRequest) {
   const job_type = searchParams.get("job_type") as JobType | null;
 
   let jobs: CareEventJob[] = [
-    ...db.careEventJobs.findPending(),
-    ...db.careEventJobs.findFailed(),
+    ...(await careEventsDb.careEventJobs.findPending()),
+    ...(await careEventsDb.careEventJobs.findFailed()),
   ];
 
   if (status) jobs = jobs.filter((j) => j.status === status);
@@ -78,8 +79,8 @@ export async function POST(req: NextRequest) {
 
   // Collect eligible jobs
   let eligible: CareEventJob[] = [
-    ...db.careEventJobs.findPending(),
-    ...db.careEventJobs.findFailed(),
+    ...(await careEventsDb.careEventJobs.findPending()),
+    ...(await careEventsDb.careEventJobs.findFailed()),
   ].filter((j) => j.retry_count < j.max_retries);
 
   if (care_event_id) eligible = eligible.filter((j) => j.care_event_id === care_event_id);
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
 
   for (const job of eligible) {
     // Mark as processing
-    db.careEventJobs.patch(job.id, {
+    await careEventsDb.careEventJobs.patch(job.id, {
       status: "processing",
       started_at: new Date().toISOString(),
       retry_count: job.retry_count + (job.status === "retry_required" ? 1 : 0),
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
     try {
       const result = await runJob(job);
 
-      db.careEventJobs.patch(job.id, {
+      await careEventsDb.careEventJobs.patch(job.id, {
         status: "completed",
         completed_at: new Date().toISOString(),
         result,
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
       const newRetryCount = job.retry_count + 1;
       const exhausted = newRetryCount >= job.max_retries;
 
-      db.careEventJobs.patch(job.id, {
+      await careEventsDb.careEventJobs.patch(job.id, {
         status: exhausted ? "failed" : "retry_required",
         error_message: errorMessage,
         retry_count: newRetryCount,

@@ -81,10 +81,10 @@ const HOME_ID = "home_oak";
 // The processor is a sync orchestrator; these wrappers keep the in-memory write
 // (demo + immediate read-back) and fire a best-effort write-through to the real
 // table when Supabase is on — the same fire-and-forget pattern as
-// persistDailyLog / createIncidentRecord, so the processor stays sync. The still
-// -uncovered records (restraints, the job queue) keep using db.* directly —
-// restraints waits on #106's cs_restraint_records reaching main. The route
-// state-machine is now mirrored to careEventsDb by persistProcessorState (below).
+// persistDailyLog / createIncidentRecord, so the processor stays sync. The
+// route state-machine AND the job queue are mirrored to careEventsDb by
+// persistProcessorState (below); the runner picks jobs up from there. Only
+// restraints stays on db.* — it waits on #106's cs_restraint_records on main.
 function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
   const e = db.chronology.create(d);
   void persistChronologyEntry(e);
@@ -1360,6 +1360,25 @@ export async function persistProcessorState(careEventId: string): Promise<void> 
         retry_count: r.retry_count,
         last_retried_at: r.last_retried_at,
         time_saved_minutes: r.time_saved_minutes,
+      });
+    }
+    // Phase 6: mirror the enqueued background jobs so the runner (careEventsDb)
+    // can pick them up on a different instance instead of losing them.
+    for (const j of db.careEventJobs.findAll().filter((j) => j.care_event_id === careEventId)) {
+      await careEventsDb.careEventJobs.upsert({
+        care_event_id: j.care_event_id,
+        home_id: j.home_id,
+        job_type: j.job_type,
+        status: j.status,
+        payload: j.payload,
+        result: j.result,
+        error_message: j.error_message,
+        retry_count: j.retry_count,
+        max_retries: j.max_retries,
+        scheduled_at: j.scheduled_at,
+        started_at: j.started_at,
+        completed_at: j.completed_at,
+        last_retried_at: j.last_retried_at,
       });
     }
   } catch {

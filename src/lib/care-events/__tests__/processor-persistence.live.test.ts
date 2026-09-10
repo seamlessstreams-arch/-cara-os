@@ -111,13 +111,18 @@ describe("care-events processor — live persistence write-through (Phase 1)", (
       category: "safeguarding", is_safeguarding: true, child_id: "yp_alex",
       title: "Disclosure", content: "A safeguarding disclosure.", requires_manager_review: true,
     });
-    processCareEvent(ev);          // populates the route state machine in memDb
+    processCareEvent(ev);          // populates the route state machine + job queue in memDb
     await persistProcessorState(ev.id); // the async post-pass mirrors it through careEventsDb
     await flush();
     const routeWrites = recorded.filter(
       (w) => w.table === "care_event_routes" && (w.op === "upsert" || w.op === "insert"),
     );
     expect(routeWrites.length, "no care_event_routes write from persistProcessorState").toBeGreaterThan(0);
+    // Phase 6: the enqueued background jobs are mirrored too
+    const jobWrites = recorded.filter(
+      (w) => w.table === "care_event_jobs" && (w.op === "insert" || w.op === "update" || w.op === "upsert"),
+    );
+    expect(jobWrites.length, "no care_event_jobs write from persistProcessorState").toBeGreaterThan(0);
   });
 
   it("mirrors an education event to cs_education_events, not the profile or the catch-all (Phase 3)", async () => {
