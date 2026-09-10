@@ -83,10 +83,14 @@ export function computeFgmRiskMetrics(
   const mandatoryReportCount = rows.filter((r) => r.mandatory_report_made).length;
   const fgmProtectionOrderCount = rows.filter((r) => r.fgm_protection_order).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildFgmRiskAssessmentRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
