@@ -128,3 +128,19 @@ describe("staff-medication-competency-service", () => {
     });
   });
 });
+
+// ── Tri-state: unrecorded observation is not a missing one ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded practical observation as absent", () => {
+    const alerts = _testing.identifyStaffMedicationCompetencyAlerts([
+      makeRecord({ practical_observed: null }),
+    ]);
+    expect(alerts.some((a) => /no observed practice/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded absence of observation", () => {
+    const alerts = _testing.identifyStaffMedicationCompetencyAlerts([
+      makeRecord({ practical_observed: false }),
+    ]);
+    expect(alerts.some((a) => /no observed practice/i.test(a.message))).toBe(true);
+  });
+});
