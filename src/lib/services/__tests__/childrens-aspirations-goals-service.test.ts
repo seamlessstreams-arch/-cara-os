@@ -130,3 +130,20 @@ describe("childrens-aspirations-goals-service", () => {
     });
   });
 });
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded progress celebration in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyAspirationsGoalsAlerts([makeRecord({ progress_celebrated: null })]);
+    const alert = alerts.find((a) => a.type === "progress_not_celebrated");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no celebration gap when it is recorded", () => {
+    const alerts = identifyAspirationsGoalsAlerts([makeRecord({ progress_celebrated: true })]);
+    expect(alerts.some((a) => a.type === "progress_not_celebrated")).toBe(false);
+  });
+  it("does not dilute the celebration rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, progress_celebrated: v }));
+    expect(computeAspirationsGoalsMetrics(rows).progress_celebrated_rate).toBe(100);
+  });
+});
