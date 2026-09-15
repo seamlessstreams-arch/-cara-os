@@ -1,1 +1,0 @@
-export { HrIntelligenceDashboardWidget } from "./HrIntelligenceDashboardWidget";

@@ -1,1 +1,0 @@
-export { HomeIntelligenceWidget } from "./HomeIntelligenceWidget";
