@@ -696,6 +696,21 @@ function processPhysicalIntervention(event: CareEvent, route: CareEventRoute): v
     created_at: new Date().toISOString(),
   } as never);
 
+  // Deliberately NO Supabase write-through here, unlike the sibling domain writes
+  // above (daily log, chronology, health, education, …). cs_restraint_records is a
+  // compliance record with a SINGLE writer — restraint-service.createRestraintRecord,
+  // driven by the RM completing the full restraint form. This processor record is a
+  // thin care-event stub: only date/time/child/behaviour are real, while
+  // body_map_completed, medical_check_completed, child_debriefed, staff_debriefed,
+  // review_status and the notification flags are all unrecorded and defaulted above.
+  // Persisting it would ASSERT those compliance facts (as `false`/`pending`) into
+  // cs_restraint_records, which the ~15 live safeguarding/inspection surfaces that
+  // read dal.restraints (inspection-evidence-pack, safeguarding-intelligence,
+  // quality-gate, physical-intervention-pattern, manager-briefing, …) would then
+  // treat as fact — a fabricate-on-empty error on a surface that must be honest.
+  // The provisional restraint is instead tracked by the spine event below and the
+  // pending_rm route, and becomes a durable cs_ record only when the RM completes
+  // the real form. (Decision 2026-09-11: option A — do not auto-persist stubs.)
   {
     const r = (record);
     const injuries = Array.isArray(r.injuries) ? r.injuries.length : 0;
