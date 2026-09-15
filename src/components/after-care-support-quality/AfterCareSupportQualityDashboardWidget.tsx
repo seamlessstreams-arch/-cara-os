@@ -351,10 +351,10 @@ export default function AfterCareSupportQualityDashboardWidget() {
                       Sessions: <span className="font-medium">{child.totalSessions}</span>
                     </div>
                     <div>
-                      Engagement: <span className="font-medium">{child.engagementRate}%</span>
+                      Engagement: <span className="font-medium">{formatRate(child.engagementRate)}</span>
                     </div>
                     <div>
-                      Goals: <span className="font-medium">{child.goalsRate}%</span>
+                      Goals: <span className="font-medium">{formatRate(child.goalsRate)}</span>
                     </div>
                   </div>
                 </div>

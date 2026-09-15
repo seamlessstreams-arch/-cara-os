@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { DataProtectionIntelligence } from "@/lib/data-protection";
 
@@ -113,7 +114,7 @@ export function DataProtectionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Breaches</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.consentCompliance.consentObtainedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.consentCompliance.consentObtainedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Consent Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -151,9 +152,9 @@ export function DataProtectionDashboardWidget() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 <StatusBadge ok={data.breachManagement.icoNotificationWithin72HoursRate === 100} label={`ICO 72h ${data.breachManagement.icoNotificationWithin72HoursRate}%`} />
-                <StatusBadge ok={data.breachManagement.containmentRate === 100} label={`Contained ${data.breachManagement.containmentRate}%`} />
-                <StatusBadge ok={data.breachManagement.rootCauseRate === 100} label={`Root Cause ${data.breachManagement.rootCauseRate}%`} />
-                <StatusBadge ok={data.breachManagement.resolutionRate === 100} label={`Resolved ${data.breachManagement.resolutionRate}%`} />
+                <StatusBadge ok={data.breachManagement.containmentRate === 100} label={`Contained ${formatRate(data.breachManagement.containmentRate)}`} />
+                <StatusBadge ok={data.breachManagement.rootCauseRate === 100} label={`Root Cause ${formatRate(data.breachManagement.rootCauseRate)}`} />
+                <StatusBadge ok={data.breachManagement.resolutionRate === 100} label={`Resolved ${formatRate(data.breachManagement.resolutionRate)}`} />
               </div>
               <div className="text-sm text-gray-600">
                 <span className="text-gray-500">Affected:</span> {data.breachManagement.childrenAffectedTotal} children, {data.breachManagement.staffAffectedTotal} staff
@@ -166,9 +167,9 @@ export function DataProtectionDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.consentCompliance.totalRecords}</span></div>
             <div><span className="text-gray-500">Children:</span> <span className="font-medium">{data.consentCompliance.uniqueChildren}</span></div>
-            <div><span className="text-gray-500">Obtained:</span> <span className="font-medium">{data.consentCompliance.consentObtainedRate}%</span></div>
-            <div><span className="text-gray-500">Age Explained:</span> <span className="font-medium">{data.consentCompliance.ageAppropriateExplainedRate}%</span></div>
-            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{data.consentCompliance.reviewDateCurrentRate}%</span></div>
+            <div><span className="text-gray-500">Obtained:</span> <span className="font-medium">{formatRate(data.consentCompliance.consentObtainedRate)}</span></div>
+            <div><span className="text-gray-500">Age Explained:</span> <span className="font-medium">{formatRate(data.consentCompliance.ageAppropriateExplainedRate)}</span></div>
+            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{formatRate(data.consentCompliance.reviewDateCurrentRate)}</span></div>
             <div><span className="text-gray-500">Avg Types/Child:</span> <span className="font-medium">{data.consentCompliance.averageTypesPerChild}</span></div>
             <div><span className="text-gray-500">Expired:</span> <span className={`font-medium ${data.consentCompliance.expiredConsentCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.consentCompliance.expiredConsentCount}</span></div>
           </div>
@@ -197,8 +198,8 @@ export function DataProtectionDashboardWidget() {
                 <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.sarCompliance.overdueCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.sarCompliance.overdueCount}</span></div>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <StatusBadge ok={data.sarCompliance.redactionCompletedRate === 100} label={`Redacted ${data.sarCompliance.redactionCompletedRate}%`} />
-                <StatusBadge ok={data.sarCompliance.qualityCheckedRate === 100} label={`QA Checked ${data.sarCompliance.qualityCheckedRate}%`} />
+                <StatusBadge ok={data.sarCompliance.redactionCompletedRate === 100} label={`Redacted ${formatRate(data.sarCompliance.redactionCompletedRate)}`} />
+                <StatusBadge ok={data.sarCompliance.qualityCheckedRate === 100} label={`QA Checked ${formatRate(data.sarCompliance.qualityCheckedRate)}`} />
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,20 +78,20 @@ export function IndependenceIntelligenceWidget() {
       <Section title="Independence Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Individual Plan" value={`${quality.individualPlanRate}%`} />
-          <Stat label="Age Appropriate" value={`${quality.ageAppropriateRate}%`} />
-          <Stat label="Child Engaged" value={`${quality.childEngagedRate}%`} />
-          <Stat label="Progress Recorded" value={`${quality.progressRecordedRate}%`} />
+          <Stat label="Individual Plan" value={`${formatRate(quality.individualPlanRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(quality.ageAppropriateRate)}`} />
+          <Stat label="Child Engaged" value={`${formatRate(quality.childEngagedRate)}`} />
+          <Stat label="Progress Recorded" value={`${formatRate(quality.progressRecordedRate)}`} />
         </div>
       </Section>
 
       <Section title="Independence Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Pathway Aligned" value={`${compliance.pathwayPlanAlignedRate}%`} />
-          <Stat label="Positive Outcome" value={`${compliance.positiveOutcomeRate}%`} />
-          <Stat label="Category Diversity" value={`${compliance.categoryDiversityRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Pathway Aligned" value={`${formatRate(compliance.pathwayPlanAlignedRate)}`} />
+          <Stat label="Positive Outcome" value={`${formatRate(compliance.positiveOutcomeRate)}`} />
+          <Stat label="Category Diversity" value={`${formatRate(compliance.categoryDiversityRate)}`} />
         </div>
       </Section>
 
@@ -116,12 +117,12 @@ export function IndependenceIntelligenceWidget() {
       <Section title="Staff Independence Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Independence Planning" value={`${staff.independencePlanningRate}%`} />
-          <Stat label="Life Skills Teaching" value={`${staff.lifeSkillsTeachingRate}%`} />
-          <Stat label="Pathway Knowledge" value={`${staff.pathwayKnowledgeRate}%`} />
-          <Stat label="Motivational Skills" value={`${staff.motivationalSkillsRate}%`} />
-          <Stat label="Community Resources" value={`${staff.communityResourcesRate}%`} />
-          <Stat label="Transition Support" value={`${staff.transitionSupportRate}%`} />
+          <Stat label="Independence Planning" value={`${formatRate(staff.independencePlanningRate)}`} />
+          <Stat label="Life Skills Teaching" value={`${formatRate(staff.lifeSkillsTeachingRate)}`} />
+          <Stat label="Pathway Knowledge" value={`${formatRate(staff.pathwayKnowledgeRate)}`} />
+          <Stat label="Motivational Skills" value={`${formatRate(staff.motivationalSkillsRate)}`} />
+          <Stat label="Community Resources" value={`${formatRate(staff.communityResourcesRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(staff.transitionSupportRate)}`} />
         </div>
       </Section>
 

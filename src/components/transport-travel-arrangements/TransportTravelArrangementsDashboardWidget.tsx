@@ -386,10 +386,10 @@ export function TransportTravelArrangementsDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-600">
                     <span>Journeys: {child.totalJourneys}</span>
-                    <span>On-time: {child.onTimeRate}%</span>
-                    <span>Risk assessed: {child.riskAssessmentRate}%</span>
-                    <span>Seatbelt: {child.seatbeltRate}%</span>
-                    <span>Comfort: {child.comfortRate}%</span>
+                    <span>On-time: {formatRate(child.onTimeRate)}</span>
+                    <span>Risk assessed: {formatRate(child.riskAssessmentRate)}</span>
+                    <span>Seatbelt: {formatRate(child.seatbeltRate)}</span>
+                    <span>Comfort: {formatRate(child.comfortRate)}</span>
                     <span>Types: {child.travelTypes.length}</span>
                   </div>
                 </div>

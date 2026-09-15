@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -79,10 +80,10 @@ export function AllergenDietaryManagementIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Children with Allergens" value={allergenDoc.childrenWithAllergens} />
           <Stat label="Life Threatening" value={allergenDoc.lifeThreatening} />
-          <Stat label="Emergency Plan Current" value={`${allergenDoc.emergencyPlanCurrentRate}%`} />
-          <Stat label="EpiPen Available" value={`${allergenDoc.epiPenAvailableRate}%`} />
-          <Stat label="GP Notified" value={`${allergenDoc.gpNotifiedRate}%`} />
-          <Stat label="Review Up To Date" value={`${allergenDoc.reviewUpToDateRate}%`} />
+          <Stat label="Emergency Plan Current" value={`${formatRate(allergenDoc.emergencyPlanCurrentRate)}`} />
+          <Stat label="EpiPen Available" value={`${formatRate(allergenDoc.epiPenAvailableRate)}`} />
+          <Stat label="GP Notified" value={`${formatRate(allergenDoc.gpNotifiedRate)}`} />
+          <Stat label="Review Up To Date" value={`${formatRate(allergenDoc.reviewUpToDateRate)}`} />
         </div>
       </Section>
 
@@ -90,11 +91,11 @@ export function AllergenDietaryManagementIntelligenceWidget() {
         <ScoreBar label="Meal Safety Score" value={mealSafety.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Meals" value={mealSafety.totalMeals} />
-          <Stat label="Allergen Labelled" value={`${mealSafety.allergenLabelledRate}%`} />
-          <Stat label="Dietary Met" value={`${mealSafety.dietaryMetRate}%`} />
-          <Stat label="Cross-Contamination Prevented" value={`${mealSafety.crossContaminationPreventedRate}%`} />
-          <Stat label="Child Consulted" value={`${mealSafety.childConsultedRate}%`} />
-          <Stat label="Fully Compliant" value={`${mealSafety.fullyCompliantRate}%`} />
+          <Stat label="Allergen Labelled" value={`${formatRate(mealSafety.allergenLabelledRate)}`} />
+          <Stat label="Dietary Met" value={`${formatRate(mealSafety.dietaryMetRate)}`} />
+          <Stat label="Cross-Contamination Prevented" value={`${formatRate(mealSafety.crossContaminationPreventedRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRate(mealSafety.childConsultedRate)}`} />
+          <Stat label="Fully Compliant" value={`${formatRate(mealSafety.fullyCompliantRate)}`} />
         </div>
       </Section>
 
@@ -102,10 +103,10 @@ export function AllergenDietaryManagementIntelligenceWidget() {
         <ScoreBar label="Incident Response Score" value={incidentResponse.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Incidents" value={incidentResponse.totalIncidents} />
-          <Stat label="Timely Response" value={`${incidentResponse.timelyResponseRate}%`} />
-          <Stat label="Plan Followed" value={`${incidentResponse.emergencyPlanFollowedRate}%`} />
-          <Stat label="Root Cause ID'd" value={`${incidentResponse.rootCauseIdentifiedRate}%`} />
-          <Stat label="Preventive Measures" value={`${incidentResponse.preventiveMeasuresRate}%`} />
+          <Stat label="Timely Response" value={`${formatRate(incidentResponse.timelyResponseRate)}`} />
+          <Stat label="Plan Followed" value={`${formatRate(incidentResponse.emergencyPlanFollowedRate)}`} />
+          <Stat label="Root Cause ID'd" value={`${formatRate(incidentResponse.rootCauseIdentifiedRate)}`} />
+          <Stat label="Preventive Measures" value={`${formatRate(incidentResponse.preventiveMeasuresRate)}`} />
           <Stat label="Hospital Visits" value={incidentResponse.hospitalVisitCount} />
         </div>
       </Section>
@@ -114,11 +115,11 @@ export function AllergenDietaryManagementIntelligenceWidget() {
         <ScoreBar label="Staff Competence Score" value={staffCompetence.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staffCompetence.totalStaff} />
-          <Stat label="Allergen Awareness" value={`${staffCompetence.allergenAwarenessRate}%`} />
-          <Stat label="EpiPen Trained" value={`${staffCompetence.epiPenTrainedRate}%`} />
-          <Stat label="Food Hygiene" value={`${staffCompetence.foodHygieneRate}%`} />
-          <Stat label="Anaphylaxis Trained" value={`${staffCompetence.anaphylaxisTrainedRate}%`} />
-          <Stat label="Fully Competent" value={`${staffCompetence.fullyCompetentRate}%`} />
+          <Stat label="Allergen Awareness" value={`${formatRate(staffCompetence.allergenAwarenessRate)}`} />
+          <Stat label="EpiPen Trained" value={`${formatRate(staffCompetence.epiPenTrainedRate)}`} />
+          <Stat label="Food Hygiene" value={`${formatRate(staffCompetence.foodHygieneRate)}`} />
+          <Stat label="Anaphylaxis Trained" value={`${formatRate(staffCompetence.anaphylaxisTrainedRate)}`} />
+          <Stat label="Fully Competent" value={`${formatRate(staffCompetence.fullyCompetentRate)}`} />
         </div>
       </Section>
 

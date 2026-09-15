@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS cs_medication_errors (
   investigation_status        text NOT NULL DEFAULT 'reported',
   corrective_actions          jsonb NOT NULL DEFAULT '[]',
   actions_completed           boolean NOT NULL DEFAULT false,
-  child_harmed                boolean NOT NULL DEFAULT false,
+  child_harmed                boolean,
   medical_attention_required  boolean NOT NULL DEFAULT false,
   parent_informed             boolean NOT NULL DEFAULT false,
   social_worker_informed      boolean NOT NULL DEFAULT false,

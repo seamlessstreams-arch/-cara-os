@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildrensProgressTrackingRecord>): ChildrensProgressTrackingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    outcome_domain: overrides?.outcome_domain ?? "education_learning",
-    progress_rating: overrides?.progress_rating ?? "good_progress",
-    assessment_tool: overrides?.assessment_tool ?? "sdq",
-    review_period: overrides?.review_period ?? "monthly",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    outcome_domain: "education_learning",
+    progress_rating: "good_progress",
+    assessment_tool: "sdq",
+    review_period: "monthly",
+    assessment_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    baseline_established: overrides?.baseline_established ?? true,
-    targets_set: overrides?.targets_set ?? true,
-    targets_smart: overrides?.targets_smart ?? true,
-    child_involved: overrides?.child_involved ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    evidence_documented: overrides?.evidence_documented ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    celebration_planned: overrides?.celebration_planned ?? true,
-    barriers_identified: overrides?.barriers_identified ?? true,
-    support_in_place: overrides?.support_in_place ?? true,
-    multi_agency_input: overrides?.multi_agency_input ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    assessed_by: overrides?.assessed_by ?? "Staff A",
+    baseline_established: true,
+    targets_set: true,
+    targets_smart: true,
+    child_involved: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    evidence_documented: true,
+    care_plan_updated: true,
+    celebration_planned: true,
+    barriers_identified: true,
+    support_in_place: true,
+    multi_agency_input: true,
+    issues_found: [], actions_taken: [],
+    assessed_by: "Staff A",
     current_score: "current_score" in (overrides ?? {}) ? (overrides!.current_score ?? null) : null,
     previous_score: "previous_score" in (overrides ?? {}) ? (overrides!.previous_score ?? null) : null,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -123,5 +126,17 @@ describe("childrens-progress-tracking-service", () => {
       expect(types).toContain("evidence_not_documented");
       expect(types).toContain("targets_not_smart");
     });
+  });
+});
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded baseline_established as a failure", () => {
+    const alerts = _testing.identifyChildrensProgressAlerts([makeRecord({ baseline_established: null }), makeRecord({ id: "r-2", baseline_established: null })]);
+    expect(alerts.some((a) => a.type === "no_baseline")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyChildrensProgressAlerts([makeRecord({ baseline_established: false }), makeRecord({ id: "r-2", baseline_established: false })]);
+    expect(alerts.some((a) => a.type === "no_baseline")).toBe(true);
   });
 });

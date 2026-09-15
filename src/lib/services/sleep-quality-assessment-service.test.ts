@@ -9,7 +9,7 @@ function makeRecord(
   overrides: Partial<SleepQualityAssessmentRecord> = {},
 ): SleepQualityAssessmentRecord {
   return {
-    id: overrides.id ?? "rec-1",
+    id: "rec-1",
     home_id: "home-1",
     sleep_quality: "good",
     bedtime_routine: "fully_followed",

@@ -13,6 +13,7 @@
 // NO lucide-react, NO Card/Badge, NO cn(). ONLY React + Tailwind CSS.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -307,7 +308,7 @@ export default function MedicationDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalRecords} records, {child.categoriesCovered.length} categories, {child.administeredCorrectlyRate}% correct, {child.consentOnFileRate}% consent
+                    {child.totalRecords} records, {child.categoriesCovered.length} categories, {formatRate(child.administeredCorrectlyRate)} correct, {formatRate(child.consentOnFileRate)} consent
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.overallScore, 10)}`}>

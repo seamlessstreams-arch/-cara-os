@@ -71,7 +71,7 @@ create table if not exists aria_outputs (
   generated_text          text not null,
   structured_output       jsonb not null default '{}',
   edited_text             text,
-  approval_required       boolean not null default true,
+  approval_required       boolean,
   status                  text not null default 'draft' check (status in (
                             'draft','edited','submitted_for_approval','approved',
                             'committed','rejected','archived'

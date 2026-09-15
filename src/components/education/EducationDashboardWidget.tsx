@@ -218,8 +218,8 @@ export default function EducationDashboardWidget() {
                   <p className="text-xs font-medium text-gray-900">{child.childName}</p>
                   <p className="text-[10px] text-gray-500">
                     {child.totalRecords} record{child.totalRecords !== 1 ? "s" : ""} |
-                    Attainment {child.attainmentRate}% |
-                    Attendance {child.attendanceRate}%
+                    Attainment {formatRate(child.attainmentRate)} |
+                    Attendance {formatRate(child.attendanceRate)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

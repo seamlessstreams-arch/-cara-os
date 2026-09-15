@@ -67,18 +67,18 @@ export interface OutdoorSpacesPlayAreasRecord {
   child_name: string;
   child_id: string | null;
   inspected_by: string;
-  equipment_checked: boolean;
-  surface_safe: boolean;
-  fencing_secure: boolean;
-  lighting_adequate: boolean;
-  clean_tidy: boolean;
-  age_appropriate: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  maintenance_requested: boolean;
-  risk_assessed: boolean;
-  children_consulted: boolean;
-  recorded_promptly: boolean;
+  equipment_checked: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  surface_safe: boolean | null;
+  fencing_secure: boolean | null;
+  lighting_adequate: boolean | null;
+  clean_tidy: boolean | null;
+  age_appropriate: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  maintenance_requested: boolean | null;
+  risk_assessed: boolean | null;
+  children_consulted: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeOutdoorSpacesMetrics(
   const poorCondition = records.filter((r) => r.condition_rating === "poor" || r.condition_rating === "unsafe").length;
   const notAccessible = records.filter((r) => r.accessibility_level === "not_accessible").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof OutdoorSpacesPlayAreasRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyOutdoorSpacesAlerts(
   }
 
   // Fencing not secure
-  const noFencing = records.filter((r) => !r.fencing_secure).length;
+  const noFencing = records.filter((r) => r.fencing_secure !== true).length;
   if (noFencing >= 1) {
     alerts.push({
       type: "fencing_not_secure",
       severity: "high",
-      message: `${noFencing} ${noFencing === 1 ? "inspection has" : "inspections have"} fencing not secure — child safety boundary compromised`,
+      message: `${noFencing} ${noFencing === 1 ? "inspection has" : "inspections have"} no evidence fencing is secure — child safety boundary compromised`,
       id: "fencing_not_secure",
     });
   }
 
   // No risk assessment
-  const noRisk = records.filter((r) => !r.risk_assessed).length;
+  const noRisk = records.filter((r) => r.risk_assessed !== true).length;
   if (noRisk >= 1) {
     alerts.push({
       type: "no_risk_assessment",
       severity: "high",
-      message: `${noRisk} ${noRisk === 1 ? "space has" : "spaces have"} no risk assessment — all outdoor areas must be assessed`,
+      message: `${noRisk} ${noRisk === 1 ? "space has" : "spaces have"} no risk assessment evidenced — all outdoor areas must be assessed`,
       id: "no_risk_assessment",
     });
   }
 
   // Equipment not checked
-  const noEquipment = records.filter((r) => !r.equipment_checked).length;
+  const noEquipment = records.filter((r) => r.equipment_checked !== true).length;
   if (noEquipment >= 2) {
     alerts.push({
       type: "equipment_not_checked",
       severity: "medium",
-      message: `${noEquipment} inspections without equipment checked — regular checks essential`,
+      message: `${noEquipment} inspections without an evidenced equipment check — regular checks essential`,
       id: "equipment_not_checked",
     });
   }
 
   // Children not consulted
-  const noConsulted = records.filter((r) => !r.children_consulted).length;
+  const noConsulted = records.filter((r) => r.children_consulted !== true).length;
   if (noConsulted >= 2) {
     alerts.push({
       type: "children_not_consulted",
       severity: "medium",
-      message: `${noConsulted} inspections without children consulted — seek children's views on outdoor spaces`,
+      message: `${noConsulted} inspections without evidenced consultation with children — seek children's views on outdoor spaces`,
       id: "children_not_consulted",
     });
   }
@@ -317,13 +323,13 @@ export async function createRecord(payload: {
       home_id: payload.homeId, space_type: payload.spaceType, condition_rating: payload.conditionRating,
       safety_assessment: payload.safetyAssessment, accessibility_level: payload.accessibilityLevel,
       inspection_date: payload.inspectionDate, child_name: payload.childName, child_id: payload.childId ?? null,
-      inspected_by: payload.inspectedBy, equipment_checked: payload.equipmentChecked ?? true,
-      surface_safe: payload.surfaceSafe ?? true, fencing_secure: payload.fencingSecure ?? true,
-      lighting_adequate: payload.lightingAdequate ?? true, clean_tidy: payload.cleanTidy ?? true,
-      age_appropriate: payload.ageAppropriate ?? true, care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true, maintenance_requested: payload.maintenanceRequested ?? true,
-      risk_assessed: payload.riskAssessed ?? true, children_consulted: payload.childrenConsulted ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true, issues_found: payload.issuesFound ?? [],
+      inspected_by: payload.inspectedBy, equipment_checked: payload.equipmentChecked ?? null,
+      surface_safe: payload.surfaceSafe ?? null, fencing_secure: payload.fencingSecure ?? null,
+      lighting_adequate: payload.lightingAdequate ?? null, clean_tidy: payload.cleanTidy ?? null,
+      age_appropriate: payload.ageAppropriate ?? null, care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null, maintenance_requested: payload.maintenanceRequested ?? null,
+      risk_assessed: payload.riskAssessed ?? null, children_consulted: payload.childrenConsulted ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null, issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [], next_review_date: payload.nextReviewDate ?? null, notes: payload.notes ?? null,
     }).select().single();
   if (error) return { ok: false, error: error.message };

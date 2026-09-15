@@ -660,12 +660,32 @@ export async function recordAdministration(
       prescription.stock_count != null &&
       prescription.stock_count > 0
     ) {
-      await (s.from("cs_medication_prescriptions") as SB)
+      const { error: stockError } = await (s.from("cs_medication_prescriptions") as SB)
         .update({
           stock_count: prescription.stock_count - 1,
           updated_at: new Date().toISOString(),
         })
         .eq("id", input.prescription_id);
+
+      // The administration itself is recorded and stays recorded — it happened.
+      // But this is a CONTROLLED drug, so the running balance is part of the CD
+      // register, and a decrement that failed in silence leaves the recorded
+      // stock disagreeing with what is physically in the cabinet. Say so, so it
+      // is reconciled rather than discovered at an audit.
+      if (stockError) {
+        console.error(
+          "[medication] controlled-drug stock decrement failed for prescription",
+          input.prescription_id,
+          stockError,
+        );
+        return {
+          ok: true,
+          data,
+          warning:
+            "Administration recorded, but the controlled-drug stock count could not be updated — " +
+            "check the running balance against the cabinet before the next round.",
+        };
+      }
     }
   }
 

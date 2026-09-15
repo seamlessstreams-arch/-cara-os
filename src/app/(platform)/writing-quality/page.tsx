@@ -8,6 +8,7 @@
 // Gate: USE_CARA_INTELLIGENCE. Deterministic — no model calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,7 +154,7 @@ export default function WritingQualityPage() {
                 icon={Check}
                 label="Accepted"
                 value={stats.accepted}
-                sub={`${stats.acceptanceRate}% acceptance rate`}
+                sub={`${formatRate(stats.acceptanceRate)} acceptance rate`}
                 colour="bg-emerald-500"
               />
               <StatChip

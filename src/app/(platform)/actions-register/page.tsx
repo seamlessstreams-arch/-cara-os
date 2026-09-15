@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -123,7 +124,7 @@ export default function ActionsRegisterPage() {
                   <Stat value={s.open} label="Open" tone="bg-[var(--cs-bg)] border-[var(--cs-border)] text-[var(--cs-navy)]" Icon={Circle} />
                   <Stat value={s.overdue} label="Overdue" tone="bg-red-50 border-red-200 text-red-800" Icon={AlertOctagon} />
                   <Stat value={s.due_soon} label="Due this week" tone="bg-amber-50 border-amber-200 text-amber-800" Icon={Clock} />
-                  <Stat value={`${s.completion_rate}%`} label="Completed" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
+                  <Stat value={`${formatRate(s.completion_rate)}`} label="Completed" tone="bg-green-50 border-green-200 text-green-800" Icon={CheckCircle2} />
                 </div>
               </CardContent>
             </Card>

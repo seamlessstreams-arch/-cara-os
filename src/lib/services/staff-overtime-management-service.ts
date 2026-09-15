@@ -48,10 +48,10 @@ export interface StaffOvertimeManagementRow {
   exceeds_48_hours: boolean;
   opt_out_signed: boolean;
   opt_out_date: string | null;
-  rest_break_compliant: boolean;
+  rest_break_compliant: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   night_worker: boolean;
   night_hours_compliant: boolean | null;
-  overtime_authorised: boolean;
+  overtime_authorised: boolean | null;
   overtime_paid: boolean;
   toil_accrued: boolean;
   compliance_status: ComplianceStatus;
@@ -62,8 +62,7 @@ export interface StaffOvertimeManagementRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -95,9 +94,13 @@ export function computeMetrics(rows: StaffOvertimeManagementRow[]): {
   const toilAccruedCount = rows.filter((r) => r.toil_accrued).length;
   const nightWorkerCount = rows.filter((r) => r.night_worker).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffOvertimeManagementRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const avg = (field: keyof StaffOvertimeManagementRow) => {
@@ -146,11 +149,13 @@ export function computeAlerts(
 
   // High: Rest break non-compliant
   for (const r of rows) {
-    if (!r.rest_break_compliant) {
+    if (r.rest_break_compliant !== true) {
       alerts.push({
         type: "rest_break_non_compliant",
         severity: "high",
-        message: `${r.staff_name} is not receiving compliant rest breaks — the home must ensure all staff receive adequate rest periods in line with the Working Time Regulations 1998 to protect their health and safety.`,
+        message: r.rest_break_compliant === false
+          ? `${r.staff_name} is not receiving compliant rest breaks — the home must ensure all staff receive adequate rest periods in line with the Working Time Regulations 1998 to protect their health and safety.`
+          : `No record that ${r.staff_name}'s rest breaks are compliant — confirm and evidence them per the Working Time Regulations 1998.`,
         record_id: r.id,
       });
     }
@@ -170,11 +175,13 @@ export function computeAlerts(
 
   // Medium: Overtime not authorised
   for (const r of rows) {
-    if (!r.overtime_authorised) {
+    if (r.overtime_authorised !== true) {
       alerts.push({
         type: "overtime_not_authorised",
         severity: "medium",
-        message: `${r.staff_name} has overtime hours that have not been authorised — all overtime must be properly approved to ensure safe staffing levels and accurate payroll records.`,
+        message: r.overtime_authorised === false
+          ? `${r.staff_name} has overtime hours that have not been authorised — all overtime must be properly approved to ensure safe staffing levels and accurate payroll records.`
+          : `${r.staff_name} has overtime hours with no authorisation recorded — approve and evidence them for safe staffing and accurate payroll.`,
         record_id: r.id,
       });
     }
@@ -308,10 +315,10 @@ export async function createStaffOvertimeManagement(input: {
       exceeds_48_hours: input.exceeds48Hours ?? false,
       opt_out_signed: input.optOutSigned ?? false,
       opt_out_date: input.optOutDate ?? null,
-      rest_break_compliant: input.restBreakCompliant ?? true,
+      rest_break_compliant: input.restBreakCompliant ?? null,
       night_worker: input.nightWorker ?? false,
       night_hours_compliant: input.nightHoursCompliant ?? null,
-      overtime_authorised: input.overtimeAuthorised ?? true,
+      overtime_authorised: input.overtimeAuthorised ?? null,
       overtime_paid: input.overtimePaid ?? false,
       toil_accrued: input.toilAccrued ?? false,
       compliance_status: input.complianceStatus ?? "Compliant",

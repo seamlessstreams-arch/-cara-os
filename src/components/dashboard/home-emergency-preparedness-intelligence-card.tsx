@@ -7,6 +7,7 @@
 // CHR 2015 Reg 25, 22. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -146,7 +147,7 @@ export function HomeEmergencyPreparednessIntelligenceCard() {
                   (d.drill_readiness.satisfactory_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.drill_readiness.satisfactory_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.drill_readiness.satisfactory_rate}%
+                  {formatRate(d.drill_readiness.satisfactory_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Drill Pass</p>
@@ -160,7 +161,7 @@ export function HomeEmergencyPreparednessIntelligenceCard() {
                   (d.policy_compliance.avg_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.policy_compliance.avg_acknowledgement_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.policy_compliance.avg_acknowledgement_rate}%
+                  {formatRate(d.policy_compliance.avg_acknowledgement_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Staff Ack</p>

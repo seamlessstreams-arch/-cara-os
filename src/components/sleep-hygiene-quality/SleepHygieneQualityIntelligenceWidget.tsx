@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -69,8 +70,8 @@ export function SleepHygieneQualityIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
-        <Stat label="Sleep Quality" value={`${sleepQuality.sleepQualityRate}%`} />
-        <Stat label="Routine Rate" value={`${sleepQuality.routineRate}%`} />
+        <Stat label="Sleep Quality" value={`${formatRateLoose(sleepQuality.sleepQualityRate)}`} />
+        <Stat label="Routine Rate" value={`${formatRateLoose(sleepQuality.routineRate)}`} />
         <Stat label="Staff Count" value={staffReadiness.totalStaff as number} />
       </div>
 
@@ -83,28 +84,28 @@ export function SleepHygieneQualityIntelligenceWidget() {
 
       <Section title="Sleep Quality Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Quality Rate" value={`${sleepQuality.sleepQualityRate}%`} />
-          <Stat label="Routine Rate" value={`${sleepQuality.routineRate}%`} />
-          <Stat label="Environment Rate" value={`${sleepQuality.environmentRate}%`} />
-          <Stat label="Restful Rate" value={`${sleepQuality.restfulRate}%`} />
+          <Stat label="Quality Rate" value={`${formatRateLoose(sleepQuality.sleepQualityRate)}`} />
+          <Stat label="Routine Rate" value={`${formatRateLoose(sleepQuality.routineRate)}`} />
+          <Stat label="Environment Rate" value={`${formatRateLoose(sleepQuality.environmentRate)}`} />
+          <Stat label="Restful Rate" value={`${formatRateLoose(sleepQuality.restfulRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Documented Rate" value={`${sleepCompliance.documentedRate}%`} />
-          <Stat label="Staff Monitored" value={`${sleepCompliance.staffMonitoredRate}%`} />
-          <Stat label="Feedback Rate" value={`${sleepCompliance.feedbackRate}%`} />
+          <Stat label="Documented Rate" value={`${formatRateLoose(sleepCompliance.documentedRate)}`} />
+          <Stat label="Staff Monitored" value={`${formatRateLoose(sleepCompliance.staffMonitoredRate)}`} />
+          <Stat label="Feedback Rate" value={`${formatRateLoose(sleepCompliance.feedbackRate)}`} />
           <Stat label="Record Types" value={sleepCompliance.uniqueTypes as number} />
         </div>
       </Section>
 
       <Section title="Staff Readiness Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Sleep Hygiene Knowledge" value={`${staffReadiness.sleepHygieneKnowledgeRate}%`} />
-          <Stat label="Night Supervision" value={`${staffReadiness.nightSupervisionRate}%`} />
-          <Stat label="Relaxation Techniques" value={`${staffReadiness.relaxationTechniquesRate}%`} />
-          <Stat label="Trauma-Informed Sleep" value={`${staffReadiness.traumaInformedSleepRate}%`} />
+          <Stat label="Sleep Hygiene Knowledge" value={`${formatRateLoose(staffReadiness.sleepHygieneKnowledgeRate)}`} />
+          <Stat label="Night Supervision" value={`${formatRateLoose(staffReadiness.nightSupervisionRate)}`} />
+          <Stat label="Relaxation Techniques" value={`${formatRateLoose(staffReadiness.relaxationTechniquesRate)}`} />
+          <Stat label="Trauma-Informed Sleep" value={`${formatRateLoose(staffReadiness.traumaInformedSleepRate)}`} />
         </div>
       </Section>
 

@@ -33,32 +33,35 @@ function makeRow(
   overrides?: Partial<ChildBereavementSupportRow>,
 ): ChildBereavementSupportRow {
   return {
-    id: overrides?.id ?? "r-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
-    bereavement_date: overrides?.bereavement_date ?? todayStr(),
-    deceased_relationship: overrides?.deceased_relationship ?? "Parent",
-    grief_stage: overrides?.grief_stage ?? "Not Assessed",
-    support_type: overrides?.support_type ?? "Key Worker",
-    specialist_referral_made: overrides?.specialist_referral_made ?? false,
+    id: "r-1",
+    home_id: "home-1",
+    child_name: "Child A",
+    bereavement_date: todayStr(),
+    deceased_relationship: "Parent",
+    grief_stage: "Not Assessed",
+    support_type: "Key Worker",
+    specialist_referral_made: false,
     specialist_service:
       "specialist_service" in (overrides ?? {})
         ? (overrides!.specialist_service ?? null)
         : null,
-    camhs_involvement: overrides?.camhs_involvement ?? false,
-    school_notified: overrides?.school_notified ?? true,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
-    memorial_activity_planned: overrides?.memorial_activity_planned ?? false,
-    ongoing_support_needed: overrides?.ongoing_support_needed ?? true,
+    camhs_involvement: false,
+    school_notified: true,
+    social_worker_notified: true,
+    memorial_activity_planned: false,
+    ongoing_support_needed: true,
     review_date:
       "review_date" in (overrides ?? {})
         ? (overrides!.review_date ?? null)
         : "2025-07-01",
-    key_worker_name: overrides?.key_worker_name ?? "D. Laville",
+    key_worker_name: "D. Laville",
     notes:
       "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -1512,5 +1515,21 @@ describe("child-bereavement-support-service", () => {
       const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("pace");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the school-notification alert between recorded not-notified and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ school_notified: null })])
+      .find((a) => a.type === "school_not_notified");
+    const falseAlert = computeAlerts([makeRow({ school_notified: false })])
+      .find((a) => a.type === "school_not_notified");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("does not dilute the school-notification rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRow({ id: `r-${i}`, school_notified: v }));
+    expect(computeMetrics(rows).school_notification_rate).toBe(100);
   });
 });

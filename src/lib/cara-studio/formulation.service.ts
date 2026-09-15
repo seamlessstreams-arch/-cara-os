@@ -6,6 +6,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import type { CaraStudioFormulation } from "@/types/cara-studio";
+import type { Database, Json } from "@/lib/supabase/types";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -17,7 +18,7 @@ export async function createFormulation(
   const sb = createServerClient();
   if (!sb) return getDemoFormulation(formulation.child_id);
 
-  const { data, error } = await (sb.from("cara_studio_formulations") as any)
+  const { data, error } = await sb.from("cara_studio_formulations")
     .insert({
       home_id: formulation.home_id || homeId(),
       child_id: formulation.child_id, title: formulation.title,
@@ -25,9 +26,9 @@ export async function createFormulation(
       possible_unmet_need: formulation.possible_unmet_need,
       trauma_link: formulation.trauma_link,
       attachment_considerations: formulation.attachment_considerations,
-      triggers: formulation.triggers, protective_factors: formulation.protective_factors,
-      relational_strengths: formulation.relational_strengths,
-      staff_response_patterns: formulation.staff_response_patterns,
+      triggers: formulation.triggers as Json, protective_factors: formulation.protective_factors as Json,
+      relational_strengths: formulation.relational_strengths as Json,
+      staff_response_patterns: formulation.staff_response_patterns as Json,
       what_helps: formulation.what_helps, what_escalates: formulation.what_escalates,
       therapeutic_hypothesis: formulation.therapeutic_hypothesis,
       recommended_intervention: formulation.recommended_intervention,
@@ -45,7 +46,7 @@ export async function getFormulationForChild(childId: string): Promise<CaraStudi
   const sb = createServerClient();
   if (!sb) return getDemoFormulation(childId);
 
-  const { data, error } = await (sb.from("cara_studio_formulations") as any)
+  const { data, error } = await sb.from("cara_studio_formulations")
     .select("*").eq("home_id", homeId()).eq("child_id", childId)
     .order("created_at", { ascending: false }).limit(1).single();
 
@@ -57,7 +58,7 @@ export async function listFormulations(hId: string, childId?: string): Promise<C
   const sb = createServerClient();
   if (!sb) return [getDemoFormulation(childId ?? "demo-child-1")];
 
-  let query = (sb.from("cara_studio_formulations") as any)
+  let query = sb.from("cara_studio_formulations")
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
 
@@ -70,8 +71,9 @@ export async function updateFormulation(formulationId: string, updates: Partial<
   const sb = createServerClient();
   if (!sb) return null;
 
-  const { data, error } = await (sb.from("cara_studio_formulations") as any)
-    .update(updates).eq("id", formulationId).select().single();
+  const { data, error } = await sb.from("cara_studio_formulations")
+    .update(updates as unknown as Database["public"]["Tables"]["cara_studio_formulations"]["Update"])
+    .eq("id", formulationId).select().single();
 
   if (error) { console.error("[cara-studio/formulation] Update error:", error); return null; }
   return data as CaraStudioFormulation;
@@ -81,7 +83,7 @@ export async function approveFormulation(formulationId: string, approvedBy: stri
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("cara_studio_formulations") as any)
+  const { error } = await sb.from("cara_studio_formulations")
     .update({ approved_by: approvedBy, approved_at: new Date().toISOString() })
     .eq("id", formulationId);
 

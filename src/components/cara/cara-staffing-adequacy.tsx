@@ -8,6 +8,7 @@
 // and regulatory compliance for the RM.
 // ════════════════════════════════════════════════��═════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Loader2,
@@ -246,7 +247,7 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
                 <div key={qual.qualification} className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">{qual.label}</span>
                   <span className={cn("font-medium", qual.coveragePercent === 100 ? "text-emerald-700" : "text-amber-700")}>
-                    {qual.coveragePercent}%
+                    {formatRate(qual.coveragePercent)}
                   </span>
                 </div>
               ))}

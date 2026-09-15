@@ -45,11 +45,11 @@ export interface ChildFgmRiskAssessmentRow {
   risk_indicators_count: number;
   mandatory_report_made: boolean;
   police_notified: boolean;
-  social_worker_notified: boolean;
+  social_worker_notified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   fgm_protection_order: boolean;
   multi_agency_referral: boolean;
   safety_plan_in_place: boolean;
-  cultural_sensitivity_considered: boolean;
+  cultural_sensitivity_considered: boolean | null;
   specialist_service_involved: boolean;
   specialist_service_name: string | null;
   review_date: string | null;
@@ -83,10 +83,14 @@ export function computeFgmRiskMetrics(
   const mandatoryReportCount = rows.filter((r) => r.mandatory_report_made).length;
   const fgmProtectionOrderCount = rows.filter((r) => r.fgm_protection_order).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildFgmRiskAssessmentRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -169,11 +173,13 @@ export function computeFgmRiskAlerts(
 
   // Medium: Cultural sensitivity not considered
   for (const r of rows) {
-    if (!r.cultural_sensitivity_considered) {
+    if (r.cultural_sensitivity_considered !== true) {
       alerts.push({
         type: "cultural_sensitivity_not_considered",
         severity: "medium",
-        message: `Cultural sensitivity not considered for ${r.child_name} — ensure culturally sensitive approach in FGM risk assessment`,
+        message: r.cultural_sensitivity_considered === false
+          ? `Cultural sensitivity not considered for ${r.child_name} — ensure culturally sensitive approach in FGM risk assessment`
+          : `No record cultural sensitivity was considered for ${r.child_name} — evidence a culturally sensitive approach in the FGM risk assessment`,
         record_id: r.id,
       });
     }
@@ -278,11 +284,11 @@ export async function createChildFgmRiskAssessment(input: {
       risk_indicators_count: input.riskIndicatorsCount ?? 0,
       mandatory_report_made: input.mandatoryReportMade ?? false,
       police_notified: input.policeNotified ?? false,
-      social_worker_notified: input.socialWorkerNotified ?? true,
+      social_worker_notified: input.socialWorkerNotified ?? null,
       fgm_protection_order: input.fgmProtectionOrder ?? false,
       multi_agency_referral: input.multiAgencyReferral ?? false,
       safety_plan_in_place: input.safetyPlanInPlace ?? false,
-      cultural_sensitivity_considered: input.culturalSensitivityConsidered ?? true,
+      cultural_sensitivity_considered: input.culturalSensitivityConsidered ?? null,
       specialist_service_involved: input.specialistServiceInvolved ?? false,
       specialist_service_name: input.specialistServiceName ?? null,
       review_date: input.reviewDate ?? null,

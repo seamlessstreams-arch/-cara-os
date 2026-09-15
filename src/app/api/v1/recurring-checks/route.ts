@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db/dal";
 import {
@@ -11,15 +12,6 @@ export const dynamic = "force-dynamic";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 // GET /api/v1/recurring-checks — this period's status per check template
 // (done / pending / not_created), read straight off the task list. Read-only;

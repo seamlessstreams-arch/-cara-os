@@ -1,0 +1,49 @@
+# ── Time-bomb sweep ──────────────────────────────────────────────────────────
+#
+# Runs the full test suite with the process clock shifted forward, so a test
+# that only passes on this week's calendar fails here first — before real time
+# detonates it on main. Found by execution, not shape: the 2026-09-01 sweep
+# turned a 160-file shape-census into 22 real bombs (DST-broken fixture
+# helpers, rotting future literals, one real Reg 16 service bug).
+#
+# Scheduled weekly and manual-only on demand; deliberately NOT part of the PR
+# pipeline — three full suite runs cost ~30 minutes, and a bomb that fires 60
+# days out does not need to block today's merge. A red run here is a to-do,
+# not an outage.
+#
+#   +7   next week's London anchor (seedDay moves every Monday)
+#   +60  the next DST transition and quarter boundary
+#   +365 annual windows: DBS renewals, training expiry, "this year" counts
+# ─────────────────────────────────────────────────────────────────────────────
+name: Time-bomb sweep
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC, just after the seedDay anchor moves
+  workflow_dispatch: {}
+
+jobs:
+  shifted-suite:
+    name: Full suite at +${{ matrix.shift }} days
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shift: [7, 60, 365]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run the suite ${{ matrix.shift }} days in the future
+        env:
+          NODE_OPTIONS: --require ${{ github.workspace }}/scripts/clock-shift.cjs
+          CLOCK_SHIFT_DAYS: ${{ matrix.shift }}
+        # --retry 1: a real time bomb is deterministic — it fails the retry too.
+        # A cross-suite order flake (observed once in a +365 full run, never
+        # reproduced in isolation or since) goes green on retry instead of
+        # training people to ignore a red sweep.
+        run: npx vitest run --retry 1

@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<WorkExperienceEmploymentRecord>): WorkExperienceEmploymentRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    placement_type: overrides?.placement_type ?? "work_experience",
-    readiness_level: overrides?.readiness_level ?? "nearly_ready",
-    employer_feedback: overrides?.employer_feedback ?? "good",
-    skill_acquisition: overrides?.skill_acquisition ?? "good_gain",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    placement_type: "work_experience",
+    readiness_level: "nearly_ready",
+    employer_feedback: "good",
+    skill_acquisition: "good_gain",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    supported_by: overrides?.supported_by ?? "Staff A",
-    child_consented: overrides?.child_consented ?? true,
-    age_appropriate: overrides?.age_appropriate ?? true,
-    risk_assessed: overrides?.risk_assessed ?? true,
-    safeguarding_checked: overrides?.safeguarding_checked ?? true,
-    dbs_verified: overrides?.dbs_verified ?? true,
-    insurance_confirmed: overrides?.insurance_confirmed ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    pathway_plan_updated: overrides?.pathway_plan_updated ?? true,
-    transport_arranged: overrides?.transport_arranged ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    supported_by: "Staff A",
+    child_consented: true,
+    age_appropriate: true,
+    risk_assessed: true,
+    safeguarding_checked: true,
+    dbs_verified: true,
+    insurance_confirmed: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    pathway_plan_updated: true,
+    transport_arranged: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -124,5 +127,26 @@ describe("work-experience-employment-service", () => {
       expect(types).toContain("no_risk_assessment");
       expect(types).toContain("no_pathway_plan");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  const { computeWorkExperienceMetrics: metrics, identifyWorkExperienceAlerts: alertsOf } = _testing;
+
+  it("counts an unrecorded safeguarding check in the gap alert, worded as unevidenced", () => {
+    const alerts = alertsOf([makeRecord({ safeguarding_checked: null })]);
+    const alert = alerts.find((a) => a.type === "no_safeguarding_check");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+
+  it("raises no safeguarding gap when the check is recorded as done", () => {
+    const alerts = alertsOf([makeRecord({ safeguarding_checked: true })]);
+    expect(alerts.some((a) => a.type === "no_safeguarding_check")).toBe(false);
+  });
+
+  it("does not dilute the DBS rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `w-${i}`, dbs_verified: v }));
+    expect(metrics(rows).dbs_verified_rate).toBe(100);
   });
 });

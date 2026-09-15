@@ -72,18 +72,20 @@ export interface EnvironmentalAuditRecord {
   priority_level: PriorityLevel;
   audit_date: string;
   area_name: string;
-  homely_feel: boolean;
-  child_friendly: boolean;
-  personalised: boolean;
-  clean_and_tidy: boolean;
-  well_maintained: boolean;
-  safe_environment: boolean;
-  accessible: boolean;
-  adequate_lighting: boolean;
-  temperature_comfortable: boolean;
-  noise_appropriate: boolean;
-  privacy_maintained: boolean;
-  children_consulted: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  homely_feel: boolean | null;
+  child_friendly: boolean | null;
+  personalised: boolean | null;
+  clean_and_tidy: boolean | null;
+  well_maintained: boolean | null;
+  safe_environment: boolean | null;
+  accessible: boolean | null;
+  adequate_lighting: boolean | null;
+  temperature_comfortable: boolean | null;
+  noise_appropriate: boolean | null;
+  privacy_maintained: boolean | null;
+  children_consulted: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   audited_by: string;
@@ -169,10 +171,16 @@ export function computeEnvironmentalAuditMetrics(
   const ri = records.filter((r) => r.audit_rating === "requires_improvement").length;
   const inadequate = records.filter((r) => r.audit_rating === "inadequate").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof EnvironmentalAuditRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -254,7 +262,8 @@ export function identifyEnvironmentalAuditAlerts(
   }
 
   // Not child friendly
-  const notChildFriendly = records.filter((r) => !r.child_friendly).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const notChildFriendly = records.filter((r) => r.child_friendly === false).length;
   if (notChildFriendly >= 2) {
     alerts.push({
       type: "not_child_friendly",
@@ -265,7 +274,7 @@ export function identifyEnvironmentalAuditAlerts(
   }
 
   // Not personalised
-  const notPersonalised = records.filter((r) => !r.personalised).length;
+  const notPersonalised = records.filter((r) => r.personalised === false).length;
   if (notPersonalised >= 3) {
     alerts.push({
       type: "not_personalised",
@@ -276,7 +285,7 @@ export function identifyEnvironmentalAuditAlerts(
   }
 
   // Children not consulted
-  const notConsulted = records.filter((r) => !r.children_consulted).length;
+  const notConsulted = records.filter((r) => r.children_consulted === false).length;
   if (notConsulted >= 3) {
     alerts.push({
       type: "children_not_consulted",
@@ -360,18 +369,18 @@ export async function createRecord(
       priority_level: payload.priorityLevel,
       audit_date: payload.auditDate,
       area_name: payload.areaName,
-      homely_feel: payload.homelyFeel ?? true,
-      child_friendly: payload.childFriendly ?? true,
-      personalised: payload.personalised ?? true,
-      clean_and_tidy: payload.cleanAndTidy ?? true,
-      well_maintained: payload.wellMaintained ?? true,
-      safe_environment: payload.safeEnvironment ?? true,
-      accessible: payload.accessible ?? true,
-      adequate_lighting: payload.adequateLighting ?? true,
-      temperature_comfortable: payload.temperatureComfortable ?? true,
-      noise_appropriate: payload.noiseAppropriate ?? true,
-      privacy_maintained: payload.privacyMaintained ?? true,
-      children_consulted: payload.childrenConsulted ?? true,
+      homely_feel: payload.homelyFeel ?? null,
+      child_friendly: payload.childFriendly ?? null,
+      personalised: payload.personalised ?? null,
+      clean_and_tidy: payload.cleanAndTidy ?? null,
+      well_maintained: payload.wellMaintained ?? null,
+      safe_environment: payload.safeEnvironment ?? null,
+      accessible: payload.accessible ?? null,
+      adequate_lighting: payload.adequateLighting ?? null,
+      temperature_comfortable: payload.temperatureComfortable ?? null,
+      noise_appropriate: payload.noiseAppropriate ?? null,
+      privacy_maintained: payload.privacyMaintained ?? null,
+      children_consulted: payload.childrenConsulted ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       audited_by: payload.auditedBy,

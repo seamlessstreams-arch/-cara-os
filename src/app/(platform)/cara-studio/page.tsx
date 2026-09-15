@@ -17,21 +17,6 @@ import { useAuthContext } from "@/contexts/auth-context";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
 
-interface StaffEnriched extends StaffMember {
-  is_on_shift_today: boolean;
-  today_shift_type: string | null;
-  today_shift_status: string | null;
-  supervision_overdue: boolean;
-  supervision_days_until_due: number | null;
-  training_total_count: number;
-  training_expired_count: number;
-  training_expiring_count: number;
-  active_tasks: number;
-  overdue_tasks: number;
-  is_on_leave_today: boolean;
-  notifications_unread: number;
-}
-
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { YoungPerson, StaffMember } from "@/types";

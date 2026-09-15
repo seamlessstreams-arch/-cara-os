@@ -275,7 +275,7 @@ export default function PositiveReinforcementRewardsDashboardWidget() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600">
                   <span>Praise: {cp.totalPraise}</span>
                   <span>Rewards: {cp.totalRewards}</span>
-                  <span>Positive Response: {cp.positiveResponseRate}%</span>
+                  <span>Positive Response: {formatRate(cp.positiveResponseRate)}</span>
                 </div>
               </div>
             ))}

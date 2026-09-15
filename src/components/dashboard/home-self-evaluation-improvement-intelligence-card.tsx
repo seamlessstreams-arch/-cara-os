@@ -75,7 +75,7 @@ export function HomeSelfEvaluationImprovementIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Areas</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.good_or_outstanding_rate ?? 0) >= 80 ? "bg-green-50" : (d.good_or_outstanding_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.good_or_outstanding_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.good_or_outstanding_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.good_or_outstanding_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.good_or_outstanding_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.good_or_outstanding_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.good_or_outstanding_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Good+</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.action_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.action_completion_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
@@ -83,7 +83,7 @@ export function HomeSelfEvaluationImprovementIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.evidence_coverage_rate ?? 0) >= 90 ? "bg-green-50" : (d.evidence_coverage_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.evidence_coverage_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.evidence_coverage_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.evidence_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.evidence_coverage_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.evidence_coverage_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.evidence_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Evidence</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.average_strengths_per_area ?? 0) >= 5 ? "bg-green-50" : (d.average_strengths_per_area ?? 0) >= 3 ? "bg-amber-50" : "bg-red-50")}>

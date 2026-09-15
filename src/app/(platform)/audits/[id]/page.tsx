@@ -75,12 +75,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   environment: "Environment", general: "General",
 };
 
-const AUDIT_CATEGORY_NEED: Record<string, string> = {
-  medication: "medication_management", health_safety: "health_and_safety",
-  care_records: "record_keeping", finance: "financial_management",
-  safeguarding: "safeguarding", staffing: "supervision_and_appraisal",
-  environment: "health_and_safety", general: "professional_practice",
-};
 
 function severityConfig(s: AuditFinding["severity"]) {
   switch (s) {
@@ -103,12 +97,6 @@ function scoreColour(pct: number) {
   if (pct >= 80) return "text-emerald-600";
   if (pct >= 60) return "text-amber-600";
   return "text-red-600";
-}
-
-function scoreBarColour(pct: number) {
-  if (pct >= 80) return "bg-emerald-500";
-  if (pct >= 60) return "bg-amber-500";
-  return "bg-red-500";
 }
 
 // ── Finding Card ──────────────────────────────────────────────────────────────

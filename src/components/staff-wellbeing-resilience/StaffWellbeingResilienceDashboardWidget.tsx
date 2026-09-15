@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -346,8 +347,8 @@ export default function StaffWellbeingResilienceDashboardWidget() {
                       <span className="font-medium text-sm">{profile.staffName}</span>
                       <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                         <span>{profile.totalAssessments} assessments</span>
-                        <span>{profile.wellbeingRate}% wellbeing</span>
-                        <span>{profile.stressManagedRate}% stress managed</span>
+                        <span>{formatRate(profile.wellbeingRate)} wellbeing</span>
+                        <span>{formatRate(profile.stressManagedRate)} stress managed</span>
                         <span>{profile.uniqueTypes} types</span>
                       </div>
                     </div>

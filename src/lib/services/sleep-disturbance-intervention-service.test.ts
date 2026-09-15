@@ -9,7 +9,7 @@ function makeRow(
   overrides: Partial<SleepDisturbanceInterventionRow> = {},
 ): SleepDisturbanceInterventionRow {
   return {
-    id: overrides.id ?? "row-1",
+    id: "row-1",
     home_id: "home-1",
     child_name: "Child A",
     child_id: null,

@@ -13,6 +13,7 @@
 // - Policy & filtering status
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ChildOnlineProfileData {
@@ -225,19 +226,19 @@ export function OnlineSafetyDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.riskAssessments.assessmentRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.riskAssessments.assessmentRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Assessed</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.staffTraining.trainingRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.staffTraining.trainingRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Staff Trained</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.education.topicCoverageRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.education.topicCoverageRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Topics Covered</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.riskAssessments.deviceAgreementRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.riskAssessments.deviceAgreementRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Device Agreements</div>
         </div>
       </div>
@@ -334,7 +335,7 @@ export function OnlineSafetyDashboardWidget() {
                 ))}
               </div>
               <p className="text-xs text-gray-500">
-                Avg severity: {data.incidentAnalysis.averageSeverity}/5 | Resolved: {data.incidentAnalysis.resolvedRate}%
+                Avg severity: {data.incidentAnalysis.averageSeverity}/5 | Resolved: {formatRate(data.incidentAnalysis.resolvedRate)}
               </p>
             </div>
           )}

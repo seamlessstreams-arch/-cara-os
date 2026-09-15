@@ -86,7 +86,7 @@ export async function GET() {
 
   const careForms = store.careForms ?? [];
   const currentPlans = children.filter((c) =>
-    careForms.some((f) => f.linked_child_id === c.id && (f.status === "active" || f.status === "approved")),
+    careForms.some((f) => f.linked_child_id === c.id && f.status === "approved"),
   ).length;
 
   const riskAssessments = store.riskAssessments ?? [];

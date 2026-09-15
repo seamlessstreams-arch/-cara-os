@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { careEventsDb } from "@/lib/db";
-import { processCareEvent, retryFailedRoutes } from "@/lib/care-events/processor";
+import { processCareEvent, retryFailedRoutes, persistProcessorState } from "@/lib/care-events/processor";
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
 import { proposeRecordsFromCareEvent } from "@/lib/cara/cara-care-event-bridge";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
@@ -183,6 +183,7 @@ export async function PATCH(
       const freshEvent = await careEventsDb.careEvents.findById(id);
       if (!freshEvent) return NextResponse.json({ error: "Event lost during routing" }, { status: 500 });
       const result = processCareEvent(freshEvent);
+      await persistProcessorState(id); // Phase 5: mirror the routing bookkeeping to careEventsDb on live
 
       // Notify manager if routing failed
       if (result.routes_failed > 0) {
@@ -496,6 +497,7 @@ export async function PATCH(
       }
 
       const result = retryFailedRoutes(id);
+      await persistProcessorState(id);
       return NextResponse.json({ data: await careEventsDb.careEvents.findById(id), result });
     }
 

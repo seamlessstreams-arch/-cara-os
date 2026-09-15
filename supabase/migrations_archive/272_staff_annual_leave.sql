@@ -15,7 +15,7 @@ create table if not exists public.cs_staff_annual_leave (
   cover_confirmed boolean not null default false,
   handover_completed boolean not null default false,
   children_informed boolean not null default false,
-  minimum_staffing_maintained boolean not null default true,
+  minimum_staffing_maintained boolean,
   entitlement_remaining numeric,
   notes text,
   created_at timestamptz not null default now(),

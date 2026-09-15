@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import type { Incident } from "@/types";
 import { getYPName } from "@/lib/seed-data";
+import type { WelfareCheck, WelfareCheckRound } from "@/types/extended";
 import { cn, formatRelative } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -39,8 +40,8 @@ function useIncidents(params?: { status?: string; child_id?: string; needs_overs
 }
 
 interface WelfareChecksResponse {
-  data: any[];
-  checks: any[];
+  data: WelfareCheckRound[];
+  checks: WelfareCheck[];
   meta: {
     total_rounds: number;
     today_rounds: number;

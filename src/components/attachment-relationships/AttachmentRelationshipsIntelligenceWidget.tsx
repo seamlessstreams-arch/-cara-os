@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatRate } from "@/lib/metrics/rate";
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 
 function formatMaybe(v: unknown): string {
   if (v === null || v === undefined) return "—";
@@ -87,8 +87,8 @@ export function AttachmentRelationshipsIntelligenceWidget() {
           <Stat label="Total Assessments" value={assessments.totalAssessments} />
           <Stat label="Coverage Rate" value={formatRate(assessments.assessmentCoverageRate as number | null)} />
           <Stat label="Currency" value={formatRate(assessments.assessmentCurrency as number | null)} />
-          <Stat label="Informed Care" value={`${assessments.informedCareRate}%`} />
-          <Stat label="Shared With Team" value={`${assessments.sharedWithTeamRate}%`} />
+          <Stat label="Informed Care" value={`${formatRateLoose(assessments.informedCareRate)}`} />
+          <Stat label="Shared With Team" value={`${formatRate(assessments.sharedWithTeamRate)}`} />
           <Stat label="Showing Progress" value={assessments.childrenShowingProgress} />
         </div>
       </Section>
@@ -110,9 +110,9 @@ export function AttachmentRelationshipsIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Interactions" value={interQuality.totalInteractions} />
           <Stat label="Avg Quality" value={interQuality.averageQuality} />
-          <Stat label="Child Initiated" value={`${interQuality.childInitiatedRate}%`} />
-          <Stat label="Attachment Relevant" value={`${interQuality.attachmentRelevantRate}%`} />
-          <Stat label="Regulation Support" value={`${interQuality.regulationSupportRate}%`} />
+          <Stat label="Child Initiated" value={`${formatRate(interQuality.childInitiatedRate)}`} />
+          <Stat label="Attachment Relevant" value={`${formatRateLoose(interQuality.attachmentRelevantRate)}`} />
+          <Stat label="Regulation Support" value={`${formatRateLoose(interQuality.regulationSupportRate)}`} />
           <Stat label="Per Child/Week" value={formatMaybe((interQuality as Record<string, unknown>).interactionsPerChildPerWeek)} />
         </div>
       </Section>
@@ -120,12 +120,12 @@ export function AttachmentRelationshipsIntelligenceWidget() {
       <Section title="Stability">
         <ScoreBar label="Stability Score" value={stability.overallScore} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Key Worker Consistency" value={`${stability.keyWorkerConsistencyRate}%`} />
-          <Stat label="Team Stability" value={`${stability.staffTeamStabilityRate}%`} />
+          <Stat label="Key Worker Consistency" value={`${formatRateLoose(stability.keyWorkerConsistencyRate)}`} />
+          <Stat label="Team Stability" value={`${formatRateLoose(stability.staffTeamStabilityRate)}`} />
           <Stat label="Avg Routine" value={stability.averageRoutineConsistency} />
           <Stat label="Avg Belonging" value={stability.averageBelonging} />
-          <Stat label="Feels Safe" value={`${stability.childFeelsSafeRate}%`} />
-          <Stat label="Feels Valued" value={`${stability.childFeelsValuedRate}%`} />
+          <Stat label="Feels Safe" value={`${formatRateLoose(stability.childFeelsSafeRate)}`} />
+          <Stat label="Feels Valued" value={`${formatRateLoose(stability.childFeelsValuedRate)}`} />
         </div>
       </Section>
 
@@ -135,8 +135,8 @@ export function AttachmentRelationshipsIntelligenceWidget() {
           <Stat label="Total Peer Rels" value={peerRels.totalPeerRelationships} />
           <Stat label="Avg Positive" value={peerRels.averagePositiveInteractions} />
           <Stat label="Avg Negative" value={peerRels.averageNegativeInteractions} />
-          <Stat label="Conflict Resolution" value={`${peerRels.conflictResolutionRate}%`} />
-          <Stat label="Mediation Needed" value={`${peerRels.mediationNeededRate}%`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(peerRels.conflictResolutionRate)}`} />
+          <Stat label="Mediation Needed" value={`${formatRateLoose(peerRels.mediationNeededRate)}`} />
         </div>
       </Section>
 

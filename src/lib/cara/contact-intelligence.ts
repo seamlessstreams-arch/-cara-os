@@ -46,11 +46,11 @@ export interface ContactSession {
   type: ContactType;
   plannedDuration: number; // minutes
   actualDuration: number; // minutes — 0 if missed
-  occurred: boolean;
+  occurred: boolean | null;
   cancelledBy?: "child" | "parent" | "social_worker" | "court" | "other";
   cancellationReason?: string;
   outcome: ContactOutcome;
-  childWanted: boolean; // did child want this contact?
+  childWanted: boolean | null; // did child want this contact?
   childFeedback?: string;
   supervisedRequired: boolean;
   supervisorPresent?: boolean;
@@ -73,12 +73,12 @@ export interface ContactInput {
   age: number;
   contactSessions: ContactSession[];
   arrangements: ContactArrangement[];
-  contactPlanReviewed: boolean;
+  contactPlanReviewed: boolean | null;
   contactPlanLastReviewDate?: string;
-  childConsultedOnPlan: boolean;
-  advocateAvailableForContact: boolean;
+  childConsultedOnPlan: boolean | null;
+  advocateAvailableForContact: boolean | null;
   lifestoryWorkStarted: boolean;
-  siblingPlacementConsidered: boolean;
+  siblingPlacementConsidered: boolean | null;
   letterboxContactAvailable: boolean;
 }
 
@@ -135,7 +135,7 @@ export interface ContactStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -156,12 +156,12 @@ export function analyseContact(input: ContactInput): ContactAssessment {
 
   // ── Basic counts ────────────────────────────────────────────────────
   const totalSessions = contactSessions.length;
-  const occurredSessions = contactSessions.filter(s => s.occurred).length;
+  const occurredSessions = contactSessions.filter(s => s.occurred === true).length;
   const missedSessions = totalSessions - occurredSessions;
   const missedRate = totalSessions > 0 ? Math.round((missedSessions / totalSessions) * 100) / 100 : null;
 
   // ── Quality metrics ─────────────────────────────────────────────────
-  const occurredWithOutcome = contactSessions.filter(s => s.occurred && s.outcome !== "not_recorded");
+  const occurredWithOutcome = contactSessions.filter(s => s.occurred === true && s.outcome !== "not_recorded");
   const positiveCount = occurredWithOutcome.filter(s => s.outcome === "positive").length;
   const distressingCount = occurredWithOutcome.filter(s => s.outcome === "distressing").length;
   // null when no occurred session has a recorded outcome — absence of an
@@ -248,7 +248,7 @@ function analyseByPerson(
 
   return Object.entries(personGroups).map(([key, pSessions]) => {
     const [person, personName] = key.split("::");
-    const occurred = pSessions.filter(s => s.occurred);
+    const occurred = pSessions.filter(s => s.occurred === true);
     const planned = pSessions.length;
 
     // Find arrangement for this person
@@ -270,7 +270,7 @@ function analyseByPerson(
       : 1;
 
     // Did child want this contact?
-    const childWantsContact = pSessions.some(s => s.childWanted);
+    const childWantsContact = pSessions.some(s => s.childWanted === true);
 
     return {
       person: person as ContactPerson,
@@ -287,7 +287,7 @@ function analyseByPerson(
 // ── Cancellation Patterns ───────────────────────────────────────────────────
 
 function analyseCancellations(sessions: ContactSession[]): CancellationPattern[] {
-  const missed = sessions.filter(s => !s.occurred && s.cancelledBy);
+  const missed = sessions.filter(s => s.occurred === false && s.cancelledBy);
   if (missed.length === 0) return [];
 
   const patterns: CancellationPattern[] = [];
@@ -348,7 +348,7 @@ function scoreFrequency(personSummaries: PersonContactSummary[], arrangements: C
 }
 
 function scoreQuality(sessions: ContactSession[]): number | null {
-  const occurred = sessions.filter(s => s.occurred);
+  const occurred = sessions.filter(s => s.occurred === true);
   if (occurred.length === 0) return null; // no contact occurred — quality is unmeasured, not "OK"
 
   const outcomes = occurred.map(s => OUTCOME_VALUES[s.outcome]);
@@ -425,7 +425,8 @@ function identifyConcerns(
   }
 
   // Contact child doesn't want being forced
-  const unwantedContacts = input.contactSessions.filter(s => !s.childWanted && s.occurred);
+  // A child who was never asked did not say they did not want the contact.
+  const unwantedContacts = input.contactSessions.filter(s => s.childWanted === false && s.occurred === true);
   if (unwantedContacts.length >= 3) {
     concerns.push({
       severity: "significant",
@@ -436,7 +437,7 @@ function identifyConcerns(
 
   // Parent repeatedly cancelling
   const parentCancels = input.contactSessions.filter(s =>
-    !s.occurred && s.cancelledBy === "parent"
+    s.occurred === false && s.cancelledBy === "parent"
   );
   if (parentCancels.length >= 4) {
     concerns.push({
@@ -452,21 +453,34 @@ function identifyConcerns(
     });
   }
 
-  // No contact plan review
-  if (!input.contactPlanReviewed) {
+  // No contact plan review. Only a recorded "not reviewed" is a finding; an
+  // unrecorded review is a recording gap, and is reported as one.
+  if (input.contactPlanReviewed === false) {
     concerns.push({
       severity: "moderate",
       category: "planning",
       description: "Contact plan not reviewed — arrangements may not reflect current needs",
     });
+  } else if (input.contactPlanReviewed === null) {
+    concerns.push({
+      severity: "moderate",
+      category: "planning",
+      description: "Whether the contact plan has been reviewed is not recorded",
+    });
   }
 
   // Child not consulted
-  if (!input.childConsultedOnPlan) {
+  if (input.childConsultedOnPlan === false) {
     concerns.push({
       severity: "significant",
       category: "voice",
       description: "Child not consulted on contact arrangements",
+    });
+  } else if (input.childConsultedOnPlan === null) {
+    concerns.push({
+      severity: "significant",
+      category: "voice",
+      description: "Whether the child was consulted on contact arrangements is not recorded",
     });
   }
 
@@ -503,7 +517,7 @@ function identifyStrengths(
 ): ContactStrength[] {
   const strengths: ContactStrength[] = [];
 
-  if (positiveRate !== null && positiveRate >= 0.8 && input.contactSessions.filter(s => s.occurred).length >= 3) {
+  if (positiveRate !== null && positiveRate >= 0.8 && input.contactSessions.filter(s => s.occurred === true).length >= 3) {
     strengths.push({
       category: "quality",
       description: "Majority of contacts positive experiences for child",
@@ -605,9 +619,13 @@ function assessRegulatory(
   flags.push({
     regulation: "IRO Handbook",
     area: "Contact Review",
-    status: input.contactPlanReviewed ? "met" : "not_met",
-    detail: input.contactPlanReviewed
+    status: input.contactPlanReviewed === true ? "met"
+      : input.contactPlanReviewed === null ? "not_evidenced"
+      : "not_met",
+    detail: input.contactPlanReviewed === true
       ? "Contact arrangements reviewed"
+      : input.contactPlanReviewed === null
+      ? "Cannot be evidenced — no record of whether the contact plan was reviewed"
       : "Contact plan not reviewed at LAC review",
   });
 
@@ -632,11 +650,11 @@ function buildRecommendations(
     recs.push("URGENT: Review contact causing distress — consider support, supervision, or format changes");
   }
 
-  if (!input.childConsultedOnPlan) {
+  if (input.childConsultedOnPlan === false) {
     recs.push("Consult child on contact arrangements — ensure views inform planning");
   }
 
-  if (!input.contactPlanReviewed) {
+  if (input.contactPlanReviewed === false) {
     recs.push("Review contact plan at next LAC review");
   }
 
@@ -657,7 +675,7 @@ function buildRecommendations(
 
   // Parent cancelling repeatedly
   const parentCancels = input.contactSessions.filter(s =>
-    !s.occurred && s.cancelledBy === "parent"
+    s.occurred === false && s.cancelledBy === "parent"
   ).length;
   if (parentCancels >= 3) {
     recs.push("Engage with parent about cancellations — explore barriers and child's feelings about this");

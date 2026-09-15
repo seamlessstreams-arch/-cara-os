@@ -10,6 +10,12 @@ import type {
 
 // -- Factories ----------------------------------------------------------------
 
+/** Date string n days ahead — UTC end to end, floating with the clock. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+
 function makeAssessment(overrides: Partial<SubstanceAssessment> = {}): SubstanceAssessment {
   return {
     id: "sa-1",
@@ -107,7 +113,7 @@ describe("computeSubstanceMisuseMetrics", () => {
   it("counts overdue assessments (past next_assessment_date + active/monitoring)", () => {
     const assessments = [
       makeAssessment({ id: "1", status: "active", next_assessment_date: "2026-01-01" }),
-      makeAssessment({ id: "2", status: "active", next_assessment_date: "2027-01-01" }),
+      makeAssessment({ id: "2", status: "active", next_assessment_date: daysFromNow(120) }),
       makeAssessment({ id: "3", status: "resolved", next_assessment_date: "2026-01-01" }),
     ];
     expect(computeSubstanceMisuseMetrics(assessments, []).overdue_assessments).toBe(1);

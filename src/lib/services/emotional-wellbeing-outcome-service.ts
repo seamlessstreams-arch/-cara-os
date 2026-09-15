@@ -86,8 +86,8 @@ export interface EmotionalWellbeingOutcomeRow {
   previous_score: number | null;
   clinician_name: string | null;
   child_self_reported: boolean;
-  discussed_with_child: boolean;
-  informed_care_plan: boolean;
+  discussed_with_child: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  informed_care_plan: boolean | null;
   referral_made: boolean;
   notes: string | null;
   created_at: string;
@@ -122,10 +122,14 @@ export function computeEmotionalWellbeingMetrics(
   const decliningCount = rows.filter((r) => r.trend_direction === "declining").length;
   const improvingCount = rows.filter((r) => r.trend_direction === "improving").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof EmotionalWellbeingOutcomeRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -195,22 +199,22 @@ export function computeEmotionalWellbeingAlerts(
   }
 
   // High: child views not discussed in multiple assessments
-  const notDiscussed = rows.filter((r) => !r.discussed_with_child).length;
+  const notDiscussed = rows.filter((r) => r.discussed_with_child !== true).length;
   if (notDiscussed >= 2) {
     alerts.push({
       type: "child_views_not_discussed",
       severity: "high",
-      message: `${notDiscussed} assessments completed without discussing results with the child — ensure child participation in outcome reviews`,
+      message: `${notDiscussed} assessments without evidenced discussion of results with the child — ensure child participation in outcome reviews`,
     });
   }
 
   // Medium: care plan not informed by multiple assessments
-  const notInformed = rows.filter((r) => !r.informed_care_plan).length;
+  const notInformed = rows.filter((r) => r.informed_care_plan !== true).length;
   if (notInformed >= 2) {
     alerts.push({
       type: "care_plan_not_informed",
       severity: "medium",
-      message: `${notInformed} assessments have not informed the care plan — ensure outcome measures feed into care planning`,
+      message: `${notInformed} assessments without evidence they informed the care plan — ensure outcome measures feed into care planning`,
     });
   }
 
@@ -320,8 +324,8 @@ export async function createEmotionalWellbeingOutcome(payload: {
       previous_score: payload.previousScore ?? null,
       clinician_name: payload.clinicianName ?? null,
       child_self_reported: payload.childSelfReported ?? false,
-      discussed_with_child: payload.discussedWithChild ?? true,
-      informed_care_plan: payload.informedCarePlan ?? true,
+      discussed_with_child: payload.discussedWithChild ?? null,
+      informed_care_plan: payload.informedCarePlan ?? null,
       referral_made: payload.referralMade ?? false,
       notes: payload.notes ?? null,
     })

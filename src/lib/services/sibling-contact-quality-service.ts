@@ -73,18 +73,18 @@ export interface SiblingContactQualityRecord {
   child_id: string | null;
   sibling_name: string;
   facilitated_by: string;
-  child_views_sought: boolean;
-  sibling_views_sought: boolean;
-  preparation_completed: boolean;
-  debrief_completed: boolean;
-  emotional_support_given: boolean;
-  social_worker_informed: boolean;
-  care_plan_reflects: boolean;
-  frequency_appropriate: boolean;
-  venue_suitable: boolean;
-  safeguarding_considered: boolean;
-  life_story_linked: boolean;
-  recorded_promptly: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  sibling_views_sought: boolean | null;
+  preparation_completed: boolean | null;
+  debrief_completed: boolean | null;
+  emotional_support_given: boolean | null;
+  social_worker_informed: boolean | null;
+  care_plan_reflects: boolean | null;
+  frequency_appropriate: boolean | null;
+  venue_suitable: boolean | null;
+  safeguarding_considered: boolean | null;
+  life_story_linked: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -170,10 +170,16 @@ export function computeSiblingContactMetrics(
   const estranged = records.filter((r) => r.sibling_relationship === "estranged").length;
   const barriers = records.filter((r) => r.barrier_type !== "none").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof SiblingContactQualityRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -243,45 +249,45 @@ export function identifySiblingContactAlerts(
   }
 
   // Debrief not completed
-  const noDebrief = records.filter((r) => !r.debrief_completed).length;
+  const noDebrief = records.filter((r) => r.debrief_completed !== true).length;
   if (noDebrief >= 1) {
     alerts.push({
       type: "debrief_not_completed",
       severity: "high",
-      message: `${noDebrief} ${noDebrief === 1 ? "contact has" : "contacts have"} no debrief completed — ensure emotional processing`,
+      message: `${noDebrief} ${noDebrief === 1 ? "contact has" : "contacts have"} no debrief evidenced — ensure emotional processing`,
       id: "debrief_not_completed",
     });
   }
 
   // Preparation not completed
-  const noPrep = records.filter((r) => !r.preparation_completed).length;
+  const noPrep = records.filter((r) => r.preparation_completed !== true).length;
   if (noPrep >= 1) {
     alerts.push({
       type: "preparation_not_completed",
       severity: "high",
-      message: `${noPrep} ${noPrep === 1 ? "contact has" : "contacts have"} no preparation — children must be prepared for sibling contact`,
+      message: `${noPrep} ${noPrep === 1 ? "contact has" : "contacts have"} no preparation evidenced — children must be prepared for sibling contact`,
       id: "preparation_not_completed",
     });
   }
 
   // Emotional support not given
-  const noSupport = records.filter((r) => !r.emotional_support_given).length;
+  const noSupport = records.filter((r) => r.emotional_support_given !== true).length;
   if (noSupport >= 2) {
     alerts.push({
       type: "no_emotional_support",
       severity: "medium",
-      message: `${noSupport} contacts without emotional support — strengthen post-contact care`,
+      message: `${noSupport} contacts without evidenced emotional support — strengthen post-contact care`,
       id: "no_emotional_support",
     });
   }
 
   // Life story not linked
-  const noLifeStory = records.filter((r) => !r.life_story_linked).length;
+  const noLifeStory = records.filter((r) => r.life_story_linked !== true).length;
   if (noLifeStory >= 2) {
     alerts.push({
       type: "life_story_not_linked",
       severity: "medium",
-      message: `${noLifeStory} contacts not linked to life story work — integrate sibling narrative`,
+      message: `${noLifeStory} contacts with no evidenced life story link — integrate sibling narrative`,
       id: "life_story_not_linked",
     });
   }
@@ -357,18 +363,18 @@ export async function createRecord(payload: {
       child_id: payload.childId ?? null,
       sibling_name: payload.siblingName,
       facilitated_by: payload.facilitatedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      sibling_views_sought: payload.siblingViewsSought ?? true,
-      preparation_completed: payload.preparationCompleted ?? true,
-      debrief_completed: payload.debriefCompleted ?? true,
-      emotional_support_given: payload.emotionalSupportGiven ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      frequency_appropriate: payload.frequencyAppropriate ?? true,
-      venue_suitable: payload.venueSuitable ?? true,
-      safeguarding_considered: payload.safeguardingConsidered ?? true,
-      life_story_linked: payload.lifeStoryLinked ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      sibling_views_sought: payload.siblingViewsSought ?? null,
+      preparation_completed: payload.preparationCompleted ?? null,
+      debrief_completed: payload.debriefCompleted ?? null,
+      emotional_support_given: payload.emotionalSupportGiven ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      frequency_appropriate: payload.frequencyAppropriate ?? null,
+      venue_suitable: payload.venueSuitable ?? null,
+      safeguarding_considered: payload.safeguardingConsidered ?? null,
+      life_story_linked: payload.lifeStoryLinked ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

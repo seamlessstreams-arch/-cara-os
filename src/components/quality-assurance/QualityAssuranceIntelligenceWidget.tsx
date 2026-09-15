@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -103,10 +104,10 @@ export function QualityAssuranceIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Active" value={improvement.activeInitiatives} />
           <Stat label="Completed" value={improvement.completedInitiatives} />
-          <Stat label="Completion Rate" value={`${improvement.completionRate}%`} />
-          <Stat label="Child Involvement" value={`${improvement.childInvolvementRate}%`} />
-          <Stat label="Staff Involvement" value={`${improvement.staffInvolvementRate}%`} />
-          <Stat label="Measurable" value={`${improvement.measurableOutcomeRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRate(improvement.completionRate)}`} />
+          <Stat label="Child Involvement" value={`${formatRate(improvement.childInvolvementRate)}`} />
+          <Stat label="Staff Involvement" value={`${formatRateLoose(improvement.staffInvolvementRate)}`} />
+          <Stat label="Measurable" value={`${formatRateLoose(improvement.measurableOutcomeRate)}`} />
         </div>
       </Section>
 

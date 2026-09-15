@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -137,7 +138,7 @@ export default function SupervisionMatrixPage() {
             { label: "Current", value: stats.currentCount, icon: CheckCircle2, clr: "text-green-600" },
             { label: "Due Soon", value: stats.dueSoonCount, icon: Clock, clr: "text-amber-600" },
             { label: "Overdue", value: stats.overdueCount, icon: AlertTriangle, clr: "text-red-600" },
-            { label: "Compliance", value: `${stats.compliancePct}%`, icon: Shield, clr: "text-purple-600" },
+            { label: "Compliance", value: `${formatRate(stats.compliancePct)}`, icon: Shield, clr: "text-purple-600" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="pt-4 pb-3 text-center">

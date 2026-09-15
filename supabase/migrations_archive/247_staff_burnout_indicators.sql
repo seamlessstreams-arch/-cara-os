@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_burnout_indicators (
   peer_support_arranged    boolean NOT NULL DEFAULT false,
   care_plan_reflects       boolean NOT NULL DEFAULT false,
   team_informed            boolean NOT NULL DEFAULT false,
-  recorded_promptly        boolean NOT NULL DEFAULT true,
+  recorded_promptly        boolean,
   issues_found     jsonb NOT NULL DEFAULT '[]',
   actions_taken    jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

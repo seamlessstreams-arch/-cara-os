@@ -67,18 +67,18 @@ export interface ReligiousCulturalObservanceRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  child_views_sought: boolean;
-  family_consulted: boolean;
-  dietary_needs_met: boolean;
-  resources_provided: boolean;
-  community_links_used: boolean;
-  staff_trained: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  respectful_approach: boolean;
-  celebration_supported: boolean;
-  discrimination_addressed: boolean;
-  recorded_promptly: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  family_consulted: boolean | null;
+  dietary_needs_met: boolean | null;
+  resources_provided: boolean | null;
+  community_links_used: boolean | null;
+  staff_trained: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  respectful_approach: boolean | null;
+  celebration_supported: boolean | null;
+  discrimination_addressed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeReligiousCulturalMetrics(
   const poorSensitivity = records.filter((r) => r.cultural_sensitivity === "poor").length;
   const unaware = records.filter((r) => r.cultural_sensitivity === "unaware").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ReligiousCulturalObservanceRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyReligiousCulturalAlerts(
   }
 
   // Dietary needs not met
-  const noDietary = records.filter((r) => !r.dietary_needs_met).length;
+  const noDietary = records.filter((r) => r.dietary_needs_met !== true).length;
   if (noDietary >= 1) {
     alerts.push({
       type: "dietary_needs_not_met",
       severity: "high",
-      message: `${noDietary} ${noDietary === 1 ? "observance has" : "observances have"} dietary needs not met — review cultural dietary provision`,
+      message: `${noDietary} ${noDietary === 1 ? "observance has" : "observances have"} no evidence dietary needs were met — review cultural dietary provision`,
       id: "dietary_needs_not_met",
     });
   }
 
   // Family not consulted
-  const noFamily = records.filter((r) => !r.family_consulted).length;
+  const noFamily = records.filter((r) => r.family_consulted !== true).length;
   if (noFamily >= 1) {
     alerts.push({
       type: "family_not_consulted",
       severity: "high",
-      message: `${noFamily} ${noFamily === 1 ? "observance has" : "observances have"} no family consultation — ensure cultural guidance`,
+      message: `${noFamily} ${noFamily === 1 ? "observance has" : "observances have"} no family consultation evidenced — ensure cultural guidance`,
       id: "family_not_consulted",
     });
   }
 
   // Staff not trained
-  const noTraining = records.filter((r) => !r.staff_trained).length;
+  const noTraining = records.filter((r) => r.staff_trained !== true).length;
   if (noTraining >= 2) {
     alerts.push({
       type: "staff_not_trained",
       severity: "medium",
-      message: `${noTraining} observances with untrained staff — arrange cultural competence training`,
+      message: `${noTraining} observances with no evidenced staff training — arrange cultural competence training`,
       id: "staff_not_trained",
     });
   }
 
   // Community links not used
-  const noCommunity = records.filter((r) => !r.community_links_used).length;
+  const noCommunity = records.filter((r) => r.community_links_used !== true).length;
   if (noCommunity >= 2) {
     alerts.push({
       type: "community_links_not_used",
       severity: "medium",
-      message: `${noCommunity} observances without community links — strengthen external cultural connections`,
+      message: `${noCommunity} observances without evidenced community links — strengthen external cultural connections`,
       id: "community_links_not_used",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      family_consulted: payload.familyConsulted ?? true,
-      dietary_needs_met: payload.dietaryNeedsMet ?? true,
-      resources_provided: payload.resourcesProvided ?? true,
-      community_links_used: payload.communityLinksUsed ?? true,
-      staff_trained: payload.staffTrained ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      respectful_approach: payload.respectfulApproach ?? true,
-      celebration_supported: payload.celebrationSupported ?? true,
-      discrimination_addressed: payload.discriminationAddressed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      family_consulted: payload.familyConsulted ?? null,
+      dietary_needs_met: payload.dietaryNeedsMet ?? null,
+      resources_provided: payload.resourcesProvided ?? null,
+      community_links_used: payload.communityLinksUsed ?? null,
+      staff_trained: payload.staffTrained ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      respectful_approach: payload.respectfulApproach ?? null,
+      celebration_supported: payload.celebrationSupported ?? null,
+      discrimination_addressed: payload.discriminationAddressed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

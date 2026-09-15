@@ -82,12 +82,12 @@ export interface LacHealthAssessmentRow {
   health_domain: string;
   clinician_name: string | null;
   clinic_location: string | null;
-  health_action_plan_created: boolean;
+  health_action_plan_created: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   actions_completed: boolean;
-  child_attended: boolean;
-  child_views_captured: boolean;
-  carer_attended: boolean;
-  shared_with_social_worker: boolean;
+  child_attended: boolean | null;
+  child_views_captured: boolean | null;
+  carer_attended: boolean | null;
+  shared_with_social_worker: boolean | null;
   next_assessment_due: string | null;
   notes: string | null;
   created_at: string;
@@ -128,10 +128,14 @@ export function computeLacHealthAssessmentMetrics(
     (r) => r.health_outcome === "referral_required",
   ).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof LacHealthAssessmentRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -181,12 +185,14 @@ export function computeLacHealthAssessmentAlerts(
   for (const r of rows) {
     if (
       r.health_outcome === "urgent_concern" &&
-      !r.shared_with_social_worker
+      r.shared_with_social_worker !== true
     ) {
       alerts.push({
         type: "urgent_concern_not_shared",
         severity: "critical",
-        message: `${r.child_name} has urgent health concern from ${r.assessment_type.replace(/_/g, " ")} not shared with social worker — immediate escalation required`,
+        message: r.shared_with_social_worker === false
+          ? `${r.child_name} has urgent health concern from ${r.assessment_type.replace(/_/g, " ")} not shared with social worker — immediate escalation required`
+          : `${r.child_name} has urgent health concern from ${r.assessment_type.replace(/_/g, " ")} with no record it was shared with the social worker — share and evidence it immediately`,
         record_id: r.id,
       });
     }
@@ -205,12 +211,12 @@ export function computeLacHealthAssessmentAlerts(
   }
 
   // High: child views not captured for multiple assessments
-  const noChildViews = rows.filter((r) => !r.child_views_captured).length;
+  const noChildViews = rows.filter((r) => r.child_views_captured !== true).length;
   if (noChildViews >= 2) {
     alerts.push({
       type: "child_views_not_captured",
       severity: "high",
-      message: `${noChildViews} health assessments completed without capturing child views — ensure child participation in health reviews`,
+      message: `${noChildViews} health assessments without evidenced child views — ensure child participation in health reviews`,
     });
   }
 
@@ -337,12 +343,12 @@ export async function createLacHealthAssessment(payload: {
       health_domain: payload.healthDomain,
       clinician_name: payload.clinicianName ?? null,
       clinic_location: payload.clinicLocation ?? null,
-      health_action_plan_created: payload.healthActionPlanCreated ?? true,
+      health_action_plan_created: payload.healthActionPlanCreated ?? null,
       actions_completed: payload.actionsCompleted ?? false,
-      child_attended: payload.childAttended ?? true,
-      child_views_captured: payload.childViewsCaptured ?? true,
-      carer_attended: payload.carerAttended ?? true,
-      shared_with_social_worker: payload.sharedWithSocialWorker ?? true,
+      child_attended: payload.childAttended ?? null,
+      child_views_captured: payload.childViewsCaptured ?? null,
+      carer_attended: payload.carerAttended ?? null,
+      shared_with_social_worker: payload.sharedWithSocialWorker ?? null,
       next_assessment_due: payload.nextAssessmentDue ?? null,
       notes: payload.notes ?? null,
     })

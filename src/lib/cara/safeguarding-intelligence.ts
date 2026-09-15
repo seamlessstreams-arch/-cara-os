@@ -44,7 +44,7 @@ export interface MissingEpisode {
 export interface RestraintIncident {
   date: string;
   type: RestraintType;
-  durationMinutes: number;
+  durationMinutes: number | null;
   debrief: boolean;
   injuryToChild: boolean;
   injuryToStaff: boolean;
@@ -55,15 +55,16 @@ export interface BullyingIncident {
   date: string;
   role: BullyingRole;
   type: "physical" | "verbal" | "online" | "social";
-  actionTaken: boolean;
+  actionTaken: boolean | null;
   resolved: boolean;
 }
 
 export interface SafeguardingReferral {
   date: string;
   type: "cse" | "cce" | "radicalisation" | "neglect" | "abuse" | "online" | "other";
-  outcome: "ongoing" | "resolved" | "no_further_action" | "escalated";
-  agencyInvolved: string;
+  /** "unknown" = no outcome recorded. Never assume a referral was resolved. */
+  outcome: "ongoing" | "resolved" | "no_further_action" | "escalated" | "unknown";
+  agencyInvolved: string | null;
 }
 
 export interface SafeguardingInput {
@@ -92,20 +93,20 @@ export interface SafeguardingInput {
   onlineSafetyRiskLevel: RiskLevel;
 
   // Provisions in place
-  riskAssessmentCurrent: boolean;
+  riskAssessmentCurrent: boolean | null;
   riskAssessmentDate?: string;
-  safeguardingPlanInPlace: boolean;
-  locationRiskAssessmentDone: boolean;
-  childAwareOfRisks: boolean;
-  onlineSafetyPlanInPlace: boolean;
-  antibullyingPolicyShared: boolean;
-  restraintPolicyShared: boolean;
-  independentReturnInterviews: boolean; // independent person conducts return interviews
-  staffSafeguardingTrained: boolean;
-  designatedSafeguardingLead: boolean;
-  localaSafeguardingContactKnown: boolean;
-  childKnowsHowToComplain: boolean;
-  regularSafeguardingAudits: boolean;
+  safeguardingPlanInPlace: boolean | null;
+  locationRiskAssessmentDone: boolean | null;
+  childAwareOfRisks: boolean | null;
+  onlineSafetyPlanInPlace: boolean | null;
+  antibullyingPolicyShared: boolean | null;
+  restraintPolicyShared: boolean | null;
+  independentReturnInterviews: boolean | null; // independent person conducts return interviews
+  staffSafeguardingTrained: boolean | null;
+  designatedSafeguardingLead: boolean | null;
+  localaSafeguardingContactKnown: boolean | null;
+  childKnowsHowToComplain: boolean | null;
+  regularSafeguardingAudits: boolean | null;
 }
 
 // ── Output Types ───────────────────────────────────────────────────────────
@@ -117,7 +118,7 @@ export interface SafeguardingAssessment {
   missingScore: number;
   restraintScore: number;
   protectionScore: number;
-  complianceScore: number;
+  complianceScore: number | null;
 
   // Key metrics
   missingEpisodeCount: number;
@@ -150,7 +151,7 @@ export interface SafeguardingStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -179,7 +180,7 @@ export function analyseSafeguarding(input: SafeguardingInput): SafeguardingAsses
   const bullyingCount = input.bullyingIncidents.length;
 
   const activeSafeguardingReferrals = input.safeguardingReferrals
-    .filter(r => r.outcome === "ongoing" || r.outcome === "escalated").length;
+    .filter(r => r.outcome === "ongoing" || r.outcome === "escalated" || r.outcome === "unknown").length;
 
   const highestExploitationRisk = getHighestRisk([
     input.cseRiskLevel,
@@ -194,11 +195,16 @@ export function analyseSafeguarding(input: SafeguardingInput): SafeguardingAsses
   const complianceScore = scoreCompliance(input);
 
   // ── Overall ────────────────────────────────────────────────────
+  const components: Array<[number | null, number]> = [
+    [missingScore, 0.25],
+    [restraintScore, 0.25],
+    [protectionScore, 0.30],
+    [complianceScore, 0.20],
+  ];
+  const computable = components.filter((c): c is [number, number] => c[0] !== null);
+  const weightTotal = computable.reduce((t, [, w]) => t + w, 0);
   const overallScore = Math.round(
-    missingScore * 0.25 +
-    restraintScore * 0.25 +
-    protectionScore * 0.30 +
-    complianceScore * 0.20
+    computable.reduce((t, [v, w]) => t + v * w, 0) / weightTotal
   );
   const overallRating = scoreToRating(overallScore);
 
@@ -316,12 +322,21 @@ function scoreProtection(input: SafeguardingInput, highestRisk: RiskLevel): numb
   else if (highestRisk === "medium") score += 15;
   else score += 0; // high
 
-  // Provisions in place
-  if (input.riskAssessmentCurrent) score += 15;
-  if (input.safeguardingPlanInPlace) score += 15;
-  if (input.locationRiskAssessmentDone) score += 10;
-  if (input.childAwareOfRisks) score += 10;
-  if (input.onlineSafetyPlanInPlace) score += 10;
+  // Provisions in place — scored over those actually recorded, so absence of a
+  // record neither earns the 60 points nor forfeits them.
+  const provisions: Array<[boolean | null, number]> = [
+    [input.riskAssessmentCurrent, 15],
+    [input.safeguardingPlanInPlace, 15],
+    [input.locationRiskAssessmentDone, 10],
+    [input.childAwareOfRisks, 10],
+    [input.onlineSafetyPlanInPlace, 10],
+  ];
+  const recordedProvisions = provisions.filter(([v]) => v !== null);
+  if (recordedProvisions.length > 0) {
+    const available = recordedProvisions.reduce((t, [, w]) => t + w, 0);
+    const earned = recordedProvisions.reduce((t, [v, w]) => t + (v === true ? w : 0), 0);
+    score += Math.round((earned / available) * 60);
+  }
 
   // Bullying impact
   const unresolvedBullying = input.bullyingIncidents.filter(b => !b.resolved).length;
@@ -330,19 +345,27 @@ function scoreProtection(input: SafeguardingInput, highestRisk: RiskLevel): numb
   return Math.max(0, Math.min(100, score));
 }
 
-function scoreCompliance(input: SafeguardingInput): number {
-  let score = 0;
+/** Scored over the provisions that were actually recorded, so an unrecorded
+ *  provision neither credits the home nor penalises it. Returns null when none
+ *  of them were recorded: a home nobody has assessed is not a compliant one,
+ *  and it is not a failing one either — it is unmeasured, and says so. */
+function scoreCompliance(input: SafeguardingInput): number | null {
+  const weighted: Array<[boolean | null, number]> = [
+    [input.staffSafeguardingTrained, 15],
+    [input.designatedSafeguardingLead, 15],
+    [input.localaSafeguardingContactKnown, 10],
+    [input.childKnowsHowToComplain, 15],
+    [input.regularSafeguardingAudits, 10],
+    [input.antibullyingPolicyShared, 10],
+    [input.restraintPolicyShared, 10],
+    [input.independentReturnInterviews, 15],
+  ];
+  const recorded = weighted.filter(([v]) => v !== null);
+  if (recorded.length === 0) return null;
+  const available = recorded.reduce((t, [, w]) => t + w, 0);
+  const earned = recorded.reduce((t, [v, w]) => t + (v === true ? w : 0), 0);
 
-  if (input.staffSafeguardingTrained) score += 15;
-  if (input.designatedSafeguardingLead) score += 15;
-  if (input.localaSafeguardingContactKnown) score += 10;
-  if (input.childKnowsHowToComplain) score += 15;
-  if (input.regularSafeguardingAudits) score += 10;
-  if (input.antibullyingPolicyShared) score += 10;
-  if (input.restraintPolicyShared) score += 10;
-  if (input.independentReturnInterviews) score += 15;
-
-  return Math.min(100, score);
+  return Math.round((earned / available) * 100);
 }
 
 // ── Concerns ────────────────────────────────────────────────────────────────
@@ -460,22 +483,44 @@ function identifyConcerns(
     });
   }
 
-  // No risk assessment
-  if (!input.riskAssessmentCurrent) {
+  // Risk assessment. A breach is asserted only where the assessment was
+  // recorded as out of date; where nothing was recorded, the gap is the finding.
+  if (input.riskAssessmentCurrent === false) {
     concerns.push({
       severity: "significant",
       category: "assessment",
       description: "Risk assessment not current — update required",
     });
+  } else if (input.riskAssessmentCurrent === null) {
+    concerns.push({
+      severity: "moderate",
+      category: "assessment",
+      description: "Risk assessment status not recorded — currency cannot be confirmed",
+    });
   }
 
   // No safeguarding plan when referrals active
-  const activeReferrals = input.safeguardingReferrals.filter(r => r.outcome === "ongoing" || r.outcome === "escalated");
-  if (activeReferrals.length > 0 && !input.safeguardingPlanInPlace) {
+  const activeReferrals = input.safeguardingReferrals.filter(r => r.outcome === "ongoing" || r.outcome === "escalated" || r.outcome === "unknown");
+  if (activeReferrals.length > 0 && input.safeguardingPlanInPlace === false) {
     concerns.push({
       severity: "critical",
       category: "planning",
       description: "Active safeguarding referral without safeguarding plan",
+    });
+  } else if (activeReferrals.length > 0 && input.safeguardingPlanInPlace === null) {
+    concerns.push({
+      severity: "significant",
+      category: "planning",
+      description: "Active safeguarding referral, and whether a safeguarding plan exists is not recorded",
+    });
+  }
+
+  const referralsAwaitingOutcome = input.safeguardingReferrals.filter(r => r.outcome === "unknown").length;
+  if (referralsAwaitingOutcome > 0) {
+    concerns.push({
+      severity: "significant",
+      category: "referrals",
+      description: `${referralsAwaitingOutcome} safeguarding referral(s) with no recorded outcome — treated as still open`,
     });
   }
 
@@ -538,46 +583,61 @@ function assessRegulatory(
   const flags: RegulatoryFlag[] = [];
 
   // CHR 2015 Reg 12 — Protection of children
-  const reg12Met = input.riskAssessmentCurrent &&
-    input.safeguardingPlanInPlace &&
-    input.staffSafeguardingTrained &&
-    (highestRisk === "none" || highestRisk === "low" || input.safeguardingPlanInPlace);
+  // Protection is never auto-met. If any input is unrecorded the standard is
+  // reported as un-evidenced — neither satisfied nor breached.
+  const reg12Inputs = [
+    input.riskAssessmentCurrent,
+    input.safeguardingPlanInPlace,
+    input.staffSafeguardingTrained,
+  ];
+  const reg12Unrecorded = reg12Inputs.some(v => v === null);
+  const reg12Met = reg12Inputs.every(v => v === true) &&
+    (highestRisk === "none" || highestRisk === "low" || input.safeguardingPlanInPlace === true);
   flags.push({
     regulation: "CHR 2015 Reg 12",
     area: "Child Protection",
     status: reg12Met ? "met"
-      : (input.riskAssessmentCurrent || input.safeguardingPlanInPlace) ? "partially_met"
+      : reg12Unrecorded ? "not_evidenced"
+      : (input.riskAssessmentCurrent === true || input.safeguardingPlanInPlace === true) ? "partially_met"
       : "not_met",
     detail: reg12Met
       ? "Child protection measures in place and current"
+      : reg12Unrecorded
+      ? "Cannot be evidenced — risk assessment, safeguarding plan or staff training is not recorded"
       : "Protection measures need strengthening",
   });
 
   // CHR 2015 Reg 35 — Restraint
   const hasRestraint = input.restraintIncidents.length > 0;
-  const reg35Met = !hasRestraint || (restraintDebriefRate >= 1 && input.restraintPolicyShared);
+  const reg35Met = !hasRestraint || (restraintDebriefRate >= 1 && input.restraintPolicyShared === true);
   flags.push({
     regulation: "CHR 2015 Reg 35",
     area: "Restraint",
     status: reg35Met ? "met"
+      : hasRestraint && input.restraintPolicyShared === null ? "not_evidenced"
       : restraintDebriefRate >= 0.75 ? "partially_met"
       : "not_met",
     detail: reg35Met
       ? hasRestraint ? "All restraints debriefed, policy shared" : "No restraint used"
+      : input.restraintPolicyShared === null
+      ? "Restraint used, but whether the restraint policy was shared is not recorded"
       : "Restraint practice needs improvement — debrief or policy gaps",
   });
 
   // Missing from care — DfE statutory guidance
   const hasMissing = input.missingEpisodes.length > 0;
-  const missingCompliant = !hasMissing || (returnInterviewRate >= 1 && input.independentReturnInterviews);
+  const missingCompliant = !hasMissing || (returnInterviewRate >= 1 && input.independentReturnInterviews === true);
   flags.push({
     regulation: "DfE Missing from Care",
     area: "Return Interviews",
     status: missingCompliant ? "met"
+      : hasMissing && input.independentReturnInterviews === null ? "not_evidenced"
       : returnInterviewRate >= 0.5 ? "partially_met"
       : "not_met",
     detail: missingCompliant
       ? hasMissing ? "Return interviews completed independently" : "No missing episodes"
+      : input.independentReturnInterviews === null
+      ? "Whether return interviews are conducted independently is not recorded"
       : "Return interview compliance below standard",
   });
 
@@ -585,15 +645,18 @@ function assessRegulatory(
   const sccifSafe = input.missingEpisodes.length <= 2 &&
     input.restraintIncidents.length <= 2 &&
     (highestRisk === "none" || highestRisk === "low") &&
-    input.staffSafeguardingTrained;
+    input.staffSafeguardingTrained === true;
   flags.push({
     regulation: "SCCIF",
     area: "Children Are Safe",
     status: sccifSafe ? "met"
+      : input.staffSafeguardingTrained === null ? "not_evidenced"
       : input.staffSafeguardingTrained ? "partially_met"
       : "not_met",
     detail: sccifSafe
       ? "Safety outcomes positive across indicators"
+      : input.staffSafeguardingTrained === null
+      ? "Cannot be evidenced — staff safeguarding training is not recorded"
       : "Safety domain needs improvement",
   });
 
@@ -670,20 +733,36 @@ function buildRecommendations(
   }
 
   // Compliance gaps
-  if (!input.riskAssessmentCurrent) {
+  if (input.riskAssessmentCurrent === false) {
     recs.push("Update risk assessment — currently out of date");
   }
-  if (!input.staffSafeguardingTrained) {
+  if (input.staffSafeguardingTrained === false) {
     recs.push("Ensure all staff complete safeguarding training");
   }
-  if (!input.designatedSafeguardingLead) {
+  if (input.designatedSafeguardingLead === false) {
     recs.push("Appoint and register designated safeguarding lead");
   }
-  if (!input.childKnowsHowToComplain) {
+  if (input.childKnowsHowToComplain === false) {
     recs.push("Ensure child knows how to make a complaint or raise a concern");
   }
-  if (!input.regularSafeguardingAudits) {
+  if (input.regularSafeguardingAudits === false) {
     recs.push("Implement regular safeguarding audits");
+  }
+
+  // Unrecorded provisions are named as recording gaps rather than silently
+  // credited or reported as breaches.
+  const unrecorded = ([
+    [input.riskAssessmentCurrent, "risk assessment currency"],
+    [input.safeguardingPlanInPlace, "safeguarding plan"],
+    [input.staffSafeguardingTrained, "staff safeguarding training"],
+    [input.designatedSafeguardingLead, "designated safeguarding lead"],
+    [input.childKnowsHowToComplain, "whether the child knows how to complain"],
+    [input.regularSafeguardingAudits, "safeguarding audits"],
+  ] as Array<[boolean | null, string]>)
+    .filter(([v]) => v === null)
+    .map(([, label]) => label);
+  if (unrecorded.length > 0) {
+    recs.push(`Record ${unrecorded.join(", ")} — currently unrecorded, so compliance cannot be evidenced`);
   }
 
   return recs;

@@ -134,8 +134,8 @@ export function ClothingAppearanceProvisionDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Assessments: <span className="font-medium">{child.totalAssessments}</span></div>
-                    <div>Quality: <span className="font-medium">{child.qualityRate}%</span></div>
-                    <div>Child Choice: <span className="font-medium">{child.childChoiceRate}%</span></div>
+                    <div>Quality: <span className="font-medium">{formatRate(child.qualityRate)}</span></div>
+                    <div>Child Choice: <span className="font-medium">{formatRate(child.childChoiceRate)}</span></div>
                   </div>
                 </div>
               ))}

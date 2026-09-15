@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function MedicationIntelligenceWidget() {
       <Section title="Medication Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Administered Correctly" value={`${quality.administeredCorrectlyRate}%`} />
-          <Stat label="Signed by Two Staff" value={`${quality.signedByTwoStaffRate}%`} />
-          <Stat label="Consent on File" value={`${quality.consentOnFileRate}%`} />
-          <Stat label="Error Reported" value={`${quality.errorReportedRate}%`} />
+          <Stat label="Administered Correctly" value={`${formatRate(quality.administeredCorrectlyRate)}`} />
+          <Stat label="Signed by Two Staff" value={`${formatRate(quality.signedByTwoStaffRate)}`} />
+          <Stat label="Consent on File" value={`${formatRate(quality.consentOnFileRate)}`} />
+          <Stat label="Error Reported" value={`${formatRate(quality.errorReportedRate)}`} />
         </div>
       </Section>
 
       <Section title="Medication Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Dual Sign-off" value={`${compliance.signedByTwoStaffRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Dual Sign-off" value={`${formatRate(compliance.signedByTwoStaffRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function MedicationIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Administration" value={`${staff.medicationAdministrationRate}%`} />
-          <Stat label="Controlled Drugs" value={`${staff.controlledDrugHandlingRate}%`} />
-          <Stat label="Error Reporting" value={`${staff.errorReportingRate}%`} />
-          <Stat label="Consent Process" value={`${staff.consentProcessRate}%`} />
-          <Stat label="Storage Checks" value={`${staff.storageChecksRate}%`} />
-          <Stat label="Medication Review" value={`${staff.medicationReviewRate}%`} />
+          <Stat label="Administration" value={`${formatRate(staff.medicationAdministrationRate)}`} />
+          <Stat label="Controlled Drugs" value={`${formatRate(staff.controlledDrugHandlingRate)}`} />
+          <Stat label="Error Reporting" value={`${formatRate(staff.errorReportingRate)}`} />
+          <Stat label="Consent Process" value={`${formatRate(staff.consentProcessRate)}`} />
+          <Stat label="Storage Checks" value={`${formatRate(staff.storageChecksRate)}`} />
+          <Stat label="Medication Review" value={`${formatRate(staff.medicationReviewRate)}`} />
         </div>
       </Section>
 

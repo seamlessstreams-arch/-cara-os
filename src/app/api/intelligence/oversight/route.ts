@@ -10,8 +10,7 @@ import {
 } from "@/lib/intelligence/fallback-store";
 import { todayStr } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = any;
+import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

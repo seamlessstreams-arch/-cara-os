@@ -177,7 +177,6 @@ export function CaraWeeklyDigest({
         </p>
         <div className="space-y-2">
           {digest.topActions.map((action) => {
-            const Icon = action.icon;
             const priority = PRIORITY_CONFIG[action.priority];
             return (
               <div key={action.id} className="flex items-start gap-2.5">

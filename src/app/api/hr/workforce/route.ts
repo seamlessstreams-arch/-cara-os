@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 // ── Live Data ──────────────────────────────────────────────────────────────
 
 async function handleLiveData(
-  sb: any,
+  sb: SB,
   homeId: string | null,
   staffId: string | null,
   view: string,

@@ -11,6 +11,7 @@
 //   Regulatory Framework
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Interfaces ─────────────────────────────────────────────────────────────
@@ -321,24 +322,24 @@ export function AdmissionsMatchingDashboardWidget() {
         <MetricCard
           label="Referrals"
           value={data.referralProcessing.totalReferrals}
-          subValue={`${data.referralProcessing.acceptanceRate}% accepted`}
+          subValue={`${formatRate(data.referralProcessing.acceptanceRate)} accepted`}
           color="text-blue-700 bg-blue-50"
         />
         <MetricCard
           label="Avg Match Score"
           value={`${data.matchingQuality.averageOverallScore}/5`}
-          subValue={`${data.matchingQuality.fullCriteriaAssessedRate}% full criteria`}
+          subValue={`${formatRate(data.matchingQuality.fullCriteriaAssessedRate)} full criteria`}
           color="text-purple-700 bg-purple-50"
         />
         <MetricCard
           label="Child Voice"
-          value={`${data.introductionPlanning.childVoiceRate}%`}
+          value={`${formatRate(data.introductionPlanning.childVoiceRate)}`}
           subValue={`${data.introductionPlanning.totalPlans} plans`}
           color="text-teal-700 bg-teal-50"
         />
         <MetricCard
           label="Care Plans"
-          value={`${data.admissionOutcomes.initialCareplanRate}%`}
+          value={`${formatRate(data.admissionOutcomes.initialCareplanRate)}`}
           subValue={`${data.admissionOutcomes.totalOutcomes} admissions`}
           color="text-green-700 bg-green-50"
         />
@@ -406,12 +407,12 @@ export function AdmissionsMatchingDashboardWidget() {
           <div className="grid grid-cols-2 gap-2">
             <MetricCard
               label="Group Dynamics Rate"
-              value={`${data.matchingQuality.groupDynamicsConsiderationRate}%`}
+              value={`${formatRate(data.matchingQuality.groupDynamicsConsiderationRate)}`}
               color="text-indigo-700 bg-indigo-50"
             />
             <MetricCard
               label="Full Criteria Rate"
-              value={`${data.matchingQuality.fullCriteriaAssessedRate}%`}
+              value={`${formatRate(data.matchingQuality.fullCriteriaAssessedRate)}`}
               color="text-violet-700 bg-violet-50"
             />
           </div>
@@ -436,22 +437,22 @@ export function AdmissionsMatchingDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           <MetricCard
             label="Welcome Pack"
-            value={`${data.introductionPlanning.welcomePackRate}%`}
+            value={`${formatRate(data.introductionPlanning.welcomePackRate)}`}
             color={data.introductionPlanning.welcomePackRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Children Consulted"
-            value={`${data.introductionPlanning.childrenConsultedRate}%`}
+            value={`${formatRate(data.introductionPlanning.childrenConsultedRate)}`}
             color={data.introductionPlanning.childrenConsultedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Child Voice"
-            value={`${data.introductionPlanning.childVoiceRate}%`}
+            value={`${formatRate(data.introductionPlanning.childVoiceRate)}`}
             color={data.introductionPlanning.childVoiceRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Phase Completion"
-            value={`${data.introductionPlanning.phaseCompletionRate}%`}
+            value={`${formatRate(data.introductionPlanning.phaseCompletionRate)}`}
             color={data.introductionPlanning.phaseCompletionRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
@@ -462,7 +463,7 @@ export function AdmissionsMatchingDashboardWidget() {
           />
           <MetricCard
             label="Key Worker Assigned"
-            value={`${data.introductionPlanning.keyWorkerAssignedRate}%`}
+            value={`${formatRate(data.introductionPlanning.keyWorkerAssignedRate)}`}
             color={data.introductionPlanning.keyWorkerAssignedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
         </div>
@@ -473,22 +474,22 @@ export function AdmissionsMatchingDashboardWidget() {
         <div className="grid grid-cols-2 gap-2">
           <MetricCard
             label="Settling-in Review"
-            value={`${data.admissionOutcomes.settlingInReviewRate}%`}
+            value={`${formatRate(data.admissionOutcomes.settlingInReviewRate)}`}
             color={data.admissionOutcomes.settlingInReviewRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
           />
           <MetricCard
             label="Initial Care Plan"
-            value={`${data.admissionOutcomes.initialCareplanRate}%`}
+            value={`${formatRate(data.admissionOutcomes.initialCareplanRate)}`}
             color={data.admissionOutcomes.initialCareplanRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
           />
           <MetricCard
             label="Placement Plan Signed"
-            value={`${data.admissionOutcomes.placementPlanSignedRate}%`}
+            value={`${formatRate(data.admissionOutcomes.placementPlanSignedRate)}`}
             color={data.admissionOutcomes.placementPlanSignedRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
           />
           <MetricCard
             label="Children Feedback"
-            value={`${data.admissionOutcomes.existingChildrenFeedbackRate}%`}
+            value={`${formatRate(data.admissionOutcomes.existingChildrenFeedbackRate)}`}
             color={data.admissionOutcomes.existingChildrenFeedbackRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
         </div>

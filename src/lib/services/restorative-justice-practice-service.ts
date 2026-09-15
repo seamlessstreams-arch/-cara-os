@@ -68,18 +68,18 @@ export interface RestorativeJusticePracticeRecord {
   child_name: string;
   child_id: string | null;
   facilitated_by: string;
-  child_voice_heard: boolean;
-  victim_supported: boolean;
-  voluntary_participation: boolean;
-  agreement_reached: boolean;
-  follow_up_planned: boolean;
-  empathy_demonstrated: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  staff_trained: boolean;
-  safeguarding_considered: boolean;
-  recorded_promptly: boolean;
+  child_voice_heard: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  victim_supported: boolean | null;
+  voluntary_participation: boolean | null;
+  agreement_reached: boolean | null;
+  follow_up_planned: boolean | null;
+  empathy_demonstrated: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  staff_trained: boolean | null;
+  safeguarding_considered: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -160,10 +160,16 @@ export function computeRestorativeJusticeMetrics(
   const coerced = records.filter((r) => r.participation_willingness === "coerced").length;
   const worsened = records.filter((r) => r.relationship_impact === "worsened" || r.relationship_impact === "significantly_worsened").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof RestorativeJusticePracticeRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -233,45 +239,45 @@ export function identifyRestorativeJusticeAlerts(
   }
 
   // No child voice heard
-  const noVoice = records.filter((r) => !r.child_voice_heard).length;
+  const noVoice = records.filter((r) => r.child_voice_heard !== true).length;
   if (noVoice >= 1) {
     alerts.push({
       type: "child_voice_not_heard",
       severity: "high",
-      message: `${noVoice} ${noVoice === 1 ? "session has" : "sessions have"} child voice not heard — fundamental to restorative practice`,
+      message: `${noVoice} ${noVoice === 1 ? "session has" : "sessions have"} no child voice evidenced — fundamental to restorative practice`,
       id: "child_voice_not_heard",
     });
   }
 
   // Victim not supported
-  const noVictim = records.filter((r) => !r.victim_supported).length;
+  const noVictim = records.filter((r) => r.victim_supported !== true).length;
   if (noVictim >= 1) {
     alerts.push({
       type: "victim_not_supported",
       severity: "high",
-      message: `${noVictim} ${noVictim === 1 ? "session has" : "sessions have"} victim not supported — ensure victim-centred approach`,
+      message: `${noVictim} ${noVictim === 1 ? "session has" : "sessions have"} no victim support evidenced — ensure victim-centred approach`,
       id: "victim_not_supported",
     });
   }
 
   // Staff not trained
-  const noTrained = records.filter((r) => !r.staff_trained).length;
+  const noTrained = records.filter((r) => r.staff_trained !== true).length;
   if (noTrained >= 2) {
     alerts.push({
       type: "staff_not_trained",
       severity: "medium",
-      message: `${noTrained} sessions facilitated by untrained staff — arrange restorative practice training`,
+      message: `${noTrained} sessions with no evidenced facilitator training — arrange restorative practice training`,
       id: "staff_not_trained",
     });
   }
 
   // No follow-up planned
-  const noFollowUp = records.filter((r) => !r.follow_up_planned).length;
+  const noFollowUp = records.filter((r) => r.follow_up_planned !== true).length;
   if (noFollowUp >= 2) {
     alerts.push({
       type: "no_follow_up",
       severity: "medium",
-      message: `${noFollowUp} sessions without follow-up planned — monitor relationship progress`,
+      message: `${noFollowUp} sessions without an evidenced follow-up plan — monitor relationship progress`,
       id: "no_follow_up",
     });
   }
@@ -345,18 +351,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitated_by: payload.facilitatedBy,
-      child_voice_heard: payload.childVoiceHeard ?? true,
-      victim_supported: payload.victimSupported ?? true,
-      voluntary_participation: payload.voluntaryParticipation ?? true,
-      agreement_reached: payload.agreementReached ?? true,
-      follow_up_planned: payload.followUpPlanned ?? true,
-      empathy_demonstrated: payload.empathyDemonstrated ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      staff_trained: payload.staffTrained ?? true,
-      safeguarding_considered: payload.safeguardingConsidered ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_voice_heard: payload.childVoiceHeard ?? null,
+      victim_supported: payload.victimSupported ?? null,
+      voluntary_participation: payload.voluntaryParticipation ?? null,
+      agreement_reached: payload.agreementReached ?? null,
+      follow_up_planned: payload.followUpPlanned ?? null,
+      empathy_demonstrated: payload.empathyDemonstrated ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      staff_trained: payload.staffTrained ?? null,
+      safeguarding_considered: payload.safeguardingConsidered ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

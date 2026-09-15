@@ -8,29 +8,32 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HomeEnvironmentInspectionRecord>): HomeEnvironmentInspectionRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    inspection_area: overrides?.inspection_area ?? "kitchen",
-    condition_rating: overrides?.condition_rating ?? "good",
-    hazard_level: overrides?.hazard_level ?? "none",
-    compliance_status: overrides?.compliance_status ?? "fully_compliant",
-    inspection_date: overrides?.inspection_date ?? todayStr(),
-    inspected_by: overrides?.inspected_by ?? "Staff A",
-    cleanliness_acceptable: overrides?.cleanliness_acceptable ?? true,
-    fire_safety_checked: overrides?.fire_safety_checked ?? true,
-    electrical_safety_checked: overrides?.electrical_safety_checked ?? true,
-    water_safety_checked: overrides?.water_safety_checked ?? true,
-    ventilation_adequate: overrides?.ventilation_adequate ?? true,
-    lighting_adequate: overrides?.lighting_adequate ?? true,
-    maintenance_up_to_date: overrides?.maintenance_up_to_date ?? true,
-    child_friendly: overrides?.child_friendly ?? true,
-    accessibility_adequate: overrides?.accessibility_adequate ?? true,
-    security_adequate: overrides?.security_adequate ?? true,
-    pest_free: overrides?.pest_free ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    id: "a-1", home_id: "home-1",
+    inspection_area: "kitchen",
+    condition_rating: "good",
+    hazard_level: "none",
+    compliance_status: "fully_compliant",
+    inspection_date: todayStr(),
+    inspected_by: "Staff A",
+    cleanliness_acceptable: true,
+    fire_safety_checked: true,
+    electrical_safety_checked: true,
+    water_safety_checked: true,
+    ventilation_adequate: true,
+    lighting_adequate: true,
+    maintenance_up_to_date: true,
+    child_friendly: true,
+    accessibility_adequate: true,
+    security_adequate: true,
+    pest_free: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -122,5 +125,17 @@ describe("home-environment-inspection-service", () => {
       expect(types).toContain("cleanliness_issues");
       expect(types).toContain("security_inadequate");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded fire_safety_checked as a failure", () => {
+    const alerts = _testing.identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: null })]);
+    expect(alerts.some((a) => /fire/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: false })]);
+    expect(alerts.some((a) => /fire/i.test(a.message))).toBe(true);
   });
 });

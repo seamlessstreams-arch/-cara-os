@@ -6,6 +6,7 @@
  */
 
 import { createServerClient } from "./server";
+import type { Json } from "./types";
 
 interface AuditEntry {
   home_id: string;
@@ -21,14 +22,16 @@ export async function writeAuditLog(entry: AuditEntry): Promise<void> {
   if (!supabase) return; // no-op in in-memory mode
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("audit_log") as any).insert({
+    await supabase.from("audit_log").insert({
       home_id: entry.home_id,
       entity_type: entry.entity_type,
       entity_id: entry.entity_id,
       action: entry.action,
-      changes: entry.changes ?? null,
+      changes: (entry.changes ?? null) as Json, // JSON-serialised at the wire; boundary cast only
       performed_by: entry.performed_by ?? null,
+      // Not captured at this server-side seam
+      ip_address: null,
+      user_agent: null,
     });
   } catch {
     // Audit log failures must never break primary operations

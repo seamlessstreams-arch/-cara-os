@@ -55,6 +55,15 @@ const BARE_DATE_PAGES = [
   "src/components/forms/quick-daily-log.tsx",
 ];
 
+// A rota is planned AHEAD — `shift_date` there is a future date by design, and
+// the same field name means the opposite on the agency-feedback form, where it
+// records a shift already worked (that input carries max={todayStr()}). The
+// field stays in PAST_EVENT so every other route is still bound; the one route
+// that legitimately schedules is named here, with its reason.
+const FUTURE_BY_DESIGN = {
+  "src/app/api/v1/rota/route.ts": ["shiftDate", "shift_date"],
+};
+
 const PAST_EVENT = [
   "incidentDate", "incident_date",
   "eventDate", "event_date",
@@ -112,7 +121,17 @@ for (const file of walk("src/app/api", (n) => n === "route.ts")) {
   if (!/export\s+async\s+function\s+POST/.test(text)) continue;
   if (text.includes("rejectFutureDates")) continue;
   const rel = file.split(path.sep).join("/");
-  const taken = PAST_EVENT.filter((f) => new RegExp(`\\bbody\\.${f}\\b`).test(text));
+  // `body.field` is only one way in. A route that destructures the parsed body
+  // — `const { referralDate } = body` — reaches the same field, and two routes
+  // took a past-event date that way with nothing bounding it.
+  const destructured = [...text.matchAll(/\{([^{}]*)\}\s*=\s*(?:body|__jb0\.data|[\w$]+\.data)\b/g)]
+    .flatMap((m) => m[1].split(",").map((x) => x.split(":")[0].trim()));
+  const allowed = FUTURE_BY_DESIGN[rel] ?? [];
+  const taken = PAST_EVENT.filter(
+    (f) =>
+      !allowed.includes(f) &&
+      (new RegExp(`\\bbody\\.${f}\\b`).test(text) || destructured.includes(f)),
+  );
   if (taken.length === 0) continue;
   violations.push(
     `${rel}  POST accepts ${taken.join(", ")} without rejectFutureDates(body, [...])`

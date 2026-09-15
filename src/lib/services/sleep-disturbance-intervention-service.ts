@@ -85,7 +85,7 @@ export interface SleepDisturbanceInterventionRow {
   sleep_plan_in_place: boolean;
   clinical_referral_made: boolean;
   trauma_link_identified: boolean;
-  parent_carer_informed: boolean;
+  parent_carer_informed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   pattern_identified: boolean;
   environment_adapted: boolean;
   staff_debriefed: boolean;
@@ -123,10 +123,14 @@ export function computeSleepDisturbanceMetrics(
   const traumaLinkedCount = rows.filter((r) => r.trauma_link_identified).length;
   const ongoingCount = rows.filter((r) => r.outcome_status === "ongoing").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof SleepDisturbanceInterventionRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -365,7 +369,7 @@ export async function createSleepDisturbanceIntervention(input: {
       sleep_plan_in_place: input.sleepPlanInPlace ?? false,
       clinical_referral_made: input.clinicalReferralMade ?? false,
       trauma_link_identified: input.traumaLinkIdentified ?? false,
-      parent_carer_informed: input.parentCarerInformed ?? true,
+      parent_carer_informed: input.parentCarerInformed ?? null,
       pattern_identified: input.patternIdentified ?? false,
       environment_adapted: input.environmentAdapted ?? false,
       staff_debriefed: input.staffDebriefed ?? false,

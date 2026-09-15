@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type {
   ChildKeyworkProfile,
@@ -217,7 +218,7 @@ export default function KeyworkingQualityIntelligencePage() {
               <p className="text-gray-500 text-xs">Avg mood Δ</p>
             </div>
             <div className="text-center">
-              <p className="font-bold text-xl text-gray-900">{summary.childVoiceRate}%</p>
+              <p className="font-bold text-xl text-gray-900">{formatRate(summary.childVoiceRate)}</p>
               <p className="text-gray-500 text-xs">Child voice</p>
             </div>
             {summary.overdueFollowUpCount > 0 && (

@@ -112,15 +112,15 @@ export function LACReviewDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Reviews Held</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.timeliness.timelinessRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.timeliness.timelinessRate)}</div>
           <div className="text-xs text-gray-500 mt-1">On Time</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.participation.meaningfulParticipationRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.participation.meaningfulParticipationRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Participation</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.recommendations.completionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.recommendations.completionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Recs Completed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -157,7 +157,7 @@ export function LACReviewDashboardWidget() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                   <div>Reviews: <span className="font-medium">{child.reviewsOnTime}/{child.totalReviews} on time</span></div>
-                  <div>Views Captured: <span className="font-medium">{child.childViewsCapturedRate}%</span></div>
+                  <div>Views Captured: <span className="font-medium">{formatRate(child.childViewsCapturedRate)}</span></div>
                   <div>Recs: <span className="font-medium">{child.completedRecommendations}/{child.totalRecommendations} done</span></div>
                   <div>Next Due: <span className="font-medium">{child.nextReviewDue || "—"}</span></div>
                 </div>
@@ -175,7 +175,7 @@ export function LACReviewDashboardWidget() {
             <div><span className="text-gray-500">Initial On Time:</span> <span className="font-medium">{data.timeliness.initialReviewTimeliness}%</span></div>
             <div><span className="text-gray-500">Subsequent On Time:</span> <span className="font-medium">{data.timeliness.subsequentReviewTimeliness}%</span></div>
             <div><span className="text-gray-500">Emergency Reviews:</span> <span className="font-medium">{data.timeliness.emergencyReviewsHeld}</span></div>
-            <div><span className="text-gray-500">Minutes On Time:</span> <span className="font-medium">{data.timeliness.minutesDistributedOnTimeRate}%</span></div>
+            <div><span className="text-gray-500">Minutes On Time:</span> <span className="font-medium">{formatRate(data.timeliness.minutesDistributedOnTimeRate)}</span></div>
           </div>
         </Section>
 
@@ -187,8 +187,8 @@ export function LACReviewDashboardWidget() {
             <div><span className="text-gray-500">Via Worker:</span> <span className="font-medium">{data.participation.viewsConveyedByWorker}</span></div>
             <div><span className="text-gray-500">Refused:</span> <span className={`font-medium ${data.participation.refused > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.participation.refused}</span></div>
             <div><span className="text-gray-500">Not Invited:</span> <span className={`font-medium ${data.participation.notInvited > 0 ? "text-red-600" : "text-gray-900"}`}>{data.participation.notInvited}</span></div>
-            <div><span className="text-gray-500">Views Captured:</span> <span className="font-medium">{data.participation.childViewsCapturedRate}%</span></div>
-            <div><span className="text-gray-500">Carer Attended:</span> <span className="font-medium">{data.participation.carerAttendedRate}%</span></div>
+            <div><span className="text-gray-500">Views Captured:</span> <span className="font-medium">{formatRate(data.participation.childViewsCapturedRate)}</span></div>
+            <div><span className="text-gray-500">Carer Attended:</span> <span className="font-medium">{formatRate(data.participation.carerAttendedRate)}</span></div>
           </div>
         </Section>
 
@@ -199,8 +199,8 @@ export function LACReviewDashboardWidget() {
             <div><span className="text-gray-500">In Progress:</span> <span className="font-medium text-blue-600">{data.recommendations.inProgress}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.recommendations.overdue > 0 ? "text-red-600" : "text-gray-900"}`}>{data.recommendations.overdue}</span></div>
             <div><span className="text-gray-500">Not Started:</span> <span className="font-medium">{data.recommendations.notStarted}</span></div>
-            <div><span className="text-gray-500">Completion Rate:</span> <span className="font-medium">{data.recommendations.completionRate}%</span></div>
-            <div><span className="text-gray-500">Urgent Done:</span> <span className="font-medium">{data.recommendations.urgentCompletionRate}%</span></div>
+            <div><span className="text-gray-500">Completion Rate:</span> <span className="font-medium">{formatRate(data.recommendations.completionRate)}</span></div>
+            <div><span className="text-gray-500">Urgent Done:</span> <span className="font-medium">{formatRate(data.recommendations.urgentCompletionRate)}</span></div>
             <div><span className="text-gray-500">Avg Completion:</span> <span className="font-medium">{data.recommendations.averageCompletionDays} days</span></div>
           </div>
         </Section>
@@ -212,9 +212,9 @@ export function LACReviewDashboardWidget() {
             <div><span className="text-gray-500">Monitoring:</span> <span className="font-medium">{data.iroEffectiveness.monitoringVisits}</span></div>
             <div><span className="text-gray-500">Consultations:</span> <span className="font-medium">{data.iroEffectiveness.consultations}</span></div>
             <div><span className="text-gray-500">Escalations:</span> <span className="font-medium">{data.iroEffectiveness.escalations}</span></div>
-            <div><span className="text-gray-500">Child Spoken To:</span> <span className="font-medium">{data.iroEffectiveness.childSpokenToRate}%</span></div>
+            <div><span className="text-gray-500">Child Spoken To:</span> <span className="font-medium">{formatRate(data.iroEffectiveness.childSpokenToRate)}</span></div>
             <div><span className="text-gray-500">Issues Found:</span> <span className="font-medium">{data.iroEffectiveness.issuesIdentifiedCount}</span></div>
-            <div><span className="text-gray-500">Independence:</span> <span className="font-medium">{data.iroEffectiveness.iroIndependenceRate}%</span></div>
+            <div><span className="text-gray-500">Independence:</span> <span className="font-medium">{formatRate(data.iroEffectiveness.iroIndependenceRate)}</span></div>
           </div>
         </Section>
 

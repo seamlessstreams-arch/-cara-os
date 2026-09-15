@@ -27,7 +27,7 @@ let _seqId = 0;
 function makeAchievement(overrides: Partial<Achievement> = {}): Achievement {
   _seqId += 1;
   return {
-    id: overrides.id ?? `ach-${_seqId}-${crypto.randomUUID()}`,
+    id: `ach-${_seqId}-${crypto.randomUUID()}`,
     home_id: "home-1",
     child_name: "Child A",
     child_id: "child-a-id",

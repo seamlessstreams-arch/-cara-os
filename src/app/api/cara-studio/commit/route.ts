@@ -12,7 +12,6 @@ import { commitRequestSchema } from "@/lib/cara-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
-import type { SB } from "@/lib/supabase/loose-client";
 
 // Roles permitted to commit content to records
 const COMMIT_ROLES = [
@@ -62,7 +61,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { data: generation, error: fetchError } = await (sb.from("cara_studio_generations") as SB)
+    const { data: generation, error: fetchError } = await sb.from("cara_studio_generations")
       .select("id, status, generation_type, output_json, approved_by")
       .eq("id", generationId)
       .single();
@@ -85,7 +84,7 @@ export async function POST(req: NextRequest) {
     // ── Create commit link ──────────────────────────────────────────────────
     const now = new Date().toISOString();
 
-    const { data: commitLink, error: linkError } = await (sb.from("cara_studio_commit_links") as SB)
+    const { data: commitLink, error: linkError } = await sb.from("cara_studio_commit_links")
       .insert({
         organisation_id: process.env.SUPABASE_ORG_ID ?? "org_default",
         home_id: homeId,
@@ -107,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Update generation status to committed ───────────────────────────────
-    await (sb.from("cara_studio_generations") as SB)
+    await sb.from("cara_studio_generations")
       .update({
         status: "committed",
         committed_by: userId,

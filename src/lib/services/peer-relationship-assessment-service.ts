@@ -67,18 +67,18 @@ export interface PeerRelationshipAssessmentRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_views_sought: boolean;
-  positive_interactions_observed: boolean;
-  bullying_screened: boolean;
-  social_skills_supported: boolean;
-  group_activities_encouraged: boolean;
-  conflict_resolution_taught: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  positive_interactions_observed: boolean | null;
+  bullying_screened: boolean | null;
+  social_skills_supported: boolean | null;
+  group_activities_encouraged: boolean | null;
+  conflict_resolution_taught: boolean | null;
   peer_mentoring_available: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
   parent_informed: boolean;
-  school_liaison: boolean;
-  recorded_promptly: boolean;
+  school_liaison: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computePeerRelationshipMetrics(
   const noFriendships = records.filter((r) => r.friendship_stability === "no_friendships").length;
   const aggressiveConflict = records.filter((r) => r.conflict_style === "aggressive").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof PeerRelationshipAssessmentRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -223,11 +229,13 @@ export function identifyPeerRelationshipAlerts(
 
   // Concerning quality with no bullying screening
   for (const r of records) {
-    if (r.relationship_quality === "concerning" && !r.bullying_screened) {
+    if (r.relationship_quality === "concerning" && r.bullying_screened !== true) {
       alerts.push({
         type: "concerning_no_bullying_screen",
         severity: "critical",
-        message: `${r.child_name} has concerning peer relationships without bullying screening — investigate immediately`,
+        message: r.bullying_screened === false
+          ? `${r.child_name} has concerning peer relationships without bullying screening — investigate immediately`
+          : `${r.child_name} has concerning peer relationships with no bullying screening recorded — screen and evidence it immediately`,
         id: r.id,
       });
     }
@@ -245,34 +253,34 @@ export function identifyPeerRelationshipAlerts(
   }
 
   // Social skills not supported
-  const noSkills = records.filter((r) => !r.social_skills_supported).length;
+  const noSkills = records.filter((r) => r.social_skills_supported !== true).length;
   if (noSkills >= 1) {
     alerts.push({
       type: "social_skills_not_supported",
       severity: "high",
-      message: `${noSkills} ${noSkills === 1 ? "assessment has" : "assessments have"} social skills not supported — review developmental plans`,
+      message: `${noSkills} ${noSkills === 1 ? "assessment has" : "assessments have"} no social-skills support evidenced — review developmental plans`,
       id: "social_skills_not_supported",
     });
   }
 
   // Conflict resolution not taught
-  const noConflict = records.filter((r) => !r.conflict_resolution_taught).length;
+  const noConflict = records.filter((r) => r.conflict_resolution_taught !== true).length;
   if (noConflict >= 2) {
     alerts.push({
       type: "conflict_resolution_not_taught",
       severity: "medium",
-      message: `${noConflict} assessments without conflict resolution teaching — strengthen social skills programme`,
+      message: `${noConflict} assessments without evidenced conflict-resolution teaching — strengthen social skills programme`,
       id: "conflict_resolution_not_taught",
     });
   }
 
   // Group activities not encouraged
-  const noGroup = records.filter((r) => !r.group_activities_encouraged).length;
+  const noGroup = records.filter((r) => r.group_activities_encouraged !== true).length;
   if (noGroup >= 2) {
     alerts.push({
       type: "group_activities_not_encouraged",
       severity: "medium",
-      message: `${noGroup} assessments without group activities encouraged — review activity planning`,
+      message: `${noGroup} assessments without evidenced group-activity encouragement — review activity planning`,
       id: "group_activities_not_encouraged",
     });
   }
@@ -354,18 +362,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      positive_interactions_observed: payload.positiveInteractionsObserved ?? true,
-      bullying_screened: payload.bullyingScreened ?? true,
-      social_skills_supported: payload.socialSkillsSupported ?? true,
-      group_activities_encouraged: payload.groupActivitiesEncouraged ?? true,
-      conflict_resolution_taught: payload.conflictResolutionTaught ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      positive_interactions_observed: payload.positiveInteractionsObserved ?? null,
+      bullying_screened: payload.bullyingScreened ?? null,
+      social_skills_supported: payload.socialSkillsSupported ?? null,
+      group_activities_encouraged: payload.groupActivitiesEncouraged ?? null,
+      conflict_resolution_taught: payload.conflictResolutionTaught ?? null,
       peer_mentoring_available: payload.peerMentoringAvailable ?? false,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
       parent_informed: payload.parentInformed ?? false,
-      school_liaison: payload.schoolLiaison ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      school_liaison: payload.schoolLiaison ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

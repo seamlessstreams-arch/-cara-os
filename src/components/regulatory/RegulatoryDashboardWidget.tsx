@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 interface RegulatoryData {
@@ -196,12 +197,12 @@ export function RegulatoryDashboardWidget({ homeId = "home-oak" }: Props) {
       <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between mb-1.5">
           <p className="text-xs font-medium">Statutory Notifications</p>
-          <span className="text-xs font-bold">{notifications.complianceRate}%</span>
+          <span className="text-xs font-bold">{formatRate(notifications.complianceRate)}</span>
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full ${notifications.complianceRate >= 95 ? "bg-emerald-500" : notifications.complianceRate >= 75 ? "bg-amber-500" : "bg-red-500"}`}
-            style={{ width: `${notifications.complianceRate}%` }}
+            style={{ width: `${formatRate(notifications.complianceRate)}` }}
           />
         </div>
         <div className="flex justify-between mt-1">

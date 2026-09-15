@@ -8,37 +8,40 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffPerformanceDipRecord>): StaffPerformanceDipRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    dip_category: overrides?.dip_category ?? "recording_quality",
-    dip_severity: overrides?.dip_severity ?? "possible_dip",
-    dip_status: overrides?.dip_status ?? "resolved",
-    frequency_pattern: overrides?.frequency_pattern ?? "one_off",
-    session_date: overrides?.session_date ?? todayStr(),
-    staff_name: overrides?.staff_name ?? "Staff A",
+    id: "a-1", home_id: "home-1",
+    dip_category: "recording_quality",
+    dip_severity: "possible_dip",
+    dip_status: "resolved",
+    frequency_pattern: "one_off",
+    session_date: todayStr(),
+    staff_name: "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    identified_by: overrides?.identified_by ?? "Manager A",
-    description: overrides?.description ?? "Test",
-    evidence_summary: overrides?.evidence_summary ?? "Test",
+    identified_by: "Manager A",
+    description: "Test",
+    evidence_summary: "Test",
     possible_triggers: "possible_triggers" in (overrides ?? {}) ? (overrides!.possible_triggers ?? null) : null,
     support_offered_detail: "support_offered_detail" in (overrides ?? {}) ? (overrides!.support_offered_detail ?? null) : null,
     manager_response: "manager_response" in (overrides ?? {}) ? (overrides!.manager_response ?? null) : null,
     staff_response: "staff_response" in (overrides ?? {}) ? (overrides!.staff_response ?? null) : null,
-    evidence_documented: overrides?.evidence_documented ?? true,
-    manager_aware: overrides?.manager_aware ?? true,
-    staff_informed: overrides?.staff_informed ?? true,
-    support_offered: overrides?.support_offered ?? true,
-    triggers_explored: overrides?.triggers_explored ?? true,
-    supervision_discussed: overrides?.supervision_discussed ?? true,
-    training_considered: overrides?.training_considered ?? true,
-    wellbeing_assessed: overrides?.wellbeing_assessed ?? true,
-    action_plan_created: overrides?.action_plan_created ?? true,
-    staff_responded: overrides?.staff_responded ?? true,
-    follow_up_scheduled: overrides?.follow_up_scheduled ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    evidence_documented: true,
+    manager_aware: true,
+    staff_informed: true,
+    support_offered: true,
+    triggers_explored: true,
+    supervision_discussed: true,
+    training_considered: true,
+    wellbeing_assessed: true,
+    action_plan_created: true,
+    staff_responded: true,
+    follow_up_scheduled: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -133,5 +136,16 @@ describe("staff-performance-dip-service", () => {
       expect(types).toContain("triggers_not_explored");
       expect(types).toContain("no_wellbeing_check");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("does not dilute evidence-documented with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `p-${i}`, evidence_documented: v }));
+    expect(computePerformanceDipMetrics(rows).evidence_documented_rate).toBe(100);
+  });
+  it("does not treat unrecorded manager awareness as unaware", () => {
+    const rows = [true, null].map((v, i) => makeRecord({ id: `p-${i}`, manager_aware: v }));
+    expect(computePerformanceDipMetrics(rows).manager_aware_rate).toBe(100);
   });
 });

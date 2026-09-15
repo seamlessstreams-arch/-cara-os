@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   ).length;
   const approved = all.filter((f) => f.status === "approved").length;
   const overdue = all.filter(
-    (f) => f.due_date && f.due_date < today && f.status !== "approved" && f.status !== "completed"
+    (f) => f.due_date && f.due_date < today && f.status !== "approved"
   ).length;
   const urgent = all.filter(
     (f) => f.priority === "urgent" || f.priority === "high"

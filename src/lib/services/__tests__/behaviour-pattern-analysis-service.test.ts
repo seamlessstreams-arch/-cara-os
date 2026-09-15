@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<BehaviourPatternAnalysisRecord>): BehaviourPatternAnalysisRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    behaviour_category: overrides?.behaviour_category ?? "other",
-    trigger_type: overrides?.trigger_type ?? "peer_conflict",
-    intervention_outcome: overrides?.intervention_outcome ?? "de_escalated",
-    behaviour_severity: overrides?.behaviour_severity ?? "low",
-    incident_date: overrides?.incident_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    behaviour_category: "other",
+    trigger_type: "peer_conflict",
+    intervention_outcome: "de_escalated",
+    behaviour_severity: "low",
+    incident_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    staff_involved: overrides?.staff_involved ?? "Staff A",
-    trigger_identified: overrides?.trigger_identified ?? true,
-    de_escalation_attempted: overrides?.de_escalation_attempted ?? true,
-    child_views_sought: overrides?.child_views_sought ?? true,
-    debrief_completed: overrides?.debrief_completed ?? true,
-    pattern_identified: overrides?.pattern_identified ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    risk_assessment_updated: overrides?.risk_assessment_updated ?? true,
-    positive_strategies_used: overrides?.positive_strategies_used ?? true,
-    therapeutic_input_considered: overrides?.therapeutic_input_considered ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    staff_involved: "Staff A",
+    trigger_identified: true,
+    de_escalation_attempted: true,
+    child_views_sought: true,
+    debrief_completed: true,
+    pattern_identified: true,
+    care_plan_updated: true,
+    risk_assessment_updated: true,
+    positive_strategies_used: true,
+    therapeutic_input_considered: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,29 @@ describe("behaviour-pattern-analysis-service", () => {
       expect(types).toContain("pattern_not_identified");
       expect(types).toContain("risk_not_updated");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the restraint critical between recorded no-de-escalation and unrecorded", () => {
+    const nullAlert = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: null }),
+    ]).find((a) => a.type === "restraint_no_deescalation");
+    const falseAlert = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false }),
+    ]).find((a) => a.type === "restraint_no_deescalation");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no restraint critical when de-escalation is recorded as attempted", () => {
+    const alerts = identifyBehaviourPatternAlerts([
+      makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "restraint_no_deescalation")).toBe(false);
+  });
+  it("does not dilute the debrief rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, debrief_completed: v }));
+    expect(computeBehaviourPatternMetrics(rows).debrief_rate).toBe(100);
   });
 });

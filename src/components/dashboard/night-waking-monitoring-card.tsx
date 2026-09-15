@@ -6,6 +6,7 @@
 // CHR 2015 Reg 12/24/25. SCCIF: Overall Experiences — Night care.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -105,7 +106,7 @@ export function NightWakingMonitoringCard() {
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (sec.overall_compliance_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (sec.overall_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{sec.overall_compliance_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (sec.overall_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(sec.overall_compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
         </div>

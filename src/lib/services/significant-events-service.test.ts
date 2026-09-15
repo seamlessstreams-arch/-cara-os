@@ -9,7 +9,7 @@ function makeEvent(
   overrides: Partial<SignificantEvent> = {},
 ): SignificantEvent {
   return {
-    id: overrides.id ?? "ev-1",
+    id: "ev-1",
     home_id: "home-1",
     child_name: "Child A",
     child_id: "child-1",

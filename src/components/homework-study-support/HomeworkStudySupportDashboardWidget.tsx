@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -374,8 +375,8 @@ export default function HomeworkStudySupportDashboardWidget() {
                       <span className="font-medium text-sm">{profile.childName}</span>
                       <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                         <span>{profile.totalSessions} sessions</span>
-                        <span>{profile.engagementRate}% engagement</span>
-                        <span>{profile.progressRate}% progress</span>
+                        <span>{formatRate(profile.engagementRate)} engagement</span>
+                        <span>{formatRate(profile.progressRate)} progress</span>
                       </div>
                     </div>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded shrink-0 ${scoreColor}`}>

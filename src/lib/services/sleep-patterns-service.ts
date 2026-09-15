@@ -71,9 +71,9 @@ export interface NightCheck {
     outcome: CheckOutcome;
     notes: string;
   }[];
-  environment_ok: boolean;
-  security_checked: boolean;
-  temperature_ok: boolean;
+  environment_ok: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  security_checked: boolean | null;
+  temperature_ok: boolean | null;
   notes: string | null;
   created_at: string;
 }
@@ -425,9 +425,9 @@ export async function createCheck(
       check_time: input.checkTime,
       checked_by: input.checkedBy,
       child_checks: input.childChecks ?? [],
-      environment_ok: input.environmentOk ?? true,
-      security_checked: input.securityChecked ?? true,
-      temperature_ok: input.temperatureOk ?? true,
+      environment_ok: input.environmentOk ?? null,
+      security_checked: input.securityChecked ?? null,
+      temperature_ok: input.temperatureOk ?? null,
       notes: input.notes ?? null,
     })
     .select()

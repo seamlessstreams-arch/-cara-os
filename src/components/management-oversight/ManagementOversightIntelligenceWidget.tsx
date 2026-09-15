@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,22 +78,22 @@ export function ManagementOversightIntelligenceWidget() {
       <Section title="Oversight Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Thorough" value={`${quality.thoroughRate}%`} />
-          <Stat label="Action Plans" value={`${quality.actionPlanRate}%`} />
-          <Stat label="Follow-Up" value={`${quality.followUpRate}%`} />
-          <Stat label="Child Impact" value={`${quality.childImpactRate}%`} />
-          <Stat label="Staff Feedback" value={`${quality.staffFeedbackRate}%`} />
-          <Stat label="Documentation" value={`${quality.documentationRate}%`} />
+          <Stat label="Thorough" value={`${formatRateLoose(quality.thoroughRate)}`} />
+          <Stat label="Action Plans" value={`${formatRateLoose(quality.actionPlanRate)}`} />
+          <Stat label="Follow-Up" value={`${formatRateLoose(quality.followUpRate)}`} />
+          <Stat label="Child Impact" value={`${formatRateLoose(quality.childImpactRate)}`} />
+          <Stat label="Staff Feedback" value={`${formatRateLoose(quality.staffFeedbackRate)}`} />
+          <Stat label="Documentation" value={`${formatRateLoose(quality.documentationRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Frequency" value={`${compliance.frequencyRate}%`} />
-          <Stat label="Coverage" value={`${compliance.coverageRate}%`} />
-          <Stat label="Timeliness" value={`${compliance.timelinessRate}%`} />
-          <Stat label="Category Diversity" value={`${compliance.categoryDiversityRate}%`} />
+          <Stat label="Frequency" value={`${formatRateLoose(compliance.frequencyRate)}`} />
+          <Stat label="Coverage" value={`${formatRateLoose(compliance.coverageRate)}`} />
+          <Stat label="Timeliness" value={`${formatRateLoose(compliance.timelinessRate)}`} />
+          <Stat label="Category Diversity" value={`${formatRateLoose(compliance.categoryDiversityRate)}`} />
         </div>
       </Section>
 
@@ -118,12 +119,12 @@ export function ManagementOversightIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Audit Skills" value={`${staff.auditSkillsRate}%`} />
-          <Stat label="QA Knowledge" value={`${staff.qualityAssuranceRate}%`} />
-          <Stat label="Regulatory Awareness" value={`${staff.regulatoryAwarenessRate}%`} />
-          <Stat label="Leadership" value={`${staff.leadershipRate}%`} />
-          <Stat label="Data Analysis" value={`${staff.dataAnalysisRate}%`} />
-          <Stat label="Reflective Practice" value={`${staff.reflectivePracticeRate}%`} />
+          <Stat label="Audit Skills" value={`${formatRateLoose(staff.auditSkillsRate)}`} />
+          <Stat label="QA Knowledge" value={`${formatRateLoose(staff.qualityAssuranceRate)}`} />
+          <Stat label="Regulatory Awareness" value={`${formatRateLoose(staff.regulatoryAwarenessRate)}`} />
+          <Stat label="Leadership" value={`${formatRateLoose(staff.leadershipRate)}`} />
+          <Stat label="Data Analysis" value={`${formatRateLoose(staff.dataAnalysisRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRateLoose(staff.reflectivePracticeRate)}`} />
         </div>
       </Section>
 

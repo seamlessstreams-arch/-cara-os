@@ -13,6 +13,7 @@
 //   Actions, Regulatory Links
 // ==============================================================================
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // -- Local interfaces (mirrors API shape) ------------------------------------
@@ -247,7 +248,7 @@ export function KeyWorkingEffectivenessDashboardWidget() {
         />
         <MetricCard
           label="Engagement Rate"
-          value={`${data.sessionEffectiveness.childEngagementRate}%`}
+          value={`${formatRate(data.sessionEffectiveness.childEngagementRate)}`}
           alert={data.sessionEffectiveness.childEngagementRate < 70}
         />
         <MetricCard
@@ -262,7 +263,7 @@ export function KeyWorkingEffectivenessDashboardWidget() {
         />
         <MetricCard
           label="Training Compliance"
-          value={`${data.professionalDevelopment.trainingComplianceRate}%`}
+          value={`${formatRate(data.professionalDevelopment.trainingComplianceRate)}`}
           alert={data.professionalDevelopment.trainingComplianceRate < 80}
         />
       </div>
@@ -295,7 +296,7 @@ export function KeyWorkingEffectivenessDashboardWidget() {
                     <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                       <span>KW: {child.keyWorkerName}</span>
                       <span>Sessions: {child.sessionCount}</span>
-                      <span>Engagement: {child.engagementRate}%</span>
+                      <span>Engagement: {formatRate(child.engagementRate)}</span>
                       <span>Care Plan: {CARE_PLAN_LABELS[child.carePlanInput] ?? child.carePlanInput}</span>
                     </div>
                   </div>

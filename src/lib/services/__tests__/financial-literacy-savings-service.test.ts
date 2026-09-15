@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FinancialLiteracySavingsRecord>): FinancialLiteracySavingsRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    topic_area: overrides?.topic_area ?? "budgeting_basics",
-    understanding_level: overrides?.understanding_level ?? "good_understanding",
-    engagement_quality: overrides?.engagement_quality ?? "engaged",
-    saving_progress: overrides?.saving_progress ?? "on_target",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    topic_area: "budgeting_basics",
+    understanding_level: "good_understanding",
+    engagement_quality: "engaged",
+    saving_progress: "on_target",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    supported_by: overrides?.supported_by ?? "Staff A",
-    age_appropriate: overrides?.age_appropriate ?? true,
-    practical_exercise: overrides?.practical_exercise ?? true,
-    real_money_used: overrides?.real_money_used ?? true,
-    savings_account_active: overrides?.savings_account_active ?? true,
-    budget_created: overrides?.budget_created ?? true,
-    targets_set: overrides?.targets_set ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    pathway_plan_updated: overrides?.pathway_plan_updated ?? true,
-    resources_provided: overrides?.resources_provided ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    supported_by: "Staff A",
+    age_appropriate: true,
+    practical_exercise: true,
+    real_money_used: true,
+    savings_account_active: true,
+    budget_created: true,
+    targets_set: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    pathway_plan_updated: true,
+    resources_provided: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,22 @@ describe("financial-literacy-savings-service", () => {
       expect(types).toContain("no_practical_exercise");
       expect(types).toContain("no_budget_created");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded savings account in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: null })]);
+    const alert = alerts.find((a) => a.type === "no_savings_account");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no account gap when the account is recorded as active", () => {
+    const alerts = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: true })]);
+    expect(alerts.some((a) => a.type === "no_savings_account")).toBe(false);
+  });
+  it("does not dilute the savings-account rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, savings_account_active: v }));
+    expect(computeFinancialLiteracyMetrics(rows).savings_account_rate).toBe(100);
   });
 });

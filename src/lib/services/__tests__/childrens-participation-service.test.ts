@@ -37,9 +37,11 @@ const {
 
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d - n)).toISOString().slice(0, 10);
 }
 
 /** Like daysAgo but returns today when going back n days would leave the current
@@ -55,9 +57,11 @@ function daysAgoInQuarter(n: number): string {
 
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
 
 /** ISO datetime string N days ago. */

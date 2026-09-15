@@ -51,7 +51,7 @@ export async function GET() {
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 
-  const activeStaff = staff.filter((s) => s.status !== "inactive");
+  const activeStaff = staff.filter((s) => s.is_active);
   const agencyStaff = activeStaff.filter(
     (s) => s.employment_type === "agency" || s.employment_type === "bank"
   );
@@ -89,6 +89,12 @@ export async function GET() {
         agencyPct !== null && agencyPct > 25
           ? "High agency reliance may affect consistency and relationships with children."
           : undefined,
+    },
+    {
+      label: "Late arrivals (recent shifts)",
+      value: lateArrivals.length,
+      signal: signal(lateArrivals.length === 0, lateArrivals.length <= 2),
+      note: lateArrivals.length > 2 ? "Repeated late starts can leave handovers short-staffed." : undefined,
     },
     {
       label: "Open / uncovered shifts",

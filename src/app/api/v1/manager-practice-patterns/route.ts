@@ -184,7 +184,7 @@ function incidentsToSignals(incidents: Incident[]): PracticeSignal[] {
       type: "incident" as const,
       severity: (inc.severity ?? "low") as string,
       policeCalled: (inc.notifications ?? []).some(
-        (n: any) => (n.role as string)?.toLowerCase().includes("police"),
+        (n) => (n.role as string)?.toLowerCase().includes("police"),
       ),
       staffDebriefed: inc.status === "closed",
       repairRecorded: !!inc.lessons_learned,

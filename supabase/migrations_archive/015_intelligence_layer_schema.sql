@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS incident_learning_reviews (
   impact_on_child                 text,
   staff_debrief_required          boolean NOT NULL DEFAULT false,
   child_keywork_required          boolean NOT NULL DEFAULT false,
-  risk_assessment_review_required boolean NOT NULL DEFAULT false,
+  risk_assessment_review_required boolean,
   placement_plan_review_required  boolean NOT NULL DEFAULT false,
   notification_review_required    boolean NOT NULL DEFAULT false,
   learning_summary                text,

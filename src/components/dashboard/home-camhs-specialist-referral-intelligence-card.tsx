@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
@@ -82,15 +83,15 @@ export function HomeCamhsSpecialistReferralIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Waiting</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.appointment_attendance_rate ?? 0) >= 85 ? "bg-green-50" : (d.appointment_attendance_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.appointment_attendance_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.appointment_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.appointment_attendance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.appointment_attendance_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.appointment_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.appointment_attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attendance</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.emergency_response_rate ?? 0) >= 100 ? "bg-green-50" : (d.emergency_response_rate ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.emergency_response_rate ?? 0) >= 100 ? "text-[--cs-success]" : (d.emergency_response_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emergency_response_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.emergency_response_rate ?? 0) >= 100 ? "text-[--cs-success]" : (d.emergency_response_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.emergency_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Crisis Resp</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.specialist_coverage_rate ?? 0) >= 80 ? "bg-green-50" : (d.specialist_coverage_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.specialist_coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.specialist_coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.specialist_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.specialist_coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.specialist_coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.specialist_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Specialist</p>
             </div>
           </div>

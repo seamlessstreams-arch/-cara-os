@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS cs_animal_nature_therapy (
   therapeutic_goal            text NULL,
   progress_noted              text NULL,
   linked_to_care_plan         boolean NOT NULL DEFAULT false,
-  injury_occurred             boolean NOT NULL DEFAULT false,
+  injury_occurred             boolean,
   injury_details              text NULL,
   notes                       text NULL,
   created_at                  timestamptz NOT NULL DEFAULT now(),

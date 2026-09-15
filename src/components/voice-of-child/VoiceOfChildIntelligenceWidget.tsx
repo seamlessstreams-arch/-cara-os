@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function VoiceOfChildIntelligenceWidget() {
       <Section title="Voice Capture Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Wishes Recorded" value={`${quality.wishesFeelingsRecordedRate}%`} />
-          <Stat label="Direct Consultation" value={`${quality.childDirectlyConsultedRate}%`} />
-          <Stat label="Voice Influenced" value={`${quality.voiceInfluencedOutcomeRate}%`} />
-          <Stat label="Age Appropriate" value={`${quality.ageAppropriateMethodRate}%`} />
+          <Stat label="Wishes Recorded" value={`${formatRate(quality.wishesFeelingsRecordedRate)}`} />
+          <Stat label="Direct Consultation" value={`${formatRate(quality.childDirectlyConsultedRate)}`} />
+          <Stat label="Voice Influenced" value={`${formatRate(quality.voiceInfluencedOutcomeRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(quality.ageAppropriateMethodRate)}`} />
         </div>
       </Section>
 
       <Section title="Voice Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationCompleteRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Wishes Recorded" value={`${compliance.wishesFeelingsRecordedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationCompleteRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Wishes Recorded" value={`${formatRate(compliance.wishesFeelingsRecordedRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function VoiceOfChildIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Wishes Capture" value={`${staff.wishesFeelingsCaptureRate}%`} />
-          <Stat label="Active Listening" value={`${staff.activeListeningSkillsRate}%`} />
-          <Stat label="Age Engagement" value={`${staff.ageAppropriateEngagementRate}%`} />
-          <Stat label="Advocacy Awareness" value={`${staff.advocacyAwarenessRate}%`} />
-          <Stat label="Participation" value={`${staff.participationFacilitationRate}%`} />
-          <Stat label="Non-Verbal" value={`${staff.nonVerbalCommunicationRate}%`} />
+          <Stat label="Wishes Capture" value={`${formatRate(staff.wishesFeelingsCaptureRate)}`} />
+          <Stat label="Active Listening" value={`${formatRate(staff.activeListeningSkillsRate)}`} />
+          <Stat label="Age Engagement" value={`${formatRate(staff.ageAppropriateEngagementRate)}`} />
+          <Stat label="Advocacy Awareness" value={`${formatRate(staff.advocacyAwarenessRate)}`} />
+          <Stat label="Participation" value={`${formatRate(staff.participationFacilitationRate)}`} />
+          <Stat label="Non-Verbal" value={`${formatRate(staff.nonVerbalCommunicationRate)}`} />
         </div>
       </Section>
 

@@ -67,18 +67,18 @@ export interface MedicationEffectivenessReviewRecord {
   child_name: string;
   child_id: string | null;
   reviewed_by: string;
-  child_views_sought: boolean;
-  side_effects_monitored: boolean;
-  prescriber_consulted: boolean;
-  gp_informed: boolean;
-  dosage_appropriate: boolean;
-  consent_current: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  school_aware: boolean;
-  storage_compliant: boolean;
-  administration_correct: boolean;
-  recorded_promptly: boolean;
+  child_views_sought: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  side_effects_monitored: boolean | null;
+  prescriber_consulted: boolean | null;
+  gp_informed: boolean | null;
+  dosage_appropriate: boolean | null;
+  consent_current: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  school_aware: boolean | null;
+  storage_compliant: boolean | null;
+  administration_correct: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeMedicationEffectivenessMetrics(
   const nonAdherent = records.filter((r) => r.adherence_level === "non_adherent").length;
   const overdue = records.filter((r) => r.review_compliance === "significantly_overdue").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof MedicationEffectivenessReviewRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyMedicationEffectivenessAlerts(
   }
 
   // Side effects not monitored
-  const noMonitoring = records.filter((r) => !r.side_effects_monitored).length;
+  const noMonitoring = records.filter((r) => r.side_effects_monitored !== true).length;
   if (noMonitoring >= 1) {
     alerts.push({
       type: "side_effects_not_monitored",
       severity: "high",
-      message: `${noMonitoring} ${noMonitoring === 1 ? "review has" : "reviews have"} side effects not monitored — ensure ongoing vigilance`,
+      message: `${noMonitoring} ${noMonitoring === 1 ? "review has" : "reviews have"} no side-effect monitoring evidenced — ensure ongoing vigilance`,
       id: "side_effects_not_monitored",
     });
   }
 
   // Consent not current
-  const noConsent = records.filter((r) => !r.consent_current).length;
+  const noConsent = records.filter((r) => r.consent_current !== true).length;
   if (noConsent >= 1) {
     alerts.push({
       type: "consent_not_current",
       severity: "high",
-      message: `${noConsent} ${noConsent === 1 ? "review has" : "reviews have"} consent not current — update medication consent`,
+      message: `${noConsent} ${noConsent === 1 ? "review has" : "reviews have"} no current consent evidenced — update medication consent`,
       id: "consent_not_current",
     });
   }
 
   // Storage not compliant
-  const noStorage = records.filter((r) => !r.storage_compliant).length;
+  const noStorage = records.filter((r) => r.storage_compliant !== true).length;
   if (noStorage >= 2) {
     alerts.push({
       type: "storage_not_compliant",
       severity: "medium",
-      message: `${noStorage} reviews with non-compliant medication storage — review storage procedures`,
+      message: `${noStorage} reviews without evidenced compliant medication storage — review storage procedures`,
       id: "storage_not_compliant",
     });
   }
 
   // Administration not correct
-  const noAdmin = records.filter((r) => !r.administration_correct).length;
+  const noAdmin = records.filter((r) => r.administration_correct !== true).length;
   if (noAdmin >= 2) {
     alerts.push({
       type: "administration_issues",
       severity: "medium",
-      message: `${noAdmin} reviews with administration issues — retrain medication administration`,
+      message: `${noAdmin} reviews without evidenced correct administration — retrain medication administration`,
       id: "administration_issues",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       reviewed_by: payload.reviewedBy,
-      child_views_sought: payload.childViewsSought ?? true,
-      side_effects_monitored: payload.sideEffectsMonitored ?? true,
-      prescriber_consulted: payload.prescriberConsulted ?? true,
-      gp_informed: payload.gpInformed ?? true,
-      dosage_appropriate: payload.dosageAppropriate ?? true,
-      consent_current: payload.consentCurrent ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      school_aware: payload.schoolAware ?? true,
-      storage_compliant: payload.storageCompliant ?? true,
-      administration_correct: payload.administrationCorrect ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
+      side_effects_monitored: payload.sideEffectsMonitored ?? null,
+      prescriber_consulted: payload.prescriberConsulted ?? null,
+      gp_informed: payload.gpInformed ?? null,
+      dosage_appropriate: payload.dosageAppropriate ?? null,
+      consent_current: payload.consentCurrent ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      school_aware: payload.schoolAware ?? null,
+      storage_compliant: payload.storageCompliant ?? null,
+      administration_correct: payload.administrationCorrect ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

@@ -116,19 +116,19 @@ export function StaffPerformanceDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.qualificationCompliance.achievedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.qualificationCompliance.achievedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Qualification Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.reviewQuality.completionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.reviewQuality.completionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Review Completion</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.pdpProgress.achievementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.pdpProgress.achievementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">PDP Achievement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.competencyDevelopment.highCompetencyRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.competencyDevelopment.highCompetencyRate)}</div>
           <div className="text-xs text-gray-500 mt-1">High Competency</div>
         </div>
       </div>
@@ -172,30 +172,30 @@ export function StaffPerformanceDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Required:</span> <span className="font-medium">{data.qualificationCompliance.totalRequired}</span></div>
             <div><span className="text-gray-500">Achieved:</span> <span className="font-medium">{data.qualificationCompliance.totalAchieved}</span></div>
-            <div><span className="text-gray-500">Achieved Rate:</span> <span className="font-medium">{data.qualificationCompliance.achievedRate}%</span></div>
+            <div><span className="text-gray-500">Achieved Rate:</span> <span className="font-medium">{formatRate(data.qualificationCompliance.achievedRate)}</span></div>
             <div><span className="text-gray-500">Expired:</span> <span className={`font-medium ${data.qualificationCompliance.expiredCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.qualificationCompliance.expiredCount}</span></div>
-            <div><span className="text-gray-500">Renewal Rate:</span> <span className="font-medium">{typeof data.qualificationCompliance.renewalRate === "number" ? `${data.qualificationCompliance.renewalRate}%` : "—"}</span></div>
-            <div><span className="text-gray-500">Mandatory:</span> <span className="font-medium">{data.qualificationCompliance.mandatoryComplianceRate}%</span></div>
+            <div><span className="text-gray-500">Renewal Rate:</span> <span className="font-medium">{typeof data.qualificationCompliance.renewalRate === "number" ? `${formatRate(data.qualificationCompliance.renewalRate)}` : "—"}</span></div>
+            <div><span className="text-gray-500">Mandatory:</span> <span className="font-medium">{formatRate(data.qualificationCompliance.mandatoryComplianceRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Performance Reviews">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Reviews:</span> <span className="font-medium">{data.reviewQuality.totalReviews}</span></div>
-            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{data.reviewQuality.completionRate}%</span></div>
-            <div><span className="text-gray-500">Objectives Met:</span> <span className="font-medium">{data.reviewQuality.objectivesMetRate}%</span></div>
-            <div><span className="text-gray-500">Staff Views:</span> <span className="font-medium">{data.reviewQuality.staffViewsRate}%</span></div>
-            <div><span className="text-gray-500">Action Plans:</span> <span className="font-medium">{data.reviewQuality.actionPlanRate}%</span></div>
-            <div><span className="text-gray-500">Positive Ratings:</span> <span className="font-medium">{data.reviewQuality.positiveRatingRate}%</span></div>
+            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{formatRate(data.reviewQuality.completionRate)}</span></div>
+            <div><span className="text-gray-500">Objectives Met:</span> <span className="font-medium">{formatRate(data.reviewQuality.objectivesMetRate)}</span></div>
+            <div><span className="text-gray-500">Staff Views:</span> <span className="font-medium">{formatRate(data.reviewQuality.staffViewsRate)}</span></div>
+            <div><span className="text-gray-500">Action Plans:</span> <span className="font-medium">{formatRate(data.reviewQuality.actionPlanRate)}</span></div>
+            <div><span className="text-gray-500">Positive Ratings:</span> <span className="font-medium">{formatRate(data.reviewQuality.positiveRatingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Professional Development">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Goals:</span> <span className="font-medium">{data.pdpProgress.totalGoals}</span></div>
-            <div><span className="text-gray-500">Achievement:</span> <span className="font-medium">{data.pdpProgress.achievementRate}%</span></div>
-            <div><span className="text-gray-500">Linked to Training:</span> <span className="font-medium">{data.pdpProgress.linkedToTrainingRate}%</span></div>
-            <div><span className="text-gray-500">Missed Goals:</span> <span className={`font-medium ${above(data.pdpProgress.missedGoalRate, 10) ? "text-amber-600" : "text-green-600"}`}>{data.pdpProgress.missedGoalRate}%</span></div>
+            <div><span className="text-gray-500">Achievement:</span> <span className="font-medium">{formatRate(data.pdpProgress.achievementRate)}</span></div>
+            <div><span className="text-gray-500">Linked to Training:</span> <span className="font-medium">{formatRate(data.pdpProgress.linkedToTrainingRate)}</span></div>
+            <div><span className="text-gray-500">Missed Goals:</span> <span className={`font-medium ${above(data.pdpProgress.missedGoalRate, 10) ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.pdpProgress.missedGoalRate)}</span></div>
             <div><span className="text-gray-500">Min 2 Goals Each:</span> <span className="font-medium">{data.pdpProgress.staffWithMinGoals ? "Yes" : "No"}</span></div>
           </div>
         </Section>
@@ -203,11 +203,11 @@ export function StaffPerformanceDashboardWidget() {
         <Section title="Competency Development">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Assessments:</span> <span className="font-medium">{data.competencyDevelopment.totalAssessments}</span></div>
-            <div><span className="text-gray-500">5+ Areas Coverage:</span> <span className="font-medium">{data.competencyDevelopment.staffCoverageRate}%</span></div>
+            <div><span className="text-gray-500">5+ Areas Coverage:</span> <span className="font-medium">{formatRate(data.competencyDevelopment.staffCoverageRate)}</span></div>
             <div><span className="text-gray-500">Avg Competency:</span> <span className="font-medium">{data.competencyDevelopment.averageCompetencyScore}</span></div>
-            <div><span className="text-gray-500">Improvement Rate:</span> <span className="font-medium">{data.competencyDevelopment.improvementRate}%</span></div>
+            <div><span className="text-gray-500">Improvement Rate:</span> <span className="font-medium">{formatRate(data.competencyDevelopment.improvementRate)}</span></div>
             <div><span className="text-gray-500">Critical Areas:</span> <span className={`font-medium ${data.competencyDevelopment.criticalAreasCovered ? "text-green-600" : "text-red-600"}`}>{data.competencyDevelopment.criticalAreasCovered ? "Covered" : "Gaps"}</span></div>
-            <div><span className="text-gray-500">High Competency:</span> <span className="font-medium">{data.competencyDevelopment.highCompetencyRate}%</span></div>
+            <div><span className="text-gray-500">High Competency:</span> <span className="font-medium">{formatRate(data.competencyDevelopment.highCompetencyRate)}</span></div>
           </div>
         </Section>
 

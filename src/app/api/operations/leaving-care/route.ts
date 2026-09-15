@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -92,6 +93,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
     }
 
+    // An independence assessment's score IS the assessment — `?? 0` filed an
+    // unscored one as 0/100 readiness, dragging the home's average readiness
+    // down with a number nobody produced. An entitlement's amount is money owed
+    // to a care leaver — `?? 0` recorded the debt as nothing. Explicit zeros
+    // still pass. Checked before the storage check: whether a request is
+    // complete does not depend on whether Supabase happens to be configured.
+    const CLAIM_FIELDS: Record<string, readonly string[]> = {
+      create_assessment: ["overallReadinessScore"],
+      create_entitlement: ["amount"],
+    };
+    const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
+    if (__claims) return __claims;
+
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
     }
@@ -145,7 +159,7 @@ export async function POST(request: NextRequest) {
         assessment_date: body.assessmentDate,
         assessed_by: body.assessedBy,
         skills: body.skills ?? [],
-        overall_readiness_score: body.overallReadinessScore ?? 0,
+        overall_readiness_score: body.overallReadinessScore,
         areas_of_strength: body.areasOfStrength ?? [],
         areas_needing_development: body.areasNeedingDevelopment ?? [],
         recommended_actions: body.recommendedActions ?? [],
@@ -162,7 +176,7 @@ export async function POST(request: NextRequest) {
         child_name: body.childName,
         entitlement_type: body.entitlementType,
         description: body.description ?? "",
-        amount: body.amount ?? 0,
+        amount: body.amount,
         frequency: body.frequency ?? "one_off",
         start_date: body.startDate,
         end_date: body.endDate,

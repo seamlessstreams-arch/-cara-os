@@ -67,18 +67,18 @@ export interface AdvocacyRepresentationRecord {
   child_name: string;
   child_id: string | null;
   facilitated_by: string;
-  child_voice_heard: boolean;
-  child_understood_rights: boolean;
-  independent_access: boolean;
-  confidentiality_maintained: boolean;
-  outcome_communicated: boolean;
-  follow_up_arranged: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  irm_notified: boolean;
-  decision_influenced: boolean;
-  recorded_promptly: boolean;
+  child_voice_heard: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_understood_rights: boolean | null;
+  independent_access: boolean | null;
+  confidentiality_maintained: boolean | null;
+  outcome_communicated: boolean | null;
+  follow_up_arranged: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  irm_notified: boolean | null;
+  decision_influenced: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeAdvocacyRepresentationMetrics(
   const ineffective = records.filter((r) => r.outcome_effectiveness === "ineffective").length;
   const counterproductive = records.filter((r) => r.outcome_effectiveness === "counterproductive").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof AdvocacyRepresentationRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyAdvocacyRepresentationAlerts(
   }
 
   // No independent access
-  const noAccess = records.filter((r) => !r.independent_access).length;
+  const noAccess = records.filter((r) => r.independent_access !== true).length;
   if (noAccess >= 1) {
     alerts.push({
       type: "no_independent_access",
       severity: "high",
-      message: `${noAccess} ${noAccess === 1 ? "session has" : "sessions have"} no independent access to advocacy — fundamental right under Reg 7`,
+      message: `${noAccess} ${noAccess === 1 ? "session has" : "sessions have"} no independent advocacy access evidenced — fundamental right under Reg 7`,
       id: "no_independent_access",
     });
   }
 
   // Child voice not heard
-  const noVoice = records.filter((r) => !r.child_voice_heard).length;
+  const noVoice = records.filter((r) => r.child_voice_heard !== true).length;
   if (noVoice >= 1) {
     alerts.push({
       type: "child_voice_not_heard",
       severity: "high",
-      message: `${noVoice} ${noVoice === 1 ? "session has" : "sessions have"} child voice not heard — advocacy must amplify child views`,
+      message: `${noVoice} ${noVoice === 1 ? "session has" : "sessions have"} no child voice evidenced — advocacy must amplify child views`,
       id: "child_voice_not_heard",
     });
   }
 
   // No confidentiality
-  const noConfidentiality = records.filter((r) => !r.confidentiality_maintained).length;
+  const noConfidentiality = records.filter((r) => r.confidentiality_maintained !== true).length;
   if (noConfidentiality >= 2) {
     alerts.push({
       type: "confidentiality_breach",
       severity: "medium",
-      message: `${noConfidentiality} sessions without confidentiality maintained — advocacy conversations must be private`,
+      message: `${noConfidentiality} sessions without evidenced confidentiality — advocacy conversations must be private`,
       id: "confidentiality_breach",
     });
   }
 
   // Rights not understood
-  const noRights = records.filter((r) => !r.child_understood_rights).length;
+  const noRights = records.filter((r) => r.child_understood_rights !== true).length;
   if (noRights >= 2) {
     alerts.push({
       type: "rights_not_understood",
       severity: "medium",
-      message: `${noRights} sessions where child did not understand their rights — strengthen rights education`,
+      message: `${noRights} sessions with no evidence the child understood their rights — strengthen rights education`,
       id: "rights_not_understood",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitated_by: payload.facilitatedBy,
-      child_voice_heard: payload.childVoiceHeard ?? true,
-      child_understood_rights: payload.childUnderstoodRights ?? true,
-      independent_access: payload.independentAccess ?? true,
-      confidentiality_maintained: payload.confidentialityMaintained ?? true,
-      outcome_communicated: payload.outcomeCommunicated ?? true,
-      follow_up_arranged: payload.followUpArranged ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      irm_notified: payload.irmNotified ?? true,
-      decision_influenced: payload.decisionInfluenced ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_voice_heard: payload.childVoiceHeard ?? null,
+      child_understood_rights: payload.childUnderstoodRights ?? null,
+      independent_access: payload.independentAccess ?? null,
+      confidentiality_maintained: payload.confidentialityMaintained ?? null,
+      outcome_communicated: payload.outcomeCommunicated ?? null,
+      follow_up_arranged: payload.followUpArranged ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      irm_notified: payload.irmNotified ?? null,
+      decision_influenced: payload.decisionInfluenced ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function AllegationsIntelligenceWidget() {
       <Section title="Allegation Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="LADO Referral" value={`${quality.ladoReferralRate}%`} />
-          <Stat label="Ofsted Notified" value={`${quality.ofstedNotifiedRate}%`} />
-          <Stat label="Child Support" value={`${quality.childSupportRate}%`} />
-          <Stat label="Staff Support" value={`${quality.staffSupportRate}%`} />
+          <Stat label="LADO Referral" value={`${formatRate(quality.ladoReferralRate)}`} />
+          <Stat label="Ofsted Notified" value={`${formatRate(quality.ofstedNotifiedRate)}`} />
+          <Stat label="Child Support" value={`${formatRate(quality.childSupportRate)}`} />
+          <Stat label="Staff Support" value={`${formatRate(quality.staffSupportRate)}`} />
         </div>
       </Section>
 
       <Section title="Allegation Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Investigation" value={`${compliance.timelyInvestigationRate}%`} />
-          <Stat label="Child Support" value={`${compliance.childSupportRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Investigation" value={`${formatRate(compliance.timelyInvestigationRate)}`} />
+          <Stat label="Child Support" value={`${formatRate(compliance.childSupportRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function AllegationsIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Safeguarding" value={`${staff.safeguardingKnowledgeRate}%`} />
-          <Stat label="Procedures" value={`${staff.allegationProceduresRate}%`} />
-          <Stat label="LADO Process" value={`${staff.ladoProcessRate}%`} />
-          <Stat label="Investigation" value={`${staff.investigationSkillsRate}%`} />
-          <Stat label="Child Protection" value={`${staff.childProtectionRate}%`} />
-          <Stat label="Record Keeping" value={`${staff.recordKeepingRate}%`} />
+          <Stat label="Safeguarding" value={`${formatRate(staff.safeguardingKnowledgeRate)}`} />
+          <Stat label="Procedures" value={`${formatRate(staff.allegationProceduresRate)}`} />
+          <Stat label="LADO Process" value={`${formatRate(staff.ladoProcessRate)}`} />
+          <Stat label="Investigation" value={`${formatRate(staff.investigationSkillsRate)}`} />
+          <Stat label="Child Protection" value={`${formatRate(staff.childProtectionRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staff.recordKeepingRate)}`} />
         </div>
       </Section>
 

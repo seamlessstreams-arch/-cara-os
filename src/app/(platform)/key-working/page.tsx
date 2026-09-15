@@ -101,13 +101,13 @@ interface SessionView {
   childVoice: string;
   workerObservations: string;
   actionsAgreed: string[];
-  moodBefore: MoodRating;
-  moodAfter: MoodRating;
-  followUp: string;
-  followUpDate: string;
-  followUpCompleted: boolean;
+  moodBefore: MoodRating | null;
+  moodAfter: MoodRating | null;
+  followUp: string | null;
+  followUpDate: string | null;
+  followUpCompleted: boolean | null;
   linkedGoals: string[];
-  confidential: boolean;
+  confidential: boolean | null;
   createdAt: string;
 }
 
@@ -168,8 +168,8 @@ const EXPORT_COLS: ExportColumn<SessionView>[] = [
   { header: "Child Voice",      accessor: (r: SessionView) => r.childVoice },
   { header: "Observations",     accessor: (r: SessionView) => r.workerObservations },
   { header: "Actions",          accessor: (r: SessionView) => r.actionsAgreed.join("; ") },
-  { header: "Mood Before",      accessor: (r: SessionView) => MOOD_LABELS[r.moodBefore] },
-  { header: "Mood After",       accessor: (r: SessionView) => MOOD_LABELS[r.moodAfter] },
+  { header: "Mood Before",      accessor: (r: SessionView) => (r.moodBefore != null ? MOOD_LABELS[r.moodBefore] : "Not recorded") },
+  { header: "Mood After",       accessor: (r: SessionView) => (r.moodAfter != null ? MOOD_LABELS[r.moodAfter] : "Not recorded") },
   { header: "Follow Up",        accessor: (r: SessionView) => r.followUp },
   { header: "Follow Up Date",   accessor: (r: SessionView) => r.followUpDate },
   { header: "Confidential",     accessor: (r: SessionView) => r.confidential ? "Yes" : "No" },
@@ -245,7 +245,11 @@ export default function KeyWorkingPage() {
     const thisWeek = sessions.filter((s) => s.date >= d(-7)).length;
     const avgDuration = total > 0 ? Math.round(sessions.reduce((a, s) => a + s.duration, 0) / total) : null;
     const pendingFollowUp = sessions.filter((s) => s.followUp && !s.followUpCompleted).length;
-    const avgMoodImprovement = total > 0 ? (sessions.reduce((a, s) => a + (s.moodAfter - s.moodBefore), 0) / total).toFixed(1) : "0";
+    // Averaged over sessions WITH a recorded mood — unrecorded sessions say nothing.
+    const moodRecorded = sessions.filter((s) => s.moodBefore != null && s.moodAfter != null);
+    const avgMoodImprovement = moodRecorded.length > 0
+      ? (moodRecorded.reduce((a, s) => a + ((s.moodAfter ?? 0) - (s.moodBefore ?? 0)), 0) / moodRecorded.length).toFixed(1)
+      : "—";
     return { total, thisWeek, avgDuration, pendingFollowUp, avgMoodImprovement };
   }, [sessions]);
 
@@ -254,7 +258,8 @@ export default function KeyWorkingPage() {
     return children.map((c) => {
       const cs = sessions.filter((s) => s.youngPersonId === c.id);
       const lastSession = cs.sort((a, b) => b.date.localeCompare(a.date))[0];
-      const avgMood = cs.length > 0 ? (cs.reduce((a, s) => a + s.moodAfter, 0) / cs.length).toFixed(1) : "—";
+      const csMood = cs.filter((s) => s.moodAfter != null);
+      const avgMood = csMood.length > 0 ? (csMood.reduce((a, s) => a + (s.moodAfter ?? 0), 0) / csMood.length).toFixed(1) : "—";
       return { ...c, total: cs.length, lastDate: lastSession?.date || "—", avgMood };
     });
   }, [children, sessions]);
@@ -453,10 +458,16 @@ export default function KeyWorkingPage() {
                       </div>
                       {/* Mood change */}
                       <div className="flex items-center gap-2 mt-2 text-xs">
-                        <span>Mood: {MOOD_EMOJI[s.moodBefore]} &rarr; {MOOD_EMOJI[s.moodAfter]}</span>
-                        {s.moodAfter > s.moodBefore && <span className="text-green-600 font-medium">&uarr; Improved</span>}
-                        {s.moodAfter < s.moodBefore && <span className="text-red-600 font-medium">&darr; Decreased</span>}
-                        {s.moodAfter === s.moodBefore && <span className="text-gray-500">&rarr; Same</span>}
+                        {s.moodBefore != null && s.moodAfter != null ? (
+                          <>
+                            <span>Mood: {MOOD_EMOJI[s.moodBefore]} &rarr; {MOOD_EMOJI[s.moodAfter]}</span>
+                            {s.moodAfter > s.moodBefore && <span className="text-green-600 font-medium">&uarr; Improved</span>}
+                            {s.moodAfter < s.moodBefore && <span className="text-red-600 font-medium">&darr; Decreased</span>}
+                            {s.moodAfter === s.moodBefore && <span className="text-gray-500">&rarr; Same</span>}
+                          </>
+                        ) : (
+                          <span className="text-gray-500">Mood not recorded</span>
+                        )}
                       </div>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
@@ -508,8 +519,8 @@ export default function KeyWorkingPage() {
                         </div>
                       )}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div><p className="text-xs text-muted-foreground">Mood Before</p><p className="font-medium">{MOOD_EMOJI[s.moodBefore]} {MOOD_LABELS[s.moodBefore]}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Mood After</p><p className="font-medium">{MOOD_EMOJI[s.moodAfter]} {MOOD_LABELS[s.moodAfter]}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Mood Before</p><p className="font-medium">{s.moodBefore != null ? `${MOOD_EMOJI[s.moodBefore]} ${MOOD_LABELS[s.moodBefore]}` : "Not recorded"}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Mood After</p><p className="font-medium">{s.moodAfter != null ? `${MOOD_EMOJI[s.moodAfter]} ${MOOD_LABELS[s.moodAfter]}` : "Not recorded"}</p></div>
                         <div><p className="text-xs text-muted-foreground">Duration</p><p className="font-medium">{s.duration} minutes</p></div>
                         <div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{s.location}</p></div>
                       </div>

@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -173,8 +174,8 @@ function ChildProfileRow({ profile }: { profile: ChildProfile }) {
         </div>
         <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
           <span>Assessments: {profile.totalAssessments}</span>
-          <span>Mitigation: {profile.mitigationRate}%</span>
-          <span>Consulted: {profile.consultedRate}%</span>
+          <span>Mitigation: {formatRate(profile.mitigationRate)}</span>
+          <span>Consulted: {formatRate(profile.consultedRate)}</span>
         </div>
       </div>
       <span className={`text-xs font-medium px-2 py-0.5 rounded shrink-0 ${scoreColor}`}>

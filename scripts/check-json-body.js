@@ -27,7 +27,11 @@ for (const file of walk("src/app/api")) {
   const rel = file.split(path.sep).join("/");
   const lines = fs.readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
-    const m = line.match(/await\s+(req|request)\s*\.json\(\)/);
+    // The matcher keyed on the receiver being named exactly `req` or
+    // `request`. 51 routes take `_req`, and `await _req.json()` slipped
+    // straight past — confirmed by planting one. Deliberately NOT widened to
+    // any identifier: `await res.json()` reads a RESPONSE and is legitimate.
+    const m = line.match(/await\s+_?(req|request)\s*\.json\(\)/);
     if (m && !/\.json\(\)\s*\.catch\(/.test(line)) {
       violations.push(`${rel}:${i + 1}  ${line.trim().slice(0, 90)}`);
     }

@@ -6,6 +6,7 @@
 // Analyses time patterns, categories, and trajectories.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,7 +96,7 @@ export function BehaviourPatternAnalysisCard() {
             <p className="text-[10px] text-muted-foreground">Concerning</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (p.de_escalation_success_rate ?? 0) >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (p.de_escalation_success_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{p.de_escalation_success_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (p.de_escalation_success_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(p.de_escalation_success_rate)}</p>
             <p className="text-[10px] text-muted-foreground">De-escal.</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

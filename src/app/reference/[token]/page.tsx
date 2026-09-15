@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useState, use } from "react";
+import Image from "next/image";
 import { ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import type { ReferenceSubmission } from "@/lib/safer-recruitment/reference-link-service";
 
@@ -92,7 +93,7 @@ export default function PublicReferencePage({ params }: { params: Promise<{ toke
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
       <header className="border-b border-[var(--cs-border)] bg-white px-4 py-3">
         <div className="mx-auto flex max-w-xl items-center gap-2.5">
-          <img src="/icon-192.png" alt="Cara" className="h-8 w-8 rounded-lg" />
+          <Image src="/icon-192.png" alt="Cara" width={32} height={32} className="h-8 w-8 rounded-lg" />
           <div>
             <p className="text-sm font-extrabold text-[var(--cs-navy)]">Safer Recruitment Reference</p>
             <p className="text-[11px] text-[var(--cs-text-muted)]">Secure one-time link · Cara OS</p>

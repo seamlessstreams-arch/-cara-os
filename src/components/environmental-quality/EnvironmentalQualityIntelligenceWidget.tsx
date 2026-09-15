@@ -1,4 +1,5 @@
 "use client";
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <div className="bg-gray-50 rounded p-3 text-center"><p className="text-xs text-gray-500">{label}</p><p className="text-lg font-semibold">{String(value)}</p></div>;
@@ -46,16 +47,16 @@ export function EnvironmentalQualityIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Inspections" value={inspection.inspectionCount as number} />
           <Stat label="Avg Score" value={inspection.averageScore as number} />
-          <Stat label="Photographic" value={`${inspection.photographicRate}%`} />
+          <Stat label="Photographic" value={`${formatRateLoose(inspection.photographicRate)}`} />
           <Stat label="Issues Found" value={inspection.issueCount as number} />
-          <Stat label="Area Coverage" value={`${inspection.areaCoverageRate}%`} />
+          <Stat label="Area Coverage" value={`${formatRateLoose(inspection.areaCoverageRate)}`} />
           <Stat label="Lowest Area" value={`${inspection.lowestScoringArea}: ${inspection.lowestScoringAreaScore}`} />
         </div>
       </Section>
       <Section title="Maintenance Responsiveness">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Requests" value={maintenance.totalRequests} />
-          <Stat label="Completion" value={`${maintenance.completionRate}%`} />
+          <Stat label="Completion" value={`${formatRate(maintenance.completionRate)}`} />
           <Stat label="Overdue" value={maintenance.overdueCount} />
           <Stat label="Avg Days to Resolve" value={maintenance.averageDaysToResolve} />
           <Stat label="Emergency" value={maintenance.emergencyCount} />
@@ -65,19 +66,19 @@ export function EnvironmentalQualityIntelligenceWidget() {
       <Section title="Personalisation">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Children" value={personalisation.totalChildren} />
-          <Stat label="Bedroom Personalised" value={`${personalisation.bedroomPersonalisedRate}%`} />
-          <Stat label="Choice in Decor" value={`${personalisation.choiceInDecorRate}%`} />
-          <Stat label="Personal Items" value={`${personalisation.personalItemsRate}%`} />
-          <Stat label="Cultural Considerations" value={`${personalisation.culturalConsiderationsRate}%`} />
-          <Stat label="Overall" value={`${personalisation.overallPersonalisationRate}%`} />
+          <Stat label="Bedroom Personalised" value={`${formatRate(personalisation.bedroomPersonalisedRate)}`} />
+          <Stat label="Choice in Decor" value={`${formatRate(personalisation.choiceInDecorRate)}`} />
+          <Stat label="Personal Items" value={`${formatRate(personalisation.personalItemsRate)}`} />
+          <Stat label="Cultural Considerations" value={`${formatRate(personalisation.culturalConsiderationsRate)}`} />
+          <Stat label="Overall" value={`${formatRate(personalisation.overallPersonalisationRate)}`} />
         </div>
       </Section>
       <Section title="Child Satisfaction">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Avg Satisfaction" value={satisfaction.averageSatisfaction} />
-          <Stat label="Feels Homely" value={`${satisfaction.feelsHomelyRate}%`} />
-          <Stat label="Feels Private" value={`${satisfaction.feelsPrivateRate}%`} />
-          <Stat label="Feels Safe" value={`${satisfaction.feelsSafeRate}%`} />
+          <Stat label="Feels Homely" value={`${formatRate(satisfaction.feelsHomelyRate)}`} />
+          <Stat label="Feels Private" value={`${formatRate(satisfaction.feelsPrivateRate)}`} />
+          <Stat label="Feels Safe" value={`${formatRate(satisfaction.feelsSafeRate)}`} />
           <Stat label="Children with Views" value={satisfaction.childrenWithViews} />
           <Stat label="Suggestions" value={satisfaction.suggestionCount} />
         </div>

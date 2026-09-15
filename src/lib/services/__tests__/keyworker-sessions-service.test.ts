@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<KeyworkerSessionRecord>): KeyworkerSessionRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    session_focus: overrides?.session_focus ?? "emotional_check_in",
-    session_quality: overrides?.session_quality ?? "good",
-    child_mood: overrides?.child_mood ?? "positive",
-    session_location: overrides?.session_location ?? "in_home",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    session_focus: "emotional_check_in",
+    session_quality: "good",
+    child_mood: "positive",
+    session_location: "in_home",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    keyworker_name: overrides?.keyworker_name ?? "Staff A",
-    child_led: overrides?.child_led ?? true,
-    targets_reviewed: overrides?.targets_reviewed ?? true,
-    wishes_feelings_recorded: overrides?.wishes_feelings_recorded ?? true,
-    advocacy_provided: overrides?.advocacy_provided ?? true,
-    care_plan_discussed: overrides?.care_plan_discussed ?? true,
-    safety_discussed: overrides?.safety_discussed ?? true,
-    achievements_celebrated: overrides?.achievements_celebrated ?? true,
-    worries_explored: overrides?.worries_explored ?? true,
-    next_steps_agreed: overrides?.next_steps_agreed ?? true,
-    session_recorded: overrides?.session_recorded ?? true,
-    child_signed: overrides?.child_signed ?? true,
-    social_worker_updated: overrides?.social_worker_updated ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    session_duration_minutes: overrides?.session_duration_minutes ?? 30,
+    keyworker_name: "Staff A",
+    child_led: true,
+    targets_reviewed: true,
+    wishes_feelings_recorded: true,
+    advocacy_provided: true,
+    care_plan_discussed: true,
+    safety_discussed: true,
+    achievements_celebrated: true,
+    worries_explored: true,
+    next_steps_agreed: true,
+    session_recorded: true,
+    child_signed: true,
+    social_worker_updated: true,
+    issues_found: [], actions_taken: [],
+    session_duration_minutes: 30,
     next_session_date: "next_session_date" in (overrides ?? {}) ? (overrides!.next_session_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -121,5 +124,21 @@ describe("keyworker-sessions-service", () => {
       expect(types).toContain("not_child_led");
       expect(types).toContain("no_next_steps");
     });
+  });
+});
+
+// ── Tri-state: an unanswered recording question is not a missed recording ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded session_recorded as a failure", () => {
+    const alerts = _testing.identifyKeyworkerSessionAlerts([
+      makeRecord({ session_recorded: null }),
+    ]);
+    expect(alerts.some((a) => /not been recorded/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyKeyworkerSessionAlerts([
+      makeRecord({ session_recorded: false }),
+    ]);
+    expect(alerts.some((a) => /not been recorded/i.test(a.message))).toBe(true);
   });
 });

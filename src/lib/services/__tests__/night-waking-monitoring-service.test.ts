@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<NightWakingMonitoringRecord>): NightWakingMonitoringRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    waking_reason: overrides?.waking_reason ?? "nightmare",
-    child_emotional_state: overrides?.child_emotional_state ?? "calm",
-    staff_response: overrides?.staff_response ?? "verbal_reassurance",
-    sleep_return_time: overrides?.sleep_return_time ?? "within_15_minutes",
-    waking_date: overrides?.waking_date ?? todayStr(),
-    waking_time: overrides?.waking_time ?? "02:00",
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    waking_reason: "nightmare",
+    child_emotional_state: "calm",
+    staff_response: "verbal_reassurance",
+    sleep_return_time: "within_15_minutes",
+    waking_date: todayStr(),
+    waking_time: "02:00",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    staff_on_duty: overrides?.staff_on_duty ?? "Staff A",
-    child_comforted: overrides?.child_comforted ?? true,
-    environment_checked: overrides?.environment_checked ?? true,
-    temperature_appropriate: overrides?.temperature_appropriate ?? true,
-    drink_offered: overrides?.drink_offered ?? true,
-    night_light_available: overrides?.night_light_available ?? true,
-    door_preference_respected: overrides?.door_preference_respected ?? true,
-    gp_referral_considered: overrides?.gp_referral_considered ?? true,
-    sleep_plan_followed: overrides?.sleep_plan_followed ?? true,
-    pattern_identified: overrides?.pattern_identified ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    waking_duration_minutes: overrides?.waking_duration_minutes ?? 20,
+    staff_on_duty: "Staff A",
+    child_comforted: true,
+    environment_checked: true,
+    temperature_appropriate: true,
+    drink_offered: true,
+    night_light_available: true,
+    door_preference_respected: true,
+    gp_referral_considered: true,
+    sleep_plan_followed: true,
+    pattern_identified: true,
+    parent_informed: true,
+    social_worker_informed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    waking_duration_minutes: 20,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -131,5 +134,23 @@ describe("night-waking-monitoring-service", () => {
       expect(types).toContain("environment_not_checked");
       expect(types).toContain("pattern_not_identified");
     });
+  });
+});
+
+// ── Tri-state: unrecorded comfort response is not "was not comforted" ──
+describe("tri-state judgements", () => {
+  it("surfaces the gap without asserting neglect", () => {
+    const alerts = _testing.identifyNightWakingAlerts([
+      makeRecord({ child_emotional_state: "distressed", child_comforted: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "distressed_not_comforted");
+    expect(a?.message).toMatch(/no comfort response recorded/i);
+    expect(a?.message).not.toMatch(/was not comforted/i);
+  });
+  it("still asserts a recorded not-comforted", () => {
+    const alerts = _testing.identifyNightWakingAlerts([
+      makeRecord({ child_emotional_state: "distressed", child_comforted: false }),
+    ]);
+    expect(alerts.some((x) => /was not comforted/i.test(x.message))).toBe(true);
   });
 });

@@ -18,7 +18,7 @@ export async function GET() {
   const result = computeWorkforceAbsence({
     today,
     staff: (staffList ?? [])
-      .filter((s) => s.is_active !== false && s.employment_status !== "inactive")
+      .filter((s) => s.is_active !== false)
       .map((s) => ({
         id: String(s.id),
         full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",

@@ -30,68 +30,77 @@ const {
 /** Build a minimal MAR entry for compliance and audit tests. */
 function entry(overrides?: Partial<MAREntry>): MAREntry {
   return {
-    id: overrides?.id ?? "mar-1",
-    prescription_id: overrides?.prescription_id ?? "rx-1",
-    child_id: overrides?.child_id ?? "child-1",
-    home_id: overrides?.home_id ?? "home-1",
-    scheduled_time: overrides?.scheduled_time ?? "2026-04-10T08:00:00Z",
+    id: "mar-1",
+    prescription_id: "rx-1",
+    child_id: "child-1",
+    home_id: "home-1",
+    scheduled_time: "2026-04-10T08:00:00Z",
     administered_at: "administered_at" in (overrides ?? {}) ? overrides!.administered_at : "2026-04-10T08:05:00Z",
-    administered_by: overrides?.administered_by ?? "staff-1",
+    administered_by: "staff-1",
     witnessed_by: "witnessed_by" in (overrides ?? {}) ? overrides!.witnessed_by : null,
-    outcome: overrides?.outcome ?? "given",
-    dosage_given: overrides?.dosage_given ?? "5mg",
+    outcome: "given",
+    dosage_given: "5mg",
     stock_before: "stock_before" in (overrides ?? {}) ? overrides!.stock_before : null,
     stock_after: "stock_after" in (overrides ?? {}) ? overrides!.stock_after : null,
     prn_rationale: "prn_rationale" in (overrides ?? {}) ? overrides!.prn_rationale : null,
     notes: "notes" in (overrides ?? {}) ? overrides!.notes : null,
-    created_at: overrides?.created_at ?? "2026-04-10T08:05:00Z",
+    created_at: "2026-04-10T08:05:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
 /** Build a minimal prescription for audit and alert tests. */
 function prescription(overrides?: Partial<MedicationPrescription>): MedicationPrescription {
   return {
-    id: overrides?.id ?? "rx-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_id: overrides?.child_id ?? "child-1",
-    medication_name: overrides?.medication_name ?? "Methylphenidate",
-    dosage: overrides?.dosage ?? "10mg",
-    frequency: overrides?.frequency ?? "twice_daily",
-    route: overrides?.route ?? "oral",
-    medication_type: overrides?.medication_type ?? "regular",
-    prescriber: overrides?.prescriber ?? "Dr Smith",
-    pharmacy: overrides?.pharmacy ?? "Boots",
-    start_date: overrides?.start_date ?? "2026-01-01",
+    id: "rx-1",
+    home_id: "home-1",
+    child_id: "child-1",
+    medication_name: "Methylphenidate",
+    dosage: "10mg",
+    frequency: "twice_daily",
+    route: "oral",
+    medication_type: "regular",
+    prescriber: "Dr Smith",
+    pharmacy: "Boots",
+    start_date: "2026-01-01",
     end_date: "end_date" in (overrides ?? {}) ? overrides!.end_date : null,
     special_instructions: "special_instructions" in (overrides ?? {}) ? overrides!.special_instructions : null,
-    is_active: overrides?.is_active ?? true,
-    requires_witness: overrides?.requires_witness ?? false,
+    is_active: true,
+    requires_witness: false,
     stock_count: "stock_count" in (overrides ?? {}) ? overrides!.stock_count : null,
     last_stock_check: "last_stock_check" in (overrides ?? {}) ? overrides!.last_stock_check : null,
-    created_at: overrides?.created_at ?? "2026-01-01T00:00:00Z",
-    updated_at: overrides?.updated_at ?? "2026-01-01T00:00:00Z",
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
 /** Build a minimal medication error for error rate and alert tests. */
 function medError(overrides?: Partial<MedicationError>): MedicationError {
   return {
-    id: overrides?.id ?? "err-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_id: overrides?.child_id ?? "child-1",
+    id: "err-1",
+    home_id: "home-1",
+    child_id: "child-1",
     prescription_id: "prescription_id" in (overrides ?? {}) ? overrides!.prescription_id : null,
-    error_category: overrides?.error_category ?? "wrong_dose",
-    severity: overrides?.severity ?? "high",
-    description: overrides?.description ?? "Incorrect dosage administered",
-    action_taken: overrides?.action_taken ?? "Contacted prescriber",
-    reported_by: overrides?.reported_by ?? "staff-1",
-    reported_to_manager: overrides?.reported_to_manager ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? false,
-    parent_notified: overrides?.parent_notified ?? true,
-    prescriber_notified: overrides?.prescriber_notified ?? true,
-    outcome: overrides?.outcome ?? "resolved",
-    date_occurred: overrides?.date_occurred ?? "2026-04-10T08:00:00Z",
-    created_at: overrides?.created_at ?? "2026-04-10T09:00:00Z",
+    error_category: "wrong_dose",
+    severity: "high",
+    description: "Incorrect dosage administered",
+    action_taken: "Contacted prescriber",
+    reported_by: "staff-1",
+    reported_to_manager: true,
+    ofsted_notified: false,
+    parent_notified: true,
+    prescriber_notified: true,
+    outcome: "resolved",
+    date_occurred: "2026-04-10T08:00:00Z",
+    created_at: "2026-04-10T09:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

@@ -1184,3 +1184,23 @@ describe("edge cases", () => {
     expect(insights[2]).toContain("compliance");
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the right-to-work critical between recorded unverified and unrecorded", () => {
+    const nullAlert = computeAlerts([makeRow({ right_to_work_verified: null })])
+      .find((a) => a.type === "right_to_work_not_verified");
+    const falseAlert = computeAlerts([makeRow({ right_to_work_verified: false })])
+      .find((a) => a.type === "right_to_work_not_verified");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when verification is recorded", () => {
+    const alerts = computeAlerts([makeRow({ right_to_work_verified: true })]);
+    expect(alerts.some((a) => a.type === "right_to_work_not_verified")).toBe(false);
+  });
+  it("does not dilute the right-to-work rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRow({ id: `r-${i}`, right_to_work_verified: v }));
+    expect(computeMetrics(rows).right_to_work_rate).toBe(100);
+  });
+});

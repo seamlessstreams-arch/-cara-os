@@ -70,18 +70,18 @@ export interface CommunityLinksIntegrationRecord {
   child_id: string | null;
   activity_name: string;
   provider_name: string;
-  safeguarding_checked: boolean;
-  dbs_verified: boolean;
-  risk_assessed: boolean;
-  consent_obtained: boolean;
-  transport_arranged: boolean;
-  child_chose_activity: boolean;
-  feedback_obtained: boolean;
-  social_worker_informed: boolean;
+  safeguarding_checked: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  dbs_verified: boolean | null;
+  risk_assessed: boolean | null;
+  consent_obtained: boolean | null;
+  transport_arranged: boolean | null;
+  child_chose_activity: boolean | null;
+  feedback_obtained: boolean | null;
+  social_worker_informed: boolean | null;
   care_plan_linked: boolean;
-  cultural_needs_met: boolean;
-  inclusive_access: boolean;
-  review_scheduled: boolean;
+  cultural_needs_met: boolean | null;
+  inclusive_access: boolean | null;
+  review_scheduled: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   recorded_by: string;
@@ -163,10 +163,16 @@ export function computeCommunityLinksMetrics(
   const refused = records.filter((r) => r.engagement_level === "refused").length;
   const waitingList = records.filter((r) => r.link_status === "waiting_list").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof CommunityLinksIntegrationRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -227,56 +233,58 @@ export function identifyCommunityLinksAlerts(
 
   // Active link without safeguarding check
   for (const r of records) {
-    if (r.link_status === "active" && !r.safeguarding_checked) {
+    if (r.link_status === "active" && r.safeguarding_checked !== true) {
       alerts.push({
         type: "active_no_safeguarding",
         severity: "critical",
-        message: `${r.child_name} attending ${r.activity_name} without safeguarding check — suspend until verified`,
+        message: r.safeguarding_checked === false
+          ? `${r.child_name} attending ${r.activity_name} without safeguarding check — suspend until verified`
+          : `${r.child_name} attending ${r.activity_name} with no safeguarding check recorded — complete and evidence the check before the next session`,
         id: r.id,
       });
     }
   }
 
   // No consent obtained
-  const noConsent = records.filter((r) => !r.consent_obtained).length;
+  const noConsent = records.filter((r) => r.consent_obtained !== true).length;
   if (noConsent >= 1) {
     alerts.push({
       type: "no_consent",
       severity: "high",
-      message: `${noConsent} community ${noConsent === 1 ? "link has" : "links have"} no consent obtained — obtain before attendance`,
+      message: `${noConsent} community ${noConsent === 1 ? "link has" : "links have"} no consent evidenced — obtain before attendance`,
       id: "no_consent",
     });
   }
 
   // DBS not verified
-  const noDbs = records.filter((r) => !r.dbs_verified).length;
+  const noDbs = records.filter((r) => r.dbs_verified !== true).length;
   if (noDbs >= 1) {
     alerts.push({
       type: "dbs_not_verified",
       severity: "high",
-      message: `${noDbs} community ${noDbs === 1 ? "link has" : "links have"} DBS not verified — check provider safeguarding`,
+      message: `${noDbs} community ${noDbs === 1 ? "link has" : "links have"} no DBS verification evidenced — check provider safeguarding`,
       id: "dbs_not_verified",
     });
   }
 
   // Child did not choose activity
-  const notChosen = records.filter((r) => !r.child_chose_activity).length;
+  const notChosen = records.filter((r) => r.child_chose_activity !== true).length;
   if (notChosen >= 2) {
     alerts.push({
       type: "not_child_chosen",
       severity: "medium",
-      message: `${notChosen} activities not chosen by child — ensure voice of the child`,
+      message: `${notChosen} activities with no evidenced child choice — ensure voice of the child`,
       id: "not_child_chosen",
     });
   }
 
   // Cultural needs not met
-  const noCultural = records.filter((r) => !r.cultural_needs_met).length;
+  const noCultural = records.filter((r) => r.cultural_needs_met !== true).length;
   if (noCultural >= 2) {
     alerts.push({
       type: "cultural_needs_not_met",
       severity: "medium",
-      message: `${noCultural} links without cultural needs met — review diversity and inclusion`,
+      message: `${noCultural} links without evidenced cultural-needs provision — review diversity and inclusion`,
       id: "cultural_needs_not_met",
     });
   }
@@ -361,18 +369,18 @@ export async function createRecord(
       child_id: payload.childId ?? null,
       activity_name: payload.activityName,
       provider_name: payload.providerName,
-      safeguarding_checked: payload.safeguardingChecked ?? true,
-      dbs_verified: payload.dbsVerified ?? true,
-      risk_assessed: payload.riskAssessed ?? true,
-      consent_obtained: payload.consentObtained ?? true,
-      transport_arranged: payload.transportArranged ?? true,
-      child_chose_activity: payload.childChoseActivity ?? true,
-      feedback_obtained: payload.feedbackObtained ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
+      safeguarding_checked: payload.safeguardingChecked ?? null,
+      dbs_verified: payload.dbsVerified ?? null,
+      risk_assessed: payload.riskAssessed ?? null,
+      consent_obtained: payload.consentObtained ?? null,
+      transport_arranged: payload.transportArranged ?? null,
+      child_chose_activity: payload.childChoseActivity ?? null,
+      feedback_obtained: payload.feedbackObtained ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
       care_plan_linked: payload.carePlanLinked ?? false,
-      cultural_needs_met: payload.culturalNeedsMet ?? true,
-      inclusive_access: payload.inclusiveAccess ?? true,
-      review_scheduled: payload.reviewScheduled ?? true,
+      cultural_needs_met: payload.culturalNeedsMet ?? null,
+      inclusive_access: payload.inclusiveAccess ?? null,
+      review_scheduled: payload.reviewScheduled ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       recorded_by: payload.recordedBy,

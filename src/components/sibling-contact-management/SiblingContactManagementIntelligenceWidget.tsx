@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,22 +78,22 @@ export function SiblingContactManagementIntelligenceWidget() {
       <Section title="Contact Quality" defaultOpen>
         <ScoreBar label="Contact Quality" value={contactQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Positive Outcome" value={`${contactQuality.positiveOutcomeRate}%`} />
-          <Stat label="Child Satisfaction" value={`${contactQuality.childSatisfactionRate}%`} />
-          <Stat label="Recorded" value={`${contactQuality.recordedRate}%`} />
-          <Stat label="Contact Happened" value={`${contactQuality.contactHappenedRate}%`} />
+          <Stat label="Positive Outcome" value={`${formatRate(contactQuality.positiveOutcomeRate)}`} />
+          <Stat label="Child Satisfaction" value={`${formatRate(contactQuality.childSatisfactionRate)}`} />
+          <Stat label="Recorded" value={`${formatRate(contactQuality.recordedRate)}`} />
+          <Stat label="Contact Happened" value={`${formatRateLoose(contactQuality.contactHappenedRate)}`} />
         </div>
       </Section>
 
       <Section title="Planning & Documentation">
         <ScoreBar label="Planning" value={planning.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Relationship Mapped" value={`${planning.relationshipMappedRate}%`} />
-          <Stat label="Contact Plan" value={`${planning.contactPlanRate}%`} />
-          <Stat label="Child Views" value={`${planning.childViewsRate}%`} />
-          <Stat label="Sibling Views" value={`${planning.siblingViewsRate}%`} />
-          <Stat label="Review Scheduled" value={`${planning.reviewScheduledRate}%`} />
-          <Stat label="SW Consulted" value={`${planning.socialWorkerConsultedRate}%`} />
+          <Stat label="Relationship Mapped" value={`${formatRateLoose(planning.relationshipMappedRate)}`} />
+          <Stat label="Contact Plan" value={`${formatRateLoose(planning.contactPlanRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(planning.childViewsRate)}`} />
+          <Stat label="Sibling Views" value={`${formatRateLoose(planning.siblingViewsRate)}`} />
+          <Stat label="Review Scheduled" value={`${formatRate(planning.reviewScheduledRate)}`} />
+          <Stat label="SW Consulted" value={`${formatRateLoose(planning.socialWorkerConsultedRate)}`} />
         </div>
       </Section>
 
@@ -100,21 +101,21 @@ export function SiblingContactManagementIntelligenceWidget() {
         <ScoreBar label="Barriers" value={barriers.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Barriers" value={barriers.totalBarriers} />
-          <Stat label="Resolved" value={`${barriers.resolvedRate}%`} />
-          <Stat label="Action Taken" value={`${barriers.actionTakenRate}%`} />
-          <Stat label="Escalated" value={`${barriers.escalatedRate}%`} />
+          <Stat label="Resolved" value={`${formatRate(barriers.resolvedRate)}`} />
+          <Stat label="Action Taken" value={`${formatRate(barriers.actionTakenRate)}`} />
+          <Stat label="Escalated" value={`${formatRateLoose(barriers.escalatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Sibling Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Sibling Relationships" value={`${staff.siblingRelationshipsRate}%`} />
-          <Stat label="Contact Facilitation" value={`${staff.contactFacilitationRate}%`} />
-          <Stat label="Child Views Advocacy" value={`${staff.childViewsAdvocacyRate}%`} />
-          <Stat label="Safeguarding" value={`${staff.safeguardingRate}%`} />
-          <Stat label="Record Keeping" value={`${staff.recordKeepingRate}%`} />
-          <Stat label="Barrier Resolution" value={`${staff.barrierResolutionRate}%`} />
+          <Stat label="Sibling Relationships" value={`${formatRateLoose(staff.siblingRelationshipsRate)}`} />
+          <Stat label="Contact Facilitation" value={`${formatRateLoose(staff.contactFacilitationRate)}`} />
+          <Stat label="Child Views Advocacy" value={`${formatRateLoose(staff.childViewsAdvocacyRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staff.safeguardingRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staff.recordKeepingRate)}`} />
+          <Stat label="Barrier Resolution" value={`${formatRateLoose(staff.barrierResolutionRate)}`} />
         </div>
       </Section>
 

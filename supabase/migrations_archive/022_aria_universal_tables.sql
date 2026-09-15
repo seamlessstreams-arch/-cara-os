@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS aria_outputs (
                            'draft','edited','submitted_for_approval','approved',
                            'committed','rejected','archived'
                          )),
-  approval_required      boolean NOT NULL DEFAULT true,
+  approval_required      boolean,
   confidence             text NOT NULL DEFAULT 'medium'
                          CHECK (confidence IN ('low','medium','high')),
   redacted_context_summary text,

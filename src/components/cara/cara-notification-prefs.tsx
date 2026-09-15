@@ -126,7 +126,6 @@ interface CaraNotificationPrefsProps {
 }
 
 export function CaraNotificationPrefs({
-  userId,
   className,
 }: CaraNotificationPrefsProps) {
   // Saved preferences are an external store (localStorage): null on the

@@ -124,7 +124,7 @@ export default function NightMonitoringIntelligenceWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>On Time: {cp.checkCompletedOnTimeRate}%</span><span>Observations: {cp.observationsRecordedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>On Time: {formatRate(cp.checkCompletedOnTimeRate)}</span><span>Observations: {formatRate(cp.observationsRecordedRate)}</span></div>
               </div>
             ))}
           </div>

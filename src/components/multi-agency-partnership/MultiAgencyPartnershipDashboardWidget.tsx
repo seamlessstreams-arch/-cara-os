@@ -11,6 +11,7 @@
 // - Regulatory links
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface PartnershipEngagement {
@@ -211,7 +212,7 @@ export function MultiAgencyPartnershipDashboardWidget() {
           colorClass="bg-indigo-50"
         />
         <MetricTile
-          value={`${data.meetingEffectiveness.homeAttendanceRate}%`}
+          value={`${formatRate(data.meetingEffectiveness.homeAttendanceRate)}`}
           label="Home Attendance"
           colorClass="bg-green-50"
         />
@@ -248,17 +249,17 @@ export function MultiAgencyPartnershipDashboardWidget() {
           {/* Detailed Metrics */}
           <div className="grid grid-cols-3 gap-3">
             <MetricTile
-              value={`${data.partnershipEngagement.qualityRate}%`}
+              value={`${formatRate(data.partnershipEngagement.qualityRate)}`}
               label="Quality Rate"
               colorClass="bg-green-50"
             />
             <MetricTile
-              value={`${data.meetingEffectiveness.actionsCompletionRate}%`}
+              value={`${formatRate(data.meetingEffectiveness.actionsCompletionRate)}`}
               label="Actions Completed"
               colorClass="bg-blue-50"
             />
             <MetricTile
-              value={`${data.informationSharing.consentRate}%`}
+              value={`${formatRate(data.informationSharing.consentRate)}`}
               label="Consent Rate"
               colorClass="bg-purple-50"
             />
@@ -278,7 +279,7 @@ export function MultiAgencyPartnershipDashboardWidget() {
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Positive Feedback:</span>{" "}
-                <span className="font-medium">{data.partnershipEngagement.positiveFeedbackRate}%</span>
+                <span className="font-medium">{formatRate(data.partnershipEngagement.positiveFeedbackRate)}</span>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Recent Contact:</span>{" "}
@@ -293,7 +294,7 @@ export function MultiAgencyPartnershipDashboardWidget() {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Agency Attendance:</span>{" "}
-                <span className="font-medium">{data.meetingEffectiveness.attendanceRate}%</span>
+                <span className="font-medium">{formatRate(data.meetingEffectiveness.attendanceRate)}</span>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Minutes Circulated:</span>{" "}
@@ -301,7 +302,7 @@ export function MultiAgencyPartnershipDashboardWidget() {
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Child Participation:</span>{" "}
-                <span className="font-medium">{data.meetingEffectiveness.childParticipationRate}%</span>
+                <span className="font-medium">{formatRate(data.meetingEffectiveness.childParticipationRate)}</span>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-gray-500">Meeting Types:</span>{" "}
@@ -317,7 +318,7 @@ export function MultiAgencyPartnershipDashboardWidget() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-gray-50 rounded p-2">
                   <span className="text-gray-500">Appropriate:</span>{" "}
-                  <span className="font-medium">{data.referralQuality.appropriateRate}%</span>
+                  <span className="font-medium">{formatRate(data.referralQuality.appropriateRate)}</span>
                 </div>
                 <div className="bg-gray-50 rounded p-2">
                   <span className="text-gray-500">Avg Response:</span>{" "}
@@ -325,11 +326,11 @@ export function MultiAgencyPartnershipDashboardWidget() {
                 </div>
                 <div className="bg-gray-50 rounded p-2">
                   <span className="text-gray-500">Follow-Up:</span>{" "}
-                  <span className="font-medium">{data.referralQuality.followUpRate}%</span>
+                  <span className="font-medium">{formatRate(data.referralQuality.followUpRate)}</span>
                 </div>
                 <div className="bg-gray-50 rounded p-2">
                   <span className="text-gray-500">Acceptance:</span>{" "}
-                  <span className="font-medium">{data.referralQuality.acceptanceRate}%</span>
+                  <span className="font-medium">{formatRate(data.referralQuality.acceptanceRate)}</span>
                 </div>
               </div>
             </div>

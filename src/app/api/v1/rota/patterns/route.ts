@@ -50,7 +50,7 @@ function buildPattern(body: Record<string, unknown>, staffList: StaffMember[] | 
 
   if (kind === "weekly") {
     const raw = Array.isArray(body.weekdays) ? body.weekdays : existing?.weekdays ?? [];
-    weekdays = [...new Set(raw.map((n: any) => Math.trunc(Number(n))).filter((n: number) => n >= 0 && n <= 6))].sort((a, b) => (a as number) - (b as number)) as number[];
+    weekdays = [...new Set(raw.map((n) => Math.trunc(Number(n))).filter((n: number) => n >= 0 && n <= 6))].sort((a, b) => (a as number) - (b as number)) as number[];
     if (weekdays.length === 0) return { error: "Pick at least one weekday." };
   } else {
     cycle_on = Math.max(1, Math.trunc(Number(body.cycle_on ?? existing?.cycle_on ?? 2)));

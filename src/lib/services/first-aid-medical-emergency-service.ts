@@ -67,18 +67,18 @@ export interface FirstAidMedicalEmergencyRecord {
   child_name: string;
   child_id: string | null;
   responded_by: string;
-  first_aid_trained: boolean;
-  correct_procedure_followed: boolean;
-  equipment_available: boolean;
-  ambulance_called: boolean;
-  parent_notified: boolean;
-  gp_informed: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  incident_recorded: boolean;
-  ofsted_notified: boolean;
-  debrief_completed: boolean;
-  recorded_promptly: boolean;
+  first_aid_trained: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  correct_procedure_followed: boolean | null;
+  equipment_available: boolean | null;
+  ambulance_called: boolean | null;
+  parent_notified: boolean | null;
+  gp_informed: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  incident_recorded: boolean | null;
+  ofsted_notified: boolean | null;
+  debrief_completed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -157,12 +157,18 @@ export function computeFirstAidMetrics(
   const serious = records.filter((r) => r.severity_level === "serious" || r.severity_level === "life_threatening").length;
   const poorResponse = records.filter((r) => r.response_quality === "poor" || r.response_quality === "failed").length;
   const hospitalised = records.filter((r) => r.outcome_assessment === "hospitalised").length;
-  const untrained = records.filter((r) => !r.first_aid_trained).length;
+  const untrained = records.filter((r) => r.first_aid_trained === false).length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof FirstAidMedicalEmergencyRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyFirstAidAlerts(
   }
 
   // Untrained responder
-  const untrained = records.filter((r) => !r.first_aid_trained).length;
+  const untrained = records.filter((r) => r.first_aid_trained !== true).length;
   if (untrained >= 1) {
     alerts.push({
       type: "untrained_responder",
       severity: "high",
-      message: `${untrained} ${untrained === 1 ? "incident has" : "incidents have"} untrained first aider responding — all staff must be trained`,
+      message: `${untrained} ${untrained === 1 ? "incident has" : "incidents have"} no evidenced first-aid training for the responder — all staff must be trained`,
       id: "untrained_responder",
     });
   }
 
   // No correct procedure
-  const noProcedure = records.filter((r) => !r.correct_procedure_followed).length;
+  const noProcedure = records.filter((r) => r.correct_procedure_followed !== true).length;
   if (noProcedure >= 1) {
     alerts.push({
       type: "incorrect_procedure",
       severity: "high",
-      message: `${noProcedure} ${noProcedure === 1 ? "incident has" : "incidents have"} incorrect procedure followed — review training and protocols`,
+      message: `${noProcedure} ${noProcedure === 1 ? "incident has" : "incidents have"} no evidence the correct procedure was followed — review training and protocols`,
       id: "incorrect_procedure",
     });
   }
 
   // No debrief
-  const noDebrief = records.filter((r) => !r.debrief_completed).length;
+  const noDebrief = records.filter((r) => r.debrief_completed !== true).length;
   if (noDebrief >= 2) {
     alerts.push({
       type: "no_debrief",
       severity: "medium",
-      message: `${noDebrief} incidents without debrief completed — learning from incidents essential`,
+      message: `${noDebrief} incidents without an evidenced debrief — learning from incidents essential`,
       id: "no_debrief",
     });
   }
 
   // Equipment not available
-  const noEquipment = records.filter((r) => !r.equipment_available).length;
+  const noEquipment = records.filter((r) => r.equipment_available !== true).length;
   if (noEquipment >= 2) {
     alerts.push({
       type: "no_equipment",
       severity: "medium",
-      message: `${noEquipment} incidents where equipment not available — ensure first aid supplies maintained`,
+      message: `${noEquipment} incidents without evidenced equipment availability — ensure first aid supplies maintained`,
       id: "no_equipment",
     });
   }
@@ -318,13 +324,13 @@ export async function createRecord(payload: {
       home_id: payload.homeId, incident_type: payload.incidentType, severity_level: payload.severityLevel,
       response_quality: payload.responseQuality, outcome_assessment: payload.outcomeAssessment,
       incident_date: payload.incidentDate, child_name: payload.childName, child_id: payload.childId ?? null,
-      responded_by: payload.respondedBy, first_aid_trained: payload.firstAidTrained ?? true,
-      correct_procedure_followed: payload.correctProcedureFollowed ?? true, equipment_available: payload.equipmentAvailable ?? true,
-      ambulance_called: payload.ambulanceCalled ?? true, parent_notified: payload.parentNotified ?? true,
-      gp_informed: payload.gpInformed ?? true, care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true, incident_recorded: payload.incidentRecorded ?? true,
-      ofsted_notified: payload.ofstedNotified ?? true, debrief_completed: payload.debriefCompleted ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true, issues_found: payload.issuesFound ?? [],
+      responded_by: payload.respondedBy, first_aid_trained: payload.firstAidTrained ?? null,
+      correct_procedure_followed: payload.correctProcedureFollowed ?? null, equipment_available: payload.equipmentAvailable ?? null,
+      ambulance_called: payload.ambulanceCalled ?? null, parent_notified: payload.parentNotified ?? null,
+      gp_informed: payload.gpInformed ?? null, care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null, incident_recorded: payload.incidentRecorded ?? null,
+      ofsted_notified: payload.ofstedNotified ?? null, debrief_completed: payload.debriefCompleted ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null, issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [], next_review_date: payload.nextReviewDate ?? null, notes: payload.notes ?? null,
     }).select().single();
   if (error) return { ok: false, error: error.message };

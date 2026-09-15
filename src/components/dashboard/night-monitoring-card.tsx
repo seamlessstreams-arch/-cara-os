@@ -7,6 +7,7 @@
 // Powered by the Night Monitoring Engine — live data (Reg 12/25/34).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -104,13 +105,13 @@ export function NightMonitoringCard() {
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.all_children_checked_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
             <p className={cn("text-lg font-bold tabular-nums", o.all_children_checked_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.all_children_checked_rate}%
+              {formatRate(o.all_children_checked_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Complete</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.building_secure_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
             <p className={cn("text-lg font-bold tabular-nums", o.building_secure_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.building_secure_rate}%
+              {formatRate(o.building_secure_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Secure</p>
           </div>
@@ -140,7 +141,7 @@ export function NightMonitoringCard() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold tabular-nums">{child.asleep_rate}%</span>
+                    <span className="font-bold tabular-nums">{formatRate(child.asleep_rate)}</span>
                     <span className="text-muted-foreground text-[10px]">asleep</span>
                   </div>
                 </div>
@@ -184,7 +185,7 @@ export function NightMonitoringCard() {
             </Badge>
           ) : (
             <Badge className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning]">
-              {intel.security.overall_compliance_rate}% compliance
+              {formatRate(intel.security.overall_compliance_rate)} compliance
             </Badge>
           )}
         </div>

@@ -6,6 +6,7 @@
 // marked `imported`, so they slot into the live per-child chronology by date.
 // Deterministic parse always; the saved entries auto-merge with live sources.
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 import { parseChronologyText, type ParsedChronologyEntry } from "@/lib/chronology/chronology-import";
@@ -16,15 +17,6 @@ export const dynamic = "force-dynamic";
 
 const HOME_ID = "home_oak";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 async function importChronology(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: childId } = await params;

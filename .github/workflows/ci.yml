@@ -98,9 +98,22 @@ jobs:
   guards:
     name: Repo guards
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+
+      # Two guards below (rating ladders, contradictory conditions) parse the app
+      # with the TypeScript compiler, so this job needs node_modules. Without the
+      # install they died on `Cannot find module '../node_modules/typescript6'`,
+      # which failed the whole required job — and every PR with it.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Rebrand guard (no legacy brand terms)
         run: node scripts/check-rebrand.js
@@ -125,6 +138,9 @@ jobs:
 
       - name: DAL-persistence guard (every typed table is backed by a migration)
         run: node scripts/check-dal-persistence.js
+
+      - name: Storage-migration ratchet (a queried table must have a migration)
+        run: node scripts/check-storage-migrations.js
 
       - name: API-contract guard (hook endpoints exist, with matching method + shape)
         run: node scripts/check-api-contracts.js
@@ -162,8 +178,14 @@ jobs:
       - name: Seed-decay guard (seed dates float; fixed dates are declared real-world facts)
         run: node scripts/check-seed-decay.js
 
+      - name: Migration-defaults guard (a column default must not answer a judgement)
+        run: node scripts/check-migration-defaults.js
+
       - name: Label-association guard (a visible field label is tied to its control)
         run: node scripts/check-label-association.js
+
+      - name: Defaulted-judgement guard (an unrecorded judgement must not read as a yes)
+        run: node scripts/check-defaulted-judgements.js
 
       - name: Retrospective-date guard (a record of a past event cannot be future-dated)
         run: node scripts/check-retrospective-dates.js
@@ -171,8 +193,14 @@ jobs:
       - name: Wired-create-dialog guard (a create form submits what the user typed)
         run: node scripts/check-wired-create-dialogs.js
 
+      - name: Rating-ladder guard (no unreachable rating band)
+        run: node scripts/check-rating-ladders.js
+
       - name: Dead-button guard (an actionable-looking button does something)
         run: node scripts/check-dead-buttons.js
+
+      - name: Contradictory-condition guard (no condition that can never hold)
+        run: node scripts/check-contradictory-conditions.js
 
       - name: Random-record guard (Math.random may make an id, never a record)
         run: node scripts/check-random-record-content.js

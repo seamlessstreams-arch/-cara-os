@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { AttachmentRelationshipsIntelligence } from "@/lib/attachment-relationships";
 
@@ -196,7 +197,7 @@ export function AttachmentRelationshipsDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.interactionQuality.totalInteractions}</span></div>
             <div><span className="text-gray-500">Avg Quality:</span> <span className="font-medium">{data.interactionQuality.averageQuality}/10</span></div>
-            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{data.interactionQuality.childInitiatedRate}%</span></div>
+            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{formatRate(data.interactionQuality.childInitiatedRate)}</span></div>
             <div><span className="text-gray-500">Per Child/Week:</span> <span className="font-medium">{fmt(data.interactionQuality.interactionsPerChildPerWeek)}</span></div>
             <div><span className="text-gray-500">Attachment Relevant:</span> <span className="font-medium">{data.interactionQuality.attachmentRelevantRate}%</span></div>
             <div><span className="text-gray-500">Regulation Support:</span> <span className="font-medium">{data.interactionQuality.regulationSupportRate}%</span></div>
@@ -224,7 +225,7 @@ export function AttachmentRelationshipsDashboardWidget() {
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.peerRelationships.totalPeerRelationships}</span></div>
             <div><span className="text-gray-500">Avg Positive:</span> <span className="font-medium text-green-600">{data.peerRelationships.averagePositiveInteractions}</span></div>
             <div><span className="text-gray-500">Avg Negative:</span> <span className={`font-medium ${data.peerRelationships.averageNegativeInteractions > 5 ? "text-red-600" : "text-gray-900"}`}>{data.peerRelationships.averageNegativeInteractions}</span></div>
-            <div><span className="text-gray-500">Conflict Resolution:</span> <span className="font-medium">{data.peerRelationships.conflictResolutionRate}%</span></div>
+            <div><span className="text-gray-500">Conflict Resolution:</span> <span className="font-medium">{formatRate(data.peerRelationships.conflictResolutionRate)}</span></div>
             <div><span className="text-gray-500">Mediation Needed:</span> <span className="font-medium">{data.peerRelationships.mediationNeededRate}%</span></div>
           </div>
         </Section>

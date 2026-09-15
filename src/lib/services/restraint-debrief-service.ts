@@ -75,18 +75,20 @@ export interface RestraintDebriefRecord {
   child_name: string;
   child_id: string | null;
   staff_involved: string;
-  child_debrief_completed: boolean;
-  staff_debrief_completed: boolean;
-  medical_check_done: boolean;
-  body_map_completed: boolean;
-  ofsted_notified: boolean;
-  social_worker_notified: boolean;
-  parent_notified: boolean;
-  witness_statements_taken: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  child_debrief_completed: boolean | null;
+  staff_debrief_completed: boolean | null;
+  medical_check_done: boolean | null;
+  body_map_completed: boolean | null;
+  ofsted_notified: boolean | null;
+  social_worker_notified: boolean | null;
+  parent_notified: boolean | null;
+  witness_statements_taken: boolean | null;
   cctv_reviewed: boolean;
-  proportionate_response: boolean;
-  learning_documented: boolean;
-  plan_updated: boolean;
+  proportionate_response: boolean | null;
+  learning_documented: boolean | null;
+  plan_updated: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   debriefed_by: string;
@@ -175,10 +177,16 @@ export function computeRestraintDebriefMetrics(
   const investigation = records.filter((r) => r.debrief_outcome === "investigation_required").length;
   const distressed = records.filter((r) => r.child_emotional_state === "distressed").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof RestraintDebriefRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -244,18 +252,23 @@ export function identifyRestraintDebriefAlerts(
 
   // Disproportionate response
   for (const r of records) {
-    if (!r.proportionate_response) {
+    // A restraint whose proportionality was never assessed must surface as
+    // exactly that — an unassessed restraint — never as "assessed as
+    // disproportionate", which fabricates an assessment nobody made.
+    if (r.proportionate_response !== true) {
       alerts.push({
         type: "disproportionate_response",
         severity: "critical",
-        message: `Restraint of ${r.child_name} on ${r.debrief_date} assessed as disproportionate — investigate immediately`,
+        message: r.proportionate_response === false
+          ? `Restraint of ${r.child_name} on ${r.debrief_date} assessed as disproportionate — investigate immediately`
+          : `Restraint of ${r.child_name} on ${r.debrief_date} has no proportionality assessment recorded — assess and evidence now`,
         id: r.id,
       });
     }
   }
 
   // Child debrief not completed
-  const noChildDebrief = records.filter((r) => !r.child_debrief_completed).length;
+  const noChildDebrief = records.filter((r) => r.child_debrief_completed === false).length;
   if (noChildDebrief >= 1) {
     alerts.push({
       type: "no_child_debrief",
@@ -266,7 +279,7 @@ export function identifyRestraintDebriefAlerts(
   }
 
   // Medical check not done
-  const noMedical = records.filter((r) => !r.medical_check_done).length;
+  const noMedical = records.filter((r) => r.medical_check_done === false).length;
   if (noMedical >= 1) {
     alerts.push({
       type: "no_medical_check",
@@ -277,7 +290,7 @@ export function identifyRestraintDebriefAlerts(
   }
 
   // Ofsted not notified
-  const noOfsted = records.filter((r) => !r.ofsted_notified).length;
+  const noOfsted = records.filter((r) => r.ofsted_notified === false).length;
   if (noOfsted >= 2) {
     alerts.push({
       type: "ofsted_not_notified",
@@ -288,7 +301,7 @@ export function identifyRestraintDebriefAlerts(
   }
 
   // Learning not documented
-  const noLearning = records.filter((r) => !r.learning_documented).length;
+  const noLearning = records.filter((r) => r.learning_documented === false).length;
   if (noLearning >= 2) {
     alerts.push({
       type: "learning_not_documented",
@@ -377,18 +390,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_involved: payload.staffInvolved,
-      child_debrief_completed: payload.childDebriefCompleted ?? true,
-      staff_debrief_completed: payload.staffDebriefCompleted ?? true,
-      medical_check_done: payload.medicalCheckDone ?? true,
-      body_map_completed: payload.bodyMapCompleted ?? true,
-      ofsted_notified: payload.ofstedNotified ?? true,
-      social_worker_notified: payload.socialWorkerNotified ?? true,
-      parent_notified: payload.parentNotified ?? true,
-      witness_statements_taken: payload.witnessStatementsTaken ?? true,
+      child_debrief_completed: payload.childDebriefCompleted ?? null,
+      staff_debrief_completed: payload.staffDebriefCompleted ?? null,
+      medical_check_done: payload.medicalCheckDone ?? null,
+      body_map_completed: payload.bodyMapCompleted ?? null,
+      ofsted_notified: payload.ofstedNotified ?? null,
+      social_worker_notified: payload.socialWorkerNotified ?? null,
+      parent_notified: payload.parentNotified ?? null,
+      witness_statements_taken: payload.witnessStatementsTaken ?? null,
       cctv_reviewed: payload.cctvReviewed ?? false,
-      proportionate_response: payload.proportionateResponse ?? true,
-      learning_documented: payload.learningDocumented ?? true,
-      plan_updated: payload.planUpdated ?? true,
+      proportionate_response: payload.proportionateResponse ?? null,
+      learning_documented: payload.learningDocumented ?? null,
+      plan_updated: payload.planUpdated ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       debriefed_by: payload.debriefedBy,

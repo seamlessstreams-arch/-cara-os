@@ -32,13 +32,14 @@ function incident(
   }> = {},
 ) {
   return {
-    id: overrides.id ?? "inc-1",
-    category: overrides.category ?? "violence",
-    severity: overrides.severity ?? "moderate",
-    child_id: overrides.child_id ?? "child-1",
-    staff_involved: overrides.staff_involved ?? ["staff-1"],
-    created_at: overrides.created_at ?? "2026-04-10T14:00:00Z",
-    physical_intervention_used: overrides.physical_intervention_used ?? false,
+    id: "inc-1",
+    category: "violence",
+    severity: "moderate",
+    child_id: "child-1",
+    staff_involved: ["staff-1"],
+    created_at: "2026-04-10T14:00:00Z",
+    physical_intervention_used: false,
+      ...overrides,
   };
 }
 
@@ -56,14 +57,15 @@ function piRecord(
   }> = {},
 ) {
   return {
-    id: overrides.id ?? "pi-1",
-    child_id: overrides.child_id ?? "child-1",
-    staff_involved: overrides.staff_involved ?? ["staff-1"],
+    id: "pi-1",
+    child_id: "child-1",
+    staff_involved: ["staff-1"],
     duration_minutes: ("duration_minutes" in overrides ? overrides.duration_minutes : 5) as number | null,
     technique_used: ("technique_used" in overrides ? overrides.technique_used : "guide_away") as string | null,
-    injury_reported: overrides.injury_reported ?? false,
-    debrief_completed: overrides.debrief_completed ?? true,
-    created_at: overrides.created_at ?? "2026-04-10T14:00:00Z",
+    injury_reported: false,
+    debrief_completed: true,
+    created_at: "2026-04-10T14:00:00Z",
+      ...overrides,
   };
 }
 
@@ -76,9 +78,10 @@ function patternRecord(
   }> = {},
 ) {
   return {
-    category: overrides.category ?? "violence",
-    child_id: overrides.child_id ?? "child-1",
-    created_at: overrides.created_at ?? "2026-04-10T14:00:00Z",
+    category: "violence",
+    child_id: "child-1",
+    created_at: "2026-04-10T14:00:00Z",
+      ...overrides,
   };
 }
 
@@ -91,9 +94,10 @@ function notifRecord(
   }> = {},
 ) {
   return {
-    id: overrides.id ?? "notif-1",
-    category: overrides.category ?? "physical_intervention",
-    notification_sent: overrides.notification_sent ?? false,
+    id: "notif-1",
+    category: "physical_intervention",
+    notification_sent: false,
+      ...overrides,
   };
 }
 

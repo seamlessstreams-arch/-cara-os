@@ -7,6 +7,7 @@
 // CHR 2015 Reg 45. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -140,7 +141,7 @@ export function HomeMeetingGovernanceIntelligenceCard() {
                   (d.attendance_profile.avg_child_attendance_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.attendance_profile.avg_child_attendance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.attendance_profile.avg_child_attendance_rate}%
+                  {formatRate(d.attendance_profile.avg_child_attendance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attendance</p>
@@ -154,7 +155,7 @@ export function HomeMeetingGovernanceIntelligenceCard() {
                   (d.action_profile.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.action_profile.completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.action_profile.completion_rate}%
+                  {formatRate(d.action_profile.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions Done</p>
@@ -168,7 +169,7 @@ export function HomeMeetingGovernanceIntelligenceCard() {
                   (d.engagement_profile.child_raised_rate ?? 0) >= 50 ? "text-[--cs-success]" :
                   (d.engagement_profile.child_raised_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.engagement_profile.child_raised_rate}%
+                  {formatRate(d.engagement_profile.child_raised_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child-Led</p>

@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
         frequency: body.frequency,
         start_date: body.startDate,
         end_date: body.endDate,
+        // absence-ok: lifecycle state on create — a new budget is live until deactivated, not a judgement about events
         active: body.active ?? true,
         approved_by: body.approvedBy ?? "",
       });

@@ -56,7 +56,7 @@ const makeTraining = (overrides: Partial<SafeguardingTraining> = {}): Safeguardi
   trainingDate: "2026-01-15",
   trainingLevel: "level_2",
   provider: "NSPCC",
-  expiryDate: "2027-01-15",
+  expiryDate: daysFromNow(135),
   completedOnTime: true,
   scenarioBasedElement: true,
   assessmentPassed: true,
@@ -141,33 +141,33 @@ const OAK_HOUSE_TRAINING: SafeguardingTraining[] = [
   makeTraining({
     id: "train-001", staffId: "staff-sarah", staffName: "Sarah Johnson",
     trainingDate: "2026-01-15", trainingLevel: "level_3_dsl",
-    provider: "NSPCC", expiryDate: "2027-01-15",
+    provider: "NSPCC", expiryDate: daysFromNow(135),
     completedOnTime: true, scenarioBasedElement: true, assessmentPassed: true,
   }),
   makeTraining({
     id: "train-002", staffId: "staff-sarah", staffName: "Sarah Johnson",
     trainingDate: "2026-03-10", trainingLevel: "specialist",
-    provider: "NWG Network", expiryDate: "2027-03-10",
+    provider: "NWG Network", expiryDate: daysFromNow(190),
     completedOnTime: true, scenarioBasedElement: true, assessmentPassed: true,
   }),
   // Tom — Level 2
   makeTraining({
     id: "train-003", staffId: "staff-tom", staffName: "Tom Watson",
     trainingDate: "2026-02-20", trainingLevel: "level_2",
-    provider: "Virtual College", expiryDate: "2027-02-20",
+    provider: "Virtual College", expiryDate: daysFromNow(170),
     completedOnTime: true, scenarioBasedElement: true, assessmentPassed: true,
   }),
   makeTraining({
     id: "train-004", staffId: "staff-tom", staffName: "Tom Watson",
     trainingDate: "2025-11-10", trainingLevel: "level_1",
-    provider: "In-house", expiryDate: "2026-11-10",
+    provider: "In-house", expiryDate: daysFromNow(70),
     completedOnTime: true, scenarioBasedElement: false, assessmentPassed: true,
   }),
   // Lisa — Level 2
   makeTraining({
     id: "train-005", staffId: "staff-lisa", staffName: "Lisa Williams",
     trainingDate: "2026-01-25", trainingLevel: "level_2",
-    provider: "NSPCC", expiryDate: "2027-01-25",
+    provider: "NSPCC", expiryDate: daysFromNow(145),
     completedOnTime: true, scenarioBasedElement: true, assessmentPassed: true,
   }),
   makeTraining({
@@ -186,7 +186,7 @@ const OAK_HOUSE_TRAINING: SafeguardingTraining[] = [
   makeTraining({
     id: "train-008", staffId: "staff-mike", staffName: "Mike Chen",
     trainingDate: "2026-04-15", trainingLevel: "level_2",
-    provider: "NSPCC", expiryDate: "2027-04-15",
+    provider: "NSPCC", expiryDate: daysFromNow(225),
     completedOnTime: false, scenarioBasedElement: true, assessmentPassed: true,
   }),
 ];
@@ -281,6 +281,14 @@ const REFERENCE_DATE = "2026-05-18";
 // evaluateReferralQuality
 // ══════════════════════════════════════════════════════════════════════════════
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 describe("evaluateReferralQuality", () => {
   it("returns correct total referral count", () => {
     const result = evaluateReferralQuality(OAK_HOUSE_REFERRALS);
@@ -624,7 +632,7 @@ describe("evaluateTrainingCompliance", () => {
   it("detects low DSL coverage with larger team", () => {
     const ids = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9"];
     const training = [
-      makeTraining({ staffId: "s1", trainingLevel: "level_2", expiryDate: "2027-01-01" }),
+      makeTraining({ staffId: "s1", trainingLevel: "level_2", expiryDate: daysFromNow(120) }),
     ];
     const result = evaluateTrainingCompliance(training, ids, REFERENCE_DATE);
     // dslRequired = ceil(9/4)=3, dslCount = 0
@@ -1132,7 +1140,7 @@ describe("buildStaffSafeguardingProfiles", () => {
     const profiles = buildStaffSafeguardingProfiles(OAK_HOUSE_TRAINING, OAK_HOUSE_SUPERVISION, STAFF_IDS);
     const sarah = profiles.find((p) => p.staffId === "staff-sarah");
     // Sarah's latest expiry is 2027-03-10 (specialist)
-    expect(sarah?.trainingExpiryDate).toBe("2027-03-10");
+    expect(sarah?.trainingExpiryDate).toBe(daysFromNow(190));
   });
 });
 

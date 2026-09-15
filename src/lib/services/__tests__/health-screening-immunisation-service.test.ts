@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HealthScreeningImmunisationRecord>): HealthScreeningImmunisationRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    screening_type: overrides?.screening_type ?? "other",
-    screening_outcome: overrides?.screening_outcome ?? "all_clear",
-    immunisation_status: overrides?.immunisation_status ?? "fully_up_to_date",
-    health_risk: overrides?.health_risk ?? "low",
-    screening_date: overrides?.screening_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    screening_type: "other",
+    screening_outcome: "all_clear",
+    immunisation_status: "fully_up_to_date",
+    health_risk: "low",
+    screening_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    conducted_by: overrides?.conducted_by ?? "Staff A",
-    child_consented: overrides?.child_consented ?? true,
-    age_appropriate_explanation: overrides?.age_appropriate_explanation ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    gp_notified: overrides?.gp_notified ?? true,
-    follow_up_arranged: overrides?.follow_up_arranged ?? true,
-    referral_made: overrides?.referral_made ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    school_aware: overrides?.school_aware ?? true,
-    records_updated: overrides?.records_updated ?? true,
-    confidentiality_maintained: overrides?.confidentiality_maintained ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    conducted_by: "Staff A",
+    child_consented: true,
+    age_appropriate_explanation: true,
+    parent_informed: true,
+    gp_notified: true,
+    follow_up_arranged: true,
+    referral_made: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    school_aware: true,
+    records_updated: true,
+    confidentiality_maintained: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -128,5 +131,25 @@ describe("health-screening-immunisation-service", () => {
       expect(types).toContain("confidentiality_breach");
       expect(types).toContain("records_not_updated");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the high-risk follow-up critical between recorded no and unrecorded", () => {
+    const nullAlert = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: null })])
+      .find((a) => a.type === "high_risk_no_followup");
+    const falseAlert = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: false })])
+      .find((a) => a.type === "high_risk_no_followup");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no follow-up critical when follow-up is recorded as arranged", () => {
+    const alerts = identifyHealthScreeningAlerts([makeRecord({ health_risk: "high", follow_up_arranged: true })]);
+    expect(alerts.some((a) => a.type === "high_risk_no_followup")).toBe(false);
+  });
+  it("does not dilute the GP-notified rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, gp_notified: v }));
+    expect(computeHealthScreeningMetrics(rows).gp_notified_rate).toBe(100);
   });
 });

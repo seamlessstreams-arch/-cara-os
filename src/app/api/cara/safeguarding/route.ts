@@ -56,8 +56,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<SafeguardingInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -69,7 +69,7 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
 
   // Missing episodes (last 6 months)
   const cutoff6m = new Date(Date.now() - 180 * 86400000).toISOString().slice(0, 10);
-  const { data: rawMissing } = await (sb.from("missing_episodes") as SB)
+  const { data: rawMissing } = await sb.from("missing_episodes")
     .select("*")
     .eq("child_id", childId)
     .gte("date", cutoff6m)
@@ -95,7 +95,7 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
   const restraintIncidents: RestraintIncident[] = (rawRestraint ?? []).map((r: any) => ({
     date: r.date,
     type: r.type ?? "physical",
-    durationMinutes: r.duration_minutes ?? 5,
+    durationMinutes: r.duration_minutes ?? null,
     debrief: r.debrief ?? false,
     injuryToChild: r.injury_to_child ?? false,
     injuryToStaff: r.injury_to_staff ?? false,
@@ -113,7 +113,7 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
     date: b.date,
     role: b.role ?? "victim",
     type: b.type ?? "verbal",
-    actionTaken: b.action_taken ?? true,
+    actionTaken: b.action_taken ?? null,
     resolved: b.resolved ?? false,
   }));
 
@@ -128,8 +128,8 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
   const safeguardingReferrals: SafeguardingReferral[] = (rawReferrals ?? []).map((r: any) => ({
     date: r.date,
     type: r.type ?? "other",
-    outcome: r.outcome ?? "resolved",
-    agencyInvolved: r.agency ?? "Local Authority",
+    outcome: r.outcome ?? "unknown",
+    agencyInvolved: r.agency ?? null,
   }));
 
   // Config
@@ -152,20 +152,20 @@ async function fetchData(sb: any, childId: string): Promise<SafeguardingInput> {
     cceRiskLevel: (config?.cce_risk ?? "none") as RiskLevel,
     radicalisationRiskLevel: (config?.radicalisation_risk ?? "none") as RiskLevel,
     onlineSafetyRiskLevel: (config?.online_risk ?? "none") as RiskLevel,
-    riskAssessmentCurrent: config?.risk_assessment_current ?? true,
+    riskAssessmentCurrent: config?.risk_assessment_current ?? null,
     riskAssessmentDate: config?.risk_assessment_date ?? undefined,
-    safeguardingPlanInPlace: config?.safeguarding_plan ?? true,
-    locationRiskAssessmentDone: config?.location_ra_done ?? true,
-    childAwareOfRisks: config?.child_aware ?? true,
-    onlineSafetyPlanInPlace: config?.online_safety_plan ?? true,
-    antibullyingPolicyShared: config?.antibullying_shared ?? true,
-    restraintPolicyShared: config?.restraint_policy_shared ?? true,
-    independentReturnInterviews: config?.independent_ri ?? true,
-    staffSafeguardingTrained: config?.staff_trained ?? true,
-    designatedSafeguardingLead: config?.dsl_in_place ?? true,
-    localaSafeguardingContactKnown: config?.la_contact_known ?? true,
-    childKnowsHowToComplain: config?.child_knows_complain ?? true,
-    regularSafeguardingAudits: config?.regular_audits ?? true,
+    safeguardingPlanInPlace: config?.safeguarding_plan ?? null,
+    locationRiskAssessmentDone: config?.location_ra_done ?? null,
+    childAwareOfRisks: config?.child_aware ?? null,
+    onlineSafetyPlanInPlace: config?.online_safety_plan ?? null,
+    antibullyingPolicyShared: config?.antibullying_shared ?? null,
+    restraintPolicyShared: config?.restraint_policy_shared ?? null,
+    independentReturnInterviews: config?.independent_ri ?? null,
+    staffSafeguardingTrained: config?.staff_trained ?? null,
+    designatedSafeguardingLead: config?.dsl_in_place ?? null,
+    localaSafeguardingContactKnown: config?.la_contact_known ?? null,
+    childKnowsHowToComplain: config?.child_knows_complain ?? null,
+    regularSafeguardingAudits: config?.regular_audits ?? null,
   };
 }
 

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS cs_benefit_entitlement_support (
   support_stage             text NOT NULL DEFAULT 'Awareness Raising',
   amount_awarded            numeric NULL,
   payment_frequency         text NULL,
-  young_person_engaged      boolean NOT NULL DEFAULT true,
+  young_person_engaged      boolean,
   application_successful    boolean NULL,
   appeal_outcome            text NULL,
   personal_adviser_involved boolean NOT NULL DEFAULT false,

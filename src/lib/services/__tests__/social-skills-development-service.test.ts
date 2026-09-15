@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SocialSkillsDevelopmentRecord>): SocialSkillsDevelopmentRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    skill_area: overrides?.skill_area ?? "communication",
-    competence_level: overrides?.competence_level ?? "proficient",
-    progress_assessment: overrides?.progress_assessment ?? "good_progress",
-    group_dynamic: overrides?.group_dynamic ?? "active_participant",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    skill_area: "communication",
+    competence_level: "proficient",
+    progress_assessment: "good_progress",
+    group_dynamic: "active_participant",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_engaged: overrides?.child_engaged ?? true,
-    age_appropriate: overrides?.age_appropriate ?? true,
-    strengths_identified: overrides?.strengths_identified ?? true,
-    targets_set: overrides?.targets_set ?? true,
-    positive_reinforcement: overrides?.positive_reinforcement ?? true,
-    peer_modelling_used: overrides?.peer_modelling_used ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    family_updated: overrides?.family_updated ?? true,
-    school_linked: overrides?.school_linked ?? true,
-    therapeutic_input: overrides?.therapeutic_input ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    facilitated_by: "Staff A",
+    child_engaged: true,
+    age_appropriate: true,
+    strengths_identified: true,
+    targets_set: true,
+    positive_reinforcement: true,
+    peer_modelling_used: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    family_updated: true,
+    school_linked: true,
+    therapeutic_input: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("social-skills-development-service", () => {
       expect(types).toContain("no_positive_reinforcement");
       expect(types).toContain("no_therapeutic_input");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded targets judgement in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySocialSkillsAlerts([makeRecord({ targets_set: null })]);
+    const alert = alerts.find((a) => a.type === "no_targets_set");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no targets gap when targets are recorded as set", () => {
+    const alerts = identifySocialSkillsAlerts([makeRecord({ targets_set: true })]);
+    expect(alerts.some((a) => a.type === "no_targets_set")).toBe(false);
+  });
+  it("does not dilute engagement rates with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `s-${i}`, child_engaged: v }));
+    expect(computeSocialSkillsMetrics(rows).child_engaged_rate).toBe(100);
   });
 });

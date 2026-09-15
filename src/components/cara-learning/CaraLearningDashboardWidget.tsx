@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface AgentResult {
@@ -184,7 +185,7 @@ export function CaraLearningDashboardWidget() {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-green-600">
-            {metrics.costReductionRate}%
+            {formatRate(metrics.costReductionRate)}
           </p>
           <p className="text-xs text-slate-400">projected saving</p>
         </div>
