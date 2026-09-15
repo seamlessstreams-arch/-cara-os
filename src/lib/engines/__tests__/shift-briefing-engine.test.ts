@@ -128,6 +128,20 @@ describe("computeShiftBriefing", () => {
     expect(r.summary.open_incidents).toBe(1);
   });
 
+  it("ranks a critical incident above a high one and keeps it critical in attention", () => {
+    const r = computeShiftBriefing(base({
+      events: [
+        { id: "hi", kind: "incident", date: at(0), summary: "Restraint", category: "physical_intervention", severity: "high", status: "open" },
+        { id: "crit", kind: "incident", date: at(0), summary: "Serious allegation", category: "safeguarding", severity: "critical", status: "open" },
+      ],
+    }));
+    // critical outranks high in the incident list (sevRank includes "critical")
+    expect(r.events.incidents.map((e) => e.id)).toEqual(["crit", "hi"]);
+    // an OPEN critical incident stays "critical" attention — never downgraded to "high"
+    expect(r.attention.map((a) => a.severity)).toEqual(["critical", "critical"]);
+    expect(r.attention[0].label).toMatch(/Safeguarding/);
+  });
+
   it("headline aggregates the live counts", () => {
     const r = computeShiftBriefing(base({
       on_duty: [{ staff_id: "s1", staff_name: "Olivia", shift_type: "day", status: "in_progress" }],
