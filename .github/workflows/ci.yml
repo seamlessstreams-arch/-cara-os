@@ -98,9 +98,22 @@ jobs:
   guards:
     name: Repo guards
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+
+      # Two guards below (rating ladders, contradictory conditions) parse the app
+      # with the TypeScript compiler, so this job needs node_modules. Without the
+      # install they died on `Cannot find module '../node_modules/typescript6'`,
+      # which failed the whole required job — and every PR with it.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Rebrand guard (no legacy brand terms)
         run: node scripts/check-rebrand.js
