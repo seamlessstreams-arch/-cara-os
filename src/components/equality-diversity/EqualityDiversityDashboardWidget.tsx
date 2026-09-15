@@ -12,6 +12,7 @@
 // - Per-child EDI summaries
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ChildEDISummaryData {
@@ -171,7 +172,7 @@ function ChildEDICard({ child }: { child: ChildEDISummaryData }) {
         <div>
           <div className="text-xs text-gray-500">Support Rate</div>
           <div className={`text-sm font-bold ${rateColor(child.supportRate)}`}>
-            {child.characteristicCount > 0 ? `${child.supportRate}%` : "--"}
+            {child.characteristicCount > 0 ? `${formatRate(child.supportRate)}` : "--"}
           </div>
         </div>
         <div>
@@ -280,19 +281,19 @@ export function EqualityDiversityDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.individualSupport.fullySupportedRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.individualSupport.fullySupportedRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Fully Supported</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.staffCompetency.completionRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.staffCompetency.completionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Staff Trained</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.incidentResponse.resolutionRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.incidentResponse.resolutionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Incidents Resolved</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.accessibilityInclusion.improvementRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{formatRate(data.accessibilityInclusion.improvementRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Improvements Done</div>
         </div>
       </div>
@@ -401,7 +402,7 @@ export function EqualityDiversityDashboardWidget() {
 
           {/* Staff Training */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-800 mb-2">Staff Training ({data.staffCompetency.completionRate}% completion)</h4>
+            <h4 className="text-sm font-semibold text-gray-800 mb-2">Staff Training ({formatRate(data.staffCompetency.completionRate)} completion)</h4>
             <div className="flex flex-wrap gap-1.5">
               {data.staffCompetency.trainingTypes.map((t) => (
                 <span key={t} className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded">
@@ -420,11 +421,11 @@ export function EqualityDiversityDashboardWidget() {
               <h4 className="text-sm font-semibold text-gray-800 mb-2">Incident Response</h4>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-1.5 bg-green-50 rounded">
-                  <div className="text-sm font-bold text-green-700">{data.incidentResponse.resolutionRate}%</div>
+                  <div className="text-sm font-bold text-green-700">{formatRate(data.incidentResponse.resolutionRate)}</div>
                   <div className="text-[9px] text-gray-500">Resolved</div>
                 </div>
                 <div className="p-1.5 bg-blue-50 rounded">
-                  <div className="text-sm font-bold text-blue-700">{data.incidentResponse.lessonsRate}%</div>
+                  <div className="text-sm font-bold text-blue-700">{formatRate(data.incidentResponse.lessonsRate)}</div>
                   <div className="text-[9px] text-gray-500">Lessons</div>
                 </div>
                 <div className="p-1.5 bg-purple-50 rounded">

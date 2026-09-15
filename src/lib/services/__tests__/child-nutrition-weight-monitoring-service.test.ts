@@ -26,27 +26,30 @@ function makeRow(
 ): ChildNutritionWeightMonitoringRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    bmi_category: overrides?.bmi_category ?? "healthy_weight",
-    dietary_need: overrides?.dietary_need ?? "none",
-    monitoring_status: overrides?.monitoring_status ?? "routine",
-    assessment_type: overrides?.assessment_type ?? "initial",
-    weight_recorded: overrides?.weight_recorded ?? true,
-    height_recorded: overrides?.height_recorded ?? true,
-    bmi_calculated: overrides?.bmi_calculated ?? true,
-    dietary_needs_met: overrides?.dietary_needs_met ?? true,
-    portion_sizes_appropriate: overrides?.portion_sizes_appropriate ?? true,
-    hydration_adequate: overrides?.hydration_adequate ?? true,
-    clinical_referral_made: overrides?.clinical_referral_made ?? true,
-    weight_management_plan: overrides?.weight_management_plan ?? true,
+    assessment_date: todayStr(),
+    bmi_category: "healthy_weight",
+    dietary_need: "none",
+    monitoring_status: "routine",
+    assessment_type: "initial",
+    weight_recorded: true,
+    height_recorded: true,
+    bmi_calculated: true,
+    dietary_needs_met: true,
+    portion_sizes_appropriate: true,
+    hydration_adequate: true,
+    clinical_referral_made: true,
+    weight_management_plan: true,
     assessor_name: "assessor_name" in (overrides ?? {}) ? (overrides!.assessor_name ?? null) : null,
     bmi_value: "bmi_value" in (overrides ?? {}) ? (overrides!.bmi_value ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -582,5 +585,25 @@ describe("child-nutrition-weight-monitoring-service", () => {
       const insights = generateNutritionCaraInsights([]);
       expect(insights[2]).toContain("dietary plan");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the dietary alert between recorded not-met and unrecorded", () => {
+    const nullAlert = computeNutritionAlerts([makeRow({ dietary_needs_met: null })])
+      .find((a) => a.type === "dietary_needs_not_met");
+    const falseAlert = computeNutritionAlerts([makeRow({ dietary_needs_met: false })])
+      .find((a) => a.type === "dietary_needs_not_met");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no dietary alert when needs are recorded as met", () => {
+    const alerts = computeNutritionAlerts([makeRow({ dietary_needs_met: true })]);
+    expect(alerts.some((a) => a.type === "dietary_needs_not_met")).toBe(false);
+  });
+  it("does not dilute the dietary rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRow({ id: `r-${i}`, dietary_needs_met: v }));
+    expect(computeNutritionMetrics(rows).dietary_needs_met_rate).toBe(100);
   });
 });

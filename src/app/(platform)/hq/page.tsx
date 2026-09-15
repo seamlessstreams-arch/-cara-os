@@ -3,6 +3,7 @@
 // CARA HQ — overview (platform-owner cockpit)
 
 import Link from "next/link";
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,7 +115,15 @@ export default function HqOverviewPage() {
             />
             <HqStat
               label="Deterministic"
-              value={isLoading ? "—" : `${o?.decisions.deterministic_pct ?? 100}%`}
+              value={
+                isLoading
+                  ? "—"
+                  : // `?? 100` claimed that every decision was made without AI
+                    // whenever the figure was absent — on the governance
+                    // cockpit, and in the flattering direction. Unmeasured is
+                    // an em dash, the same as everywhere else.
+                    formatRate(o?.decisions.deterministic_pct ?? null)
+              }
               hint="of decisions made with no AI"
             />
           </div>

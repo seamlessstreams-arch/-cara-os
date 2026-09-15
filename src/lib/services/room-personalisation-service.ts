@@ -104,14 +104,14 @@ export interface RoomPersonalisationRow {
   budget: number | null;
   amount_spent: number | null;
   within_budget: boolean | null;
-  age_appropriate: boolean;
+  age_appropriate: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   safety_checked: boolean;
-  health_safety_compliant: boolean;
+  health_safety_compliant: boolean | null;
   cultural_needs_considered: boolean;
   sensory_needs_considered: boolean;
   child_satisfied: boolean;
   photos_taken: boolean;
-  privacy_maintained: boolean;
+  privacy_maintained: boolean | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -281,15 +281,23 @@ export function computeMetrics(
   const pct = (filter: (r: RoomPersonalisationRow) => boolean) =>
     total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
+  // Tri-state columns rate over the recorded subset — an unrecorded judgement
+  // must not read as a quiet "no".
+  const recordedRate = (field: keyof RoomPersonalisationRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+
   const childChoiceRate = pct((r) => r.child_chose);
-  const ageAppropriateRate = pct((r) => r.age_appropriate);
+  const ageAppropriateRate = recordedRate("age_appropriate");
   const safetyCheckedRate = pct((r) => r.safety_checked);
-  const hsCompliantRate = pct((r) => r.health_safety_compliant);
+  const hsCompliantRate = recordedRate("health_safety_compliant");
   const culturalRate = pct((r) => r.cultural_needs_considered);
   const sensoryRate = pct((r) => r.sensory_needs_considered);
   const satisfiedRate = pct((r) => r.child_satisfied);
   const photosRate = pct((r) => r.photos_taken);
-  const privacyRate = pct((r) => r.privacy_maintained);
+  const privacyRate = recordedRate("privacy_maintained");
 
   // Children with no decoration records
   const childDecorationMap = new Map<string, boolean>();
@@ -364,11 +372,13 @@ export function computeAlerts(
 
   // Critical: H&S non-compliant
   for (const r of rows) {
-    if (!r.health_safety_compliant) {
+    if (r.health_safety_compliant !== true) {
       alerts.push({
         type: "hs_non_compliant",
         severity: "critical",
-        message: `${r.child_name}'s room item flagged as not H&S compliant: "${r.item_description}" (${r.record_type}, ${r.record_date}). This item does not meet health and safety standards and must be removed or replaced immediately. CHR 2015 Reg 25 is non-negotiable on safety. Offer the child a compliant alternative and explain clearly why the item cannot stay`,
+        message: r.health_safety_compliant === null
+          ? `No record that ${r.child_name}'s room item is H&S compliant: "${r.item_description}" (${r.record_type}, ${r.record_date}) — assess and evidence the check per CHR 2015 Reg 25.`
+          : `${r.child_name}'s room item flagged as not H&S compliant: "${r.item_description}" (${r.record_type}, ${r.record_date}). This item does not meet health and safety standards and must be removed or replaced immediately. CHR 2015 Reg 25 is non-negotiable on safety. Offer the child a compliant alternative and explain clearly why the item cannot stay`,
         record_id: r.id,
       });
     }
@@ -376,11 +386,13 @@ export function computeAlerts(
 
   // Critical: Privacy not maintained
   for (const r of rows) {
-    if (!r.privacy_maintained) {
+    if (r.privacy_maintained !== true) {
       alerts.push({
         type: "privacy_breach",
         severity: "critical",
-        message: `${r.child_name}'s privacy not maintained in room personalisation record (${r.record_type}, ${r.record_date}). CHR 2015 Reg 10 requires respect for privacy. If photos were taken without consent, or personal items visible to others without agreement, this must be rectified immediately. Children's bedrooms are private spaces and records about them must be handled with appropriate confidentiality`,
+        message: r.privacy_maintained === null
+          ? `No record that ${r.child_name}'s privacy was maintained in room personalisation record (${r.record_type}, ${r.record_date}) — confirm and evidence it per CHR 2015 Reg 10.`
+          : `${r.child_name}'s privacy not maintained in room personalisation record (${r.record_type}, ${r.record_date}). CHR 2015 Reg 10 requires respect for privacy. If photos were taken without consent, or personal items visible to others without agreement, this must be rectified immediately. Children's bedrooms are private spaces and records about them must be handled with appropriate confidentiality`,
         record_id: r.id,
       });
     }
@@ -701,14 +713,14 @@ export async function createRecord(input: {
       budget: input.budget ?? null,
       amount_spent: input.amountSpent ?? null,
       within_budget: input.withinBudget ?? null,
-      age_appropriate: input.ageAppropriate ?? true,
+      age_appropriate: input.ageAppropriate ?? null,
       safety_checked: input.safetyChecked ?? false,
-      health_safety_compliant: input.healthSafetyCompliant ?? true,
+      health_safety_compliant: input.healthSafetyCompliant ?? null,
       cultural_needs_considered: input.culturalNeedsConsidered ?? false,
       sensory_needs_considered: input.sensoryNeedsConsidered ?? false,
       child_satisfied: input.childSatisfied ?? false,
       photos_taken: input.photosTaken ?? false,
-      privacy_maintained: input.privacyMaintained ?? true,
+      privacy_maintained: input.privacyMaintained ?? null,
       notes: input.notes ?? null,
     })
     .select()

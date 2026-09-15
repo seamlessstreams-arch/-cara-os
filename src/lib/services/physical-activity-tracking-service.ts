@@ -67,18 +67,18 @@ export interface PhysicalActivityTrackingRecord {
   child_name: string;
   child_id: string | null;
   supervised_by: string;
-  child_choice_offered: boolean;
-  age_appropriate: boolean;
-  health_needs_considered: boolean;
-  risk_assessed: boolean;
-  inclusive_activity: boolean;
-  peer_interaction_positive: boolean;
-  equipment_suitable: boolean;
-  safeguarding_considered: boolean;
-  achievement_celebrated: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  recorded_promptly: boolean;
+  child_choice_offered: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate: boolean | null;
+  health_needs_considered: boolean | null;
+  risk_assessed: boolean | null;
+  inclusive_activity: boolean | null;
+  peer_interaction_positive: boolean | null;
+  equipment_suitable: boolean | null;
+  safeguarding_considered: boolean | null;
+  achievement_celebrated: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computePhysicalActivityMetrics(
   const disliked = records.filter((r) => r.enjoyment_rating === "disliked").length;
   const belowAverage = records.filter((r) => r.fitness_assessment === "below_average").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof PhysicalActivityTrackingRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyPhysicalActivityAlerts(
   }
 
   // Child choice not offered
-  const noChoice = records.filter((r) => !r.child_choice_offered).length;
+  const noChoice = records.filter((r) => r.child_choice_offered !== true).length;
   if (noChoice >= 1) {
     alerts.push({
       type: "no_child_choice",
       severity: "high",
-      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} no child choice offered — respect preferences`,
+      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} no child choice evidenced — respect preferences`,
       id: "no_child_choice",
     });
   }
 
   // Risk not assessed
-  const noRisk = records.filter((r) => !r.risk_assessed).length;
+  const noRisk = records.filter((r) => r.risk_assessed !== true).length;
   if (noRisk >= 1) {
     alerts.push({
       type: "risk_not_assessed",
       severity: "high",
-      message: `${noRisk} ${noRisk === 1 ? "activity has" : "activities have"} no risk assessment — ensure safety`,
+      message: `${noRisk} ${noRisk === 1 ? "activity has" : "activities have"} no risk assessment evidenced — ensure safety`,
       id: "risk_not_assessed",
     });
   }
 
   // Achievement not celebrated
-  const noAchievement = records.filter((r) => !r.achievement_celebrated).length;
+  const noAchievement = records.filter((r) => r.achievement_celebrated !== true).length;
   if (noAchievement >= 2) {
     alerts.push({
       type: "achievement_not_celebrated",
       severity: "medium",
-      message: `${noAchievement} activities without achievement celebration — strengthen positive reinforcement`,
+      message: `${noAchievement} activities without evidenced achievement celebration — strengthen positive reinforcement`,
       id: "achievement_not_celebrated",
     });
   }
 
   // Not inclusive
-  const notInclusive = records.filter((r) => !r.inclusive_activity).length;
+  const notInclusive = records.filter((r) => r.inclusive_activity !== true).length;
   if (notInclusive >= 2) {
     alerts.push({
       type: "not_inclusive",
       severity: "medium",
-      message: `${notInclusive} activities not inclusive — review accessibility and participation barriers`,
+      message: `${notInclusive} activities with no evidence of inclusivity — review accessibility and participation barriers`,
       id: "not_inclusive",
     });
   }
@@ -352,18 +358,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supervised_by: payload.supervisedBy,
-      child_choice_offered: payload.childChoiceOffered ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      health_needs_considered: payload.healthNeedsConsidered ?? true,
-      risk_assessed: payload.riskAssessed ?? true,
-      inclusive_activity: payload.inclusiveActivity ?? true,
-      peer_interaction_positive: payload.peerInteractionPositive ?? true,
-      equipment_suitable: payload.equipmentSuitable ?? true,
-      safeguarding_considered: payload.safeguardingConsidered ?? true,
-      achievement_celebrated: payload.achievementCelebrated ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_choice_offered: payload.childChoiceOffered ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      health_needs_considered: payload.healthNeedsConsidered ?? null,
+      risk_assessed: payload.riskAssessed ?? null,
+      inclusive_activity: payload.inclusiveActivity ?? null,
+      peer_interaction_positive: payload.peerInteractionPositive ?? null,
+      equipment_suitable: payload.equipmentSuitable ?? null,
+      safeguarding_considered: payload.safeguardingConsidered ?? null,
+      achievement_celebrated: payload.achievementCelebrated ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

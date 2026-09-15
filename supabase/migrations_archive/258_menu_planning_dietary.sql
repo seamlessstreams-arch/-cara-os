@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cs_menu_planning_dietary (
   mealtime_positive boolean NOT NULL DEFAULT false,
   leftovers_noted boolean NOT NULL DEFAULT false,
   medical_diet_followed boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

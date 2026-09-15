@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { QualityAssuranceIntelligenceResult } from "@/lib/quality-assurance";
 
@@ -100,11 +101,11 @@ export function QualityAssuranceDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.auditCycle.coverageRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.auditCycle.coverageRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Audit Coverage</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.actionTracking.completionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.actionTracking.completionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Action Completion</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -162,7 +163,7 @@ export function QualityAssuranceDashboardWidget() {
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.actionTracking.overdueActions > 0 ? "text-red-600" : "text-green-600"}`}>{data.actionTracking.overdueActions}</span></div>
             <div><span className="text-gray-500">In Progress:</span> <span className="font-medium">{data.actionTracking.inProgressActions}</span></div>
             <div><span className="text-gray-500">Avg Days:</span> <span className="font-medium">{data.actionTracking.averageCompletionDays}</span></div>
-            <div><span className="text-gray-500">Impact Assessed:</span> <span className="font-medium">{data.actionTracking.impactAssessedRate}%</span></div>
+            <div><span className="text-gray-500">Impact Assessed:</span> <span className="font-medium">{formatRate(data.actionTracking.impactAssessedRate)}</span></div>
           </div>
           {data.actionTracking.criticalActionsOverdue > 0 && (
             <div className="mt-2 text-sm text-red-600 font-medium">{data.actionTracking.criticalActionsOverdue} critical action(s) overdue</div>
@@ -174,7 +175,7 @@ export function QualityAssuranceDashboardWidget() {
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.improvement.totalInitiatives}</span></div>
             <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.improvement.activeInitiatives}</span></div>
             <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{data.improvement.completedInitiatives}</span></div>
-            <div><span className="text-gray-500">Children Involved:</span> <span className="font-medium">{data.improvement.childInvolvementRate}%</span></div>
+            <div><span className="text-gray-500">Children Involved:</span> <span className="font-medium">{formatRate(data.improvement.childInvolvementRate)}</span></div>
             <div><span className="text-gray-500">Staff Involved:</span> <span className="font-medium">{data.improvement.staffInvolvementRate}%</span></div>
             <div><span className="text-gray-500">Measurable:</span> <span className="font-medium">{data.improvement.measurableOutcomeRate}%</span></div>
           </div>
@@ -184,7 +185,7 @@ export function QualityAssuranceDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Domains Covered:</span> <span className="font-medium">{data.selfEvaluation.domainsCovered}/{data.selfEvaluation.totalDomains}</span></div>
             <div><span className="text-gray-500">Avg Rating:</span> <span className="font-medium">{data.selfEvaluation.averageRating}/4</span></div>
-            <div><span className="text-gray-500">Child Voice:</span> <span className="font-medium">{data.selfEvaluation.childVoiceRate}%</span></div>
+            <div><span className="text-gray-500">Child Voice:</span> <span className="font-medium">{formatRate(data.selfEvaluation.childVoiceRate)}</span></div>
             <div><span className="text-gray-500">Staff Voice:</span> <span className="font-medium">{data.selfEvaluation.staffVoiceRate}%</span></div>
             <div><span className="text-gray-500">External Feedback:</span> <span className="font-medium">{data.selfEvaluation.externalFeedbackRate}%</span></div>
           </div>
@@ -194,7 +195,7 @@ export function QualityAssuranceDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Activities:</span> <span className="font-medium">{data.monitoring.totalMonitoring}</span></div>
             <div><span className="text-gray-500">Avg Compliance:</span> <span className="font-medium">{data.monitoring.averageComplianceRate}%</span></div>
-            <div><span className="text-gray-500">Follow-up Completed:</span> <span className="font-medium">{data.monitoring.followUpCompletedRate}%</span></div>
+            <div><span className="text-gray-500">Follow-up Completed:</span> <span className="font-medium">{formatRate(data.monitoring.followUpCompletedRate)}</span></div>
           </div>
         </Section>
 

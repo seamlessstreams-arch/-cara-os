@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<KeyWorkerAllocationRecord>): KeyWorkerAllocationRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    allocation_status: overrides?.allocation_status ?? "active",
-    relationship_quality: overrides?.relationship_quality ?? "good",
-    workload_level: overrides?.workload_level ?? "balanced",
-    continuity_rating: overrides?.continuity_rating ?? "stable",
-    review_date: overrides?.review_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    allocation_status: "active",
+    relationship_quality: "good",
+    workload_level: "balanced",
+    continuity_rating: "stable",
+    review_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    key_worker_name: overrides?.key_worker_name ?? "Staff A",
-    reviewed_by: overrides?.reviewed_by ?? "Manager A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    child_choice_considered: overrides?.child_choice_considered ?? true,
-    regular_sessions_held: overrides?.regular_sessions_held ?? true,
-    care_plan_involvement: overrides?.care_plan_involvement ?? true,
-    advocacy_role_fulfilled: overrides?.advocacy_role_fulfilled ?? true,
-    training_appropriate: overrides?.training_appropriate ?? true,
-    supervision_discussed: overrides?.supervision_discussed ?? true,
-    handover_plan_exists: overrides?.handover_plan_exists ?? true,
-    backup_worker_identified: overrides?.backup_worker_identified ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    relationship_supported: overrides?.relationship_supported ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    key_worker_name: "Staff A",
+    reviewed_by: "Manager A",
+    child_views_sought: true,
+    child_choice_considered: true,
+    regular_sessions_held: true,
+    care_plan_involvement: true,
+    advocacy_role_fulfilled: true,
+    training_appropriate: true,
+    supervision_discussed: true,
+    handover_plan_exists: true,
+    backup_worker_identified: true,
+    social_worker_informed: true,
+    relationship_supported: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,17 @@ describe("key-worker-allocation-service", () => {
       expect(types).toContain("no_backup_worker");
       expect(types).toContain("no_handover_plan");
     });
+  });
+});
+
+// ── Tri-state: an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded regular_sessions_held as a failure", () => {
+    const alerts = _testing.identifyKeyWorkerAllocationAlerts([makeRecord({ regular_sessions_held: null }), makeRecord({ id: "r-2", regular_sessions_held: null })]);
+    expect(alerts.some((a) => a.type === "no_regular_sessions")).toBe(false);
+  });
+  it("still counts a recorded no", () => {
+    const alerts = _testing.identifyKeyWorkerAllocationAlerts([makeRecord({ regular_sessions_held: false }), makeRecord({ id: "r-2", regular_sessions_held: false })]);
+    expect(alerts.some((a) => a.type === "no_regular_sessions")).toBe(true);
   });
 });

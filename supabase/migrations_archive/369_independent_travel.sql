@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS cs_independent_travel (
   money_available boolean NOT NULL DEFAULT false,
   id_carried boolean NULL,
   confidence_level text NOT NULL DEFAULT 'Medium',
-  incident_occurred boolean NOT NULL DEFAULT false,
+  incident_occurred boolean,
   incident_details text NULL,
   next_session_date date NULL,
   notes text NULL,

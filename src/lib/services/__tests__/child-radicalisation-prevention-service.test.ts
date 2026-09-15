@@ -26,27 +26,30 @@ function makeRow(
 ): ChildRadicalisationPreventionRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    vulnerability_level: overrides?.vulnerability_level ?? "low",
-    referral_outcome: overrides?.referral_outcome ?? "no_referral_needed",
-    assessment_status: overrides?.assessment_status ?? "initial_screening",
-    concern_type: overrides?.concern_type ?? "far_right",
-    prevent_training_completed: overrides?.prevent_training_completed ?? true,
-    online_activity_monitored: overrides?.online_activity_monitored ?? true,
-    channel_referral_made: overrides?.channel_referral_made ?? true,
-    multi_agency_involved: overrides?.multi_agency_involved ?? true,
-    child_views_obtained: overrides?.child_views_obtained ?? true,
-    family_engaged: overrides?.family_engaged ?? true,
-    safety_plan_in_place: overrides?.safety_plan_in_place ?? true,
-    ideology_challenged: overrides?.ideology_challenged ?? true,
+    assessment_date: todayStr(),
+    vulnerability_level: "low",
+    referral_outcome: "no_referral_needed",
+    assessment_status: "initial_screening",
+    concern_type: "far_right",
+    prevent_training_completed: true,
+    online_activity_monitored: true,
+    channel_referral_made: true,
+    multi_agency_involved: true,
+    child_views_obtained: true,
+    family_engaged: true,
+    safety_plan_in_place: true,
+    ideology_challenged: true,
     assessor_name: "assessor_name" in (overrides ?? {}) ? (overrides!.assessor_name ?? null) : null,
     vulnerability_indicators: "vulnerability_indicators" in (overrides ?? {}) ? (overrides!.vulnerability_indicators ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -606,5 +609,21 @@ describe("child-radicalisation-prevention-service", () => {
       const insights = generateRadicalisationCaraInsights([]);
       expect(insights[2]).toContain("voice");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the child-views alert between recorded not-obtained and unrecorded", () => {
+    const nullAlert = computeRadicalisationAlerts([makeRow({ child_views_obtained: null })])
+      .find((a) => a.type === "child_views_not_obtained");
+    const falseAlert = computeRadicalisationAlerts([makeRow({ child_views_obtained: false })])
+      .find((a) => a.type === "child_views_not_obtained");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no views alert when views are recorded as obtained", () => {
+    const alerts = computeRadicalisationAlerts([makeRow({ child_views_obtained: true })]);
+    expect(alerts.some((a) => a.type === "child_views_not_obtained")).toBe(false);
   });
 });

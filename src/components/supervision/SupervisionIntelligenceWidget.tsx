@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function SupervisionIntelligenceWidget() {
       <Section title="Supervision Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Content Coverage" value={`${quality.contentRate}%`} />
-          <Stat label="Reflective Practice" value={`${quality.reflectiveRate}%`} />
-          <Stat label="Safeguarding" value={`${quality.safeguardingRate}%`} />
-          <Stat label="Wellbeing" value={`${quality.wellbeingRate}%`} />
+          <Stat label="Content Coverage" value={`${formatRate(quality.contentRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(quality.reflectiveRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(quality.safeguardingRate)}`} />
+          <Stat label="Wellbeing" value={`${formatRate(quality.wellbeingRate)}`} />
         </div>
       </Section>
 
       <Section title="Supervision Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Within Timescale" value={`${compliance.withinTimescaleRate}%`} />
-          <Stat label="Actions Reviewed" value={`${compliance.actionsReviewedRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Within Timescale" value={`${formatRate(compliance.withinTimescaleRate)}`} />
+          <Stat label="Actions Reviewed" value={`${formatRate(compliance.actionsReviewedRate)}`} />
           <Stat label="Type Diversity" value={`${compliance.typeDiversityRatio}`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function SupervisionIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Supervisory Skills" value={`${staff.supervisorySkillsRate}%`} />
-          <Stat label="Reflective Practice" value={`${staff.reflectivePracticeRate}%`} />
-          <Stat label="Safeguarding" value={`${staff.safeguardingKnowledgeRate}%`} />
-          <Stat label="Wellbeing Support" value={`${staff.wellbeingSupportRate}%`} />
-          <Stat label="Documentation" value={`${staff.documentationCompetencyRate}%`} />
-          <Stat label="Feedback Delivery" value={`${staff.feedbackDeliveryRate}%`} />
+          <Stat label="Supervisory Skills" value={`${formatRate(staff.supervisorySkillsRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(staff.reflectivePracticeRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staff.safeguardingKnowledgeRate)}`} />
+          <Stat label="Wellbeing Support" value={`${formatRate(staff.wellbeingSupportRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staff.documentationCompetencyRate)}`} />
+          <Stat label="Feedback Delivery" value={`${formatRate(staff.feedbackDeliveryRate)}`} />
         </div>
       </Section>
 

@@ -138,7 +138,7 @@ export function HomeAdmissionIntelligenceCard() {
                   meets(d.assessment_profile.matching_consideration_rate, 80) ? "text-[--cs-success]" :
                   meets(d.assessment_profile.matching_consideration_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.assessment_profile.matching_consideration_rate}%
+                  {formatRate(d.assessment_profile.matching_consideration_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Matching</p>
@@ -167,7 +167,7 @@ export function HomeAdmissionIntelligenceCard() {
                   meets(d.quality_profile.occupancy_rate, 80) ? "text-[--cs-success]" :
                   meets(d.quality_profile.occupancy_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.quality_profile.occupancy_rate}%
+                  {formatRate(d.quality_profile.occupancy_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Occupancy</p>
@@ -197,11 +197,11 @@ export function HomeAdmissionIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Assessment</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Decision docs: <span className={cn("font-medium", meets(d.assessment_profile.decision_documented_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.assessment_profile.decision_documented_rate}%</span></p>
+                <p>Decision docs: <span className={cn("font-medium", meets(d.assessment_profile.decision_documented_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.assessment_profile.decision_documented_rate)}</span></p>
                 {hasPending && (
                   <p>Pending &gt;14d: <span className="font-medium text-red-600">{d.assessment_profile.pending_over_14_days}</span></p>
                 )}
-                <p>Acceptance: <span className="font-medium text-slate-600">{d.referral_profile.acceptance_rate}%</span></p>
+                <p>Acceptance: <span className="font-medium text-slate-600">{formatRate(d.referral_profile.acceptance_rate)}</span></p>
               </div>
             </div>
           </div>

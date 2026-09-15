@@ -81,6 +81,10 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   // ── CAMHS referrals ─────────────────────────────────────────────────────
   const active = camhs_referrals.filter(r => r.status === "active" || r.status === "accepted" || r.status === "open");
   const waiting = camhs_referrals.filter(r => r.status === "waiting");
+  // A child can hold more than one open referral, so the number of children
+  // waiting is not the number of waiting referrals. The sibling field beside
+  // this one is named `active_referrals` precisely because it counts records.
+  const childrenWaiting = new Set(waiting.map(r => r.child_id)).size;
   const rejected = camhs_referrals.filter(r => r.status === "rejected");
   const allAppts = camhs_referrals.reduce((s, r) => s + r.appointments_offered, 0);
   const allAttended = camhs_referrals.reduce((s, r) => s + r.appointments_attended, 0);
@@ -166,7 +170,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   // ── Concerns ────────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (waiting.length >= 3) concerns.push(`${waiting.length} children waiting for CAMHS services — delay in accessing mental health support.`);
-  else if (waiting.length >= 1) concerns.push(`${waiting.length} child(ren) waiting for CAMHS — monitor waiting times closely.`);
+  else if (waiting.length >= 1) concerns.push(`${childrenWaiting} child(ren) waiting for CAMHS — monitor waiting times closely.`);
   if ((avgWait ?? 0) > 56) concerns.push(`Average CAMHS wait of ${(avgWait ?? 0)} days exceeds 8-week target — children's mental health needs not met promptly.`);
   if (emergency_referrals.length > 0 && below(emergResponseRate, 80)) concerns.push(`Emergency mental health response at ${emergResponseRate}% — children in crisis must receive immediate support.`);
   if (rejected.length >= 2) concerns.push(`${rejected.length} CAMHS referrals rejected — consider referral quality or re-referral with additional evidence.`);
@@ -192,12 +196,12 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   let headline = "";
   if (camhs_rating === "outstanding") headline = `Outstanding specialist referral pathways — ${active.length} active CAMHS referrals, ${attendRate}% attendance.`;
   else if (camhs_rating === "good") headline = `Good specialist access — ${waiting.length > 0 ? `${waiting.length} on waitlist` : "no children waiting"}, ${concerns.length > 0 ? `${concerns.length} area(s) to address` : "consistent engagement"}.`;
-  else if (camhs_rating === "adequate") headline = `Adequate specialist access — ${waiting.length} child(ren) waiting, pathway improvements needed.`;
-  else headline = `Specialist access inadequate — ${waiting.length} child(ren) waiting, ${emergency_referrals.length > 0 ? `${emergResponseRate}% emergency response` : "urgent pathway overhaul required"}.`;
+  else if (camhs_rating === "adequate") headline = `Adequate specialist access — ${childrenWaiting} child(ren) waiting, pathway improvements needed.`;
+  else headline = `Specialist access inadequate — ${childrenWaiting} child(ren) waiting, ${emergency_referrals.length > 0 ? `${emergResponseRate}% emergency response` : "urgent pathway overhaul required"}.`;
 
   return {
     camhs_rating, camhs_score: score, headline,
-    active_referrals: active.length, children_waiting: waiting.length,
+    active_referrals: active.length, children_waiting: childrenWaiting,
     average_wait_days: avgWait, appointment_attendance_rate: attendRate,
     emergency_response_rate: emergResponseRate, specialist_coverage_rate: specialistCoverageRate,
     strengths, concerns, recommendations, insights,

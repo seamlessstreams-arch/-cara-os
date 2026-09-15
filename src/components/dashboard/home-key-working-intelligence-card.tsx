@@ -162,7 +162,7 @@ export function HomeKeyWorkingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <SmilePlus className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", (d.mood.positive_shift_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.mood.positive_shift_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.mood.positive_shift_rate}%
+                  {formatRate(d.mood.positive_shift_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Mood Uplift</p>

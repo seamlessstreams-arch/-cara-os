@@ -147,8 +147,8 @@ export function TherapeuticInterventionQualityDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Sessions: <span className="font-medium">{child.totalSessions}</span></div>
-                    <div>Progress: <span className="font-medium">{child.progressRate}%</span></div>
-                    <div>Engaged: <span className="font-medium">{child.engagementRate}%</span></div>
+                    <div>Progress: <span className="font-medium">{formatRate(child.progressRate)}</span></div>
+                    <div>Engaged: <span className="font-medium">{formatRate(child.engagementRate)}</span></div>
                     <div>Score: <span className="font-medium">{child.overallScore}/10</span></div>
                   </div>
                 </div>

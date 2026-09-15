@@ -49,8 +49,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<SanctionsRewardsInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -74,7 +74,7 @@ async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInpu
     .gte("date", cutoff)
     .order("date", { ascending: true });
 
-  const { data: bsp } = await (sb.from("behaviour_support_plans") as SB)
+  const { data: bsp } = await sb.from("behaviour_support_plans")
     .select("*")
     .eq("child_id", childId)
     .order("updated_at", { ascending: false })
@@ -87,10 +87,10 @@ async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInpu
     type: s.type ?? "other",
     reason: s.reason ?? "",
     duration: s.duration ?? undefined,
-    proportionate: s.proportionate ?? true,
-    childInformed: s.child_informed ?? true,
-    childUnderstood: s.child_understood ?? true,
-    linkedToBehaviour: s.linked_to_behaviour ?? true,
+    proportionate: s.proportionate ?? null,
+    childInformed: s.child_informed ?? null,
+    childUnderstood: s.child_understood ?? null,
+    linkedToBehaviour: s.linked_to_behaviour ?? null,
     staffMember: s.staff_member ?? "Unknown",
     behaviourCategory: s.behaviour_category ?? undefined,
     appealed: s.appealed ?? false,
@@ -118,11 +118,16 @@ async function fetchData(sb: any, childId: string): Promise<SanctionsRewardsInpu
     sanctions,
     rewards,
     hasBehaviourSupportPlan: !!bsp,
-    bspUpToDate: bsp?.is_current ?? false,
+    // The BSP table records status/child_views — the old phantom fields
+    // (is_current, child_participated) read undefined in every mode, and
+    // policy/appeals "?? true" credited explanations nothing records.
+    bspUpToDate: bsp?.status === "active",
     bspReviewDate: bsp?.review_date ?? undefined,
-    childParticipatedInBSP: bsp?.child_participated ?? false,
-    sanctionPolicyExplainedToChild: bsp?.policy_explained ?? true,
-    appealsProcessExplained: bsp?.appeals_explained ?? true,
+    childParticipatedInBSP: Boolean(bsp?.child_views && bsp.child_views.trim()),
+    // No schema records the policy/appeals explanations: tri-state null, never
+    // a credited default (the absence-as-assurance branch set the contract).
+    sanctionPolicyExplainedToChild: null,
+    appealsProcessExplained: null,
   };
 }
 

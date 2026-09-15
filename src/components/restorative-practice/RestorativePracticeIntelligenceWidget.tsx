@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -77,13 +78,13 @@ export function RestorativePracticeIntelligenceWidget() {
       <Section title="Quality">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Avg Quality" value={`${quality.avgQualityScore}%`} />
-          <Stat label="Child Voice" value={`${quality.childVoiceRate}%`} />
-          <Stat label="Child Led" value={`${quality.childLedRate}%`} />
-          <Stat label="All Heard" value={`${quality.allPartiesHeardRate}%`} />
-          <Stat label="Harm Acknowledged" value={`${quality.harmAcknowledgedRate}%`} />
-          <Stat label="Repair Plan" value={`${quality.repairPlanRate}%`} />
-          <Stat label="Emotions Explored" value={`${quality.emotionsExploredRate}%`} />
-          <Stat label="Needs Identified" value={`${quality.needsIdentifiedRate}%`} />
+          <Stat label="Child Voice" value={`${formatRate(quality.childVoiceRate)}`} />
+          <Stat label="Child Led" value={`${formatRate(quality.childLedRate)}`} />
+          <Stat label="All Heard" value={`${formatRate(quality.allPartiesHeardRate)}`} />
+          <Stat label="Harm Acknowledged" value={`${formatRate(quality.harmAcknowledgedRate)}`} />
+          <Stat label="Repair Plan" value={`${formatRate(quality.repairPlanRate)}`} />
+          <Stat label="Emotions Explored" value={`${formatRate(quality.emotionsExploredRate)}`} />
+          <Stat label="Needs Identified" value={`${formatRate(quality.needsIdentifiedRate)}`} />
         </div>
       </Section>
 

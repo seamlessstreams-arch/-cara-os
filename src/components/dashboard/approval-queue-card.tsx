@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useEffect, useState } from "react";
 import {
   CheckCircle2,
@@ -188,7 +189,7 @@ export function ApprovalQueueCard({ homeId }: { homeId?: string }) {
             compliance.qaPassRate >= 80 ? "text-[--cs-success]" :
             compliance.qaPassRate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
           )}>
-            {compliance.qaPassRate}%
+            {formatRate(compliance.qaPassRate)}
           </span>
         </div>
         <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -198,7 +199,7 @@ export function ApprovalQueueCard({ homeId }: { homeId?: string }) {
               compliance.qaPassRate >= 80 ? "bg-green-500" :
               compliance.qaPassRate >= 60 ? "bg-amber-500" : "bg-red-500",
             )}
-            style={{ width: `${compliance.qaPassRate}%` }}
+            style={{ width: `${formatRate(compliance.qaPassRate)}` }}
           />
         </div>
       </div>

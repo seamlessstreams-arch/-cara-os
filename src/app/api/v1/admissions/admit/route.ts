@@ -57,12 +57,12 @@ export async function POST(req: NextRequest) {
   const yp = await dal.youngPeople.create(({
     first_name: firstName,
     last_name: lastName,
-    preferred_name: ((b.preferred_name as string) || "").trim() || null,
+    preferred_name: ((b.preferred_name as string) || "").trim() || undefined,
     date_of_birth: dob,
-    gender: ((b.gender as string) || "").trim() || null,
+    gender: ((b.gender as string) || "").trim() || undefined,
     placement_start: placementStart,
     local_authority: localAuthority,
-    legal_status: (b.legal_status as string) || null,
+    legal_status: (b.legal_status as string) || undefined,
     status: "current",
   }));
   const child = (yp);

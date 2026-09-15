@@ -55,15 +55,15 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Data Fetch ─────────────────────────────────────────────────────
 
-async function fetchContactData(sb: any, childId: string, _homeId: string): Promise<FamilyContactInput> {
+async function fetchContactData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string, _homeId: string): Promise<FamilyContactInput> {
   // Fetch child basic info
-  const { data: child } = await (sb.from("children") as SB)
-    .select("id, first_name, last_name, placement_start_date")
+  const { data: child } = await sb.from("young_people")
+    .select("id, first_name, last_name, placement_start")
     .eq("id", childId)
     .single();
 
   const childName = child ? `${child.first_name} ${child.last_name}` : "Unknown";
-  const placementStartDate = child?.placement_start_date ?? "2026-01-01";
+  const placementStartDate = child?.placement_start ?? "2026-01-01";
 
   // Fetch contacts from last 56 days (8 weeks)
   const cutoff = new Date(Date.now() - 56 * 86400000).toISOString();
@@ -79,8 +79,8 @@ async function fetchContactData(sb: any, childId: string, _homeId: string): Prom
     contactType: c.contact_type ?? "face_to_face",
     familyMember: c.family_member_name ?? "Unknown",
     familyMemberRelation: c.family_member_relation ?? "other_family",
-    planned: c.planned ?? true,
-    occurred: c.occurred ?? true,
+    planned: c.planned ?? null,
+    occurred: c.occurred ?? null,
     cancelledBy: c.cancelled_by ?? undefined,
     cancellationReason: c.cancellation_reason ?? undefined,
     duration: c.duration_minutes ?? undefined,

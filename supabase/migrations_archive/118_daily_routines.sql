@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS cs_daily_routines (
   compliance_rating       text NOT NULL DEFAULT 'fully_followed',
   adapted                 boolean NOT NULL DEFAULT false,
   adaptation_reason       text,
-  child_engaged           boolean NOT NULL DEFAULT true,
+  child_engaged           boolean,
   child_mood              text,
   staff_supporting        text NOT NULL,
   notes                   text,

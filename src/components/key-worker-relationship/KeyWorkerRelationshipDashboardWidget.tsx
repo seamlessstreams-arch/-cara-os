@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildKeyWorkerProfile { childId: string; childName: string; totalSessions: number; strongRelationshipRate: number; engagedRate: number; overallScore: number; }
@@ -86,17 +87,17 @@ export default function KeyWorkerRelationshipDashboardWidget() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.keyWorkerQuality.totalSessions} />
           <Stat label="Strong Relationships" value={`${data.keyWorkerQuality.strongRelationshipRate}%`} />
-          <Stat label="Child Engaged" value={`${data.keyWorkerQuality.childEngagedRate}%`} />
-          <Stat label="Goals Discussed" value={`${data.keyWorkerQuality.goalsDiscussedRate}%`} />
-          <Stat label="Progress Recorded" value={`${data.keyWorkerQuality.progressRate}%`} />
+          <Stat label="Child Engaged" value={`${formatRate(data.keyWorkerQuality.childEngagedRate)}`} />
+          <Stat label="Goals Discussed" value={`${formatRate(data.keyWorkerQuality.goalsDiscussedRate)}`} />
+          <Stat label="Progress Recorded" value={`${formatRate(data.keyWorkerQuality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="Key Worker Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.keyWorkerCompliance.documentedRate}%`} />
+          <Stat label="Documented" value={`${formatRate(data.keyWorkerCompliance.documentedRate)}`} />
           <Stat label="Supervisor Reviewed" value={`${data.keyWorkerCompliance.supervisorReviewedRate}%`} />
-          <Stat label="Feedback Given" value={`${data.keyWorkerCompliance.feedbackRate}%`} />
+          <Stat label="Feedback Given" value={`${formatRate(data.keyWorkerCompliance.feedbackRate)}`} />
           <Stat label="Session Diversity" value={`${data.keyWorkerCompliance.sessionTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -120,12 +121,12 @@ export default function KeyWorkerRelationshipDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffKeyWorkerReadiness.totalStaff} />
-          <Stat label="Relationship Building" value={`${data.staffKeyWorkerReadiness.relationshipBuildingRate}%`} />
-          <Stat label="Child Advocacy" value={`${data.staffKeyWorkerReadiness.childAdvocacyRate}%`} />
+          <Stat label="Relationship Building" value={`${formatRate(data.staffKeyWorkerReadiness.relationshipBuildingRate)}`} />
+          <Stat label="Child Advocacy" value={`${formatRate(data.staffKeyWorkerReadiness.childAdvocacyRate)}`} />
           <Stat label="Goal Setting" value={`${data.staffKeyWorkerReadiness.goalSettingSkillsRate}%`} />
-          <Stat label="Life Story Work" value={`${data.staffKeyWorkerReadiness.lifeStoryWorkRate}%`} />
-          <Stat label="Transition Support" value={`${data.staffKeyWorkerReadiness.transitionSupportRate}%`} />
-          <Stat label="Reflective Practice" value={`${data.staffKeyWorkerReadiness.reflectivePracticeRate}%`} />
+          <Stat label="Life Story Work" value={`${formatRate(data.staffKeyWorkerReadiness.lifeStoryWorkRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(data.staffKeyWorkerReadiness.transitionSupportRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(data.staffKeyWorkerReadiness.reflectivePracticeRate)}`} />
         </div>
       </Section>
 
@@ -135,7 +136,7 @@ export default function KeyWorkerRelationshipDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Strong Relationship: {cp.strongRelationshipRate}%</span><span>Engaged: {cp.engagedRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {cp.totalSessions}</span><span>Strong Relationship: {cp.strongRelationshipRate}%</span><span>Engaged: {formatRate(cp.engagedRate)}</span></div>
               </div>
             ))}
           </div>

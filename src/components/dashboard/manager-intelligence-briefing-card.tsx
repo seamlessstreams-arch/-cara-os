@@ -139,7 +139,7 @@ export function ManagerIntelligenceBriefingCard() {
                 </div>
                 <div className="flex items-center justify-center gap-1">
                   {dh.compliance_rate !== null && (
-                    <span className="text-[10px] tabular-nums text-muted-foreground">{dh.compliance_rate}%</span>
+                    <span className="text-[10px] tabular-nums text-muted-foreground">{formatRate(dh.compliance_rate)}</span>
                   )}
                   <TrendIcon direction={dh.trend_direction} />
                 </div>

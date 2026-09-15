@@ -228,7 +228,7 @@ export function HrFilesDashboardWidget() {
         )}
         {metrics.vacancyRate !== null && metrics.vacancyRate > 0 && (
           <span className="rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-xs font-medium border border-orange-200">
-            {metrics.vacancyRate}% VACANCY RATE
+            {formatRate(metrics.vacancyRate)} VACANCY RATE
           </span>
         )}
         {meets(metrics.trainingComplianceRate, 100) && meets(metrics.supervisionComplianceRate, 100) && (

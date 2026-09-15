@@ -66,18 +66,18 @@ export interface StaffDebriefSupportRecord {
   debrief_date: string;
   staff_name: string;
   facilitated_by: string;
-  timely_debrief: boolean;
-  safe_space_provided: boolean;
-  confidentiality_assured: boolean;
-  emotional_support_offered: boolean;
-  learning_captured: boolean;
-  action_plan_agreed: boolean;
+  timely_debrief: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  safe_space_provided: boolean | null;
+  confidentiality_assured: boolean | null;
+  emotional_support_offered: boolean | null;
+  learning_captured: boolean | null;
+  action_plan_agreed: boolean | null;
   follow_up_scheduled: boolean;
-  supervision_linked: boolean;
+  supervision_linked: boolean | null;
   occupational_health_considered: boolean;
   eap_signposted: boolean;
-  peer_support_offered: boolean;
-  recorded_promptly: boolean;
+  peer_support_offered: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   debrief_duration_minutes: number;
@@ -160,10 +160,16 @@ export function computeStaffDebriefMetrics(
   const furtherSupport = records.filter((r) => r.support_outcome === "further_support_needed").length;
   const declinedSupport = records.filter((r) => r.support_outcome === "declined_support").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffDebriefSupportRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -243,45 +249,45 @@ export function identifyStaffDebriefAlerts(
   }
 
   // Not timely debrief
-  const notTimely = records.filter((r) => !r.timely_debrief).length;
+  const notTimely = records.filter((r) => r.timely_debrief !== true).length;
   if (notTimely >= 1) {
     alerts.push({
       type: "not_timely",
       severity: "high",
-      message: `${notTimely} ${notTimely === 1 ? "debrief was" : "debriefs were"} not conducted in a timely manner — review debrief protocols`,
+      message: `${notTimely} ${notTimely === 1 ? "debrief was" : "debriefs were"} without evidenced timeliness — review debrief protocols`,
       id: "not_timely",
     });
   }
 
   // Learning not captured
-  const noLearning = records.filter((r) => !r.learning_captured).length;
+  const noLearning = records.filter((r) => r.learning_captured !== true).length;
   if (noLearning >= 1) {
     alerts.push({
       type: "learning_not_captured",
       severity: "high",
-      message: `${noLearning} ${noLearning === 1 ? "debrief has" : "debriefs have"} learning not captured — ensure reflective practice`,
+      message: `${noLearning} ${noLearning === 1 ? "debrief has" : "debriefs have"} no captured learning evidenced — ensure reflective practice`,
       id: "learning_not_captured",
     });
   }
 
   // Emotional support not offered
-  const noEmotional = records.filter((r) => !r.emotional_support_offered).length;
+  const noEmotional = records.filter((r) => r.emotional_support_offered !== true).length;
   if (noEmotional >= 2) {
     alerts.push({
       type: "no_emotional_support",
       severity: "medium",
-      message: `${noEmotional} debriefs without emotional support offered — strengthen staff wellbeing focus`,
+      message: `${noEmotional} debriefs without evidenced emotional support — strengthen staff wellbeing focus`,
       id: "no_emotional_support",
     });
   }
 
   // No safe space
-  const noSafeSpace = records.filter((r) => !r.safe_space_provided).length;
+  const noSafeSpace = records.filter((r) => r.safe_space_provided !== true).length;
   if (noSafeSpace >= 2) {
     alerts.push({
       type: "no_safe_space",
       severity: "medium",
-      message: `${noSafeSpace} debriefs without safe space provided — ensure appropriate environment`,
+      message: `${noSafeSpace} debriefs without an evidenced safe space — ensure appropriate environment`,
       id: "no_safe_space",
     });
   }
@@ -362,18 +368,18 @@ export async function createRecord(
       debrief_date: payload.debriefDate,
       staff_name: payload.staffName,
       facilitated_by: payload.facilitatedBy,
-      timely_debrief: payload.timelyDebrief ?? true,
-      safe_space_provided: payload.safeSpaceProvided ?? true,
-      confidentiality_assured: payload.confidentialityAssured ?? true,
-      emotional_support_offered: payload.emotionalSupportOffered ?? true,
-      learning_captured: payload.learningCaptured ?? true,
-      action_plan_agreed: payload.actionPlanAgreed ?? true,
+      timely_debrief: payload.timelyDebrief ?? null,
+      safe_space_provided: payload.safeSpaceProvided ?? null,
+      confidentiality_assured: payload.confidentialityAssured ?? null,
+      emotional_support_offered: payload.emotionalSupportOffered ?? null,
+      learning_captured: payload.learningCaptured ?? null,
+      action_plan_agreed: payload.actionPlanAgreed ?? null,
       follow_up_scheduled: payload.followUpScheduled ?? false,
-      supervision_linked: payload.supervisionLinked ?? true,
+      supervision_linked: payload.supervisionLinked ?? null,
       occupational_health_considered: payload.occupationalHealthConsidered ?? false,
       eap_signposted: payload.eapSignposted ?? false,
-      peer_support_offered: payload.peerSupportOffered ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      peer_support_offered: payload.peerSupportOffered ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       debrief_duration_minutes: payload.debriefDurationMinutes,

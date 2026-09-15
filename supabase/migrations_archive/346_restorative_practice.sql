@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS cs_restorative_practice (
   session_type                    text NOT NULL DEFAULT 'Restorative Chat',
   trigger_incident                text NULL,
   participants                    text NOT NULL DEFAULT '',
-  harm_acknowledged               boolean NOT NULL DEFAULT false,
+  harm_acknowledged               boolean,
   perspectives_shared             boolean NOT NULL DEFAULT false,
   agreement_reached               boolean NOT NULL DEFAULT false,
   agreement_details               text NULL,

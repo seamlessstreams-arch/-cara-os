@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -370,11 +371,11 @@ export default function HandoverDashboardWidget() {
                     </div>
                     <div className="flex justify-between">
                       <span>Children Covered</span>
-                      <span className={"font-medium " + rateTextColour(child.allChildrenCoveredRate)}>{child.allChildrenCoveredRate}%</span>
+                      <span className={"font-medium " + rateTextColour(child.allChildrenCoveredRate)}>{formatRate(child.allChildrenCoveredRate)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Medication Updated</span>
-                      <span className={"font-medium " + rateTextColour(child.medicationStatusUpdatedRate)}>{child.medicationStatusUpdatedRate}%</span>
+                      <span className={"font-medium " + rateTextColour(child.medicationStatusUpdatedRate)}>{formatRate(child.medicationStatusUpdatedRate)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Categories</span>

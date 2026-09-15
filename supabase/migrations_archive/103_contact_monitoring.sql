@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS cs_contact_sessions (
   child_mood_after       text,
   child_views            text,
   staff_observations     text,
-  concerns_raised        boolean NOT NULL DEFAULT false,
+  concerns_raised        boolean,
   concern_details        text,
   social_worker_informed boolean NOT NULL DEFAULT false,
   court_ordered          boolean NOT NULL DEFAULT false,

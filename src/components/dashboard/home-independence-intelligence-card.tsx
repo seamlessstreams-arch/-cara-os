@@ -7,6 +7,7 @@
 // CHR 2015 Reg 7, 8. SCCIF: "Outcomes", "Experiences and progress."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
@@ -177,8 +178,8 @@ export function HomeIndependenceIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Pathways</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Linked to plan: <span className={cn("font-medium", d.independence_profile.pathway_plan_linkage_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.independence_profile.pathway_plan_linkage_rate}%</span></p>
-                <p>Evidence quality: <span className={cn("font-medium", d.independence_profile.evidence_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.independence_profile.evidence_rate}%</span></p>
+                <p>Linked to plan: <span className={cn("font-medium", d.independence_profile.pathway_plan_linkage_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.independence_profile.pathway_plan_linkage_rate)}</span></p>
+                <p>Evidence quality: <span className={cn("font-medium", d.independence_profile.evidence_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.independence_profile.evidence_rate)}</span></p>
                 {d.independence_profile.children_without_assessments.length > 0 && <p>No assessment: <span className="font-medium text-red-600">{d.independence_profile.children_without_assessments.length} children</span></p>}
                 {d.independence_profile.overdue_reviews > 0 && <p>Overdue reviews: <span className="font-medium text-red-600">{d.independence_profile.overdue_reviews}</span></p>}
               </div>

@@ -13,6 +13,7 @@
 // - Child voice / adaptation implementation
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ChildRoutineProfileData {
@@ -149,18 +150,18 @@ function ChildRoutineCard({ child }: { child: ChildRoutineProfileData }) {
         <div>
           <div className="text-xs text-gray-500">Morning</div>
           <div className={`text-sm font-bold ${child.morningQualityRate >= 70 ? "text-green-700" : child.morningQualityRate >= 50 ? "text-orange-700" : "text-red-700"}`}>
-            {child.morningQualityRate}%
+            {formatRate(child.morningQualityRate)}
           </div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Evening</div>
           <div className={`text-sm font-bold ${child.eveningQualityRate >= 70 ? "text-green-700" : child.eveningQualityRate >= 50 ? "text-orange-700" : "text-red-700"}`}>
-            {child.eveningQualityRate}%
+            {formatRate(child.eveningQualityRate)}
           </div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Coop</div>
-          <div className="text-sm font-bold text-blue-700">{child.overallCooperationRate}%</div>
+          <div className="text-sm font-bold text-blue-700">{formatRate(child.overallCooperationRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Prefs</div>
@@ -232,7 +233,7 @@ export function RoutineConsistencyDashboardWidget() {
         <div>
           <h3 className="font-semibold text-gray-900 text-lg">Routine & Consistency</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            CHR 2015 Reg 9 | {data.morningRoutine.totalRecords + data.eveningRoutine.totalRecords} routine records | {data.staffConsistency.regularStaffRate}% regular staff
+            CHR 2015 Reg 9 | {data.morningRoutine.totalRecords + data.eveningRoutine.totalRecords} routine records | {formatRate(data.staffConsistency.regularStaffRate)} regular staff
           </p>
         </div>
         <RatingBadge score={data.overallScore} rating={data.rating} />
@@ -241,19 +242,19 @@ export function RoutineConsistencyDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-amber-50 rounded-lg">
-          <div className="text-xl font-bold text-amber-700">{data.morningRoutine.qualityRate}%</div>
+          <div className="text-xl font-bold text-amber-700">{formatRate(data.morningRoutine.qualityRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Morning Quality</div>
         </div>
         <div className="text-center p-2 bg-indigo-50 rounded-lg">
-          <div className="text-xl font-bold text-indigo-700">{data.eveningRoutine.qualityRate}%</div>
+          <div className="text-xl font-bold text-indigo-700">{formatRate(data.eveningRoutine.qualityRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Evening Quality</div>
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.morningRoutine.schoolReadinessRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.morningRoutine.schoolReadinessRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">School Ready</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.eveningRoutine.bedtimeComplianceRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{formatRate(data.eveningRoutine.bedtimeComplianceRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Bedtime On Time</div>
         </div>
       </div>
@@ -261,10 +262,10 @@ export function RoutineConsistencyDashboardWidget() {
       {/* Status Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
         <span className={`text-xs px-2 py-1 rounded ${data.staffConsistency.regularStaffRate >= 80 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
-          {data.staffConsistency.regularStaffRate}% regular staff
+          {formatRate(data.staffConsistency.regularStaffRate)} regular staff
         </span>
         <span className={`text-xs px-2 py-1 rounded ${data.staffConsistency.handoverCompletionRate >= 90 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
-          {data.staffConsistency.handoverCompletionRate}% handovers completed
+          {formatRate(data.staffConsistency.handoverCompletionRate)} handovers completed
         </span>
         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
           {data.eveningRoutine.windDownQuality}% wind-down quality
@@ -321,10 +322,10 @@ export function RoutineConsistencyDashboardWidget() {
                   <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${p.excellentOrGoodRate >= 80 ? "bg-green-400" : p.excellentOrGoodRate >= 60 ? "bg-blue-400" : p.excellentOrGoodRate >= 40 ? "bg-orange-400" : "bg-red-400"}`}
-                      style={{ width: `${p.excellentOrGoodRate}%` }}
+                      style={{ width: `${formatRate(p.excellentOrGoodRate)}` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500 w-10 text-right">{p.excellentOrGoodRate}%</span>
+                  <span className="text-xs text-gray-500 w-10 text-right">{formatRate(p.excellentOrGoodRate)}</span>
                   <MoodBar value={p.averageMood} />
                 </div>
               ))}

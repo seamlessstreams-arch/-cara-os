@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS cs_staff_lone_working_risks (
   check_in_protocol_agreed  boolean NOT NULL DEFAULT false,
   check_in_frequency        text    NULL CHECK (check_in_frequency IS NULL OR check_in_frequency IN ('Hourly','2-Hourly','4-Hourly','Start/End','On Demand')),
   personal_alarm_issued     boolean NOT NULL DEFAULT false,
-  mobile_phone_available    boolean NOT NULL DEFAULT true,
-  emergency_procedures_known boolean NOT NULL DEFAULT true,
+  mobile_phone_available    boolean,
+  emergency_procedures_known boolean,
   training_completed        boolean NOT NULL DEFAULT false,
 
-  incident_during_lone_work boolean NOT NULL DEFAULT false,
+  incident_during_lone_work boolean,
   near_miss_reported        boolean NOT NULL DEFAULT false,
 
   next_review_date     date    NULL,

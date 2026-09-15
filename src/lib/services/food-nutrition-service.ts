@@ -119,13 +119,13 @@ export interface HygieneCheck {
   home_id: string;
   check_date: string;
   checked_by: string;
-  fridge_temp_ok: boolean;
-  freezer_temp_ok: boolean;
-  food_storage_ok: boolean;
-  kitchen_cleanliness: HygieneCheckResult;
-  food_prep_areas: HygieneCheckResult;
-  hand_washing_facilities: HygieneCheckResult;
-  overall_result: HygieneCheckResult;
+  fridge_temp_ok: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  freezer_temp_ok: boolean | null;
+  food_storage_ok: boolean | null;
+  kitchen_cleanliness: HygieneCheckResult | null; // null = not recorded; judgements are tri-state — credit needs an explicit recorded value
+  food_prep_areas: HygieneCheckResult | null;
+  hand_washing_facilities: HygieneCheckResult | null;
+  overall_result: HygieneCheckResult | null;
   issues_found: string | null;
   corrective_action: string | null;
   follow_up_date: string | null;
@@ -258,9 +258,12 @@ export function computeNutritionMetrics(
   for (const h of hygieneChecks) {
     if (h.overall_result === "pass") hygienePass++;
   }
+  // Rate over checks with a recorded result — an unrecorded hygiene audit
+  // must not read as a quiet pass or fail.
+  const recordedHygiene = hygieneChecks.filter((h) => h.overall_result !== null).length;
   const hygienePassRate =
-    hygieneChecks.length > 0
-      ? Math.round((hygienePass / hygieneChecks.length) * 1000) / 10
+    recordedHygiene > 0
+      ? Math.round((hygienePass / recordedHygiene) * 1000) / 10
       : null;
 
   // Overdue profile reviews
@@ -638,13 +641,13 @@ export async function createHygieneCheck(
       home_id: input.homeId,
       check_date: input.checkDate,
       checked_by: input.checkedBy,
-      fridge_temp_ok: input.fridgeTempOk ?? true,
-      freezer_temp_ok: input.freezerTempOk ?? true,
-      food_storage_ok: input.foodStorageOk ?? true,
-      kitchen_cleanliness: input.kitchenCleanliness ?? "pass",
-      food_prep_areas: input.foodPrepAreas ?? "pass",
-      hand_washing_facilities: input.handWashingFacilities ?? "pass",
-      overall_result: input.overallResult ?? "pass",
+      fridge_temp_ok: input.fridgeTempOk ?? null,
+      freezer_temp_ok: input.freezerTempOk ?? null,
+      food_storage_ok: input.foodStorageOk ?? null,
+      kitchen_cleanliness: input.kitchenCleanliness ?? null,
+      food_prep_areas: input.foodPrepAreas ?? null,
+      hand_washing_facilities: input.handWashingFacilities ?? null,
+      overall_result: input.overallResult ?? null,
       issues_found: input.issuesFound ?? null,
       corrective_action: input.correctiveAction ?? null,
       follow_up_date: input.followUpDate ?? null,

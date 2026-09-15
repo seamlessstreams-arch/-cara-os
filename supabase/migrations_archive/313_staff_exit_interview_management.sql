@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_exit_interviews (
 
   departure_reason  text        NOT NULL CHECK (departure_reason IN ('Resignation','Retirement','Redundancy','End of Contract','Dismissal','Transfer','Career Change','Personal Reasons','Other')),
   departure_date    date        NOT NULL,
-  notice_period_met boolean     NOT NULL DEFAULT true,
+  notice_period_met boolean,
 
   knowledge_transfer_completed boolean NOT NULL DEFAULT false,
   handover_document_provided   boolean NOT NULL DEFAULT false,

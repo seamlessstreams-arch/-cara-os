@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,19 +79,19 @@ export function AfterCareSupportQualityIntelligenceWidget() {
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Sessions" value={quality.totalSessions} />
-          <Stat label="Engagement" value={`${quality.engagementRate}%`} />
-          <Stat label="Needs Assessed" value={`${quality.needsAssessedRate}%`} />
-          <Stat label="Goals Set" value={`${quality.goalsSetRate}%`} />
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(quality.engagementRate)}`} />
+          <Stat label="Needs Assessed" value={`${formatRate(quality.needsAssessedRate)}`} />
+          <Stat label="Goals Set" value={`${formatRate(quality.goalsSetRate)}`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="After-Care Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Type Diversity" value={compliance.supportTypeDiversityRatio} />
         </div>
       </Section>
@@ -117,12 +118,12 @@ export function AfterCareSupportQualityIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Leaving Care Knowledge" value={`${staff.leavingCareKnowledgeRate}%`} />
-          <Stat label="Pathway Planning" value={`${staff.pathwayPlanningRate}%`} />
-          <Stat label="Housing Advice" value={`${staff.housingAdviceRate}%`} />
-          <Stat label="Employment Support" value={`${staff.employmentSupportRate}%`} />
-          <Stat label="Benefits & Finance" value={`${staff.benefitsAndFinanceRate}%`} />
-          <Stat label="Emotional Resilience" value={`${staff.emotionalResilienceRate}%`} />
+          <Stat label="Leaving Care Knowledge" value={`${formatRate(staff.leavingCareKnowledgeRate)}`} />
+          <Stat label="Pathway Planning" value={`${formatRate(staff.pathwayPlanningRate)}`} />
+          <Stat label="Housing Advice" value={`${formatRate(staff.housingAdviceRate)}`} />
+          <Stat label="Employment Support" value={`${formatRate(staff.employmentSupportRate)}`} />
+          <Stat label="Benefits & Finance" value={`${formatRate(staff.benefitsAndFinanceRate)}`} />
+          <Stat label="Emotional Resilience" value={`${formatRate(staff.emotionalResilienceRate)}`} />
         </div>
       </Section>
 

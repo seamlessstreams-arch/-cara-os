@@ -157,7 +157,6 @@ function StatusIndicator({
   value,
   alert,
   alertColor,
-  isText,
 }: {
   icon: React.ElementType;
   label: string;

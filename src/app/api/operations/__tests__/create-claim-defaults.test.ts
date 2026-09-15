@@ -24,7 +24,10 @@ function post(handler: (r: NextRequest) => Promise<Response>, path: string, body
 
 const CASES = [
   { name: "sanction", handler: SANCTIONS, path: "sanctions-rewards",
-    body: { homeId: "home_oak", action: "create_sanction" },
+    // durationMinutes is required alongside the judgements (`?? 0` used to file
+    // an unstated duration as zero minutes) — supplied here so this case tests
+    // the boolean claims in isolation.
+    body: { homeId: "home_oak", action: "create_sanction", durationMinutes: 60 },
     claims: ["proportionate", "ageAppropriate", "consistentWithPlan", "childInformed"] },
   { name: "fire drill", handler: EMERGENCY, path: "emergency",
     body: { homeId: "home_oak", action: "create_drill" },

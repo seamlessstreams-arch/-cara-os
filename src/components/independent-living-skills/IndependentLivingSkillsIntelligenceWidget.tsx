@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function IndependentLivingSkillsIntelligenceWidget() {
       <Section title="Living Skills Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Competency" value={`${quality.competencyRate}%`} />
-          <Stat label="Engagement" value={`${quality.engagementRate}%`} />
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
-          <Stat label="Confidence" value={`${quality.confidenceRate}%`} />
+          <Stat label="Competency" value={`${formatRate(quality.competencyRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(quality.engagementRate)}`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
+          <Stat label="Confidence" value={`${formatRate(quality.confidenceRate)}`} />
         </div>
       </Section>
 
       <Section title="Living Skills Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Skill Diversity" value={`${compliance.skillTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -117,11 +118,11 @@ export function IndependentLivingSkillsIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Independence Promotion" value={`${staff.independencePromotionRate}%`} />
-          <Stat label="Practical Skills" value={`${staff.practicalSkillsTeachingRate}%`} />
-          <Stat label="Risk Enablement" value={`${staff.riskEnablementRate}%`} />
-          <Stat label="Pathway Planning" value={`${staff.pathwayPlanningRate}%`} />
-          <Stat label="Community Access" value={`${staff.communityAccessRate}%`} />
+          <Stat label="Independence Promotion" value={`${formatRate(staff.independencePromotionRate)}`} />
+          <Stat label="Practical Skills" value={`${formatRate(staff.practicalSkillsTeachingRate)}`} />
+          <Stat label="Risk Enablement" value={`${formatRate(staff.riskEnablementRate)}`} />
+          <Stat label="Pathway Planning" value={`${formatRate(staff.pathwayPlanningRate)}`} />
+          <Stat label="Community Access" value={`${formatRate(staff.communityAccessRate)}`} />
         </div>
       </Section>
 

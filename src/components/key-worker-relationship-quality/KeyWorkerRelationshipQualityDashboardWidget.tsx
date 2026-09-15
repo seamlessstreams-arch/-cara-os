@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface ChildKeyWorkerProfile { childId: string; childName: string; keyWorkerName: string; totalSessions: number; engagementRate: number; childVoiceRate: number; overallScore: number; }
@@ -85,18 +86,18 @@ export default function KeyWorkerRelationshipQualityDashboardWidget() {
       <Section title="Session Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.sessionQuality.totalSessions} />
-          <Stat label="Engagement" value={`${data.sessionQuality.engagementRate}%`} />
-          <Stat label="Child Voice" value={`${data.sessionQuality.childVoiceRate}%`} />
-          <Stat label="Goals Reviewed" value={`${data.sessionQuality.goalsReviewedRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(data.sessionQuality.engagementRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(data.sessionQuality.childVoiceRate)}`} />
+          <Stat label="Goals Reviewed" value={`${formatRate(data.sessionQuality.goalsReviewedRate)}`} />
           <Stat label="Action Plans" value={`${data.sessionQuality.actionsPlanRate}%`} />
         </div>
       </Section>
 
       <Section title="Relationship Effectiveness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Relationship" value={`${data.relationshipEffectiveness.relationshipRate}%`} />
-          <Stat label="Documented" value={`${data.relationshipEffectiveness.documentedRate}%`} />
-          <Stat label="Follow-Up" value={`${data.relationshipEffectiveness.followUpRate}%`} />
+          <Stat label="Relationship" value={`${formatRate(data.relationshipEffectiveness.relationshipRate)}`} />
+          <Stat label="Documented" value={`${formatRate(data.relationshipEffectiveness.documentedRate)}`} />
+          <Stat label="Follow-Up" value={`${formatRate(data.relationshipEffectiveness.followUpRate)}`} />
           <Stat label="Session Diversity" value={`${data.relationshipEffectiveness.sessionDiversityRatio}%`} />
         </div>
       </Section>
@@ -120,12 +121,12 @@ export default function KeyWorkerRelationshipQualityDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Relationships" value={`${data.staffReadiness.relationshipBuildingRate}%`} />
-          <Stat label="Child Voice" value={`${data.staffReadiness.childVoiceRate}%`} />
+          <Stat label="Relationships" value={`${formatRate(data.staffReadiness.relationshipBuildingRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(data.staffReadiness.childVoiceRate)}`} />
           <Stat label="Care Planning" value={`${data.staffReadiness.carePlanningRate}%`} />
-          <Stat label="Therapeutic" value={`${data.staffReadiness.therapeuticRate}%`} />
-          <Stat label="Advocacy" value={`${data.staffReadiness.advocacyRate}%`} />
-          <Stat label="Documentation" value={`${data.staffReadiness.documentationRate}%`} />
+          <Stat label="Therapeutic" value={`${formatRate(data.staffReadiness.therapeuticRate)}`} />
+          <Stat label="Advocacy" value={`${formatRate(data.staffReadiness.advocacyRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(data.staffReadiness.documentationRate)}`} />
         </div>
       </Section>
 
@@ -135,7 +136,7 @@ export default function KeyWorkerRelationshipQualityDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Key Worker: {cp.keyWorkerName}</span><span>Sessions: {cp.totalSessions}</span><span>Engagement: {cp.engagementRate}%</span><span>Voice: {cp.childVoiceRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Key Worker: {cp.keyWorkerName}</span><span>Sessions: {cp.totalSessions}</span><span>Engagement: {formatRate(cp.engagementRate)}</span><span>Voice: {formatRate(cp.childVoiceRate)}</span></div>
               </div>
             ))}
           </div>

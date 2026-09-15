@@ -74,18 +74,20 @@ export interface BoundaryManagementRecord {
   child_name: string;
   child_id: string | null;
   staff_name: string;
-  boundary_explained: boolean;
-  age_appropriate: boolean;
-  child_voice_heard: boolean;
-  trauma_informed: boolean;
-  care_plan_consistent: boolean;
-  relationship_maintained: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  boundary_explained: boolean | null;
+  age_appropriate: boolean | null;
+  child_voice_heard: boolean | null;
+  trauma_informed: boolean | null;
+  care_plan_consistent: boolean | null;
+  relationship_maintained: boolean | null;
   de_escalation_used: boolean;
-  restorative_offered: boolean;
-  learning_identified: boolean;
+  restorative_offered: boolean | null;
+  learning_identified: boolean | null;
   parent_informed: boolean;
   social_worker_informed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   recorded_by: string;
@@ -172,10 +174,16 @@ export function computeBoundaryManagementMetrics(
   const refused = records.filter((r) => r.child_response === "refused").length;
   const inconsistent = records.filter((r) => r.consistency_rating === "inconsistent" || r.consistency_rating === "contradictory").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof BoundaryManagementRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -247,7 +255,7 @@ export function identifyBoundaryManagementAlerts(
   }
 
   // Not trauma informed
-  const noTrauma = records.filter((r) => !r.trauma_informed).length;
+  const noTrauma = records.filter((r) => r.trauma_informed === false).length;
   if (noTrauma >= 1) {
     alerts.push({
       type: "not_trauma_informed",
@@ -258,7 +266,7 @@ export function identifyBoundaryManagementAlerts(
   }
 
   // Child voice not heard
-  const noVoice = records.filter((r) => !r.child_voice_heard).length;
+  const noVoice = records.filter((r) => r.child_voice_heard === false).length;
   if (noVoice >= 1) {
     alerts.push({
       type: "child_voice_not_heard",
@@ -280,7 +288,7 @@ export function identifyBoundaryManagementAlerts(
   }
 
   // No restorative offered
-  const noRestorative = records.filter((r) => !r.restorative_offered).length;
+  const noRestorative = records.filter((r) => r.restorative_offered === false).length;
   if (noRestorative >= 3) {
     alerts.push({
       type: "no_restorative",
@@ -368,18 +376,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_name: payload.staffName,
-      boundary_explained: payload.boundaryExplained ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      child_voice_heard: payload.childVoiceHeard ?? true,
-      trauma_informed: payload.traumaInformed ?? true,
-      care_plan_consistent: payload.carePlanConsistent ?? true,
-      relationship_maintained: payload.relationshipMaintained ?? true,
+      boundary_explained: payload.boundaryExplained ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      child_voice_heard: payload.childVoiceHeard ?? null,
+      trauma_informed: payload.traumaInformed ?? null,
+      care_plan_consistent: payload.carePlanConsistent ?? null,
+      relationship_maintained: payload.relationshipMaintained ?? null,
       de_escalation_used: payload.deEscalationUsed ?? false,
-      restorative_offered: payload.restorativeOffered ?? true,
-      learning_identified: payload.learningIdentified ?? true,
+      restorative_offered: payload.restorativeOffered ?? null,
+      learning_identified: payload.learningIdentified ?? null,
       parent_informed: payload.parentInformed ?? false,
       social_worker_informed: payload.socialWorkerInformed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       recorded_by: payload.recordedBy,

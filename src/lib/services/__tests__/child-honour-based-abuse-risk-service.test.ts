@@ -26,24 +26,27 @@ function makeRow(
 ): ChildHonourBasedAbuseRiskRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    assessor_name: overrides?.assessor_name ?? "Assessor X",
-    child_name: overrides?.child_name ?? "Child A",
-    risk_level: overrides?.risk_level ?? "Low",
-    abuse_type: overrides?.abuse_type ?? "Not Determined",
-    perpetrator_relationship: overrides?.perpetrator_relationship ?? "Unknown",
-    safety_plan_in_place: overrides?.safety_plan_in_place ?? true,
-    multi_agency_referral: overrides?.multi_agency_referral ?? true,
-    police_notification: overrides?.police_notification ?? true,
-    specialist_service_engaged: overrides?.specialist_service_engaged ?? true,
-    safe_accommodation_secured: overrides?.safe_accommodation_secured ?? true,
-    one_chance_rule_applied: overrides?.one_chance_rule_applied ?? true,
+    home_id: "home-1",
+    assessment_date: todayStr(),
+    assessor_name: "Assessor X",
+    child_name: "Child A",
+    risk_level: "Low",
+    abuse_type: "Not Determined",
+    perpetrator_relationship: "Unknown",
+    safety_plan_in_place: true,
+    multi_agency_referral: true,
+    police_notification: true,
+    specialist_service_engaged: true,
+    safe_accommodation_secured: true,
+    one_chance_rule_applied: true,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
-    compliance_status: overrides?.compliance_status ?? "Compliant",
+    compliance_status: "Compliant",
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

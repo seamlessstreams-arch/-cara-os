@@ -68,18 +68,18 @@ export interface FaithSpiritualObservanceRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  child_wishes_respected: boolean;
-  dietary_needs_met: boolean;
-  attendance_facilitated: boolean;
-  resources_provided: boolean;
-  care_plan_reflects: boolean;
+  child_wishes_respected: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  dietary_needs_met: boolean | null;
+  attendance_facilitated: boolean | null;
+  resources_provided: boolean | null;
+  care_plan_reflects: boolean | null;
   social_worker_informed: boolean;
   parent_informed: boolean;
-  cultural_awareness_shown: boolean;
-  privacy_respected: boolean;
-  peer_understanding_promoted: boolean;
-  festivals_acknowledged: boolean;
-  recorded_promptly: boolean;
+  cultural_awareness_shown: boolean | null;
+  privacy_respected: boolean | null;
+  peer_understanding_promoted: boolean | null;
+  festivals_acknowledged: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -160,10 +160,16 @@ export function computeFaithSpiritualMetrics(
   const poorSensitivity = records.filter((r) => r.cultural_sensitivity === "poor" || r.cultural_sensitivity === "insensitive").length;
   const insensitive = records.filter((r) => r.cultural_sensitivity === "insensitive").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof FaithSpiritualObservanceRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -233,45 +239,45 @@ export function identifyFaithSpiritualAlerts(
   }
 
   // Child wishes not respected
-  const noWishes = records.filter((r) => !r.child_wishes_respected).length;
+  const noWishes = records.filter((r) => r.child_wishes_respected !== true).length;
   if (noWishes >= 1) {
     alerts.push({
       type: "wishes_not_respected",
       severity: "high",
-      message: `${noWishes} ${noWishes === 1 ? "session has" : "sessions have"} child wishes not respected`,
+      message: `${noWishes} ${noWishes === 1 ? "session has" : "sessions have"} no evidence child wishes were respected`,
       id: "wishes_not_respected",
     });
   }
 
   // Attendance not facilitated
-  const noAttendance = records.filter((r) => !r.attendance_facilitated).length;
+  const noAttendance = records.filter((r) => r.attendance_facilitated !== true).length;
   if (noAttendance >= 1) {
     alerts.push({
       type: "attendance_not_facilitated",
       severity: "high",
-      message: `${noAttendance} ${noAttendance === 1 ? "session has" : "sessions have"} worship attendance not facilitated`,
+      message: `${noAttendance} ${noAttendance === 1 ? "session has" : "sessions have"} no evidenced worship-attendance facilitation`,
       id: "attendance_not_facilitated",
     });
   }
 
   // No cultural awareness shown
-  const noAwareness = records.filter((r) => !r.cultural_awareness_shown).length;
+  const noAwareness = records.filter((r) => r.cultural_awareness_shown !== true).length;
   if (noAwareness >= 2) {
     alerts.push({
       type: "no_cultural_awareness",
       severity: "medium",
-      message: `${noAwareness} sessions have no cultural awareness shown`,
+      message: `${noAwareness} sessions have no evidenced cultural awareness`,
       id: "no_cultural_awareness",
     });
   }
 
   // Festivals not acknowledged
-  const noFestivals = records.filter((r) => !r.festivals_acknowledged).length;
+  const noFestivals = records.filter((r) => r.festivals_acknowledged !== true).length;
   if (noFestivals >= 2) {
     alerts.push({
       type: "festivals_not_acknowledged",
       severity: "medium",
-      message: `${noFestivals} sessions have festivals not acknowledged`,
+      message: `${noFestivals} sessions have no evidenced festival acknowledgement`,
       id: "festivals_not_acknowledged",
     });
   }
@@ -345,18 +351,18 @@ export async function createFaithSpiritualObservance(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      child_wishes_respected: payload.childWishesRespected ?? true,
-      dietary_needs_met: payload.dietaryNeedsMet ?? true,
-      attendance_facilitated: payload.attendanceFacilitated ?? true,
-      resources_provided: payload.resourcesProvided ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
+      child_wishes_respected: payload.childWishesRespected ?? null,
+      dietary_needs_met: payload.dietaryNeedsMet ?? null,
+      attendance_facilitated: payload.attendanceFacilitated ?? null,
+      resources_provided: payload.resourcesProvided ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
       social_worker_informed: payload.socialWorkerInformed ?? false,
       parent_informed: payload.parentInformed ?? false,
-      cultural_awareness_shown: payload.culturalAwarenessShown ?? true,
-      privacy_respected: payload.privacyRespected ?? true,
-      peer_understanding_promoted: payload.peerUnderstandingPromoted ?? true,
-      festivals_acknowledged: payload.festivalsAcknowledged ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      cultural_awareness_shown: payload.culturalAwarenessShown ?? null,
+      privacy_respected: payload.privacyRespected ?? null,
+      peer_understanding_promoted: payload.peerUnderstandingPromoted ?? null,
+      festivals_acknowledged: payload.festivalsAcknowledged ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

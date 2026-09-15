@@ -140,7 +140,7 @@ export function PeerMentoringEffectivenessDashboardWidget() {
                     <div>Roles: <span className="font-medium">{child.roles.join(", ")}</span></div>
                     <div>Pairings: <span className="font-medium">{child.pairingsCount}</span></div>
                     <div>Sessions: <span className="font-medium">{child.sessionsInPeriod}</span></div>
-                    <div>Positive: <span className="font-medium">{child.positiveOutcomeRate}%</span></div>
+                    <div>Positive: <span className="font-medium">{formatRate(child.positiveOutcomeRate)}</span></div>
                     <div>Concerns: <span className={`font-medium ${child.safeguardingConcerns > 0 ? "text-red-600" : "text-green-600"}`}>{child.safeguardingConcerns}</span></div>
                   </div>
                 </div>

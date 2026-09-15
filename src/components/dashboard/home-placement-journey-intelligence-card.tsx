@@ -79,7 +79,7 @@ export function HomePlacementJourneyIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">Pre-Admission</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", meets(d.welcome_packs.personalised_rate, 80) ? "text-[--cs-success]" : meets(d.welcome_packs.personalised_rate, 50) ? "text-blue-600" : "text-[--cs-risk]")}>{d.welcome_packs.total > 0 ? `${d.welcome_packs.personalised_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.welcome_packs.personalised_rate, 80) ? "text-[--cs-success]" : meets(d.welcome_packs.personalised_rate, 50) ? "text-blue-600" : "text-[--cs-risk]")}>{d.welcome_packs.total > 0 ? `${formatRate(d.welcome_packs.personalised_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Welcome Packs</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">

@@ -18,6 +18,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { SB } from "@/lib/supabase/loose-client";
 import { CARA_DEFAULT_MODEL } from "./cara-provider";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
@@ -225,8 +226,7 @@ async function pingAnthropic(model: string): Promise<{ ok: boolean; latencyMs: n
 
 // ─── Helper: check a single Supabase table ───────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function tableExists(supabase: any, table: string): Promise<boolean> {
+async function tableExists(supabase: SB, table: string): Promise<boolean> {
   try {
     const { error } = await supabase
       .from(table)
@@ -337,8 +337,7 @@ export async function checkCaraHealth(
     tablesPresent = missingTables.length === 0;
 
     if (tablesPresent) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const sb = supabase as any;
+            const sb = supabase as SB;
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayIso = todayStart.toISOString();

@@ -7,6 +7,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
+
+// Zero code-vs-DDL drift (promotion census): the domain shape IS the column
+// contract, so one documented boundary cast per write replaces field-by-field.
+type Ins<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"];
 import type {
   TherapeuticProfile,
   StaffRelationship,
@@ -32,8 +37,7 @@ export async function getTherapeuticProfile(
 
   if (!sb) return getDemoProfile(childId, hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("therapeutic_profiles") as any)
+  const { data, error } = await sb.from("therapeutic_profiles")
     .select("*")
     .eq("home_id", hid)
     .eq("child_id", childId)
@@ -60,8 +64,7 @@ export async function listTherapeuticProfiles(
 
   if (!sb) return getDemoProfiles(hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("therapeutic_profiles") as any)
+  const { data, error } = await sb.from("therapeutic_profiles")
     .select("*")
     .eq("home_id", hid)
     .in("status", ["draft", "active"])
@@ -124,9 +127,8 @@ export async function createTherapeuticProfile(
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("therapeutic_profiles") as any)
-    .insert(record)
+  const { data, error } = await sb.from("therapeutic_profiles")
+    .insert(record as unknown as Ins<"therapeutic_profiles">)
     .select("*")
     .single();
 
@@ -162,9 +164,8 @@ export async function updateTherapeuticProfile(
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("therapeutic_profiles") as any)
-    .update(updateData)
+  const { data, error } = await sb.from("therapeutic_profiles")
+    .update(updateData as Database["public"]["Tables"]["therapeutic_profiles"]["Update"]) // keys allowlisted above
     .eq("id", profileId)
     .select("*")
     .single();
@@ -182,8 +183,7 @@ export async function approveTherapeuticProfile(
   const sb = createServerClient();
   if (!sb) throw new Error("Database connection required for approval");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: profile, error: fetchErr } = await (sb.from("therapeutic_profiles") as any)
+  const { data: profile, error: fetchErr } = await sb.from("therapeutic_profiles")
     .select("child_id, home_id")
     .eq("id", profileId)
     .single();
@@ -191,16 +191,14 @@ export async function approveTherapeuticProfile(
   if (fetchErr || !profile) throw new Error("Profile not found");
 
   // Archive any existing active profile for this child
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sb.from("therapeutic_profiles") as any)
+  await sb.from("therapeutic_profiles")
     .update({ status: "archived" })
-    .eq("home_id", profile.home_id)
-    .eq("child_id", profile.child_id)
+    .eq("home_id", profile.home_id ?? "")
+    .eq("child_id", profile.child_id ?? "")
     .eq("status", "active");
 
   // Activate the new one
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("therapeutic_profiles") as any)
+  const { data, error } = await sb.from("therapeutic_profiles")
     .update({
       status: "active",
       approved_by: approvedBy,
@@ -228,32 +226,28 @@ export async function buildProfileFromEvidence(
 
   // Gather evidence from multiple tables
   const [incidents, dailyLogs, keywork, riskAssessments] = await Promise.all([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .eq("source_type", "incident")
       .order("source_date", { ascending: false })
       .limit(20),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .eq("source_type", "daily_log")
       .order("source_date", { ascending: false })
       .limit(30),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
       .in("source_type", ["keywork", "direct_work"])
       .order("source_date", { ascending: false })
       .limit(20),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("cara_studio_sources") as any)
+    sb.from("cara_studio_sources")
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
@@ -268,7 +262,7 @@ export async function buildProfileFromEvidence(
     ...(dailyLogs.data ?? []),
     ...(keywork.data ?? []),
     ...(riskAssessments.data ?? []),
-  ].map((s: { content: string; summary: string }) => s.content || s.summary || "").filter(Boolean);
+  ].map((s) => s.content || s.summary || "").filter(Boolean);
 
   return extractThemesFromContent(allContent);
 }

@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -82,25 +83,25 @@ export function RecreationalLeisureAccessIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Activities" value={activityEngagement.totalActivities as number} />
-        <Stat label="Enjoyment Rate" value={`${activityEngagement.enjoymentRate}%`} />
+        <Stat label="Enjoyment Rate" value={`${formatRateLoose(activityEngagement.enjoymentRate)}`} />
         <Stat label="Activity Types" value={activityDiversity.uniqueActivityTypes as number} />
       </div>
 
       <Section title="Activity Engagement" defaultOpen>
         <ScoreBar label="Engagement Score" value={activityEngagement.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Participation Rate" value={`${activityEngagement.participationRate}%`} />
-          <Stat label="Social Interaction" value={`${activityEngagement.socialInteractionRate}%`} />
-          <Stat label="New Skills" value={`${activityEngagement.newSkillRate}%`} />
-          <Stat label="Recorded in Plan" value={`${activityEngagement.recordedInPlanRate}%`} />
+          <Stat label="Participation Rate" value={`${formatRateLoose(activityEngagement.participationRate)}`} />
+          <Stat label="Social Interaction" value={`${formatRateLoose(activityEngagement.socialInteractionRate)}`} />
+          <Stat label="New Skills" value={`${formatRateLoose(activityEngagement.newSkillRate)}`} />
+          <Stat label="Recorded in Plan" value={`${formatRateLoose(activityEngagement.recordedInPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Activity Diversity">
         <ScoreBar label="Diversity Score" value={activityDiversity.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Barrier-Free Access" value={`${activityDiversity.accessBarrierFreeRate}%`} />
-          <Stat label="Staff Support" value={`${activityDiversity.staffSupportRate}%`} />
+          <Stat label="Barrier-Free Access" value={`${formatRateLoose(activityDiversity.accessBarrierFreeRate)}`} />
+          <Stat label="Staff Support" value={`${formatRateLoose(activityDiversity.staffSupportRate)}`} />
         </div>
       </Section>
 
@@ -127,10 +128,10 @@ export function RecreationalLeisureAccessIntelligenceWidget() {
       <Section title="Staff Leisure Readiness">
         <ScoreBar label="Staff Readiness Score" value={staffLeisureReadiness.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-          <Stat label="Activity Planning" value={`${staffLeisureReadiness.activityPlanningRate}%`} />
-          <Stat label="Safeguarding" value={`${staffLeisureReadiness.safeguardingInActivitiesRate}%`} />
-          <Stat label="Inclusion Awareness" value={`${staffLeisureReadiness.inclusionAwarenessRate}%`} />
-          <Stat label="Youth Engagement" value={`${staffLeisureReadiness.youthEngagementRate}%`} />
+          <Stat label="Activity Planning" value={`${formatRateLoose(staffLeisureReadiness.activityPlanningRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRateLoose(staffLeisureReadiness.safeguardingInActivitiesRate)}`} />
+          <Stat label="Inclusion Awareness" value={`${formatRateLoose(staffLeisureReadiness.inclusionAwarenessRate)}`} />
+          <Stat label="Youth Engagement" value={`${formatRateLoose(staffLeisureReadiness.youthEngagementRate)}`} />
         </div>
       </Section>
 

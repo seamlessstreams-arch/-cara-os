@@ -196,7 +196,8 @@ function projectKeywork(
   isTrusted: (staffId: string) => boolean,
   staffName: (id: string) => string,
 ): RelationalMoment {
-  const improved = s.mood_after - s.mood_before;
+  // Mood unrecorded → improvement unknowable → 0: never a fabricated breakthrough.
+  const improved = s.mood_after != null && s.mood_before != null ? s.mood_after - s.mood_before : 0;
   const lens: RelationalLens = improved >= 2 ? "breakthrough" : "connection";
   return {
     id: `rt_kw_${s.id}`,

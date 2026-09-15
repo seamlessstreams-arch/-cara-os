@@ -50,13 +50,13 @@ export interface StaffPayrollComplianceRow {
   check_date: string;
   check_type: CheckType;
   compliance_status: ComplianceStatus;
-  right_to_work_verified: boolean;
+  right_to_work_verified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   pension_enrolled: boolean;
   pension_opt_out: boolean;
-  tax_code_verified: boolean;
-  ni_number_verified: boolean;
-  contract_on_file: boolean;
-  pay_rate_confirmed: boolean;
+  tax_code_verified: boolean | null;
+  ni_number_verified: boolean | null;
+  contract_on_file: boolean | null;
+  pay_rate_confirmed: boolean | null;
   next_review_date: string | null;
   reviewer_name: string;
   notes: string | null;
@@ -66,8 +66,7 @@ export interface StaffPayrollComplianceRow {
 
 // ── Supabase helper ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sb(): any | null {
+function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
   return createServerClient() as unknown as SB;
 }
@@ -93,9 +92,13 @@ export function computeMetrics(rows: StaffPayrollComplianceRow[]): {
   const nonCompliantCount = rows.filter((r) => r.compliance_status === "Non-Compliant").length;
   const actionRequiredCount = rows.filter((r) => r.compliance_status === "Action Required").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffPayrollComplianceRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const reviewScheduledCount = rows.filter((r) => r.next_review_date !== null).length;
@@ -126,11 +129,13 @@ export function computeAlerts(
 
   // Critical: Right to work not verified (illegal to employ)
   for (const r of rows) {
-    if (!r.right_to_work_verified) {
+    if (r.right_to_work_verified !== true) {
       alerts.push({
         type: "right_to_work_not_verified",
         severity: "critical",
-        message: `${r.staff_name} does not have verified right to work — it is illegal to employ a person without confirming their right to work in the UK (Immigration, Asylum and Nationality Act 2006).`,
+        message: r.right_to_work_verified === false
+          ? `${r.staff_name} does not have verified right to work — it is illegal to employ a person without confirming their right to work in the UK (Immigration, Asylum and Nationality Act 2006).`
+          : `${r.staff_name} has no right-to-work verification recorded — verify and evidence it now; it is illegal to employ a person without confirming their right to work in the UK (Immigration, Asylum and Nationality Act 2006).`,
         record_id: r.id,
       });
     }
@@ -162,7 +167,7 @@ export function computeAlerts(
 
   // Medium: Contract not on file
   for (const r of rows) {
-    if (!r.contract_on_file) {
+    if (r.contract_on_file !== true) {
       alerts.push({
         type: "contract_not_on_file",
         severity: "medium",
@@ -270,13 +275,13 @@ export async function createStaffPayrollCompliance(input: {
       check_date: input.checkDate,
       check_type: input.checkType,
       compliance_status: input.complianceStatus,
-      right_to_work_verified: input.rightToWorkVerified ?? true,
+      right_to_work_verified: input.rightToWorkVerified ?? null,
       pension_enrolled: input.pensionEnrolled ?? false,
       pension_opt_out: input.pensionOptOut ?? false,
-      tax_code_verified: input.taxCodeVerified ?? true,
-      ni_number_verified: input.niNumberVerified ?? true,
-      contract_on_file: input.contractOnFile ?? true,
-      pay_rate_confirmed: input.payRateConfirmed ?? true,
+      tax_code_verified: input.taxCodeVerified ?? null,
+      ni_number_verified: input.niNumberVerified ?? null,
+      contract_on_file: input.contractOnFile ?? null,
+      pay_rate_confirmed: input.payRateConfirmed ?? null,
       next_review_date: input.nextReviewDate ?? null,
       reviewer_name: input.reviewerName,
       notes: input.notes ?? null,

@@ -6,6 +6,7 @@
 // CHR 2015 Reg 19/20/6. SCCIF: Overall Experiences — Behaviour support.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,7 +122,7 @@ export function BehaviourSupportPlansCard() {
             (p.de_escalation_success_rate ?? 0) >= 80 ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn("text-lg font-bold tabular-nums", (p.de_escalation_success_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {p.de_escalation_success_rate}%
+              {formatRate(p.de_escalation_success_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">De-escal.</p>
           </div>
@@ -176,13 +177,13 @@ export function BehaviourSupportPlansCard() {
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
               <div>
                 <p className={cn("font-bold tabular-nums", (p.pi_debrief_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                  {p.pi_debrief_completion_rate}%
+                  {formatRate(p.pi_debrief_completion_rate)}
                 </p>
                 <p className="text-[10px] text-muted-foreground">Debriefed</p>
               </div>
               <div>
                 <p className={cn("font-bold tabular-nums", p.pi_injury_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-                  {p.pi_injury_rate}%
+                  {formatRate(p.pi_injury_rate)}
                 </p>
                 <p className="text-[10px] text-muted-foreground">Injury Rate</p>
               </div>

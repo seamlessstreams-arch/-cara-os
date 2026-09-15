@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function HygienePersonalCareIntelligenceWidget() {
       <Section title="Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Competency" value={`${quality.competencyRate}%`} />
-          <Stat label="Participation" value={`${quality.participationRate}%`} />
-          <Stat label="Dignity" value={`${quality.dignityRate}%`} />
-          <Stat label="Progress" value={`${quality.progressRate}%`} />
+          <Stat label="Competency" value={`${formatRate(quality.competencyRate)}`} />
+          <Stat label="Participation" value={`${formatRate(quality.participationRate)}`} />
+          <Stat label="Dignity" value={`${formatRate(quality.dignityRate)}`} />
+          <Stat label="Progress" value={`${formatRate(quality.progressRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documented" value={`${compliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${compliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Documented" value={`${formatRate(compliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(compliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(compliance.feedbackRate)}`} />
           <Stat label="Area Diversity" value={`${compliance.hygieneAreaDiversityRatio}%`} />
         </div>
       </Section>
@@ -117,11 +118,11 @@ export function HygienePersonalCareIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Personal Care" value={`${staff.personalCareSkillsRate}%`} />
-          <Stat label="Dignity & Privacy" value={`${staff.dignityAndPrivacyRate}%`} />
-          <Stat label="Infection Control" value={`${staff.infectionControlRate}%`} />
-          <Stat label="Age-Appropriate" value={`${staff.ageAppropriateSupportRate}%`} />
-          <Stat label="Cultural Awareness" value={`${staff.culturalAwarenessRate}%`} />
+          <Stat label="Personal Care" value={`${formatRate(staff.personalCareSkillsRate)}`} />
+          <Stat label="Dignity & Privacy" value={`${formatRate(staff.dignityAndPrivacyRate)}`} />
+          <Stat label="Infection Control" value={`${formatRate(staff.infectionControlRate)}`} />
+          <Stat label="Age-Appropriate" value={`${formatRate(staff.ageAppropriateSupportRate)}`} />
+          <Stat label="Cultural Awareness" value={`${formatRate(staff.culturalAwarenessRate)}`} />
         </div>
       </Section>
 

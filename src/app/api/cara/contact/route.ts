@@ -49,8 +49,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<ContactInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<ContactInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -76,11 +76,11 @@ async function fetchData(sb: any, childId: string): Promise<ContactInput> {
     type: s.type ?? "face_to_face",
     plannedDuration: s.planned_duration ?? 60,
     actualDuration: s.actual_duration ?? 0,
-    occurred: s.occurred ?? true,
+    occurred: s.occurred ?? null,
     cancelledBy: s.cancelled_by ?? undefined,
     cancellationReason: s.cancellation_reason ?? undefined,
     outcome: s.outcome ?? "not_recorded",
-    childWanted: s.child_wanted ?? true,
+    childWanted: s.child_wanted ?? null,
     childFeedback: s.child_feedback ?? undefined,
     supervisedRequired: s.supervised_required ?? false,
     supervisorPresent: s.supervisor_present ?? undefined,
@@ -115,12 +115,12 @@ async function fetchData(sb: any, childId: string): Promise<ContactInput> {
     age,
     contactSessions,
     arrangements,
-    contactPlanReviewed: config?.plan_reviewed ?? true,
+    contactPlanReviewed: config?.plan_reviewed ?? null,
     contactPlanLastReviewDate: config?.last_review_date ?? undefined,
-    childConsultedOnPlan: config?.child_consulted ?? true,
-    advocateAvailableForContact: config?.advocate_available ?? true,
+    childConsultedOnPlan: config?.child_consulted ?? null,
+    advocateAvailableForContact: config?.advocate_available ?? null,
     lifestoryWorkStarted: config?.lifestory_started ?? false,
-    siblingPlacementConsidered: config?.sibling_considered ?? true,
+    siblingPlacementConsidered: config?.sibling_considered ?? null,
     letterboxContactAvailable: config?.letterbox_available ?? false,
   };
 }

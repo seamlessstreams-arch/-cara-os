@@ -23,11 +23,11 @@ CREATE TABLE IF NOT EXISTS cs_staff_overtime_management (
   opt_out_signed        boolean NOT NULL DEFAULT false,
   opt_out_date          date    NULL,
 
-  rest_break_compliant  boolean NOT NULL DEFAULT true,
+  rest_break_compliant  boolean,
   night_worker          boolean NOT NULL DEFAULT false,
   night_hours_compliant boolean NULL,
 
-  overtime_authorised   boolean NOT NULL DEFAULT true,
+  overtime_authorised   boolean,
   overtime_paid         boolean NOT NULL DEFAULT false,
   toil_accrued          boolean NOT NULL DEFAULT false,
 

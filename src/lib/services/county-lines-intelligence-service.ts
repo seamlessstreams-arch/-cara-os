@@ -137,14 +137,14 @@ export interface CountyLinesIntelligenceRow {
   intelligence_type: IntelligenceType;
   risk_level: RiskLevel;
   indicators_present: string;
-  travel_patterns_noted: boolean;
-  new_possessions_noted: boolean;
-  phone_activity_concerns: boolean;
-  missing_episodes_linked: boolean;
-  peer_association_concerns: boolean;
-  drug_related_concerns: boolean;
-  debt_bondage_suspected: boolean;
-  violence_intimidation_present: boolean;
+  travel_patterns_noted: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  new_possessions_noted: boolean | null;
+  phone_activity_concerns: boolean | null;
+  missing_episodes_linked: boolean | null;
+  peer_association_concerns: boolean | null;
+  drug_related_concerns: boolean | null;
+  debt_bondage_suspected: boolean | null;
+  violence_intimidation_present: boolean | null;
   nrm_referral_made: boolean;
   nrm_referral_date: string | null;
   police_notified: boolean;
@@ -275,9 +275,13 @@ export function computeMetrics(
   const highRisk = rows.filter((r) => r.risk_level === "High").length;
   const criticalCount = rows.filter((r) => r.risk_level === "Critical").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof CountyLinesIntelligenceRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -696,14 +700,14 @@ export async function createCountyLinesIntelligence(input: {
       intelligence_type: input.intelligenceType,
       risk_level: input.riskLevel,
       indicators_present: input.indicatorsPresent,
-      travel_patterns_noted: input.travelPatternsNoted ?? false,
-      new_possessions_noted: input.newPossessionsNoted ?? false,
-      phone_activity_concerns: input.phoneActivityConcerns ?? false,
-      missing_episodes_linked: input.missingEpisodesLinked ?? false,
-      peer_association_concerns: input.peerAssociationConcerns ?? false,
-      drug_related_concerns: input.drugRelatedConcerns ?? false,
-      debt_bondage_suspected: input.debtBondageSuspected ?? false,
-      violence_intimidation_present: input.violenceIntimidationPresent ?? false,
+      travel_patterns_noted: input.travelPatternsNoted ?? null,
+      new_possessions_noted: input.newPossessionsNoted ?? null,
+      phone_activity_concerns: input.phoneActivityConcerns ?? null,
+      missing_episodes_linked: input.missingEpisodesLinked ?? null,
+      peer_association_concerns: input.peerAssociationConcerns ?? null,
+      drug_related_concerns: input.drugRelatedConcerns ?? null,
+      debt_bondage_suspected: input.debtBondageSuspected ?? null,
+      violence_intimidation_present: input.violenceIntimidationPresent ?? null,
       nrm_referral_made: input.nrmReferralMade ?? false,
       nrm_referral_date: input.nrmReferralDate ?? null,
       police_notified: input.policeNotified ?? false,

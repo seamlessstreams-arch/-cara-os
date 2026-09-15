@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ComplaintResolutionTrackingRecord>): ComplaintResolutionTrackingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    complaint_category: overrides?.complaint_category ?? "care_quality",
-    resolution_status: overrides?.resolution_status ?? "resolved",
-    outcome_type: overrides?.outcome_type ?? "not_upheld",
-    response_timeline: overrides?.response_timeline ?? "within_7_days",
-    complaint_date: overrides?.complaint_date ?? todayStr(),
-    complainant_name: overrides?.complainant_name ?? "Parent A",
-    handled_by: overrides?.handled_by ?? "Staff A",
-    acknowledged_promptly: overrides?.acknowledged_promptly ?? true,
-    investigation_thorough: overrides?.investigation_thorough ?? true,
-    child_views_sought: overrides?.child_views_sought ?? true,
-    complainant_updated: overrides?.complainant_updated ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? true,
-    learning_identified: overrides?.learning_identified ?? true,
-    action_plan_created: overrides?.action_plan_created ?? true,
-    outcome_communicated: overrides?.outcome_communicated ?? true,
-    satisfaction_assessed: overrides?.satisfaction_assessed ?? true,
-    appeal_offered: overrides?.appeal_offered ?? true,
-    records_updated: overrides?.records_updated ?? true,
-    manager_oversight: overrides?.manager_oversight ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    resolution_days: overrides?.resolution_days ?? 7,
+    id: "a-1", home_id: "home-1",
+    complaint_category: "care_quality",
+    resolution_status: "resolved",
+    outcome_type: "not_upheld",
+    response_timeline: "within_7_days",
+    complaint_date: todayStr(),
+    complainant_name: "Parent A",
+    handled_by: "Staff A",
+    acknowledged_promptly: true,
+    investigation_thorough: true,
+    child_views_sought: true,
+    complainant_updated: true,
+    ofsted_notified: true,
+    learning_identified: true,
+    action_plan_created: true,
+    outcome_communicated: true,
+    satisfaction_assessed: true,
+    appeal_offered: true,
+    records_updated: true,
+    manager_oversight: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    resolution_days: 7,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,17 @@ describe("complaint-resolution-tracking-service", () => {
       expect(types).toContain("satisfaction_not_assessed");
       expect(types).toContain("appeal_not_offered");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded learning_identified as a failure", () => {
+    const alerts = _testing.identifyComplaintResolutionAlerts([makeRecord({ learning_identified: null })]);
+    expect(alerts.some((a) => /learning/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyComplaintResolutionAlerts([makeRecord({ learning_identified: false })]);
+    expect(alerts.some((a) => /learning/i.test(a.message))).toBe(true);
   });
 });

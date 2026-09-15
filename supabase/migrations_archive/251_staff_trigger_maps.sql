@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_trigger_maps (
   manager_reviewed boolean NOT NULL DEFAULT false,
   team_aware_if_appropriate boolean NOT NULL DEFAULT false,
   follow_up_scheduled boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

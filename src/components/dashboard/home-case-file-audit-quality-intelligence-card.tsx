@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FolderSearch } from "lucide-react";
@@ -82,15 +83,15 @@ export function HomeCaseFileAuditQualityIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Avg Score</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.green_rag_rate ?? 0) >= 80 ? "bg-green-50" : (d.green_rag_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.green_rag_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.green_rag_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.green_rag_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.green_rag_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.green_rag_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.green_rag_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Green RAG</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.policy_currency_rate ?? 0) >= 90 ? "bg-green-50" : (d.policy_currency_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.policy_currency_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.policy_currency_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.policy_currency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.policy_currency_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.policy_currency_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.policy_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Policies</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.ofsted_readiness_rate ?? 0) >= 90 ? "bg-green-50" : (d.ofsted_readiness_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_readiness_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.ofsted_readiness_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_readiness_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_readiness_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.ofsted_readiness_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ofsted_readiness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ofsted</p>
             </div>
           </div>

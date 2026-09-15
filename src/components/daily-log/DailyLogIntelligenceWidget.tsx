@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function DailyLogIntelligenceWidget() {
       <Section title="Daily Log Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Detailed Observation" value={`${quality.detailedObservationRate}%`} />
-          <Stat label="Child Mood Recorded" value={`${quality.childMoodRate}%`} />
-          <Stat label="Keyworker Informed" value={`${quality.keyworkerInformedRate}%`} />
-          <Stat label="Action Followed Up" value={`${quality.actionFollowedUpRate}%`} />
+          <Stat label="Detailed Observation" value={`${formatRate(quality.detailedObservationRate)}`} />
+          <Stat label="Child Mood Recorded" value={`${formatRate(quality.childMoodRate)}`} />
+          <Stat label="Keyworker Informed" value={`${formatRate(quality.keyworkerInformedRate)}`} />
+          <Stat label="Action Followed Up" value={`${formatRate(quality.actionFollowedUpRate)}`} />
         </div>
       </Section>
 
       <Section title="Daily Log Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Keyworker Informed" value={`${compliance.keyworkerInformedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Keyworker Informed" value={`${formatRate(compliance.keyworkerInformedRate)}`} />
           <Stat label="Categories Covered" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function DailyLogIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Observation Skills" value={`${staff.observationSkillsRate}%`} />
-          <Stat label="Record Keeping" value={`${staff.recordKeepingRate}%`} />
-          <Stat label="Child Communication" value={`${staff.childCommunicationRate}%`} />
-          <Stat label="Safeguarding Awareness" value={`${staff.safeguardingAwarenessRate}%`} />
-          <Stat label="Handover Practice" value={`${staff.handoverPracticeRate}%`} />
-          <Stat label="Reflective Writing" value={`${staff.reflectiveWritingRate}%`} />
+          <Stat label="Observation Skills" value={`${formatRate(staff.observationSkillsRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(staff.recordKeepingRate)}`} />
+          <Stat label="Child Communication" value={`${formatRate(staff.childCommunicationRate)}`} />
+          <Stat label="Safeguarding Awareness" value={`${formatRate(staff.safeguardingAwarenessRate)}`} />
+          <Stat label="Handover Practice" value={`${formatRate(staff.handoverPracticeRate)}`} />
+          <Stat label="Reflective Writing" value={`${formatRate(staff.reflectiveWritingRate)}`} />
         </div>
       </Section>
 

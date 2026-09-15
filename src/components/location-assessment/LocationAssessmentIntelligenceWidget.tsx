@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,18 +82,18 @@ export function LocationAssessmentIntelligenceWidget() {
 
       <Section title="Assessment Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Thorough Rate" value={`${aq.thoroughRate}%`} />
-          <Stat label="Child View Rate" value={`${aq.childViewRate}%`} />
-          <Stat label="Risk Identified" value={`${aq.riskIdentifiedRate}%`} />
-          <Stat label="Mitigations" value={`${aq.mitigationsRate}%`} />
+          <Stat label="Thorough Rate" value={`${formatRate(aq.thoroughRate)}`} />
+          <Stat label="Child View Rate" value={`${formatRate(aq.childViewRate)}`} />
+          <Stat label="Risk Identified" value={`${formatRate(aq.riskIdentifiedRate)}`} />
+          <Stat label="Mitigations" value={`${formatRate(aq.mitigationsRate)}`} />
         </div>
       </Section>
 
       <Section title="Assessment Compliance">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${ac.documentationRate}%`} />
-          <Stat label="Regulatory Aligned" value={`${ac.regulatoryRate}%`} />
-          <Stat label="Mitigations" value={`${ac.mitigationsRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(ac.documentationRate)}`} />
+          <Stat label="Regulatory Aligned" value={`${formatRate(ac.regulatoryRate)}`} />
+          <Stat label="Mitigations" value={`${formatRate(ac.mitigationsRate)}`} />
           <Stat label="Category Diversity" value={`${ac.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -111,12 +112,12 @@ export function LocationAssessmentIntelligenceWidget() {
 
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Risk Assessment" value={`${sr.riskAssessmentRate}%`} />
-          <Stat label="Community Mapping" value={`${sr.communityMappingRate}%`} />
-          <Stat label="Safeguarding" value={`${sr.safeguardingRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${sr.regulatoryRate}%`} />
-          <Stat label="Child Consultation" value={`${sr.childConsultationRate}%`} />
-          <Stat label="Report Writing" value={`${sr.reportWritingRate}%`} />
+          <Stat label="Risk Assessment" value={`${formatRate(sr.riskAssessmentRate)}`} />
+          <Stat label="Community Mapping" value={`${formatRate(sr.communityMappingRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(sr.safeguardingRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(sr.regulatoryRate)}`} />
+          <Stat label="Child Consultation" value={`${formatRate(sr.childConsultationRate)}`} />
+          <Stat label="Report Writing" value={`${formatRate(sr.reportWritingRate)}`} />
         </div>
       </Section>
 

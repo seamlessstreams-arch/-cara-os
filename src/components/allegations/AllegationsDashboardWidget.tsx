@@ -124,7 +124,7 @@ export default function AllegationsDashboardWidget() {
             {data.childProfiles.map((cp) => (
               <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>LADO: {cp.ladoReferralRate}%</span><span>Support: {cp.childSupportRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>LADO: {formatRate(cp.ladoReferralRate)}</span><span>Support: {formatRate(cp.childSupportRate)}</span></div>
               </div>
             ))}
           </div>

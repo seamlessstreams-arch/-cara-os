@@ -89,3 +89,16 @@ export function above(score: number | null | undefined, threshold: number): bool
 export function formatRate(score: number | null | undefined, unmeasured = "—"): string {
   return typeof score === "number" && Number.isFinite(score) ? `${score}%` : unmeasured;
 }
+
+/**
+ * formatRate for the legacy dispatcher boundary, where payloads arrive as
+ * `Record<string, unknown>` and a missing key used to render as "undefined%"
+ * (or "null%") in the widget. Identical output to formatRate — a finite number
+ * renders as "n%", anything else as the unmeasured dash — but honest about
+ * accepting unknown INSTEAD of casting at the call site. Every call to this is
+ * a to-do: when an endpoint's payload gets a real type, its call sites move to
+ * formatRate. Do not use it outside the untyped-payload widgets.
+ */
+export function formatRateLoose(value: unknown, unmeasured = "—"): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : unmeasured;
+}

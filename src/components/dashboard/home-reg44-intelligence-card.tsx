@@ -156,7 +156,7 @@ export function HomeReg44IntelligenceCard() {
                   d.quality_profile.ofsted_notification_rate === 100 ? "text-[--cs-success]" :
                   (d.quality_profile.ofsted_notification_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.quality_profile.ofsted_notification_rate}%
+                  {formatRate(d.quality_profile.ofsted_notification_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">To Ofsted</p>
@@ -214,7 +214,7 @@ export function HomeReg44IntelligenceCard() {
             <p className="font-medium text-slate-700 mb-1">Visit Quality</p>
             <div className="grid grid-cols-3 gap-2 text-[10px] text-muted-foreground">
               <p>Duration: <span className="font-medium text-slate-600">{d.quality_profile.avg_duration_hours}h avg</span></p>
-              <p>Children: <span className={cn("font-medium", d.quality_profile.child_voice_every_visit ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.quality_profile.avg_children_spoken_pct}%</span></p>
+              <p>Children: <span className={cn("font-medium", d.quality_profile.child_voice_every_visit ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.quality_profile.avg_children_spoken_pct)}</span></p>
               <p>Records: <span className="font-medium text-slate-600">{d.quality_profile.avg_records_reviewed} avg</span></p>
             </div>
           </div>

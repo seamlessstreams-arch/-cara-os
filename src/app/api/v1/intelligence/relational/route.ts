@@ -61,6 +61,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "confidence must be one of: low, medium, high" }, { status: 400 });
   }
 
+  // Whether an interaction was positive is a judgement about a child's
+  // relationships, and it feeds the relational timeline. Defaulting it to true
+  // manufactured a positive signal out of a caller that simply did not say.
+  if (typeof body.is_positive !== "boolean") {
+    return NextResponse.json(
+      { error: "is_positive is required and must be a boolean" },
+      { status: 400 },
+    );
+  }
+
   const record = intelligenceDb.relational.create({
     home_id: body.home_id ?? "home_oak",
     child_id: body.child_id!,
@@ -68,7 +78,7 @@ export async function POST(req: NextRequest) {
     title: body.title!,
     description: body.description!,
     staff_id: body.staff_id ?? null,
-    is_positive: body.is_positive ?? true,
+    is_positive: body.is_positive,
     confidence: body.confidence ?? "medium",
     source_ref_type: body.source_ref_type ?? null,
     source_ref_id: body.source_ref_id ?? null,

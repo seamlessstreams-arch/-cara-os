@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,9 +79,9 @@ export function DentalHealthMonitoringIntelligenceWidget() {
         <ScoreBar label="Appointments" value={appt.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total" value={appt.totalAppointments as number} />
-          <Stat label="Attendance" value={`${appt.attendanceRate}%`} />
-          <Stat label="Next Booked" value={`${appt.nextAppointmentBookedRate}%`} />
-          <Stat label="Consent" value={`${appt.consentRate}%`} />
+          <Stat label="Attendance" value={`${formatRateLoose(appt.attendanceRate)}`} />
+          <Stat label="Next Booked" value={`${formatRateLoose(appt.nextAppointmentBookedRate)}`} />
+          <Stat label="Consent" value={`${formatRateLoose(appt.consentRate)}`} />
           <Stat label="Routine" value={appt.routineCount as number} />
           <Stat label="Emergency" value={appt.emergencyCount as number} />
         </div>
@@ -90,10 +91,10 @@ export function DentalHealthMonitoringIntelligenceWidget() {
         <ScoreBar label="Hygiene" value={hygiene.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Records" value={hygiene.totalRecords} />
-          <Stat label="Excellent/Good" value={`${hygiene.excellentGoodRate}%`} />
-          <Stat label="Twice Daily" value={`${hygiene.twiceDailyBrushingRate}%`} />
-          <Stat label="Dietary Advice" value={`${hygiene.dietaryAdviceRate}%`} />
-          <Stat label="Mouthwash" value={`${hygiene.mouthwashUsageRate}%`} />
+          <Stat label="Excellent/Good" value={`${formatRate(hygiene.excellentGoodRate)}`} />
+          <Stat label="Twice Daily" value={`${formatRate(hygiene.twiceDailyBrushingRate)}`} />
+          <Stat label="Dietary Advice" value={`${formatRate(hygiene.dietaryAdviceRate)}`} />
+          <Stat label="Mouthwash" value={`${formatRate(hygiene.mouthwashUsageRate)}`} />
         </div>
       </Section>
 
@@ -101,10 +102,10 @@ export function DentalHealthMonitoringIntelligenceWidget() {
         <ScoreBar label="Treatment" value={treatment.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Plans" value={treatment.totalPlans} />
-          <Stat label="Completion" value={`${treatment.completionRate}%`} />
-          <Stat label="Parent Consent" value={`${treatment.parentConsentRate}%`} />
-          <Stat label="SW Notified" value={`${treatment.socialWorkerNotifiedRate}%`} />
-          <Stat label="Active Progress" value={`${treatment.activeTreatmentProgressRate}%`} />
+          <Stat label="Completion" value={`${formatRate(treatment.completionRate)}`} />
+          <Stat label="Parent Consent" value={`${formatRate(treatment.parentConsentRate)}`} />
+          <Stat label="SW Notified" value={`${formatRate(treatment.socialWorkerNotifiedRate)}`} />
+          <Stat label="Active Progress" value={`${formatRate(treatment.activeTreatmentProgressRate)}`} />
         </div>
       </Section>
 
@@ -112,11 +113,11 @@ export function DentalHealthMonitoringIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Awareness" value={`${staff.dentalHealthAwarenessRate}%`} />
-          <Stat label="Hygiene Support" value={`${staff.oralHygieneSupportRate}%`} />
-          <Stat label="Appt Mgmt" value={`${staff.appointmentManagementRate}%`} />
-          <Stat label="Consent Process" value={`${staff.consentProcessTrainedRate}%`} />
-          <Stat label="Emergency" value={`${staff.emergencyDentalKnowledgeRate}%`} />
+          <Stat label="Awareness" value={`${formatRate(staff.dentalHealthAwarenessRate)}`} />
+          <Stat label="Hygiene Support" value={`${formatRate(staff.oralHygieneSupportRate)}`} />
+          <Stat label="Appt Mgmt" value={`${formatRate(staff.appointmentManagementRate)}`} />
+          <Stat label="Consent Process" value={`${formatRate(staff.consentProcessTrainedRate)}`} />
+          <Stat label="Emergency" value={`${formatRate(staff.emergencyDentalKnowledgeRate)}`} />
         </div>
       </Section>
 

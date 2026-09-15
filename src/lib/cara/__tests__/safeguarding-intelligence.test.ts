@@ -17,6 +17,13 @@ const FIXED_NOW = "2026-05-16T12:00:00Z";
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date(FIXED_NOW)); });
 afterEach(() => { vi.useRealTimers(); });
 
+/** `makeInput` records every provision, so its compliance score is always
+ *  computable — unlike a child with nothing recorded, whose score is null. */
+function recordedScore(v: number | null): number {
+  expect(v).not.toBeNull();
+  return v as number;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function makeInput(overrides: Partial<SafeguardingInput> = {}): SafeguardingInput {
@@ -421,25 +428,25 @@ describe("complianceScore", () => {
   it("drops when staff not safeguarding trained", () => {
     const trained = analyseSafeguarding(makeInput());
     const untrained = analyseSafeguarding(makeInput({ staffSafeguardingTrained: false }));
-    expect(untrained.complianceScore).toBeLessThan(trained.complianceScore);
+    expect(untrained.complianceScore).toBeLessThan(recordedScore(trained.complianceScore));
   });
 
   it("drops without designated safeguarding lead", () => {
     const with_ = analyseSafeguarding(makeInput());
     const without_ = analyseSafeguarding(makeInput({ designatedSafeguardingLead: false }));
-    expect(without_.complianceScore).toBeLessThan(with_.complianceScore);
+    expect(without_.complianceScore).toBeLessThan(recordedScore(with_.complianceScore));
   });
 
   it("drops without child knowing how to complain", () => {
     const with_ = analyseSafeguarding(makeInput());
     const without_ = analyseSafeguarding(makeInput({ childKnowsHowToComplain: false }));
-    expect(without_.complianceScore).toBeLessThan(with_.complianceScore);
+    expect(without_.complianceScore).toBeLessThan(recordedScore(with_.complianceScore));
   });
 
   it("drops without independent return interviews", () => {
     const with_ = analyseSafeguarding(makeInput());
     const without_ = analyseSafeguarding(makeInput({ independentReturnInterviews: false }));
-    expect(without_.complianceScore).toBeLessThan(with_.complianceScore);
+    expect(without_.complianceScore).toBeLessThan(recordedScore(with_.complianceScore));
   });
 });
 

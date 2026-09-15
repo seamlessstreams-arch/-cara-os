@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { MissingAbscondingAnalysis, MissingEpisodeSummary, SignalColour } from "@/lib/cara-visual-toolkit/types";
@@ -147,7 +148,7 @@ export default function MissingAbscondingPage() {
         </div>
         <div className={`rounded-xl border p-3 text-center shadow-sm ${data.returnInterviewCompletionRate < 100 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}>
           <p className={`text-2xl font-bold ${data.returnInterviewCompletionRate === 100 ? "text-green-700" : "text-amber-700"}`}>
-            {data.returnInterviewCompletionRate}%
+            {formatRate(data.returnInterviewCompletionRate)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">RHI completion</p>
         </div>

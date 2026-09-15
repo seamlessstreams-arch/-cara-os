@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -70,7 +71,7 @@ const exportCols: ExportColumn<ExtracurricularClubRecord>[] = [
   { header: "Child Initiated", accessor: (r: ExtracurricularClubRecord) => (r.child_initiated ? "Yes" : "No") },
   { header: "Social Fit", accessor: (r: ExtracurricularClubRecord) => CLUB_SOCIAL_FIT_LABEL[r.social_fit] },
   { header: "Skills Built", accessor: (r: ExtracurricularClubRecord) => r.skills_built.join("; ") },
-  { header: "Attendance %", accessor: (r: ExtracurricularClubRecord) => `${r.attendance_rate}%` },
+  { header: "Attendance %", accessor: (r: ExtracurricularClubRecord) => `${formatRate(r.attendance_rate)}` },
   { header: "Flags / Concerns", accessor: (r: ExtracurricularClubRecord) => r.flags_concerns.join("; ") },
   { header: "Child Voice", accessor: (r: ExtracurricularClubRecord) => r.child_voice },
   { header: "Staff Observation", accessor: (r: ExtracurricularClubRecord) => r.staff_observation },
@@ -293,7 +294,7 @@ export default function ChildExtracurricularClubsPage() {
                     {c.ongoing ? "Ongoing" : "Ended"}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]">
-                    {c.attendance_rate}% att.
+                    {formatRate(c.attendance_rate)} att.
                   </span>
                   <span
                     className={cn(
@@ -341,7 +342,7 @@ export default function ChildExtracurricularClubsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Attendance</p>
-                      <p className="font-medium">{c.attendance_rate}%</p>
+                      <p className="font-medium">{formatRate(c.attendance_rate)}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Social Fit</p>

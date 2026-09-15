@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS cs_night_checks (
   check_time          text NOT NULL,
   checked_by          text NOT NULL,
   child_checks        jsonb NOT NULL DEFAULT '[]',
-  environment_ok      boolean NOT NULL DEFAULT true,
-  security_checked    boolean NOT NULL DEFAULT true,
-  temperature_ok      boolean NOT NULL DEFAULT true,
+  environment_ok      boolean,
+  security_checked    boolean,
+  temperature_ok      boolean,
   notes               text,
   created_at          timestamptz NOT NULL DEFAULT now()
 );
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS cs_sleep_records (
   sleep_quality           text NOT NULL,
   disturbances            jsonb NOT NULL DEFAULT '[]',
   total_sleep_hours       numeric(4,1),
-  sleep_concern_flagged   boolean NOT NULL DEFAULT false,
+  sleep_concern_flagged   boolean,
   concern_severity        text,
   concern_details         text,
   support_provided        text,

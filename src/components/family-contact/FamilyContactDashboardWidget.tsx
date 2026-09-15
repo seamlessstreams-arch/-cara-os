@@ -12,6 +12,7 @@
 // - Immediate safeguarding actions
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface ContactComplianceData {
@@ -160,11 +161,11 @@ function ChildContactCard({ child }: { child: ChildSummary }) {
         </div>
         <div>
           <div className="text-xs text-gray-500">Completed</div>
-          <div className={`text-sm font-bold ${rateColor(child.completionRate)}`}>{child.completionRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.completionRate)}`}>{formatRate(child.completionRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Positive</div>
-          <div className={`text-sm font-bold ${rateColor(child.positiveRate)}`}>{child.positiveRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.positiveRate)}`}>{formatRate(child.positiveRate)}</div>
         </div>
       </div>
       {child.primaryConcern && (
@@ -258,7 +259,7 @@ export function FamilyContactDashboardWidget() {
           <div className="text-[10px] text-gray-500 uppercase">Court Order Compliance</div>
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.quality.positiveRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.quality.positiveRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Positive Outcomes</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">

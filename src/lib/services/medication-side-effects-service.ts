@@ -77,18 +77,18 @@ export interface MedicationSideEffectsRecord {
   child_name: string;
   child_id: string | null;
   reported_by: string;
-  child_informed: boolean;
+  child_informed: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   parent_informed: boolean;
-  social_worker_informed: boolean;
-  gp_contacted_promptly: boolean;
+  social_worker_informed: boolean | null;
+  gp_contacted_promptly: boolean | null;
   pharmacy_consulted: boolean;
-  medication_review_requested: boolean;
-  daily_functioning_assessed: boolean;
-  wellbeing_monitored: boolean;
-  care_plan_updated: boolean;
+  medication_review_requested: boolean | null;
+  daily_functioning_assessed: boolean | null;
+  wellbeing_monitored: boolean | null;
+  care_plan_updated: boolean | null;
   yellow_card_considered: boolean;
-  staff_aware: boolean;
-  recorded_promptly: boolean;
+  staff_aware: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -179,10 +179,16 @@ export function computeMedicationSideEffectsMetrics(
   const gpNotContacted = records.filter((r) => r.gp_response === "gp_not_contacted").length;
   const awaitingReview = records.filter((r) => r.gp_response === "awaiting_review").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof MedicationSideEffectsRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -243,11 +249,13 @@ export function identifyMedicationSideEffectsAlerts(
 
   // Severe/life-threatening without GP contact
   for (const r of records) {
-    if ((r.severity === "severe" || r.severity === "life_threatening") && !r.gp_contacted_promptly) {
+    if ((r.severity === "severe" || r.severity === "life_threatening") && r.gp_contacted_promptly !== true) {
       alerts.push({
         type: "severe_no_gp_contact",
         severity: "critical",
-        message: `${r.child_name} has ${r.severity.replace(/_/g, " ")} side effect without prompt GP contact — escalate immediately`,
+        message: r.gp_contacted_promptly === false
+          ? `${r.child_name} has ${r.severity.replace(/_/g, " ")} side effect without prompt GP contact — escalate immediately`
+          : `${r.child_name} has ${r.severity.replace(/_/g, " ")} side effect with no GP contact recorded — contact the GP and evidence it immediately`,
         id: r.id,
       });
     }
@@ -265,34 +273,34 @@ export function identifyMedicationSideEffectsAlerts(
   }
 
   // Medication review not requested
-  const noReview = records.filter((r) => !r.medication_review_requested).length;
+  const noReview = records.filter((r) => r.medication_review_requested !== true).length;
   if (noReview >= 1) {
     alerts.push({
       type: "no_medication_review",
       severity: "high",
-      message: `${noReview} ${noReview === 1 ? "report has" : "reports have"} no medication review requested — consider clinical review`,
+      message: `${noReview} ${noReview === 1 ? "report has" : "reports have"} no medication-review request evidenced — consider clinical review`,
       id: "no_medication_review",
     });
   }
 
   // Wellbeing not monitored
-  const noWellbeing = records.filter((r) => !r.wellbeing_monitored).length;
+  const noWellbeing = records.filter((r) => r.wellbeing_monitored !== true).length;
   if (noWellbeing >= 2) {
     alerts.push({
       type: "wellbeing_not_monitored",
       severity: "medium",
-      message: `${noWellbeing} reports without wellbeing monitoring — strengthen side effect follow-up`,
+      message: `${noWellbeing} reports without evidenced wellbeing monitoring — strengthen side effect follow-up`,
       id: "wellbeing_not_monitored",
     });
   }
 
   // Daily functioning not assessed
-  const noFunctioning = records.filter((r) => !r.daily_functioning_assessed).length;
+  const noFunctioning = records.filter((r) => r.daily_functioning_assessed !== true).length;
   if (noFunctioning >= 2) {
     alerts.push({
       type: "functioning_not_assessed",
       severity: "medium",
-      message: `${noFunctioning} reports without daily functioning assessment — review monitoring protocols`,
+      message: `${noFunctioning} reports without an evidenced daily-functioning assessment — review monitoring protocols`,
       id: "functioning_not_assessed",
     });
   }
@@ -374,18 +382,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       reported_by: payload.reportedBy,
-      child_informed: payload.childInformed ?? true,
+      child_informed: payload.childInformed ?? null,
       parent_informed: payload.parentInformed ?? false,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      gp_contacted_promptly: payload.gpContactedPromptly ?? true,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      gp_contacted_promptly: payload.gpContactedPromptly ?? null,
       pharmacy_consulted: payload.pharmacyConsulted ?? false,
-      medication_review_requested: payload.medicationReviewRequested ?? true,
-      daily_functioning_assessed: payload.dailyFunctioningAssessed ?? true,
-      wellbeing_monitored: payload.wellbeingMonitored ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
+      medication_review_requested: payload.medicationReviewRequested ?? null,
+      daily_functioning_assessed: payload.dailyFunctioningAssessed ?? null,
+      wellbeing_monitored: payload.wellbeingMonitored ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
       yellow_card_considered: payload.yellowCardConsidered ?? false,
-      staff_aware: payload.staffAware ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      staff_aware: payload.staffAware ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

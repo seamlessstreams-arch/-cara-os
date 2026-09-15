@@ -897,19 +897,19 @@ async function fetchReportData(reportId: string): Promise<{
   // answered with an invented report about a named child.
   if (!sb) return isDemoReportId(reportId) ? getDemoReportDataForChallenge(reportId) : null;
 
-  const { data: report, error: reportError } = await ((sb.from("child_reports")))
+  const { data: report, error: reportError } = await sb.from("child_reports")
     .select("*")
     .eq("id", reportId)
     .single();
 
   if (reportError || !report) return null;
 
-  const { data: sections } = await ((sb.from("child_report_sections")))
+  const { data: sections } = await sb.from("child_report_sections")
     .select("*")
     .eq("report_id", reportId)
     .order("order", { ascending: true });
 
-  const { data: evidence } = await ((sb.from("child_report_evidence")))
+  const { data: evidence } = await sb.from("child_report_evidence")
     .select("*")
     .eq("report_id", reportId);
 

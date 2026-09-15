@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     contributed_by: body.contributed_by ?? null,
     reviewed_by: body.reviewed_by ?? null,
     reviewed_at: body.reviewed_at ?? null,
+    // absence-ok: lifecycle state on create — a new entry starts active
     is_active: body.is_active ?? true,
     created_by: body.created_by ?? "staff_darren",
   });

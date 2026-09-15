@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -99,8 +100,13 @@ export async function GET(req: NextRequest) {
             .limit(limit);
 
           if (error) {
-            console.error("[api/cara/voice-history] Session query error:", error.message);
-            // Fall through to demo data
+            // Falling through to DEMO_HISTORY here put invented reflections
+            // about a child called "Jake" on the Voice Intelligence dashboard
+            // as though they were this home's own. `cara_sessions` has no
+            // migration, so on live this is the path that runs. The meta said
+            // source:"demo", but the page reads only `data` — a caveat nobody
+            // reads is not a caveat.
+            return storageFailure("Voice history", error);
           } else if (sessions && sessions.length > 0) {
             // For each session, fetch messages
             const entries: VoiceHistoryEntry[] = [];
@@ -134,7 +140,10 @@ export async function GET(req: NextRequest) {
           }
         } catch (err) {
           console.error("[api/cara/voice-history] Database error:", err);
-          // Fall through to demo data
+          return storageFailure("Voice history", {
+            code: undefined,
+            message: err instanceof Error ? err.message : String(err),
+          });
         }
       }
     }

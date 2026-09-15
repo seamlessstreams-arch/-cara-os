@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<EducationAttendanceTrackingRecord>): EducationAttendanceTrackingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    attendance_status: overrides?.attendance_status ?? "present",
-    absence_reason: overrides?.absence_reason ?? "none",
-    school_engagement: overrides?.school_engagement ?? "fully_engaged",
-    education_setting: overrides?.education_setting ?? "mainstream_school",
-    attendance_date: overrides?.attendance_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    attendance_status: "present",
+    absence_reason: "none",
+    school_engagement: "fully_engaged",
+    education_setting: "mainstream_school",
+    attendance_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    recorded_by: overrides?.recorded_by ?? "Staff A",
-    school_contacted: overrides?.school_contacted ?? true,
-    reason_documented: overrides?.reason_documented ?? true,
-    return_plan_in_place: overrides?.return_plan_in_place ?? true,
-    pep_up_to_date: overrides?.pep_up_to_date ?? true,
-    virtual_school_informed: overrides?.virtual_school_informed ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    child_views_sought: overrides?.child_views_sought ?? true,
-    alternative_education_arranged: overrides?.alternative_education_arranged ?? true,
-    homework_supported: overrides?.homework_supported ?? true,
-    achievement_celebrated: overrides?.achievement_celebrated ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    sessions_attended: overrides?.sessions_attended ?? 2,
-    sessions_possible: overrides?.sessions_possible ?? 2,
+    recorded_by: "Staff A",
+    school_contacted: true,
+    reason_documented: true,
+    return_plan_in_place: true,
+    pep_up_to_date: true,
+    virtual_school_informed: true,
+    social_worker_informed: true,
+    child_views_sought: true,
+    alternative_education_arranged: true,
+    homework_supported: true,
+    achievement_celebrated: true,
+    parent_informed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    sessions_attended: 2,
+    sessions_possible: 2,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("education-attendance-tracking-service", () => {
       expect(types).toContain("child_views_not_sought");
       expect(types).toContain("achievement_not_celebrated");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded PEP status in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: null })]);
+    const alert = alerts.find((a) => a.type === "pep_not_current");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no PEP gap when the plan is recorded as current", () => {
+    const alerts = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: true })]);
+    expect(alerts.some((a) => a.type === "pep_not_current")).toBe(false);
+  });
+  it("does not dilute the PEP rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, pep_up_to_date: v }));
+    expect(computeEducationAttendanceMetrics(rows).pep_up_to_date_rate).toBe(100);
   });
 });

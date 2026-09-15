@@ -67,18 +67,18 @@ export interface LeisureRecreationActivitiesRecord {
   child_name: string;
   child_id: string | null;
   facilitated_by: string;
-  child_chose_activity: boolean;
-  age_appropriate: boolean;
-  inclusive_access: boolean;
-  peer_interaction: boolean;
-  community_based: boolean;
-  new_experience: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  risk_assessed: boolean;
-  transport_arranged: boolean;
-  recorded_promptly: boolean;
+  child_chose_activity: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate: boolean | null;
+  inclusive_access: boolean | null;
+  peer_interaction: boolean | null;
+  community_based: boolean | null;
+  new_experience: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  risk_assessed: boolean | null;
+  transport_arranged: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -157,12 +157,18 @@ export function computeLeisureRecreationMetrics(
   const refused = records.filter((r) => r.participation_level === "refused").length;
   const disliked = records.filter((r) => r.enjoyment_rating === "disliked" || r.enjoyment_rating === "hated").length;
   const decline = records.filter((r) => r.skill_development === "decline").length;
-  const noChoice = records.filter((r) => !r.child_chose_activity).length;
+  const noChoice = records.filter((r) => r.child_chose_activity === false).length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof LeisureRecreationActivitiesRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyLeisureRecreationAlerts(
   }
 
   // No child choice
-  const noChoice = records.filter((r) => !r.child_chose_activity).length;
+  const noChoice = records.filter((r) => r.child_chose_activity !== true).length;
   if (noChoice >= 1) {
     alerts.push({
       type: "no_child_choice",
       severity: "high",
-      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} child not choosing — ensure child-led participation`,
+      message: `${noChoice} ${noChoice === 1 ? "activity has" : "activities have"} no child choice evidenced — ensure child-led participation`,
       id: "no_child_choice",
     });
   }
 
   // Not inclusive
-  const notInclusive = records.filter((r) => !r.inclusive_access).length;
+  const notInclusive = records.filter((r) => r.inclusive_access !== true).length;
   if (notInclusive >= 1) {
     alerts.push({
       type: "not_inclusive",
       severity: "high",
-      message: `${notInclusive} ${notInclusive === 1 ? "activity has" : "activities have"} inclusive access not ensured — review accessibility`,
+      message: `${notInclusive} ${notInclusive === 1 ? "activity has" : "activities have"} no inclusive access evidenced — review accessibility`,
       id: "not_inclusive",
     });
   }
 
   // Not risk assessed
-  const noRisk = records.filter((r) => !r.risk_assessed).length;
+  const noRisk = records.filter((r) => r.risk_assessed !== true).length;
   if (noRisk >= 2) {
     alerts.push({
       type: "not_risk_assessed",
       severity: "medium",
-      message: `${noRisk} activities without risk assessment — ensure all activities are properly assessed`,
+      message: `${noRisk} activities without an evidenced risk assessment — ensure all activities are properly assessed`,
       id: "not_risk_assessed",
     });
   }
 
   // No community activities
-  const noCommunity = records.filter((r) => !r.community_based).length;
+  const noCommunity = records.filter((r) => r.community_based !== true).length;
   if (noCommunity >= 2) {
     alerts.push({
       type: "no_community_activities",
       severity: "medium",
-      message: `${noCommunity} activities not community-based — increase community integration opportunities`,
+      message: `${noCommunity} activities with no evidenced community base — increase community integration opportunities`,
       id: "no_community_activities",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitated_by: payload.facilitatedBy,
-      child_chose_activity: payload.childChoseActivity ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      inclusive_access: payload.inclusiveAccess ?? true,
-      peer_interaction: payload.peerInteraction ?? true,
-      community_based: payload.communityBased ?? true,
-      new_experience: payload.newExperience ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      risk_assessed: payload.riskAssessed ?? true,
-      transport_arranged: payload.transportArranged ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_chose_activity: payload.childChoseActivity ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      inclusive_access: payload.inclusiveAccess ?? null,
+      peer_interaction: payload.peerInteraction ?? null,
+      community_based: payload.communityBased ?? null,
+      new_experience: payload.newExperience ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      risk_assessed: payload.riskAssessed ?? null,
+      transport_arranged: payload.transportArranged ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

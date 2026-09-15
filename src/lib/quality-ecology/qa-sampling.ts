@@ -90,7 +90,7 @@ export function selectSamples(
   occurrences: ScheduledOccurrence[],
   template: TaskTemplate,
   staffProfiles: StaffQAProfile[],
-  seed?: number,
+  _seed?: number,
 ): QASampleSelection[] {
   const eligible = occurrences.filter(o =>
     (o.status === "approved" || o.status === "locked" || o.status === "filed") &&

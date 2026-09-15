@@ -15,6 +15,8 @@ import "server-only";
 
 import { z } from "zod";
 import { getStore, db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
+import type { KeyWorkingSession } from "@/types/extended";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import type { CalendarEvent, CalendarAttendee, CalendarSource } from "./calendar-types";
 import {
@@ -59,11 +61,32 @@ function makeResolvers(): Pick<CalendarProjectionInput, "resolveChild" | "resolv
 
 // ── Feed ───────────────────────────────────────────────────────────────────────
 
-export function getCalendarFeed(opts: {
+export async function getCalendarFeed(opts: {
   from?: string;
   to?: string;
   sources?: CalendarSource[];
 }) {
+  // Keywork consolidation: sessions come through the dal projection (live =
+  // cs_key_work_sessions; demo = the seeded store) — the one collection this
+  // feed no longer reads straight off the store.
+  return buildFeed(opts, await dal.keyWorkingSessions.findAll());
+}
+
+/** Store-only variant for the documented full-store boundary (ask-cara's
+ *  snapshot builder stays synchronous and store-fed by design). */
+export function getCalendarFeedFromStore(opts: {
+  from?: string;
+  to?: string;
+  sources?: CalendarSource[];
+}) {
+  return buildFeed(opts, getStore().keyWorkingSessions ?? []);
+}
+
+function buildFeed(opts: {
+  from?: string;
+  to?: string;
+  sources?: CalendarSource[];
+}, kwSessions: KeyWorkingSession[]) {
   const store = getStore();
   const resolvers = makeResolvers();
   const range = opts.from && opts.to ? { from: opts.from, to: opts.to } : undefined;
@@ -122,7 +145,7 @@ export function getCalendarFeed(opts: {
       expiry_date: t.expiry_date,
       status: t.status,
     })),
-    keyWorking: store.keyWorkingSessions.map((k) => ({
+    keyWorking: kwSessions.map((k) => ({
       id: k.id,
       child_id: k.child_id,
       staff_id: k.staff_id,

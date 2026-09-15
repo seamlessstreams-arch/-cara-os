@@ -7,6 +7,7 @@
 // UN CRC Article 12: every child has the right to have their views heard.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -122,7 +123,7 @@ function RecordTypeCard({ stat, maxTotal }: { stat: RecordTypeStats; maxTotal: n
         </div>
         <CardDescription className="text-xs">
           {stat.withVoice} of {stat.total} records include child voice
-          {stat.recentRate !== null && ` · ${stat.recentRate}% recent`}
+          {stat.recentRate !== null && ` · ${formatRate(stat.recentRate)} recent`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
@@ -271,7 +272,7 @@ export default function ChildVoicePresencePage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <SummaryTile
               label="Overall voice rate"
-              value={summary?.overallPresenceRate !== null && summary?.overallPresenceRate !== undefined ? `${summary.overallPresenceRate}%` : "—"}
+              value={summary?.overallPresenceRate !== null && summary?.overallPresenceRate !== undefined ? `${formatRate(summary.overallPresenceRate)}` : "—"}
               sub={`${summary?.totalWithVoice ?? 0} of ${summary?.totalRecords ?? 0} records`}
             />
             <SummaryTile
@@ -302,7 +303,7 @@ export default function ChildVoicePresencePage() {
                 ? <CheckCircle2 className="h-4 w-4 shrink-0" />
                 : <AlertTriangle className="h-4 w-4 shrink-0" />}
               <span>
-                <strong>{summary.lacParticipationRate}%</strong> of LAC reviews had child participation (attended, views submitted, or advocate present).
+                <strong>{formatRate(summary.lacParticipationRate)}</strong> of LAC reviews had child participation (attended, views submitted, or advocate present).
               </span>
             </div>
           )}

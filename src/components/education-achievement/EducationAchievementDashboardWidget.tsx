@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { EducationAchievementIntelligence } from "@/lib/education-achievement";
 
@@ -112,15 +113,15 @@ export function EducationAchievementDashboardWidget() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${attendanceColor((data.attendance.attendanceRate ?? 0))}`}>{data.attendance.attendanceRate}%</div>
+          <div className={`text-2xl font-bold ${attendanceColor((data.attendance.attendanceRate ?? 0))}`}>{formatRate(data.attendance.attendanceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${(data.pepQuality.currentRate ?? 0) >= 100 ? "text-green-600" : "text-amber-600"}`}>{data.pepQuality.currentRate}%</div>
+          <div className={`text-2xl font-bold ${(data.pepQuality.currentRate ?? 0) >= 100 ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.pepQuality.currentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">PEPs Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-blue-600">{data.academicProgress.exceedingExpectedRate}%</div>
+          <div className="text-2xl font-bold text-blue-600">{formatRate(data.academicProgress.exceedingExpectedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">On Track</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -144,7 +145,7 @@ export function EducationAchievementDashboardWidget() {
                 <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">{child.childName}</span>
-                    <span className={`text-sm font-medium ${attendanceColor((child.attendanceRate ?? 0))}`}>{child.attendanceRate}%</span>
+                    <span className={`text-sm font-medium ${attendanceColor((child.attendanceRate ?? 0))}`}>{formatRate(child.attendanceRate)}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Type: <span className="font-medium">{String(child.schoolType).replace(/_/g, " ")}</span></div>
@@ -161,11 +162,11 @@ export function EducationAchievementDashboardWidget() {
 
         <Section title="Attendance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Rate:</span> <span className="font-medium">{data.attendance.attendanceRate}%</span></div>
+            <div><span className="text-gray-500">Rate:</span> <span className="font-medium">{formatRate(data.attendance.attendanceRate)}</span></div>
             <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.attendance.totalRecords}</span></div>
-            <div><span className="text-gray-500">Unauthorised:</span> <span className="font-medium">{data.attendance.unauthorisedAbsenceRate}%</span></div>
+            <div><span className="text-gray-500">Unauthorised:</span> <span className="font-medium">{formatRate(data.attendance.unauthorisedAbsenceRate)}</span></div>
             <div><span className="text-gray-500">Persistent Absent:</span> <span className="font-medium">{data.attendance.persistentAbsenceChildren}</span></div>
-            <div><span className="text-gray-500">Late:</span> <span className="font-medium">{data.attendance.lateRate}%</span></div>
+            <div><span className="text-gray-500">Late:</span> <span className="font-medium">{formatRate(data.attendance.lateRate)}</span></div>
             <div><span className="text-gray-500">Exclusion Days:</span> <span className="font-medium">{data.attendance.exclusionDays}</span></div>
           </div>
         </Section>
@@ -173,19 +174,19 @@ export function EducationAchievementDashboardWidget() {
         <Section title="PEP Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.pepQuality.totalPEPs}</span></div>
-            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{data.pepQuality.currentRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.pepQuality.childViewsRate}%</span></div>
-            <div><span className="text-gray-500">SMART Targets:</span> <span className="font-medium">{data.pepQuality.smartTargetsRate}%</span></div>
-            <div><span className="text-gray-500">VS Involved:</span> <span className="font-medium">{data.pepQuality.virtualSchoolInvolvedRate}%</span></div>
-            <div><span className="text-gray-500">PP Funding:</span> <span className="font-medium">{data.pepQuality.ppFundingUsedRate}%</span></div>
+            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{formatRate(data.pepQuality.currentRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.pepQuality.childViewsRate)}</span></div>
+            <div><span className="text-gray-500">SMART Targets:</span> <span className="font-medium">{formatRate(data.pepQuality.smartTargetsRate)}</span></div>
+            <div><span className="text-gray-500">VS Involved:</span> <span className="font-medium">{formatRate(data.pepQuality.virtualSchoolInvolvedRate)}</span></div>
+            <div><span className="text-gray-500">PP Funding:</span> <span className="font-medium">{formatRate(data.pepQuality.ppFundingUsedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Academic Progress">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.academicProgress.totalOutcomes}</span></div>
-            <div><span className="text-gray-500">Exceeding+Expected:</span> <span className="font-medium">{data.academicProgress.exceedingExpectedRate}%</span></div>
-            <div><span className="text-gray-500">Below Expected:</span> <span className="font-medium">{data.academicProgress.belowExpectedRate}%</span></div>
+            <div><span className="text-gray-500">Exceeding+Expected:</span> <span className="font-medium">{formatRate(data.academicProgress.exceedingExpectedRate)}</span></div>
+            <div><span className="text-gray-500">Below Expected:</span> <span className="font-medium">{formatRate(data.academicProgress.belowExpectedRate)}</span></div>
             <div><span className="text-gray-500">Subjects:</span> <span className="font-medium">{data.academicProgress.subjectCoverage}</span></div>
           </div>
         </Section>

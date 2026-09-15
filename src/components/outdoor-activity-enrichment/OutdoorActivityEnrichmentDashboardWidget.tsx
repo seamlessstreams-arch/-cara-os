@@ -138,10 +138,10 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Activities: <span className="font-medium">{child.totalActivities}</span></div>
-                    <div>Outdoor: <span className="font-medium">{child.outdoorRate}%</span></div>
-                    <div>Choice: <span className="font-medium">{child.choiceRate}%</span></div>
+                    <div>Outdoor: <span className="font-medium">{formatRate(child.outdoorRate)}</span></div>
+                    <div>Choice: <span className="font-medium">{formatRate(child.choiceRate)}</span></div>
                     <div>Engagement: <span className={`font-medium ${child.engagementScore >= 7 ? "text-green-600" : child.engagementScore >= 4 ? "text-amber-600" : "text-red-600"}`}>{child.engagementScore}/10</span></div>
-                    <div>Plan Completion: <span className="font-medium">{child.planCompletionRate}%</span></div>
+                    <div>Plan Completion: <span className="font-medium">{formatRate(child.planCompletionRate)}</span></div>
                   </div>
                 </div>
               ))}

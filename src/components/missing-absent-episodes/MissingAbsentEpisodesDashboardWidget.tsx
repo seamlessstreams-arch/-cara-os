@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
-import { meets } from "@/lib/metrics/rate";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -437,7 +437,7 @@ export default function MissingAbsentEpisodesDashboardWidget() {
                       <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                         <span>{profile.totalEpisodes} episode(s)</span>
                         <span>RI: {profile.returnInterviewRate}%</span>
-                        <span>Triggers: {profile.triggerIdentifiedRate}%</span>
+                        <span>Triggers: {formatRate(profile.triggerIdentifiedRate)}</span>
                       </div>
                     </div>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded shrink-0 ${scoreColor}`}>

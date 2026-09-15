@@ -72,18 +72,18 @@ export interface EducationAttendanceTrackingRecord {
   child_name: string;
   child_id: string | null;
   recorded_by: string;
-  school_contacted: boolean;
-  reason_documented: boolean;
+  school_contacted: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  reason_documented: boolean | null;
   return_plan_in_place: boolean;
-  pep_up_to_date: boolean;
+  pep_up_to_date: boolean | null;
   virtual_school_informed: boolean;
   social_worker_informed: boolean;
-  child_views_sought: boolean;
+  child_views_sought: boolean | null;
   alternative_education_arranged: boolean;
-  homework_supported: boolean;
-  achievement_celebrated: boolean;
+  homework_supported: boolean | null;
+  achievement_celebrated: boolean | null;
   parent_informed: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   sessions_attended: number;
@@ -172,10 +172,16 @@ export function computeEducationAttendanceMetrics(
   const exclusion = records.filter((r) => r.attendance_status === "fixed_term_exclusion" || r.attendance_status === "permanent_exclusion" || r.attendance_status === "internal_exclusion").length;
   const refused = records.filter((r) => r.absence_reason === "refused_to_attend").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof EducationAttendanceTrackingRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -254,45 +260,45 @@ export function identifyEducationAttendanceAlerts(
   }
 
   // PEP not up to date
-  const noPep = records.filter((r) => !r.pep_up_to_date).length;
+  const noPep = records.filter((r) => r.pep_up_to_date !== true).length;
   if (noPep >= 1) {
     alerts.push({
       type: "pep_not_current",
       severity: "high",
-      message: `${noPep} ${noPep === 1 ? "record shows" : "records show"} PEP not up to date — update personal education plans`,
+      message: `${noPep} ${noPep === 1 ? "record shows" : "records show"} no up-to-date PEP evidenced — update personal education plans`,
       id: "pep_not_current",
     });
   }
 
   // School not contacted for absence
-  const noContact = records.filter((r) => r.attendance_status !== "present" && r.attendance_status !== "school_holiday" && !r.school_contacted).length;
+  const noContact = records.filter((r) => r.attendance_status !== "present" && r.attendance_status !== "school_holiday" && r.school_contacted !== true).length;
   if (noContact >= 1) {
     alerts.push({
       type: "school_not_contacted",
       severity: "high",
-      message: `${noContact} ${noContact === 1 ? "absence has" : "absences have"} school not contacted — ensure communication with schools`,
+      message: `${noContact} ${noContact === 1 ? "absence has" : "absences have"} no school contact evidenced — ensure communication with schools`,
       id: "school_not_contacted",
     });
   }
 
   // Child views not sought
-  const noViews = records.filter((r) => !r.child_views_sought).length;
+  const noViews = records.filter((r) => r.child_views_sought !== true).length;
   if (noViews >= 2) {
     alerts.push({
       type: "child_views_not_sought",
       severity: "medium",
-      message: `${noViews} attendance records without child views sought — ensure child participation`,
+      message: `${noViews} attendance records without evidenced child views — ensure child participation`,
       id: "child_views_not_sought",
     });
   }
 
   // Achievement not celebrated
-  const noAchievement = records.filter((r) => !r.achievement_celebrated).length;
+  const noAchievement = records.filter((r) => r.achievement_celebrated !== true).length;
   if (noAchievement >= 3) {
     alerts.push({
       type: "achievement_not_celebrated",
       severity: "medium",
-      message: `${noAchievement} records without achievement celebrated — strengthen positive reinforcement`,
+      message: `${noAchievement} records without evidenced achievement celebration — strengthen positive reinforcement`,
       id: "achievement_not_celebrated",
     });
   }
@@ -376,18 +382,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       recorded_by: payload.recordedBy,
-      school_contacted: payload.schoolContacted ?? true,
-      reason_documented: payload.reasonDocumented ?? true,
+      school_contacted: payload.schoolContacted ?? null,
+      reason_documented: payload.reasonDocumented ?? null,
       return_plan_in_place: payload.returnPlanInPlace ?? false,
-      pep_up_to_date: payload.pepUpToDate ?? true,
+      pep_up_to_date: payload.pepUpToDate ?? null,
       virtual_school_informed: payload.virtualSchoolInformed ?? false,
       social_worker_informed: payload.socialWorkerInformed ?? false,
-      child_views_sought: payload.childViewsSought ?? true,
+      child_views_sought: payload.childViewsSought ?? null,
       alternative_education_arranged: payload.alternativeEducationArranged ?? false,
-      homework_supported: payload.homeworkSupported ?? true,
-      achievement_celebrated: payload.achievementCelebrated ?? true,
+      homework_supported: payload.homeworkSupported ?? null,
+      achievement_celebrated: payload.achievementCelebrated ?? null,
       parent_informed: payload.parentInformed ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       sessions_attended: payload.sessionsAttended,

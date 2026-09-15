@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS cs_family_reunification (
   planning_stage                        text NOT NULL DEFAULT 'Initial Assessment',
   family_member                         text NOT NULL,
   relationship                          text NOT NULL DEFAULT 'Mother',
-  risk_assessment_current               boolean NOT NULL DEFAULT false,
+  risk_assessment_current               boolean,
   safeguarding_cleared                  boolean NOT NULL DEFAULT false,
   child_views_obtained                  boolean NOT NULL DEFAULT false,
   child_wishes_to_return                boolean NULL,

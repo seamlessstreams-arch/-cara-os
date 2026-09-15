@@ -179,9 +179,13 @@ export function computeEhcpSendMetrics(records: EhcpSendMonitoringRecord[]): {
   const reviewDue = records.filter((r) => r.ehcp_status === "annual_review_due").length;
   const noEhcp = records.filter((r) => r.ehcp_in_place === false).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof EhcpSendMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : null;
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const bySendCategory: Record<string, number> = {};

@@ -7,6 +7,7 @@
 // SCCIF: "The home has robust on-call and emergency arrangements."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -152,7 +153,7 @@ export function HomeOnCallGovernanceIntelligenceCard() {
                   (d.coverage.has_backup_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.coverage.has_backup_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.coverage.has_backup_rate}%
+                  {formatRate(d.coverage.has_backup_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Backup</p>
@@ -196,7 +197,7 @@ export function HomeOnCallGovernanceIntelligenceCard() {
                 <p>Feedback rate: <span className={cn("font-medium",
                   (d.quality.feedback_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.quality.feedback_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.quality.feedback_rate}%</span></p>
+                )}>{formatRate(d.quality.feedback_rate)}</span></p>
                 <p>With notes: <span className="font-medium text-slate-600">{d.quality.shifts_with_review_notes}</span></p>
                 <p>Calls/shift: <span className="font-medium text-slate-600">{d.response.calls_per_shift}</span></p>
                 <p>Avg duration: <span className="font-medium text-slate-600">{d.response.avg_call_duration}m</span></p>

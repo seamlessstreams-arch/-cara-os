@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Lightbulb } from "lucide-react";
@@ -73,15 +74,15 @@ export function HomeLessonsLearnedImprovementIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Lessons</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.embedded_rate ?? 0) >= 80 ? "bg-green-50" : (d.embedded_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.embedded_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.embedded_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.embedded_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.embedded_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.embedded_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.embedded_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Embedded</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.staff_briefing_rate ?? 0) >= 90 ? "bg-green-50" : (d.staff_briefing_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.staff_briefing_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_briefing_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_briefing_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.staff_briefing_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_briefing_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_briefing_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Briefed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.objective_completion_rate ?? 0) >= 80 ? "bg-green-50" : (d.objective_completion_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.objective_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.objective_completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.objective_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.objective_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.objective_completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.objective_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Objectives</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.overdue_objectives === 0 ? "bg-green-50" : "bg-red-50")}>

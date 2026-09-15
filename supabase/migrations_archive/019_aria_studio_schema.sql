@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS aria_studio_quality_checks (
   artifact_id                uuid    NOT NULL REFERENCES aria_studio_artifacts(id) ON DELETE CASCADE,
   evidence_cited             boolean NOT NULL DEFAULT false,
   child_voice_considered     boolean NOT NULL DEFAULT false,
-  risk_considered            boolean NOT NULL DEFAULT false,
+  risk_considered            boolean,
   safeguarding_considered    boolean NOT NULL DEFAULT false,
   regulation_considered      boolean NOT NULL DEFAULT false,
   actions_clear              boolean NOT NULL DEFAULT false,

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -78,11 +79,11 @@ export function CulturalIdentityCelebrationIntelligenceWidget() {
         <ScoreBar label="Engagement" value={engagement.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Activities" value={engagement.totalActivities} />
-          <Stat label="Engagement Rate" value={`${engagement.engagementRate}%`} />
-          <Stat label="Child-Led" value={`${engagement.childLedChoiceRate}%`} />
-          <Stat label="Identity Affirmed" value={`${engagement.identityAffirmedRate}%`} />
-          <Stat label="Documented" value={`${engagement.documentedInPlanRate}%`} />
-          <Stat label="Reflection" value={`${engagement.reflectionCompletedRate}%`} />
+          <Stat label="Engagement Rate" value={`${formatRate(engagement.engagementRate)}`} />
+          <Stat label="Child-Led" value={`${formatRate(engagement.childLedChoiceRate)}`} />
+          <Stat label="Identity Affirmed" value={`${formatRate(engagement.identityAffirmedRate)}`} />
+          <Stat label="Documented" value={`${formatRate(engagement.documentedInPlanRate)}`} />
+          <Stat label="Reflection" value={`${formatRate(engagement.reflectionCompletedRate)}`} />
         </div>
       </Section>
 
@@ -91,8 +92,8 @@ export function CulturalIdentityCelebrationIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Unique Areas" value={diversity.uniqueCulturalAreas} />
           <Stat label="Area Coverage" value={`${diversity.culturalAreaRatio}%`} />
-          <Stat label="Staff Facilitated" value={`${diversity.staffFacilitatedRate}%`} />
-          <Stat label="Community" value={`${diversity.communityInvolvedRate}%`} />
+          <Stat label="Staff Facilitated" value={`${formatRate(diversity.staffFacilitatedRate)}`} />
+          <Stat label="Community" value={`${formatRate(diversity.communityInvolvedRate)}`} />
         </div>
       </Section>
 
@@ -119,11 +120,11 @@ export function CulturalIdentityCelebrationIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Cultural Competence" value={`${staff.culturalCompetenceRate}%`} />
-          <Stat label="Diversity Awareness" value={`${staff.diversityAwarenessRate}%`} />
-          <Stat label="Religious Literacy" value={`${staff.religiousLiteracyRate}%`} />
-          <Stat label="Anti-Racism" value={`${staff.antiRacismPracticeRate}%`} />
-          <Stat label="Identity Support" value={`${staff.identitySupportRate}%`} />
+          <Stat label="Cultural Competence" value={`${formatRate(staff.culturalCompetenceRate)}`} />
+          <Stat label="Diversity Awareness" value={`${formatRate(staff.diversityAwarenessRate)}`} />
+          <Stat label="Religious Literacy" value={`${formatRate(staff.religiousLiteracyRate)}`} />
+          <Stat label="Anti-Racism" value={`${formatRate(staff.antiRacismPracticeRate)}`} />
+          <Stat label="Identity Support" value={`${formatRate(staff.identitySupportRate)}`} />
         </div>
       </Section>
 

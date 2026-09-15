@@ -181,12 +181,12 @@ export interface StayingArrangementsRow {
   financial_arrangement: FinancialArrangement;
   weekly_support_hours: number | null;
   education_training_status: EducationTrainingStatus;
-  health_needs_met: boolean;
+  health_needs_met: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   mental_health_support: boolean;
   independent_living_skills_progress: IndependentLivingSkillsProgress;
-  social_network_maintained: boolean;
-  young_person_satisfied: boolean;
-  regular_contact_maintained: boolean;
+  social_network_maintained: boolean | null;
+  young_person_satisfied: boolean | null;
+  regular_contact_maintained: boolean | null;
   review_frequency: ReviewFrequency;
   last_review_date: string | null;
   risk_of_breakdown: boolean;
@@ -326,9 +326,13 @@ export function computeMetrics(
 } {
   const total = rows.length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StayingArrangementsRow): number | null => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   // Arrangement type breakdown
@@ -482,11 +486,13 @@ export function computeAlerts(
 
   // High: Health needs not met
   for (const r of active) {
-    if (!r.health_needs_met) {
+    if (r.health_needs_met !== true) {
       alerts.push({
         type: "health_needs_not_met",
         severity: "high",
-        message: `${r.young_person_name}'s health needs are not being met in their ${r.arrangement_type} arrangement — review health provision and update pathway plan`,
+        message: r.health_needs_met === false
+          ? `${r.young_person_name}'s health needs are not being met in their ${r.arrangement_type} arrangement — review health provision and update pathway plan`
+          : `No record that ${r.young_person_name}'s health needs are met in their ${r.arrangement_type} arrangement — review and evidence health provision`,
         record_id: r.id,
       });
     }
@@ -506,11 +512,13 @@ export function computeAlerts(
 
   // High: No regular contact maintained
   for (const r of active) {
-    if (!r.regular_contact_maintained) {
+    if (r.regular_contact_maintained !== true) {
       alerts.push({
         type: "no_regular_contact",
         severity: "high",
-        message: `Regular contact is not maintained with ${r.young_person_name} in their ${r.arrangement_type} arrangement — personal adviser must ensure consistent contact per Leaving Care Act 2000`,
+        message: r.regular_contact_maintained === false
+          ? `Regular contact is not maintained with ${r.young_person_name} in their ${r.arrangement_type} arrangement — personal adviser must ensure consistent contact per Leaving Care Act 2000`
+          : `No record of regular contact with ${r.young_person_name} in their ${r.arrangement_type} arrangement — evidence contact per Leaving Care Act 2000`,
         record_id: r.id,
       });
     }
@@ -518,11 +526,13 @@ export function computeAlerts(
 
   // Medium: Young person not satisfied
   for (const r of active) {
-    if (!r.young_person_satisfied) {
+    if (r.young_person_satisfied !== true) {
       alerts.push({
         type: "not_satisfied",
         severity: "medium",
-        message: `${r.young_person_name} is not satisfied with their ${r.arrangement_type} arrangement — explore concerns and review whether the arrangement is meeting their needs`,
+        message: r.young_person_satisfied === false
+          ? `${r.young_person_name} is not satisfied with their ${r.arrangement_type} arrangement — explore concerns and review whether the arrangement is meeting their needs`
+          : `No record of ${r.young_person_name}'s satisfaction with their ${r.arrangement_type} arrangement — seek and evidence their views`,
         record_id: r.id,
       });
     }
@@ -547,11 +557,13 @@ export function computeAlerts(
 
   // Medium: Social network not maintained
   for (const r of active) {
-    if (!r.social_network_maintained) {
+    if (r.social_network_maintained !== true) {
       alerts.push({
         type: "social_network_risk",
         severity: "medium",
-        message: `${r.young_person_name}'s social network is not being maintained during their ${r.arrangement_type} arrangement — social isolation increases risk of premature ending`,
+        message: r.social_network_maintained === false
+          ? `${r.young_person_name}'s social network is not being maintained during their ${r.arrangement_type} arrangement — social isolation increases risk of premature ending`
+          : `No record that ${r.young_person_name}'s social network is maintained during their ${r.arrangement_type} arrangement — review and evidence it`,
         record_id: r.id,
       });
     }
@@ -775,12 +787,12 @@ export async function createStayingArrangement(input: {
       financial_arrangement: input.financialArrangement,
       weekly_support_hours: input.weeklySupportHours ?? null,
       education_training_status: input.educationTrainingStatus,
-      health_needs_met: input.healthNeedsMet ?? true,
+      health_needs_met: input.healthNeedsMet ?? null,
       mental_health_support: input.mentalHealthSupport ?? false,
       independent_living_skills_progress: input.independentLivingSkillsProgress ?? "Developing",
-      social_network_maintained: input.socialNetworkMaintained ?? true,
-      young_person_satisfied: input.youngPersonSatisfied ?? true,
-      regular_contact_maintained: input.regularContactMaintained ?? true,
+      social_network_maintained: input.socialNetworkMaintained ?? null,
+      young_person_satisfied: input.youngPersonSatisfied ?? null,
+      regular_contact_maintained: input.regularContactMaintained ?? null,
       review_frequency: input.reviewFrequency ?? "Monthly",
       last_review_date: input.lastReviewDate ?? null,
       risk_of_breakdown: input.riskOfBreakdown ?? false,

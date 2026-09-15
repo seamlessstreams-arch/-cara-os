@@ -14,9 +14,24 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateId, todayStr } from "@/lib/utils";
 import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
-import { persistDailyLog, createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
+import {
+  persistDailyLog,
+  createIncidentRecord,
+  createTaskRecord,
+  persistChronologyEntry,
+  persistMissingEpisode,
+  persistNotification,
+  persistChildDailySummary,
+  persistAnnexAEvidence,
+  persistHealthRecordEntry,
+  persistEducationEvent,
+  persistFilingCabinetItem,
+  persistSavedTimeMetric,
+} from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
 // ── Forms-as-views: spine write-through helpers ───────────────────────────────
@@ -61,6 +76,68 @@ const TIME_SAVED_BY_ROUTE: Partial<Record<RouteType, number>> = {
 // ── Home ID constant (seed data) ──────────────────────────────────────────────
 
 const HOME_ID = "home_oak";
+
+// ── Phase 1: create-in-store + best-effort Supabase mirror ──────────────────
+// The processor is a sync orchestrator; these wrappers keep the in-memory write
+// (demo + immediate read-back) and fire a best-effort write-through to the real
+// table when Supabase is on — the same fire-and-forget pattern as
+// persistDailyLog / createIncidentRecord, so the processor stays sync. The
+// route state-machine AND the job queue are mirrored to careEventsDb by
+// persistProcessorState (below); the runner picks jobs up from there. Only
+// restraints stays on db.* — it waits on #106's cs_restraint_records on main.
+function mirrorChronology(d: Parameters<typeof db.chronology.create>[0]) {
+  const e = db.chronology.create(d);
+  void persistChronologyEntry(e);
+  return e;
+}
+function mirrorMissingEpisode(d: Parameters<typeof db.missingEpisodes.create>[0]) {
+  const e = db.missingEpisodes.create(d);
+  void persistMissingEpisode(e);
+  return e;
+}
+function mirrorNotification(d: Parameters<typeof db.notifications.create>[0]) {
+  const e = db.notifications.create(d);
+  void persistNotification(e);
+  return e;
+}
+function mirrorChildDailySummary(d: Parameters<typeof db.childDailySummaries.upsert>[0]) {
+  const e = db.childDailySummaries.upsert(d);
+  void persistChildDailySummary(e);
+  return e;
+}
+function mirrorAnnexAEvidence(d: Parameters<typeof db.annexAEvidenceQueue.upsert>[0]) {
+  const e = db.annexAEvidenceQueue.upsert(d);
+  void persistAnnexAEvidence(e);
+  return e;
+}
+// Phase 2: health record entries have no dedicated table — the mirror persists
+// to the generic_records catch-all (record_type "healthRecordEntries"), the same
+// home dal.healthRecordEntries now reads from on live, so the record round-trips.
+function mirrorHealthRecord(d: Parameters<typeof db.healthRecordEntries.create>[0]) {
+  const e = db.healthRecordEntries.create(d);
+  void persistHealthRecordEntry(e as unknown as Record<string, unknown>);
+  return e;
+}
+// Phase 3: education events get a dedicated table (cs_education_events) — the
+// mirror persists there, the home dal.educationRecords now reads on live.
+function mirrorEducationRecord(d: Parameters<typeof db.educationRecords.create>[0]) {
+  const e = db.educationRecords.create(d);
+  void persistEducationEvent(e as unknown as Record<string, unknown>);
+  return e;
+}
+// Phase 4: filing cabinet + saved-time metrics mirror to generic_records — the
+// home dal.filingCabinet / dal.savedTimeMetrics read on live for the primary
+// surfaces (the filing index, the saved-time dashboard).
+function mirrorFilingCabinet(d: Parameters<typeof db.filingCabinet.upsert>[0]) {
+  const e = db.filingCabinet.upsert(d);
+  void persistFilingCabinetItem(e as unknown as Record<string, unknown>);
+  return e;
+}
+function mirrorSavedTime(d: Parameters<typeof db.savedTimeMetrics.upsert>[0]) {
+  const e = db.savedTimeMetrics.upsert(d);
+  void persistSavedTimeMetric(e as unknown as Record<string, unknown>);
+  return e;
+}
 
 // ── Route processors ──────────────────────────────────────────────────────────
 
@@ -144,7 +221,7 @@ function processChildDailySummary(event: CareEvent): void {
       (avgMood !== null ? `Average mood: ${avgMood}/10. ` : "") +
       `Categories: ${categories.join(", ")}.`;
 
-  db.childDailySummaries.upsert({
+  mirrorChildDailySummary({
     home_id: HOME_ID,
     child_id: event.child_id,
     summary_date: event.event_date,
@@ -181,7 +258,7 @@ function processManagementOversight(event: CareEvent, route: CareEventRoute): vo
   // Send in-app notification to the manager (or all managers if no manager_id)
   const notifRecipient = event.manager_id ?? event.staff_id;
   try {
-    db.notifications.create({
+    mirrorNotification({
       home_id: HOME_ID,
       recipient_id: notifRecipient,
       title: "Management review required",
@@ -306,7 +383,7 @@ function processAnnexAEvidence(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const item = db.annexAEvidenceQueue.upsert({
+  const item = mirrorAnnexAEvidence({
     care_event_id: event.id,
     home_id: HOME_ID,
     annex_section: classification.annex_a_section,
@@ -331,7 +408,7 @@ function processFilingCabinet(event: CareEvent, route: CareEventRoute): void {
     : (event.category as FilingCategory) ?? "other";
 
   // Write to filing cabinet (idempotent via care_event_id + category)
-  const item = db.filingCabinet.upsert({
+  const item = mirrorFilingCabinet({
     care_event_id: event.id,
     home_id: HOME_ID,
     child_id: event.child_id,
@@ -356,7 +433,7 @@ function processFilingCabinet(event: CareEvent, route: CareEventRoute): void {
 
   // Also create a chronology entry as before (dual-filing)
   try {
-    db.chronology.create({
+    mirrorChronology({
       child_id: event.child_id,
       date: event.event_date,
       time: event.event_time ?? null,
@@ -391,7 +468,7 @@ function processSavedTime(event: CareEvent, route: CareEventRoute): void {
   for (const r of routes) {
     const mins = TIME_SAVED_BY_ROUTE[r.route_type] ?? 0;
     if (mins > 0) {
-      db.savedTimeMetrics.upsert({
+      mirrorSavedTime({
         care_event_id: event.id,
         home_id: HOME_ID,
         route_type: r.route_type,
@@ -525,7 +602,7 @@ function processMissingEpisode(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const episode = db.missingEpisodes.create({
+  const episode = mirrorMissingEpisode({
     child_id: event.child_id ?? "",
     home_id: HOME_ID,
     date_missing: event.event_date,
@@ -660,7 +737,7 @@ function processHealthRecord(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const record = db.healthRecordEntries.create({
+  const record = mirrorHealthRecord({
     child_id: event.child_id ?? "",
     date: event.event_date,
     record_type: "other",
@@ -700,7 +777,7 @@ function processMedicationRecord(event: CareEvent, route: CareEventRoute): void 
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -737,7 +814,7 @@ function processEducationRecord(event: CareEvent, route: CareEventRoute): void {
     return;
   }
 
-  const record = db.educationRecords.create({
+  const record = mirrorEducationRecord({
     child_id: event.child_id ?? "",
     record_type: "concern",
     title: event.title,
@@ -794,7 +871,7 @@ function processFamilyContactRecord(event: CareEvent, route: CareEventRoute): vo
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -831,7 +908,7 @@ function processProfessionalContactRecord(event: CareEvent, route: CareEventRout
     return;
   }
 
-  const entry = db.chronology.create({
+  const entry = mirrorChronology({
     child_id: event.child_id ?? "",
     date: event.event_date,
     time: event.event_time ?? null,
@@ -960,7 +1037,7 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
 
   // Also add to chronology
   try {
-    db.chronology.create({
+    mirrorChronology({
       child_id: event.child_id ?? "",
       date: event.event_date,
       time: event.event_time ?? null,
@@ -979,7 +1056,7 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
   // Urgent notification to manager
   try {
     const notifRecipient = event.manager_id ?? event.staff_id;
-    db.notifications.create({
+    mirrorNotification({
       home_id: HOME_ID,
       recipient_id: notifRecipient,
       title: "URGENT — Safeguarding concern logged",
@@ -1245,6 +1322,69 @@ export function processCareEvent(event: CareEvent): ProcessResult {
 }
 
 // ── Retry failed routes ───────────────────────────────────────────────────────
+
+// ── Phase 5: persist the routing bookkeeping ────────────────────────────────
+// processCareEvent / retryFailedRoutes run their state machine synchronously
+// against the in-memory store; on live the route records and the event's final
+// status stayed in memDb while the route handler's response reads them back
+// through careEventsDb (Supabase) — so the routing summary came back empty after
+// a cold start, and the event kept its pre-routing status. This async post-pass
+// (called by the already-async route handlers AFTER the sync processor) mirrors
+// the final state through careEventsDb. Best-effort: never blocks the response,
+// and a no-op in demo where memDb already IS the source of truth.
+export async function persistProcessorState(careEventId: string): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  try {
+    const ev = db.careEvents.findById(careEventId);
+    if (ev) {
+      await careEventsDb.careEvents.patch(careEventId, {
+        status: ev.status,
+        requires_manager_review: ev.requires_manager_review,
+        requires_reg40_triage: ev.requires_reg40_triage,
+        contributes_to_reg45: ev.contributes_to_reg45,
+        contributes_to_annex_a: ev.contributes_to_annex_a,
+        is_safeguarding: ev.is_safeguarding,
+        evidence_prompts: ev.evidence_prompts,
+      });
+    }
+    for (const r of db.careEventRoutes.findByCareEvent(careEventId)) {
+      await careEventsDb.careEventRoutes.upsert({
+        care_event_id: r.care_event_id,
+        home_id: r.home_id,
+        route_type: r.route_type,
+        status: r.status,
+        linked_record_id: r.linked_record_id,
+        linked_record_table: r.linked_record_table,
+        processing_notes: r.processing_notes,
+        error_message: r.error_message,
+        retry_count: r.retry_count,
+        last_retried_at: r.last_retried_at,
+        time_saved_minutes: r.time_saved_minutes,
+      });
+    }
+    // Phase 6: mirror the enqueued background jobs so the runner (careEventsDb)
+    // can pick them up on a different instance instead of losing them.
+    for (const j of db.careEventJobs.findAll().filter((j) => j.care_event_id === careEventId)) {
+      await careEventsDb.careEventJobs.upsert({
+        care_event_id: j.care_event_id,
+        home_id: j.home_id,
+        job_type: j.job_type,
+        status: j.status,
+        payload: j.payload,
+        result: j.result,
+        error_message: j.error_message,
+        retry_count: j.retry_count,
+        max_retries: j.max_retries,
+        scheduled_at: j.scheduled_at,
+        started_at: j.started_at,
+        completed_at: j.completed_at,
+        last_retried_at: j.last_retried_at,
+      });
+    }
+  } catch {
+    // best-effort — memDb already holds the state; never block the caller
+  }
+}
 
 export function retryFailedRoutes(careEventId: string): ProcessResult {
   const event = db.careEvents.findById(careEventId);

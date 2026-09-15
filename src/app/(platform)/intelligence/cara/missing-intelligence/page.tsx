@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type {
@@ -100,12 +101,12 @@ export default function MissingIntelligencePage() {
           { label: "Active episodes", value: p.active_episodes, alert: p.active_episodes > 0 },
           {
             label: "RHI completion",
-            value: `${p.return_interview_completion_rate}%`,
+            value: `${formatRate(p.return_interview_completion_rate)}`,
             alert: rhiAlert,
           },
           {
             label: "Police notified",
-            value: `${p.police_notification_rate}%`,
+            value: `${formatRate(p.police_notification_rate)}`,
             alert: (p.police_notification_rate ?? 0) < 100,
           },
         ].map((m) => (

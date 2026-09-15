@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useCallback, useEffect, useState } from "react";
 
 // ── Local interfaces (mirror engine output shape) ─────────────────────────
@@ -227,19 +228,19 @@ export function MentalHealthWellbeingDashboardWidget({ homeId = "home-oak" }: Pr
       <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.assessmentResult.coverageRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {data.assessmentResult.coverageRate}%
+            {formatRate(data.assessmentResult.coverageRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Assessment coverage</p>
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.interventionResult.attendanceRate >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {data.interventionResult.attendanceRate}%
+            {formatRate(data.interventionResult.attendanceRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Therapy attendance</p>
         </div>
         <div className="p-3 text-center">
           <p className={`text-lg font-bold ${data.safetyPlanResult.childInvolvementRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {data.safetyPlanResult.childInvolvementRate}%
+            {formatRate(data.safetyPlanResult.childInvolvementRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Child voice in plans</p>
         </div>

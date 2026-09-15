@@ -79,12 +79,12 @@ export interface ChildNutritionWeightMonitoringRow {
   dietary_need: DietaryNeed;
   monitoring_status: MonitoringStatus;
   assessment_type: AssessmentType;
-  weight_recorded: boolean;
-  height_recorded: boolean;
-  bmi_calculated: boolean;
-  dietary_needs_met: boolean;
-  portion_sizes_appropriate: boolean;
-  hydration_adequate: boolean;
+  weight_recorded: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  height_recorded: boolean | null;
+  bmi_calculated: boolean | null;
+  dietary_needs_met: boolean | null;
+  portion_sizes_appropriate: boolean | null;
+  hydration_adequate: boolean | null;
   clinical_referral_made: boolean;
   weight_management_plan: boolean;
   assessor_name: string | null;
@@ -125,10 +125,14 @@ export function computeNutritionMetrics(
     (r) => r.monitoring_status === "concern_identified",
   ).length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildNutritionWeightMonitoringRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -204,11 +208,13 @@ export function computeNutritionAlerts(
 
   // High: dietary needs not met
   for (const r of rows) {
-    if (!r.dietary_needs_met) {
+    if (r.dietary_needs_met !== true) {
       alerts.push({
         type: "dietary_needs_not_met",
         severity: "high",
-        message: `Dietary needs not met for ${r.child_name} — review meal provision and dietary accommodations`,
+        message: r.dietary_needs_met === false
+          ? `Dietary needs not met for ${r.child_name} — review meal provision and dietary accommodations`
+          : `No evidence dietary needs are met for ${r.child_name} — review and record meal provision and dietary accommodations`,
         record_id: r.id,
       });
     }
@@ -228,11 +234,13 @@ export function computeNutritionAlerts(
 
   // Medium: hydration not adequate
   for (const r of rows) {
-    if (!r.hydration_adequate) {
+    if (r.hydration_adequate !== true) {
       alerts.push({
         type: "hydration_not_adequate",
         severity: "medium",
-        message: `Hydration not adequate for ${r.child_name} — review fluid intake and encourage adequate hydration`,
+        message: r.hydration_adequate === false
+          ? `Hydration not adequate for ${r.child_name} — review fluid intake and encourage adequate hydration`
+          : `No evidence of adequate hydration for ${r.child_name} — review and record fluid intake`,
         record_id: r.id,
       });
     }
@@ -340,12 +348,12 @@ export async function createChildNutritionWeightMonitoring(input: {
       dietary_need: input.dietaryNeed,
       monitoring_status: input.monitoringStatus,
       assessment_type: input.assessmentType,
-      weight_recorded: input.weightRecorded ?? true,
-      height_recorded: input.heightRecorded ?? true,
-      bmi_calculated: input.bmiCalculated ?? true,
-      dietary_needs_met: input.dietaryNeedsMet ?? true,
-      portion_sizes_appropriate: input.portionSizesAppropriate ?? true,
-      hydration_adequate: input.hydrationAdequate ?? true,
+      weight_recorded: input.weightRecorded ?? null,
+      height_recorded: input.heightRecorded ?? null,
+      bmi_calculated: input.bmiCalculated ?? null,
+      dietary_needs_met: input.dietaryNeedsMet ?? null,
+      portion_sizes_appropriate: input.portionSizesAppropriate ?? null,
+      hydration_adequate: input.hydrationAdequate ?? null,
       clinical_referral_made: input.clinicalReferralMade ?? false,
       weight_management_plan: input.weightManagementPlan ?? false,
       assessor_name: input.assessorName ?? null,

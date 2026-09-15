@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -312,7 +313,7 @@ export default function DailyLogDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalRecords} records, {child.uniqueCategories} categories, {child.detailedObservationRate}% detailed, {child.childMoodRate}% mood
+                    {child.totalRecords} records, {child.uniqueCategories} categories, {formatRate(child.detailedObservationRate)} detailed, {formatRate(child.childMoodRate)} mood
                   </p>
                 </div>
                 <div className={`text-lg font-bold ${getScoreColour(child.dailyLogScore, 10)}`}>

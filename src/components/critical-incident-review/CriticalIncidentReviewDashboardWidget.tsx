@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { CriticalIncidentReviewIntelligence } from "@/lib/critical-incident-review";
 
@@ -115,7 +116,7 @@ export function CriticalIncidentReviewDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Incidents</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.debriefQuality.debriefCompletionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.debriefQuality.debriefCompletionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Debrief Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -151,9 +152,9 @@ export function CriticalIncidentReviewDashboardWidget() {
             <div><span className="text-gray-500">On Time:</span> <span className="font-medium text-green-600">{data.debriefQuality.debriefedOnTime}</span></div>
             <div><span className="text-gray-500">Late:</span> <span className={`font-medium ${data.debriefQuality.debriefedLate > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.debriefQuality.debriefedLate}</span></div>
             <div><span className="text-gray-500">Not Debriefed:</span> <span className={`font-medium ${data.debriefQuality.notDebriefed > 0 ? "text-red-600" : "text-gray-900"}`}>{data.debriefQuality.notDebriefed}</span></div>
-            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{data.debriefQuality.debriefCompletionRate}%</span></div>
-            <div><span className="text-gray-500">Child Included:</span> <span className="font-medium">{data.debriefQuality.childIncludedRate}%</span></div>
-            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{data.debriefQuality.rootCauseIdentifiedRate}%</span></div>
+            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{formatRate(data.debriefQuality.debriefCompletionRate)}</span></div>
+            <div><span className="text-gray-500">Child Included:</span> <span className="font-medium">{formatRate(data.debriefQuality.childIncludedRate)}</span></div>
+            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{formatRate(data.debriefQuality.rootCauseIdentifiedRate)}</span></div>
           </div>
         </Section>
 
@@ -163,9 +164,9 @@ export function CriticalIncidentReviewDashboardWidget() {
             <div><span className="text-gray-500">Embedded:</span> <span className="font-medium text-green-600">{data.learningIdentification.embedded}</span></div>
             <div><span className="text-gray-500">Implemented:</span> <span className="font-medium text-blue-600">{data.learningIdentification.implemented}</span></div>
             <div><span className="text-gray-500">Action Planned:</span> <span className="font-medium text-amber-600">{data.learningIdentification.actionPlanned}</span></div>
-            <div><span className="text-gray-500">Implementation:</span> <span className="font-medium">{data.learningIdentification.implementationRate}%</span></div>
-            <div><span className="text-gray-500">Shared (Team):</span> <span className="font-medium">{data.learningIdentification.sharedWithTeamRate}%</span></div>
-            <div><span className="text-gray-500">Shared (Supervision):</span> <span className="font-medium">{data.learningIdentification.sharedInSupervisionRate}%</span></div>
+            <div><span className="text-gray-500">Implementation:</span> <span className="font-medium">{formatRate(data.learningIdentification.implementationRate)}</span></div>
+            <div><span className="text-gray-500">Shared (Team):</span> <span className="font-medium">{formatRate(data.learningIdentification.sharedWithTeamRate)}</span></div>
+            <div><span className="text-gray-500">Shared (Supervision):</span> <span className="font-medium">{formatRate(data.learningIdentification.sharedInSupervisionRate)}</span></div>
             <div><span className="text-gray-500">Not Identified:</span> <span className={`font-medium ${data.learningIdentification.notIdentified > 0 ? "text-red-600" : "text-gray-900"}`}>{data.learningIdentification.notIdentified}</span></div>
           </div>
         </Section>
@@ -173,9 +174,9 @@ export function CriticalIncidentReviewDashboardWidget() {
         <Section title="Practice Changes">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Changes:</span> <span className="font-medium">{data.practiceChange.totalChanges}</span></div>
-            <div><span className="text-gray-500">Impact Assessed:</span> <span className="font-medium">{data.practiceChange.impactAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Positive Impact:</span> <span className="font-medium">{data.practiceChange.positiveImpactRate}%</span></div>
-            <div><span className="text-gray-500">Sustainability Review:</span> <span className="font-medium">{data.practiceChange.sustainabilityReviewedRate}%</span></div>
+            <div><span className="text-gray-500">Impact Assessed:</span> <span className="font-medium">{formatRate(data.practiceChange.impactAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Positive Impact:</span> <span className="font-medium">{formatRate(data.practiceChange.positiveImpactRate)}</span></div>
+            <div><span className="text-gray-500">Sustainability Review:</span> <span className="font-medium">{formatRate(data.practiceChange.sustainabilityReviewedRate)}</span></div>
           </div>
           {Object.keys(data.practiceChange.changesByType).length > 0 && (
             <div className="mt-2">

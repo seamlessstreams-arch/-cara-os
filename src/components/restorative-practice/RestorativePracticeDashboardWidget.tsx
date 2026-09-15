@@ -83,11 +83,11 @@ function FacilitatorCard({ profile }: { profile: StaffFacilitatorProfile }) {
         </div>
         <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t">
           <div>
-            <span className="text-lg font-bold text-gray-900">{profile.repairRate}%</span>
+            <span className="text-lg font-bold text-gray-900">{formatRate(profile.repairRate)}</span>
             <p className="text-xs text-gray-500">Repair Rate</p>
           </div>
           <div>
-            <span className="text-lg font-bold text-gray-900">{profile.childVoiceRate}%</span>
+            <span className="text-lg font-bold text-gray-900">{formatRate(profile.childVoiceRate)}</span>
             <p className="text-xs text-gray-500">Child Voice</p>
           </div>
         </div>
@@ -223,7 +223,7 @@ export function RestorativePracticeDashboardWidget() {
         )}
         {meets(data.quality.childLedRate, 30) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
-            {data.quality.childLedRate}% CHILD-LED
+            {formatRate(data.quality.childLedRate)} CHILD-LED
           </span>
         )}
         {meets(data.outcomes.repairRate, 75) && (
@@ -286,49 +286,49 @@ export function RestorativePracticeDashboardWidget() {
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>All Parties Heard</span>
-                <span>{data.quality.allPartiesHeardRate}%</span>
+                <span>{formatRate(data.quality.allPartiesHeardRate)}</span>
               </div>
               <ProgressBar value={data.quality.allPartiesHeardRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Harm Acknowledged</span>
-                <span>{data.quality.harmAcknowledgedRate}%</span>
+                <span>{formatRate(data.quality.harmAcknowledgedRate)}</span>
               </div>
               <ProgressBar value={data.quality.harmAcknowledgedRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Needs Identified</span>
-                <span>{data.quality.needsIdentifiedRate}%</span>
+                <span>{formatRate(data.quality.needsIdentifiedRate)}</span>
               </div>
               <ProgressBar value={data.quality.needsIdentifiedRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Repair Plan Agreed</span>
-                <span>{data.quality.repairPlanRate}%</span>
+                <span>{formatRate(data.quality.repairPlanRate)}</span>
               </div>
               <ProgressBar value={data.quality.repairPlanRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Emotions Explored</span>
-                <span>{data.quality.emotionsExploredRate}%</span>
+                <span>{formatRate(data.quality.emotionsExploredRate)}</span>
               </div>
               <ProgressBar value={data.quality.emotionsExploredRate} max={100} color="bg-green-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Child Voice Heard</span>
-                <span>{data.quality.childVoiceRate}%</span>
+                <span>{formatRate(data.quality.childVoiceRate)}</span>
               </div>
               <ProgressBar value={data.quality.childVoiceRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Child-Led Resolution</span>
-                <span>{data.quality.childLedRate}%</span>
+                <span>{formatRate(data.quality.childLedRate)}</span>
               </div>
               <ProgressBar value={data.quality.childLedRate} max={100} color="bg-blue-500" />
             </div>
@@ -375,7 +375,7 @@ export function RestorativePracticeDashboardWidget() {
                 <p className="text-xs text-gray-500">Avg Agreements</p>
               </div>
               <div className="text-center">
-                <span className="text-lg font-bold text-blue-600">{data.outcomes.followUpCompletedRate}%</span>
+                <span className="text-lg font-bold text-blue-600">{formatRate(data.outcomes.followUpCompletedRate)}</span>
                 <p className="text-xs text-gray-500">Follow-Ups Done</p>
               </div>
             </div>
@@ -422,7 +422,7 @@ export function RestorativePracticeDashboardWidget() {
                 <p className="text-xs text-gray-500">With Restorative</p>
               </div>
               <div className="text-center">
-                <span className="text-lg font-bold text-blue-600">{data.incidentConversion.conversionRate}%</span>
+                <span className="text-lg font-bold text-blue-600">{formatRate(data.incidentConversion.conversionRate)}</span>
                 <p className="text-xs text-gray-500">Conversion Rate</p>
               </div>
               <div className="text-center">

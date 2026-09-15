@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { meets } from "@/lib/metrics/rate";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -79,15 +79,15 @@ export function HomeBelongingPersonalPropertyIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Inventories</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.clothing_choice_rate, 85) ? "bg-green-50" : meets(d.clothing_choice_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.clothing_choice_rate, 85) ? "text-[--cs-success]" : meets(d.clothing_choice_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.clothing_choice_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.clothing_choice_rate, 85) ? "text-[--cs-success]" : meets(d.clothing_choice_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.clothing_choice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clothing Choice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.hair_cultural_rate, 85) ? "bg-green-50" : meets(d.hair_cultural_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.hair_cultural_rate, 85) ? "text-[--cs-success]" : meets(d.hair_cultural_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hair_cultural_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hair_cultural_rate, 85) ? "text-[--cs-success]" : meets(d.hair_cultural_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hair_cultural_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cultural Hair</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.gift_personalisation_rate, 85) ? "bg-green-50" : meets(d.gift_personalisation_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.gift_personalisation_rate, 85) ? "text-[--cs-success]" : meets(d.gift_personalisation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.gift_personalisation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.gift_personalisation_rate, 85) ? "text-[--cs-success]" : meets(d.gift_personalisation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.gift_personalisation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Gift Quality</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.property_loss_rate !== null && d.property_loss_rate <= 0.5) ? "bg-green-50" : (d.property_loss_rate !== null && d.property_loss_rate <= 2) ? "bg-amber-50" : "bg-red-50")}>

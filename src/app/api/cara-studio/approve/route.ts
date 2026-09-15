@@ -11,7 +11,6 @@ import { approvalRequestSchema } from "@/lib/cara-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
-import type { SB } from "@/lib/supabase/loose-client";
 
 // Roles permitted to approve content
 const APPROVAL_ROLES = [
@@ -67,7 +66,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { data: generation, error: fetchError } = await (sb.from("cara_studio_generations") as SB)
+    const { data: generation, error: fetchError } = await sb.from("cara_studio_generations")
       .select("id, status, generation_type, created_by")
       .eq("id", generationId)
       .single();
@@ -81,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     // ── Validate current status allows approval ─────────────────────────────
     const approvableStatuses = ["draft", "pending_approval"];
-    if (!approvableStatuses.includes(generation.status)) {
+    if (!approvableStatuses.includes(generation.status ?? "")) {
       return NextResponse.json(
         { error: `Cannot ${action} content with status "${generation.status}". Must be draft or pending_approval.` },
         { status: 409 },
@@ -97,7 +96,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Statutory content requires Registered Manager ───────────────────────
-    if (action === "approve" && STATUTORY_TYPES.includes(generation.generation_type)) {
+    if (action === "approve" && STATUTORY_TYPES.includes(generation.generation_type ?? "")) {
       if (role !== "registered_manager") {
         return NextResponse.json(
           { error: "Statutory content (placement plans, risk assessments, care plans) requires Registered Manager approval." },
@@ -110,7 +109,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const newStatus = action === "approve" ? "approved" : "rejected";
 
-    await (sb.from("cara_studio_generations") as SB)
+    await sb.from("cara_studio_generations")
       .update({
         status: newStatus,
         approved_by: action === "approve" ? userId : null,

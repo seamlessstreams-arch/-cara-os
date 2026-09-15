@@ -97,10 +97,10 @@ const EXPORT_COLS: ExportColumn<RestraintRecord>[] = [
   { header: "Date",            accessor: (r: RestraintRecord) => r.date },
   { header: "Start",           accessor: (r: RestraintRecord) => r.start_time },
   { header: "End",             accessor: (r: RestraintRecord) => r.end_time },
-  { header: "Duration (s)",    accessor: (r: RestraintRecord) => String(r.duration) },
+  { header: "Duration (min)",  accessor: (r: RestraintRecord) => String(r.duration) },
   { header: "Young Person",    accessor: (r: RestraintRecord) => getYPName(r.child_id) },
   { header: "Staff",           accessor: (r: RestraintRecord) => r.staff_involved.map((s: { staff_id: string; role: string }) => `${getStaffName(s.staff_id)} (${s.role})`).join(", ") },
-  { header: "Reason",          accessor: (r: RestraintRecord) => REASON_META[r.reason] },
+  { header: "Reason",          accessor: (r: RestraintRecord) => (r.reason ? REASON_META[r.reason] : "—") },
   { header: "Type",            accessor: (r: RestraintRecord) => TYPE_META[r.restraint_type] },
   { header: "De-escalation",   accessor: (r: RestraintRecord) => r.de_escalation_attempts.join("; ") },
   { header: "Description",     accessor: (r: RestraintRecord) => r.description },
@@ -142,7 +142,8 @@ export default function RestraintLogPage() {
     e.preventDefault();
     if (!rlForm.child_id) { toast.error("Please select a young person."); return; }
     if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
-    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: 0, child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "standing", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    const minutesBetween = (a: string, b: string) => { const [ah, am] = a.split(":").map(Number); const [bh, bm] = b.split(":").map(Number); if ([ah, am, bh, bm].some(Number.isNaN)) return 0; const d = (bh * 60 + bm) - (ah * 60 + am); return d < 0 ? d + 1440 : d; };
+    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: minutesBetween(rlForm.start_time, rlForm.end_time), child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "other", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Restraint record saved.");
     setRlForm({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
     setShowNew(false);
@@ -245,7 +246,7 @@ export default function RestraintLogPage() {
                           </Link>
                         )}
                       </div>
-                      <p className="font-semibold">{getYPName(r.child_id)} — {REASON_META[r.reason]}</p>
+                      <p className="font-semibold">{getYPName(r.child_id)} — {r.reason ? REASON_META[r.reason] : "Reason not recorded"}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                         <span>{r.date} {r.start_time}–{r.end_time}</span>
                         <span>Duration: {Math.floor(r.duration / 60)}m {r.duration % 60}s</span>

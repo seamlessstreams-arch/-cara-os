@@ -50,7 +50,7 @@ let _id = 0;
 
 function makeEntry(overrides: Partial<DailyLogInput> = {}): DailyLogInput {
   return {
-    id: overrides.id ?? `log_${++_id}`,
+    id: `log_${++_id}`,
     child_id: "yp_alex",
     date: TODAY,
     time: "10:00",

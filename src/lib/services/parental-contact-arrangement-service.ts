@@ -82,11 +82,11 @@ export interface ParentalContactArrangementRow {
   duration_minutes: number;
   supervised: boolean;
   supervisor_name: string | null;
-  court_order_complied: boolean;
-  child_views_before: boolean;
-  child_views_after: boolean;
-  social_worker_informed: boolean;
-  recorded_in_care_plan: boolean;
+  court_order_complied: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_views_before: boolean | null;
+  child_views_after: boolean | null;
+  social_worker_informed: boolean | null;
+  recorded_in_care_plan: boolean | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -116,14 +116,18 @@ export function computeParentalContactMetrics(
     (r) => r.contact_outcome === "cancelled_by_parent" || r.contact_outcome === "cancelled_by_child",
   ).length;
   const courtOrderNonCompliantCount = rows.filter(
-    (r) => r.court_order_status === "court_ordered" && !r.court_order_complied,
+    (r) => r.court_order_status === "court_ordered" && r.court_order_complied === false,
   ).length;
   const refusedCount = rows.filter((r) => r.child_experience === "refused_contact").length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ParentalContactArrangementRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0
-      ? Math.round((count / rows.length) * 1000) / 10
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -179,13 +183,15 @@ export function computeParentalContactAlerts(
   for (const r of rows) {
     if (
       r.court_order_status === "court_ordered" &&
-      !r.court_order_complied &&
+      r.court_order_complied !== true &&
       r.contact_outcome === "negative"
     ) {
       alerts.push({
         type: "court_order_breach_negative",
         severity: "critical",
-        message: `Court-ordered contact for ${r.child_name} with ${r.parent_carer_name} was non-compliant with a negative outcome — immediate review and legal notification required`,
+        message: r.court_order_complied === false
+          ? `Court-ordered contact for ${r.child_name} with ${r.parent_carer_name} was non-compliant with a negative outcome — immediate review and legal notification required`
+          : `Court-ordered contact for ${r.child_name} with ${r.parent_carer_name} had a negative outcome and no compliance record — establish and record whether the order was complied with immediately`,
         record_id: r.id,
       });
     }
@@ -209,24 +215,24 @@ export function computeParentalContactAlerts(
   }
 
   // High: child views not captured (before or after) for multiple contacts
-  const noViewsCount = rows.filter((r) => !r.child_views_before || !r.child_views_after).length;
+  const noViewsCount = rows.filter((r) => r.child_views_before !== true || r.child_views_after !== true).length;
   if (noViewsCount >= 2) {
     alerts.push({
       type: "child_views_not_captured",
       severity: "high",
-      message: `${noViewsCount} contacts without full child views captured (before or after) — ensure child's voice is recorded for every contact`,
+      message: `${noViewsCount} contacts without evidenced child views (before and after) — ensure child's voice is recorded for every contact`,
     });
   }
 
   // Medium: social worker not informed for court-ordered contacts
   const swNotInformedCourtOrdered = rows.filter(
-    (r) => r.court_order_status === "court_ordered" && !r.social_worker_informed,
+    (r) => r.court_order_status === "court_ordered" && r.social_worker_informed !== true,
   ).length;
   if (swNotInformedCourtOrdered >= 1) {
     alerts.push({
       type: "sw_not_informed_court_ordered",
       severity: "medium",
-      message: `${swNotInformedCourtOrdered} court-ordered ${swNotInformedCourtOrdered === 1 ? "contact has" : "contacts have"} social worker not informed — ensure social worker is notified of all court-ordered contact`,
+      message: `${swNotInformedCourtOrdered} court-ordered ${swNotInformedCourtOrdered === 1 ? "contact has" : "contacts have"} no social-worker notification evidenced — ensure social worker is notified of all court-ordered contact`,
     });
   }
 
@@ -338,11 +344,11 @@ export async function createParentalContactArrangement(payload: {
       duration_minutes: payload.durationMinutes,
       supervised: payload.supervised,
       supervisor_name: payload.supervisorName ?? null,
-      court_order_complied: payload.courtOrderComplied ?? true,
-      child_views_before: payload.childViewsBefore ?? true,
-      child_views_after: payload.childViewsAfter ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      recorded_in_care_plan: payload.recordedInCarePlan ?? true,
+      court_order_complied: payload.courtOrderComplied ?? null,
+      child_views_before: payload.childViewsBefore ?? null,
+      child_views_after: payload.childViewsAfter ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      recorded_in_care_plan: payload.recordedInCarePlan ?? null,
       notes: payload.notes ?? null,
     })
     .select()

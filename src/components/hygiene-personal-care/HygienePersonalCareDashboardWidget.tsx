@@ -134,8 +134,8 @@ export default function HygienePersonalCareDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Sessions: <span className="font-medium">{child.totalSessions}</span></div>
-                    <div>Competency: <span className="font-medium">{child.competencyRate}%</span></div>
-                    <div>Participation: <span className="font-medium">{child.participationRate}%</span></div>
+                    <div>Competency: <span className="font-medium">{formatRate(child.competencyRate)}</span></div>
+                    <div>Participation: <span className="font-medium">{formatRate(child.participationRate)}</span></div>
                   </div>
                 </div>
               ))}

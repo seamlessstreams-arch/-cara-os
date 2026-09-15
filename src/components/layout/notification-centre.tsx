@@ -1,5 +1,5 @@
 "use client";
-import type { DashboardData, PatternAlert, Notification } from "@/types/extended";
+import type { DashboardData, Notification } from "@/types/extended";
 import { api } from "@/hooks/use-api";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -46,19 +46,7 @@ function useHomeName(fallback = "This home"): string {
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 
-function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
-  const query = new URLSearchParams();
-  if (params?.childId) query.set("child_id", params.childId);
-  if (params?.homeId) query.set("home_id", params.homeId);
-  if (params?.status) query.set("status", params.status);
-  return useQuery({
-    queryKey: ["intelligence", "patterns", params],
-    queryFn: () =>
-      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
-  });
-}
 function useNotifications(params?: { recipientId?: string; unreadOnly?: boolean }) {
   const query = new URLSearchParams();
   if (params?.recipientId) query.set("recipient_id", params.recipientId);
@@ -159,7 +147,6 @@ export function NotificationCentre() {
     queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
     refetchInterval: 30_000,
   });
-  const patterns  = usePatternAlerts({ status: "active" });
   const { data: apiNotifs = [] } = useNotifications({ recipientId: currentUser?.id, unreadOnly: true });
   const markRead = useMarkNotificationRead();
   const d = dashboard.data?.data;

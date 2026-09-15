@@ -7,6 +7,7 @@
 // SCCIF: How well children are helped and protected.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -105,7 +106,7 @@ export function FamilyRelationshipsCard({ childId }: { childId: string }) {
             <p className="text-[10px] text-muted-foreground">Family Members</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", ca.safe_pct === 100 ? "bg-green-50" : (ca.safe_pct ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", ca.safe_pct === 100 ? "text-green-600" : (ca.safe_pct ?? 0) >= 80 ? "text-amber-600" : "text-red-600")}>{ca.safe_pct}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", ca.safe_pct === 100 ? "text-green-600" : (ca.safe_pct ?? 0) >= 80 ? "text-amber-600" : "text-red-600")}>{formatRate(ca.safe_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Safe Sessions</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", ca.concerns_raised_90d > 0 ? "bg-amber-50" : "bg-green-50")}>
@@ -156,7 +157,7 @@ export function FamilyRelationshipsCard({ childId }: { childId: string }) {
             <div className="min-w-0">
               <p className="font-medium text-slate-700">LAC Participation</p>
               <p className="text-[10px] text-muted-foreground">
-                Family {pe.family_attended_lac_pct}% · Child {pe.child_participated_lac_pct}%
+                Family {formatRate(pe.family_attended_lac_pct)} · Child {formatRate(pe.child_participated_lac_pct)}
               </p>
             </div>
           </div>

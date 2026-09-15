@@ -6,6 +6,7 @@
 // CHR 2015 Reg 12/24/25. SCCIF: Overall Experiences — Night care.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -104,7 +105,7 @@ export function SleepPatternIntelligenceCard() {
 
         <div className="grid grid-cols-4 gap-2">
           <div className={cn("text-center rounded-lg p-2.5", (o.all_children_checked_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (o.all_children_checked_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.all_children_checked_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (o.all_children_checked_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(o.all_children_checked_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Checks</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
@@ -116,7 +117,7 @@ export function SleepPatternIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (o.building_secure_rate ?? 0) >= 100 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (o.building_secure_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{o.building_secure_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (o.building_secure_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(o.building_secure_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Secure</p>
           </div>
         </div>
@@ -139,10 +140,10 @@ export function SleepPatternIntelligenceCard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-indigo-300" style={{ width: `${cp.asleep_rate}%` }} />
-                    <div className="h-full bg-amber-300" style={{ width: `${cp.awake_rate}%` }} />
+                    <div className="h-full bg-indigo-300" style={{ width: `${formatRate(cp.asleep_rate)}` }} />
+                    <div className="h-full bg-amber-300" style={{ width: `${formatRate(cp.awake_rate)}` }} />
                   </div>
-                  <span className="text-[10px] tabular-nums text-muted-foreground">{cp.asleep_rate}% asleep</span>
+                  <span className="text-[10px] tabular-nums text-muted-foreground">{formatRate(cp.asleep_rate)} asleep</span>
                 </div>
               </div>
             ))}
@@ -159,7 +160,7 @@ export function SleepPatternIntelligenceCard() {
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
               <p className={cn("font-bold tabular-nums", (sec.overall_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {sec.overall_compliance_rate}%
+                {formatRate(sec.overall_compliance_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Compliance</p>
             </div>

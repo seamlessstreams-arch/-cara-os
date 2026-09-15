@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function SafeguardingIntelligenceWidget() {
       <Section title="Safeguarding Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Timely Response" value={`${quality.timelyResponseRate}%`} />
-          <Stat label="Child View Captured" value={`${quality.childViewCapturedRate}%`} />
-          <Stat label="Multi-Agency Engaged" value={`${quality.multiAgencyEngagedRate}%`} />
-          <Stat label="Risk Assessment Updated" value={`${quality.riskAssessmentUpdatedRate}%`} />
+          <Stat label="Timely Response" value={`${formatRate(quality.timelyResponseRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(quality.childViewCapturedRate)}`} />
+          <Stat label="Multi-Agency Engaged" value={`${formatRate(quality.multiAgencyEngagedRate)}`} />
+          <Stat label="Risk Assessment Updated" value={`${formatRate(quality.riskAssessmentUpdatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Safeguarding Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Child View Captured" value={`${compliance.childViewCapturedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(compliance.childViewCapturedRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -117,11 +118,11 @@ export function SafeguardingIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Safeguarding Level 3" value={`${staffReadiness.safeguardingLevel3Rate}%`} />
-          <Stat label="Child Protection Awareness" value={`${staffReadiness.childProtectionAwarenessRate}%`} />
-          <Stat label="Prevent Duty Training" value={`${staffReadiness.preventDutyTrainingRate}%`} />
-          <Stat label="Online Safety Training" value={`${staffReadiness.onlineSafetyTrainingRate}%`} />
-          <Stat label="Concern Recording Skills" value={`${staffReadiness.concernRecordingSkillsRate}%`} />
-          <Stat label="Multi-Agency Knowledge" value={`${staffReadiness.multiAgencyWorkingKnowledgeRate}%`} />
+          <Stat label="Child Protection Awareness" value={`${formatRate(staffReadiness.childProtectionAwarenessRate)}`} />
+          <Stat label="Prevent Duty Training" value={`${formatRate(staffReadiness.preventDutyTrainingRate)}`} />
+          <Stat label="Online Safety Training" value={`${formatRate(staffReadiness.onlineSafetyTrainingRate)}`} />
+          <Stat label="Concern Recording Skills" value={`${formatRate(staffReadiness.concernRecordingSkillsRate)}`} />
+          <Stat label="Multi-Agency Knowledge" value={`${formatRate(staffReadiness.multiAgencyWorkingKnowledgeRate)}`} />
         </div>
       </Section>
 

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 34, 5. SCCIF: "Safety of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -159,13 +160,13 @@ export function ChildRiskProfileIntelligenceCard({ childId }: { childId: string 
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums", (d.mitigation_profile.effectiveness_rate ?? 0) >= 80 ? "text-green-600" : (d.mitigation_profile.effectiveness_rate ?? 0) >= 60 ? "text-amber-600" : "text-red-600")}>
-                {d.mitigation_profile.effectiveness_rate}%
+                {formatRate(d.mitigation_profile.effectiveness_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Mitigations</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums", d.review_compliance.child_views_rate === 100 ? "text-green-600" : "text-amber-600")}>
-                {d.review_compliance.child_views_rate}%
+                {formatRate(d.review_compliance.child_views_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Child Views</p>
             </div>

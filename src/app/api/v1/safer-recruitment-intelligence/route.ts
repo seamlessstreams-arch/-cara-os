@@ -50,7 +50,7 @@ export async function GET() {
   const candidates: CandidateInput[] = (candidateProfilesList ?? []).map((c) => ({
     id: c.id,
     name: `${c.first_name} ${c.last_name}`,
-    vacancy_id: c.vacancy_id,
+    vacancy_id: c.vacancy_id ?? "", // unlinked candidate — matches no vacancy
     current_stage: c.current_stage as CandidateStage,
     compliance_status: c.compliance_status as CandidateInput["compliance_status"],
     risk_level: c.risk_level as CandidateInput["risk_level"],
@@ -85,7 +85,9 @@ export async function GET() {
     chased_at: r.chased_at ?? null,
     verbal_verification_completed: Boolean(r.verbal_verification_completed),
     discrepancy_flag: Boolean(r.discrepancy_flag),
-    reliability_rating: r.reliability_rating ?? null,
+    // The live column is numeric while the app vocabulary is categorical —
+    // clash recorded in the schema decision pack; only the categorical form is scored.
+    reliability_rating: typeof r.reliability_rating === "string" ? r.reliability_rating : null,
   }));
 
   // ── Map conditional offers ─────────────────────────────────────────────────

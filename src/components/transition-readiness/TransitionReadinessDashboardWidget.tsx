@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { TransitionReadinessIntelligence } from "@/lib/transition-readiness";
 
@@ -127,19 +128,19 @@ export function TransitionReadinessDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Transitions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.transitionPlanning.childInvolvementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.transitionPlanning.childInvolvementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Involvement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.handover.comprehensiveRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.handover.comprehensiveRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Handover Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.readiness.fullyReadyRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.readiness.fullyReadyRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Children Ready</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.postTransition.followUpCompletedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.postTransition.followUpCompletedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Follow-Up Done</div>
         </div>
       </div>
@@ -180,49 +181,49 @@ export function TransitionReadinessDashboardWidget() {
         <Section title="Transition Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.transitionPlanning.totalTransitions}</span></div>
-            <div><span className="text-gray-500">Planned Rate:</span> <span className="font-medium">{data.transitionPlanning.plannedTransitionRate}%</span></div>
-            <div><span className="text-gray-500">Child Involved:</span> <span className="font-medium">{data.transitionPlanning.childInvolvementRate}%</span></div>
-            <div><span className="text-gray-500">Views Recorded:</span> <span className="font-medium">{data.transitionPlanning.childViewsRate}%</span></div>
-            <div><span className="text-gray-500">Parent Involved:</span> <span className="font-medium">{data.transitionPlanning.parentInvolvementRate}%</span></div>
-            <div><span className="text-gray-500">Visit Completed:</span> <span className="font-medium">{data.transitionPlanning.visitCompletedRate}%</span></div>
-            <div><span className="text-gray-500">Risk Updated:</span> <span className="font-medium">{data.transitionPlanning.riskAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Info Transfer:</span> <span className="font-medium">{data.transitionPlanning.infoTransferRate}%</span></div>
-            <div><span className="text-gray-500">Goodbyes:</span> <span className="font-medium">{data.transitionPlanning.goodbyesCelebratedRate}%</span></div>
+            <div><span className="text-gray-500">Planned Rate:</span> <span className="font-medium">{formatRate(data.transitionPlanning.plannedTransitionRate)}</span></div>
+            <div><span className="text-gray-500">Child Involved:</span> <span className="font-medium">{formatRate(data.transitionPlanning.childInvolvementRate)}</span></div>
+            <div><span className="text-gray-500">Views Recorded:</span> <span className="font-medium">{formatRate(data.transitionPlanning.childViewsRate)}</span></div>
+            <div><span className="text-gray-500">Parent Involved:</span> <span className="font-medium">{formatRate(data.transitionPlanning.parentInvolvementRate)}</span></div>
+            <div><span className="text-gray-500">Visit Completed:</span> <span className="font-medium">{formatRate(data.transitionPlanning.visitCompletedRate)}</span></div>
+            <div><span className="text-gray-500">Risk Updated:</span> <span className="font-medium">{formatRate(data.transitionPlanning.riskAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Info Transfer:</span> <span className="font-medium">{formatRate(data.transitionPlanning.infoTransferRate)}</span></div>
+            <div><span className="text-gray-500">Goodbyes:</span> <span className="font-medium">{formatRate(data.transitionPlanning.goodbyesCelebratedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Handover Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.handover.totalHandovers}</span></div>
-            <div><span className="text-gray-500">Comprehensive:</span> <span className="font-medium">{data.handover.comprehensiveRate}%</span></div>
-            <div><span className="text-gray-500">Documents:</span> <span className="font-medium">{data.handover.documentTransferRate}%</span></div>
-            <div><span className="text-gray-500">Care Plan:</span> <span className="font-medium">{data.handover.carePlanSharedRate}%</span></div>
-            <div><span className="text-gray-500">Health Info:</span> <span className="font-medium">{data.handover.healthInfoRate}%</span></div>
-            <div><span className="text-gray-500">Triggers:</span> <span className="font-medium">{data.handover.triggersSharedRate}%</span></div>
-            <div><span className="text-gray-500">Preferences:</span> <span className="font-medium">{data.handover.childPreferencesRate}%</span></div>
+            <div><span className="text-gray-500">Comprehensive:</span> <span className="font-medium">{formatRate(data.handover.comprehensiveRate)}</span></div>
+            <div><span className="text-gray-500">Documents:</span> <span className="font-medium">{formatRate(data.handover.documentTransferRate)}</span></div>
+            <div><span className="text-gray-500">Care Plan:</span> <span className="font-medium">{formatRate(data.handover.carePlanSharedRate)}</span></div>
+            <div><span className="text-gray-500">Health Info:</span> <span className="font-medium">{formatRate(data.handover.healthInfoRate)}</span></div>
+            <div><span className="text-gray-500">Triggers:</span> <span className="font-medium">{formatRate(data.handover.triggersSharedRate)}</span></div>
+            <div><span className="text-gray-500">Preferences:</span> <span className="font-medium">{formatRate(data.handover.childPreferencesRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Readiness Assessment">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.readiness.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Fully Ready:</span> <span className="font-medium">{data.readiness.fullyReadyRate}%</span></div>
-            <div><span className="text-gray-500">Support Plan:</span> <span className="font-medium">{data.readiness.supportPlanRate}%</span></div>
-            <div><span className="text-gray-500">Contingency:</span> <span className="font-medium">{data.readiness.contingencyRate}%</span></div>
-            <div><span className="text-gray-500">Pros Briefed:</span> <span className="font-medium">{data.readiness.professionalBriefedRate}%</span></div>
-            <div><span className="text-gray-500">Emotional Ready:</span> <span className="font-medium">{data.readiness.emotionalReadinessGoodRate}%</span></div>
+            <div><span className="text-gray-500">Fully Ready:</span> <span className="font-medium">{formatRate(data.readiness.fullyReadyRate)}</span></div>
+            <div><span className="text-gray-500">Support Plan:</span> <span className="font-medium">{formatRate(data.readiness.supportPlanRate)}</span></div>
+            <div><span className="text-gray-500">Contingency:</span> <span className="font-medium">{formatRate(data.readiness.contingencyRate)}</span></div>
+            <div><span className="text-gray-500">Pros Briefed:</span> <span className="font-medium">{formatRate(data.readiness.professionalBriefedRate)}</span></div>
+            <div><span className="text-gray-500">Emotional Ready:</span> <span className="font-medium">{formatRate(data.readiness.emotionalReadinessGoodRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Post-Transition Support">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.postTransition.totalFollowUps}</span></div>
-            <div><span className="text-gray-500">Follow-Up Done:</span> <span className="font-medium">{data.postTransition.followUpCompletedRate}%</span></div>
+            <div><span className="text-gray-500">Follow-Up Done:</span> <span className="font-medium">{formatRate(data.postTransition.followUpCompletedRate)}</span></div>
             <div><span className="text-gray-500">Within 7 Days:</span> <span className="font-medium">{data.postTransition.within7DaysRate}%</span></div>
-            <div><span className="text-gray-500">Settling In:</span> <span className="font-medium">{data.postTransition.settlingInReviewRate}%</span></div>
-            <div><span className="text-gray-500">KW Contact:</span> <span className="font-medium">{data.postTransition.previousKeyWorkerContactRate}%</span></div>
-            <div><span className="text-gray-500">Child Feedback:</span> <span className="font-medium">{data.postTransition.childFeedbackRate}%</span></div>
-            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{data.postTransition.issueResolutionRate}%</span></div>
+            <div><span className="text-gray-500">Settling In:</span> <span className="font-medium">{formatRate(data.postTransition.settlingInReviewRate)}</span></div>
+            <div><span className="text-gray-500">KW Contact:</span> <span className="font-medium">{formatRate(data.postTransition.previousKeyWorkerContactRate)}</span></div>
+            <div><span className="text-gray-500">Child Feedback:</span> <span className="font-medium">{formatRate(data.postTransition.childFeedbackRate)}</span></div>
+            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{formatRate(data.postTransition.issueResolutionRate)}</span></div>
           </div>
         </Section>
 

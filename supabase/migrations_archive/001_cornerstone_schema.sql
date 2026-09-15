@@ -229,7 +229,7 @@ create table missing_episodes (
   return_interview_by             uuid references staff_members(id),
   return_interview_date           date,
   return_interview_notes          text,
-  contextual_safeguarding_risk    boolean not null default false,
+  contextual_safeguarding_risk    boolean,
   linked_incident_id              uuid references incidents(id),
   pattern_notes                   text,
   status                          text not null default 'active' check (status in ('active', 'returned', 'closed')),

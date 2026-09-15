@@ -15,21 +15,21 @@ CREATE TABLE IF NOT EXISTS cs_home_cctv_compliance (
   camera_purpose    text        NOT NULL CHECK (camera_purpose IN ('Security','Safeguarding','Health & Safety','Monitoring','Entrance','Car Park','Other')),
 
   dpia_completed        boolean NOT NULL DEFAULT false,
-  signage_in_place      boolean NOT NULL DEFAULT true,
+  signage_in_place      boolean,
   retention_period_days integer NOT NULL DEFAULT 30,
-  retention_compliant   boolean NOT NULL DEFAULT true,
-  data_protection_registered boolean NOT NULL DEFAULT true,
+  retention_compliant   boolean,
+  data_protection_registered boolean,
 
-  footage_accessible    boolean NOT NULL DEFAULT true,
+  footage_accessible    boolean,
   footage_encrypted     boolean NOT NULL DEFAULT false,
-  access_log_maintained boolean NOT NULL DEFAULT true,
+  access_log_maintained boolean,
 
   sar_received          boolean NOT NULL DEFAULT false,
   sar_responded_in_time boolean NULL,
 
-  children_informed     boolean NOT NULL DEFAULT true,
-  staff_informed        boolean NOT NULL DEFAULT true,
-  privacy_zones_set     boolean NOT NULL DEFAULT true,
+  children_informed     boolean,
+  staff_informed        boolean,
+  privacy_zones_set     boolean,
 
   compliance_status    text    NOT NULL CHECK (compliance_status IN ('Compliant','Non-Compliant','Action Required','Under Review')),
   notes                text    NULL,

@@ -15,8 +15,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 import {
   evaluateSaferRecruitmentGate,
@@ -25,11 +25,7 @@ import {
 } from "@/lib/hr/saferRecruitmentGate";
 import { readJsonBody } from "@/lib/http/read-json";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
-function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
-  return client as unknown as LooseSupabase;
-}
+// The HR tables are typed since the promotion — the client runs un-loosened.
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -111,7 +107,7 @@ export async function GET(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staffId");
@@ -174,7 +170,7 @@ export async function PATCH(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -238,7 +234,7 @@ export async function PATCH(req: NextRequest) {
   if (recordId) {
     const { data, error } = await supabase
       .from("hr_safer_recruitment")
-      .update(updates)
+      .update(updates as Database["public"]["Tables"]["hr_safer_recruitment"]["Update"]) // keys allowlisted above
       .eq("id", recordId)
       .select()
       .single();
@@ -257,7 +253,7 @@ export async function PATCH(req: NextRequest) {
     if (existing) {
       const { data, error } = await supabase
         .from("hr_safer_recruitment")
-        .update(updates)
+        .update(updates as Database["public"]["Tables"]["hr_safer_recruitment"]["Update"]) // keys allowlisted above
         .eq("id", (existing as DbRow).id)
         .select()
         .single();
@@ -306,7 +302,7 @@ export async function POST(req: NextRequest) {
   if (!supabaseRaw) {
     return NextResponse.json({ error: "Database persistence is not configured. Enable Supabase to use this feature, or use the in-memory demo mode.", configured: false, supabaseRequired: true }, { status: 503 });
   }
-  const supabase = loose(supabaseRaw);
+  const supabase = supabaseRaw;
 
   let body: Record<string, unknown>;
   try {
@@ -381,7 +377,7 @@ export async function POST(req: NextRequest) {
 
   const { data: updated, error: updateError } = await supabase
     .from("hr_safer_recruitment")
-    .update(updates)
+    .update(updates as Database["public"]["Tables"]["hr_safer_recruitment"]["Update"]) // keys allowlisted above
     .eq("id", recordId)
     .select()
     .single();

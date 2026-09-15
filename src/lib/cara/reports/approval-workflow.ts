@@ -47,8 +47,7 @@ async function fetchReport(reportId: string): Promise<ChildReport | null> {
   const sb = createServerClient();
   if (!sb) return buildDemoReport(reportId, "draft");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("child_reports") as any)
+  const { data, error } = await sb.from("child_reports")
     .select("*")
     .eq("id", reportId)
     .single();
@@ -70,9 +69,11 @@ async function updateReportStatus(
     return buildDemoReport(reportId, (updates.status ?? "draft") as ReportStatus, updates);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("child_reports") as any)
-    .update(updates)
+  // Partial<ChildReport> may carry created_at, which the Update type forbids —
+  // strip it rather than widen the contract.
+  const { created_at: _createdAt, id: _id, ...updatable } = updates;
+  const { data, error } = await sb.from("child_reports")
+    .update(updatable)
     .eq("id", reportId)
     .select("*")
     .single();

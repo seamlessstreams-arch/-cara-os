@@ -22,5 +22,5 @@ export async function GET(req: NextRequest) {
   });
   if (!guard.ok) return guard.response;
 
-  return NextResponse.json({ data: loadSavedTimeDashboard(homeId) });
+  return NextResponse.json({ data: await loadSavedTimeDashboard(homeId) });
 }

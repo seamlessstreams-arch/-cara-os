@@ -7,6 +7,7 @@
 // Powered by the Missing From Care Intelligence Engine — live data.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +126,7 @@ export function MissingFromCareCard() {
               "text-lg font-bold tabular-nums",
               (p.return_interview_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {p.return_interview_completion_rate}%
+              {formatRate(p.return_interview_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Interviews</p>
           </div>

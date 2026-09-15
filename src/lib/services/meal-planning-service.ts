@@ -121,13 +121,13 @@ export interface MealPlanningRow {
   dietary_requirement: string | null;
   child_choice_offered: boolean;
   child_participated_cooking: boolean;
-  age_appropriate_involvement: boolean;
+  age_appropriate_involvement: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   nutritional_balance: NutritionalBalance;
   cultural_needs_met: boolean;
-  allergy_information_current: boolean;
-  portion_appropriate: boolean;
-  mealtimes_social: boolean;
-  snacks_available: boolean;
+  allergy_information_current: boolean | null;
+  portion_appropriate: boolean | null;
+  mealtimes_social: boolean | null;
+  snacks_available: boolean | null;
   hydration_monitored: boolean | null;
   eating_concern_identified: boolean;
   concern_details: string | null;
@@ -293,14 +293,22 @@ export function computeMetrics(
   const pct = (filter: (r: MealPlanningRow) => boolean) =>
     total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
+  // Tri-state columns rate over the recorded subset (same idiom as hydration
+  // below) — an unrecorded judgement must not read as a quiet "no".
+  const recordedRate = (field: keyof MealPlanningRow): number | null => {
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
+  };
+
   const choiceOfferedRate = pct((r) => r.child_choice_offered);
   const participatedCookingRate = pct((r) => r.child_participated_cooking);
-  const ageAppropriateRate = pct((r) => r.age_appropriate_involvement);
+  const ageAppropriateRate = recordedRate("age_appropriate_involvement");
   const culturalNeedsRate = pct((r) => r.cultural_needs_met);
-  const allergyCurrentRate = pct((r) => r.allergy_information_current);
-  const portionRate = pct((r) => r.portion_appropriate);
-  const socialRate = pct((r) => r.mealtimes_social);
-  const snacksRate = pct((r) => r.snacks_available);
+  const allergyCurrentRate = recordedRate("allergy_information_current");
+  const portionRate = recordedRate("portion_appropriate");
+  const socialRate = recordedRate("mealtimes_social");
+  const snacksRate = recordedRate("snacks_available");
   const eatingConcernRate = pct((r) => r.eating_concern_identified);
 
   // Hydration (nullable)
@@ -371,11 +379,13 @@ export function computeAlerts(
 
   // Critical: Allergy information not current
   for (const r of rows) {
-    if (!r.allergy_information_current) {
+    if (r.allergy_information_current !== true) {
       alerts.push({
         type: "allergy_not_current",
         severity: "critical",
-        message: `${r.child_name}'s allergy information flagged as not current (${r.record_date}). This is a life-safety issue. Anaphylaxis from unknown or unrecorded allergies can be fatal. All staff who handle food must have current, accurate allergy information for every child. Allergy records must be updated immediately — contact the child's GP, review care plan documentation, and confirm with the child/parent what their current allergies are. Update kitchen allergy boards and individual allergy cards`,
+        message: r.allergy_information_current === null
+          ? `${r.child_name} has no confirmation that allergy information is current (${r.record_date}). This is a life-safety issue — confirm current allergies with the child, parent and GP now, evidence the check, and update kitchen allergy boards and individual allergy cards`
+          : `${r.child_name}'s allergy information flagged as not current (${r.record_date}). This is a life-safety issue. Anaphylaxis from unknown or unrecorded allergies can be fatal. All staff who handle food must have current, accurate allergy information for every child. Allergy records must be updated immediately — contact the child's GP, review care plan documentation, and confirm with the child/parent what their current allergies are. Update kitchen allergy boards and individual allergy cards`,
         record_id: r.id,
       });
     }
@@ -708,13 +718,13 @@ export async function createRecord(input: {
       dietary_requirement: input.dietaryRequirement ?? null,
       child_choice_offered: input.childChoiceOffered ?? false,
       child_participated_cooking: input.childParticipatedCooking ?? false,
-      age_appropriate_involvement: input.ageAppropriateInvolvement ?? true,
+      age_appropriate_involvement: input.ageAppropriateInvolvement ?? null,
       nutritional_balance: input.nutritionalBalance ?? "Not Assessed",
       cultural_needs_met: input.culturalNeedsMet ?? false,
-      allergy_information_current: input.allergyInformationCurrent ?? true,
-      portion_appropriate: input.portionAppropriate ?? true,
-      mealtimes_social: input.mealtimesSocial ?? true,
-      snacks_available: input.snacksAvailable ?? true,
+      allergy_information_current: input.allergyInformationCurrent ?? null,
+      portion_appropriate: input.portionAppropriate ?? null,
+      mealtimes_social: input.mealtimesSocial ?? null,
+      snacks_available: input.snacksAvailable ?? null,
       hydration_monitored: input.hydrationMonitored ?? null,
       eating_concern_identified: input.eatingConcernIdentified ?? false,
       concern_details: input.concernDetails ?? null,

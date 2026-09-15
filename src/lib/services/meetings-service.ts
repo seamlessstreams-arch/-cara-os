@@ -1,4 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
+import { londonDayDiff } from "@/lib/utils";
 // CARA — CHILDREN'S MEETINGS & CONSULTATION SERVICE
 // Manages house meetings, children's councils, consultation records, and
 // feedback tracking. Evidence base for Reg 7 (children's wishes and feelings),
@@ -227,15 +228,12 @@ function identifyMeetingAlerts(
 ): { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [];
 
-  // No meetings in last 14 days (compare at day granularity to avoid time-of-day drift)
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
-  const recentMeetings = meetings.filter((m) => {
-    const meetingDate = new Date(m.meeting_date);
-    const meetingDay = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
-    return todayStart.getTime() - meetingDay.getTime() <= fourteenDaysMs;
-  });
+  // No meetings in last 14 days. Calendar days, not a 14×24h window: local
+  // day-starts differ by 14 days PLUS AN HOUR across the October DST
+  // fall-back, so the ms comparison dropped a meeting exactly 14 days old and
+  // fired the Reg 16 alert a day early.
+  // londonDayDiff is date − today: a meeting n days ago yields −n.
+  const recentMeetings = meetings.filter((m) => londonDayDiff(m.meeting_date) >= -14);
   if (recentMeetings.length === 0 && meetings.length > 0) {
     alerts.push({
       type: "no_recent_meeting",

@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<PlacementStabilityInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<PlacementStabilityInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -76,7 +76,7 @@ async function fetchData(sb: any, childId: string): Promise<PlacementStabilityIn
       type: p.type ?? "residential",
       durationDays: p.duration_days ?? 0,
       endReason: p.end_reason ?? undefined,
-      planned: p.planned ?? true,
+      planned: p.planned ?? null,
       matchingScore: p.matching_score ?? undefined,
     }));
 
@@ -90,12 +90,12 @@ async function fetchData(sb: any, childId: string): Promise<PlacementStabilityIn
     .single();
 
   const cutoff30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-  const { count: incidentCount } = await (sb.from("incidents") as SB)
+  const { count: incidentCount } = await sb.from("incidents")
     .select("id", { count: "exact" })
     .eq("child_id", childId)
     .gte("date", cutoff30);
 
-  const { count: missingCount } = await (sb.from("missing_episodes") as SB)
+  const { count: missingCount } = await sb.from("missing_episodes")
     .select("id", { count: "exact" })
     .eq("child_id", childId)
     .gte("date", cutoff30);
@@ -113,17 +113,17 @@ async function fetchData(sb: any, childId: string): Promise<PlacementStabilityIn
     incidentsLast30Days: incidentCount ?? 0,
     incidentsTrend: config?.incident_trend ?? "stable",
     missingEpisodesLast30Days: missingCount ?? 0,
-    childFeelsSettled: config?.child_settled ?? true,
-    childWantsToStay: config?.child_wants_stay ?? true,
-    childHasRoomPersonalised: config?.room_personalised ?? true,
-    regularRoutineEstablished: config?.routine_established ?? true,
-    positiveStaffRelationships: config?.staff_relationships ?? true,
-    peerRelationshipsGood: config?.peer_relationships ?? true,
-    placementReviewCurrent: config?.review_current ?? true,
+    childFeelsSettled: config?.child_settled ?? null,
+    childWantsToStay: config?.child_wants_stay ?? null,
+    childHasRoomPersonalised: config?.room_personalised ?? null,
+    regularRoutineEstablished: config?.routine_established ?? null,
+    positiveStaffRelationships: config?.staff_relationships ?? null,
+    peerRelationshipsGood: config?.peer_relationships ?? null,
+    placementReviewCurrent: config?.review_current ?? null,
     placementReviewLastDate: config?.review_last_date ?? undefined,
-    matchingAssessmentDone: config?.matching_done ?? true,
-    impactRiskAssessmentDone: config?.impact_ra_done ?? true,
-    contingencyPlanInPlace: config?.contingency_plan ?? true,
+    matchingAssessmentDone: config?.matching_done ?? null,
+    impactRiskAssessmentDone: config?.impact_ra_done ?? null,
+    contingencyPlanInPlace: config?.contingency_plan ?? null,
     stayingPutOptionExplored: config?.staying_put_explored ?? false,
   };
 }

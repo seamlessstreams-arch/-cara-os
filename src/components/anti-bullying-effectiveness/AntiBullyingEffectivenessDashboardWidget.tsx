@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -343,7 +344,7 @@ export function AntiBullyingEffectivenessDashboardWidget() {
                   <div className="text-[10px] text-gray-500 uppercase">Avg Response</div>
                 </div>
                 <div className="p-2 bg-green-50 rounded">
-                  <div className="text-lg font-bold text-green-700">{data.incidentManagement.impactAssessedRate}%</div>
+                  <div className="text-lg font-bold text-green-700">{formatRate(data.incidentManagement.impactAssessedRate)}</div>
                   <div className="text-[10px] text-gray-500 uppercase">Impact Assessed</div>
                 </div>
               </div>

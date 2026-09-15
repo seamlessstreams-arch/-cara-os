@@ -139,8 +139,8 @@ export default function EnvironmentalSustainabilityDashboardWidget() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Activities: <span className="font-medium">{child.totalActivities}</span></div>
                     <div>Engagement: <span className={`font-medium ${child.engagementScore >= 7 ? "text-green-600" : child.engagementScore >= 4 ? "text-amber-600" : "text-red-600"}`}>{child.engagementScore}/10</span></div>
-                    <div>Child Initiated: <span className="font-medium">{child.childInitiatedRate}%</span></div>
-                    <div>Learning Recorded: <span className="font-medium">{child.learningRecordedRate}%</span></div>
+                    <div>Child Initiated: <span className="font-medium">{formatRate(child.childInitiatedRate)}</span></div>
+                    <div>Learning Recorded: <span className="font-medium">{formatRate(child.learningRecordedRate)}</span></div>
                     <div>Activity Types: <span className="font-medium">{child.activityTypeDiversity}</span></div>
                   </div>
                 </div>

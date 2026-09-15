@@ -14,8 +14,7 @@ export async function indexSource(source: Partial<CaraStudioSource>): Promise<Ca
   const sb = createServerClient();
   if (!sb) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("cara_studio_sources") as any)
+  const { data, error } = await sb.from("cara_studio_sources")
     .insert({
       home_id: source.home_id ?? homeId(),
       child_id: source.child_id ?? null,
@@ -42,7 +41,8 @@ export async function indexSource(source: Partial<CaraStudioSource>): Promise<Ca
     console.error("[cara-studio] Failed to index source:", error);
     return null;
   }
-  return data;
+  // Rows and the domain type share columns; nullability is the recorded gap.
+  return data as unknown as CaraStudioSource;
 }
 
 export async function listSources(
@@ -58,8 +58,7 @@ export async function listSources(
   const sb = createServerClient();
   if (!sb) return getDemoSources();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("cara_studio_sources") as any)
+  let query = sb.from("cara_studio_sources")
     .select("*")
     .eq("home_id", hid)
     .is("archived_at", null)
@@ -73,19 +72,18 @@ export async function listSources(
   if (filters?.search) query = query.or(`title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%`);
 
   const { data } = await query;
-  return data ?? [];
+  return (data ?? []) as unknown as CaraStudioSource[];
 }
 
 export async function getSource(id: string): Promise<CaraStudioSource | null> {
   const sb = createServerClient();
   if (!sb) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (sb.from("cara_studio_sources") as any)
+  const { data } = await sb.from("cara_studio_sources")
     .select("*")
     .eq("id", id)
     .single();
-  return data ?? null;
+  return (data ?? null) as unknown as CaraStudioSource | null;
 }
 
 export async function searchSources(hid: string, query: string): Promise<CaraStudioSource[]> {

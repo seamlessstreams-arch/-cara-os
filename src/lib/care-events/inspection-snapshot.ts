@@ -13,14 +13,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { computeInspectionReadiness, type InspectionReadinessReport } from "./inspection-readiness";
-import { loadFilingCabinetIndex, type FilingCabinetIndex } from "./filing-cabinet-index";
+import { loadFilingCabinetIndexFromStore, type FilingCabinetIndex } from "./filing-cabinet-index";
 import { loadRoutingHealth, type RoutingHealthSummary } from "./routing-health";
 import { loadJobQueueStatus, type JobQueueStatus } from "./job-queue-status";
 import { loadOversightInbox, type OversightSummary } from "./oversight-inbox";
 import { loadManagerVerifyQueue, type ManagerVerifyQueue } from "./manager-verify-queue";
 import { loadReturnedRecordsQueue, type ReturnedRecordsSummary } from "./returned-records";
 import { loadNotifications, type NotificationStream } from "./notifications";
-import { loadSavedTimeDashboard, type SavedTimeDashboard } from "./saved-time-dashboard";
+import { loadSavedTimeDashboardFromStore, type SavedTimeDashboard } from "./saved-time-dashboard";
 import { db } from "@/lib/db/store";
 import type { PersistedInspectionSnapshot } from "@/lib/db/store";
 
@@ -79,14 +79,14 @@ export function generateInspectionSnapshot(
   const generated_at = new Date().toISOString();
 
   const readiness            = computeInspectionReadiness(homeId);
-  const filing_cabinet       = loadFilingCabinetIndex(homeId);
+  const filing_cabinet       = loadFilingCabinetIndexFromStore(homeId);
   const routing_health       = loadRoutingHealth(homeId);
   const job_queue            = loadJobQueueStatus(homeId);
   const oversight_inbox      = loadOversightInbox(homeId);
   const manager_verify_queue = loadManagerVerifyQueue(homeId);
   const returned_records     = loadReturnedRecordsQueue(homeId);
   const notifications        = loadNotifications(homeId);
-  const saved_time           = loadSavedTimeDashboard(homeId);
+  const saved_time           = loadSavedTimeDashboardFromStore(homeId);
 
   const reg40_open = db.caraReg40Triages
     .findAll(homeId)

@@ -50,7 +50,7 @@ export interface TherapeuticInput {
 export interface SelfHarmIncident {
   date: string;
   severity: "ideation" | "minor" | "moderate" | "serious";
-  supportProvided: boolean;
+  supportProvided: boolean | null;
   safetyPlanUpdated: boolean;
 }
 
@@ -74,10 +74,10 @@ export interface EmotionalWellbeingInput {
   hasSafetyPlan: boolean;
   safetyPlanReviewed: boolean;
   regulatorySDQCompleted: boolean; // annual SDQ as per statutory health assessment
-  emotionalHealthDiscussedInKeywork: boolean;
-  staffTrainedInMentalHealth: boolean;
-  childKnowsHowToGetHelp: boolean;
-  positiveRelationshipsPresent: boolean;
+  emotionalHealthDiscussedInKeywork: boolean | null;
+  staffTrainedInMentalHealth: boolean | null;
+  childKnowsHowToGetHelp: boolean | null;
+  positiveRelationshipsPresent: boolean | null;
   protectiveFactors: string[];
   riskFactors: string[];
 }
@@ -119,7 +119,7 @@ export interface WellbeingStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -310,8 +310,8 @@ function scoreSafety(input: EmotionalWellbeingInput, riskLevel: string): number 
 
   if (input.hasSafetyPlan) score += 20;
   if (input.safetyPlanReviewed) score += 15;
-  if (input.childKnowsHowToGetHelp) score += 15;
-  if (input.staffTrainedInMentalHealth) score += 10;
+  if (input.childKnowsHowToGetHelp === true) score += 15;
+  if (input.staffTrainedInMentalHealth === true) score += 10;
 
   // Reduce for high risk
   if (riskLevel === "high") score -= 20;
@@ -323,10 +323,10 @@ function scoreSafety(input: EmotionalWellbeingInput, riskLevel: string): number 
 function scoreSupport(input: EmotionalWellbeingInput): number {
   let score = 0;
 
-  if (input.positiveRelationshipsPresent) score += 20;
-  if (input.emotionalHealthDiscussedInKeywork) score += 20;
-  if (input.staffTrainedInMentalHealth) score += 15;
-  if (input.childKnowsHowToGetHelp) score += 15;
+  if (input.positiveRelationshipsPresent === true) score += 20;
+  if (input.emotionalHealthDiscussedInKeywork === true) score += 20;
+  if (input.staffTrainedInMentalHealth === true) score += 15;
+  if (input.childKnowsHowToGetHelp === true) score += 15;
   if (input.protectiveFactors.length >= 3) score += 15;
   else if (input.protectiveFactors.length >= 1) score += 10;
   if (input.regulatorySDQCompleted) score += 15;
@@ -498,7 +498,7 @@ function identifyStrengths(
     });
   }
 
-  if (input.positiveRelationshipsPresent && input.childKnowsHowToGetHelp) {
+  if (input.positiveRelationshipsPresent === true && input.childKnowsHowToGetHelp === true) {
     strengths.push({
       category: "support",
       description: "Positive relationships and knows how to access help",
@@ -519,7 +519,7 @@ function assessRegulatory(
 
   // CHR 2015 Reg 6(2)(b)(i) — Emotional and mental health
   const mentalHealthMet = input.regulatorySDQCompleted &&
-    input.emotionalHealthDiscussedInKeywork &&
+    input.emotionalHealthDiscussedInKeywork === true &&
     (selfHarmRisk === "none" || input.hasSafetyPlan);
   flags.push({
     regulation: "CHR 2015 Reg 6(2)(b)(i)",
@@ -541,9 +541,9 @@ function assessRegulatory(
   });
 
   // SCCIF — Health outcomes
-  const healthOutcomes = input.positiveRelationshipsPresent &&
+  const healthOutcomes = input.positiveRelationshipsPresent === true &&
     (selfHarmRisk === "none" || selfHarmRisk === "low") &&
-    input.childKnowsHowToGetHelp;
+    input.childKnowsHowToGetHelp === true;
   flags.push({
     regulation: "SCCIF",
     area: "Health Outcomes",
@@ -557,8 +557,10 @@ function assessRegulatory(
   flags.push({
     regulation: "CHR 2015 Reg 10",
     area: "Wellbeing Support",
-    status: input.staffTrainedInMentalHealth && input.emotionalHealthDiscussedInKeywork ? "met" : "partially_met",
-    detail: input.staffTrainedInMentalHealth
+    status: input.staffTrainedInMentalHealth === true && input.emotionalHealthDiscussedInKeywork === true ? "met"
+      : input.staffTrainedInMentalHealth === null || input.emotionalHealthDiscussedInKeywork === null ? "not_evidenced"
+      : "partially_met",
+    detail: input.staffTrainedInMentalHealth === true
       ? "Staff trained and wellbeing actively supported"
       : "Staff mental health training or keywork coverage needs attention",
   });
@@ -603,15 +605,15 @@ function buildRecommendations(
     recs.push("Review current support — SDQ trend worsening, may need enhanced intervention");
   }
 
-  if (!input.emotionalHealthDiscussedInKeywork) {
+  if (input.emotionalHealthDiscussedInKeywork === false) {
     recs.push("Include emotional wellbeing as standing item in keywork sessions");
   }
 
-  if (!input.staffTrainedInMentalHealth) {
+  if (input.staffTrainedInMentalHealth === false) {
     recs.push("Ensure staff have mental health awareness training");
   }
 
-  if (!input.childKnowsHowToGetHelp) {
+  if (input.childKnowsHowToGetHelp === false) {
     recs.push("Ensure child knows how to access emotional support (helplines, trusted adults)");
   }
 

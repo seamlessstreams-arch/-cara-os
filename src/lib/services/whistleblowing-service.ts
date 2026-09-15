@@ -102,11 +102,11 @@ export interface WhistleblowingPolicyReview {
   home_id: string;
   review_date: string;
   reviewed_by: string;
-  policy_accessible: boolean;
-  policy_displayed: boolean;
+  policy_accessible: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  policy_displayed: boolean | null;
   staff_trained_count: number;
   total_staff_count: number;
-  external_contacts_displayed: boolean;
+  external_contacts_displayed: boolean | null;
   children_informed: boolean;
   review_notes: string | null;
   next_review_date: string | null;
@@ -614,11 +614,11 @@ export async function createPolicyReview(
       home_id: input.homeId,
       review_date: input.reviewDate,
       reviewed_by: input.reviewedBy,
-      policy_accessible: input.policyAccessible ?? true,
-      policy_displayed: input.policyDisplayed ?? true,
+      policy_accessible: input.policyAccessible ?? null,
+      policy_displayed: input.policyDisplayed ?? null,
       staff_trained_count: input.staffTrainedCount ?? 0,
       total_staff_count: input.totalStaffCount ?? 0,
-      external_contacts_displayed: input.externalContactsDisplayed ?? true,
+      external_contacts_displayed: input.externalContactsDisplayed ?? null,
       children_informed: input.childrenInformed ?? false,
       review_notes: input.reviewNotes ?? null,
       next_review_date: input.nextReviewDate ?? null,

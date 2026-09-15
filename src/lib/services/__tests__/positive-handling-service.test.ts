@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PositiveHandlingRecord>): PositiveHandlingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    plan_type: overrides?.plan_type ?? "positive_handling_plan",
-    review_outcome: overrides?.review_outcome ?? "plan_effective",
-    trigger_category: overrides?.trigger_category ?? "emotional",
-    intervention_level: overrides?.intervention_level ?? "verbal_de_escalation",
-    review_date: overrides?.review_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    plan_type: "positive_handling_plan",
+    review_outcome: "plan_effective",
+    trigger_category: "emotional",
+    intervention_level: "verbal_de_escalation",
+    review_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    triggers_identified: overrides?.triggers_identified ?? true,
-    early_warning_signs: overrides?.early_warning_signs ?? true,
-    de_escalation_steps: overrides?.de_escalation_steps ?? true,
-    calming_strategies: overrides?.calming_strategies ?? true,
-    staff_trained: overrides?.staff_trained ?? true,
-    child_consulted: overrides?.child_consulted ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    plan_accessible: overrides?.plan_accessible ?? true,
-    regularly_reviewed: overrides?.regularly_reviewed ?? true,
-    post_incident_support: overrides?.post_incident_support ?? true,
-    medication_considered: overrides?.medication_considered ?? false,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    reviewed_by: overrides?.reviewed_by ?? "Manager A",
+    triggers_identified: true,
+    early_warning_signs: true,
+    de_escalation_steps: true,
+    calming_strategies: true,
+    staff_trained: true,
+    child_consulted: true,
+    parent_informed: true,
+    social_worker_informed: true,
+    plan_accessible: true,
+    regularly_reviewed: true,
+    post_incident_support: true,
+    medication_considered: false,
+    issues_found: [], actions_taken: [],
+    reviewed_by: "Manager A",
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -113,5 +116,22 @@ describe("positive-handling-service", () => {
       expect(types).toContain("plan_not_accessible");
       expect(types).toContain("not_regularly_reviewed");
     });
+  });
+});
+
+// ── Tri-state: escalation with unrecorded training alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded training as a gap", () => {
+    const alerts = _testing.identifyPositiveHandlingAlerts([
+      makeRecord({ review_outcome: "escalation_required", staff_trained: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "escalation_untrained");
+    expect(a?.message).toMatch(/no training status recorded/i);
+  });
+  it("still asserts a recorded not-trained", () => {
+    const alerts = _testing.identifyPositiveHandlingAlerts([
+      makeRecord({ review_outcome: "escalation_required", staff_trained: false }),
+    ]);
+    expect(alerts.some((x) => /staff not trained on plan/i.test(x.message))).toBe(true);
   });
 });

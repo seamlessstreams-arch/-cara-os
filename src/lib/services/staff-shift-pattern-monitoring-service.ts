@@ -66,18 +66,20 @@ export interface StaffShiftPatternMonitoringRecord {
   shift_date: string;
   staff_name: string;
   shift_supervisor: string;
-  rest_period_compliant: boolean;
-  working_time_directive_met: boolean;
-  lone_working_risk_assessed: boolean;
-  handover_completed: boolean;
-  break_taken: boolean;
-  training_current: boolean;
-  dbs_current: boolean;
-  first_aid_current: boolean;
-  medication_trained: boolean;
-  supervision_up_to_date: boolean;
-  wellbeing_checked: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  rest_period_compliant: boolean | null;
+  working_time_directive_met: boolean | null;
+  lone_working_risk_assessed: boolean | null;
+  handover_completed: boolean | null;
+  break_taken: boolean | null;
+  training_current: boolean | null;
+  dbs_current: boolean | null;
+  first_aid_current: boolean | null;
+  medication_trained: boolean | null;
+  supervision_up_to_date: boolean | null;
+  wellbeing_checked: boolean | null;
+  recorded_promptly: boolean | null;
   shift_duration_hours: number;
   issues_found: string[];
   actions_taken: string[];
@@ -160,10 +162,16 @@ export function computeStaffShiftPatternMetrics(
   const understaffed = records.filter((r) => r.staffing_level === "understaffed").length;
   const criticallyUnderstaffed = records.filter((r) => r.staffing_level === "critically_understaffed").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffShiftPatternMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -252,7 +260,8 @@ export function identifyStaffShiftPatternAlerts(
   }
 
   // Working time directive breached
-  const wtdBreached = records.filter((r) => !r.working_time_directive_met).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const wtdBreached = records.filter((r) => r.working_time_directive_met === false).length;
   if (wtdBreached >= 1) {
     alerts.push({
       type: "working_time_breached",
@@ -263,7 +272,7 @@ export function identifyStaffShiftPatternAlerts(
   }
 
   // Lone working not assessed
-  const loneNotAssessed = records.filter((r) => !r.lone_working_risk_assessed).length;
+  const loneNotAssessed = records.filter((r) => r.lone_working_risk_assessed === false).length;
   if (loneNotAssessed >= 2) {
     alerts.push({
       type: "lone_working_not_assessed",
@@ -274,7 +283,7 @@ export function identifyStaffShiftPatternAlerts(
   }
 
   // Handover not completed
-  const noHandover = records.filter((r) => !r.handover_completed).length;
+  const noHandover = records.filter((r) => r.handover_completed === false).length;
   if (noHandover >= 2) {
     alerts.push({
       type: "handover_not_completed",
@@ -360,18 +369,18 @@ export async function createRecord(
       shift_date: payload.shiftDate,
       staff_name: payload.staffName,
       shift_supervisor: payload.shiftSupervisor,
-      rest_period_compliant: payload.restPeriodCompliant ?? true,
-      working_time_directive_met: payload.workingTimeDirectiveMet ?? true,
-      lone_working_risk_assessed: payload.loneWorkingRiskAssessed ?? true,
-      handover_completed: payload.handoverCompleted ?? true,
-      break_taken: payload.breakTaken ?? true,
-      training_current: payload.trainingCurrent ?? true,
-      dbs_current: payload.dbsCurrent ?? true,
-      first_aid_current: payload.firstAidCurrent ?? true,
-      medication_trained: payload.medicationTrained ?? true,
-      supervision_up_to_date: payload.supervisionUpToDate ?? true,
-      wellbeing_checked: payload.wellbeingChecked ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      rest_period_compliant: payload.restPeriodCompliant ?? null,
+      working_time_directive_met: payload.workingTimeDirectiveMet ?? null,
+      lone_working_risk_assessed: payload.loneWorkingRiskAssessed ?? null,
+      handover_completed: payload.handoverCompleted ?? null,
+      break_taken: payload.breakTaken ?? null,
+      training_current: payload.trainingCurrent ?? null,
+      dbs_current: payload.dbsCurrent ?? null,
+      first_aid_current: payload.firstAidCurrent ?? null,
+      medication_trained: payload.medicationTrained ?? null,
+      supervision_up_to_date: payload.supervisionUpToDate ?? null,
+      wellbeing_checked: payload.wellbeingChecked ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       shift_duration_hours: payload.shiftDurationHours ?? 8,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

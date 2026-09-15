@@ -20,8 +20,8 @@ export interface ChildInput {
   placement_start_date: string; // ISO date
 }
 
-export type ReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption";
-export type ReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home";
+export type ReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption" | "additional" | "pre_discharge";
+export type ReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home" | "escalation_required";
 export type ChildParticipation = "attended" | "views_submitted" | "advocate_attended" | "did_not_participate";
 export type PlacementStability = "stable" | "some_concerns" | "at_risk";
 
@@ -40,11 +40,11 @@ export interface LACReviewInput {
   iro: string;
   child_participation: ChildParticipation;
   has_child_views: boolean;
-  outcome: ReviewOutcome;
+  outcome: ReviewOutcome | null;
   actions_agreed: ReviewActionInput[];
   next_review_date: string; // ISO date
-  placement_stability: PlacementStability;
-  care_plan_updated: boolean;
+  placement_stability: PlacementStability | null;
+  care_plan_updated: boolean | null;
 }
 
 export interface LACReviewEngineInput {
@@ -205,7 +205,8 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
 
   // ── Overview ──────────────────────────────────────────────────────────
   const participatingReviews = reviews.filter((r) => didParticipate(r.child_participation));
-  const carePlanUpdated = reviews.filter((r) => r.care_plan_updated);
+  const carePlanRecorded = reviews.filter((r) => r.care_plan_updated !== null);
+  const carePlanUpdated = carePlanRecorded.filter((r) => r.care_plan_updated);
 
   // Timeliness: all reviews that were held — were they within the statutory window?
   // We consider a review "in timescale" if it occurred and the next one isn't overdue yet
@@ -217,7 +218,7 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
     reviews_overdue: overdueChildren.length,
     timeliness_rate: rate(children.length - overdueChildren.length, children.length),
     child_participation_rate: rateOf(participatingReviews, reviews),
-    care_plan_update_rate: rateOf(carePlanUpdated, reviews),
+    care_plan_update_rate: rateOf(carePlanUpdated, carePlanRecorded),
     total_children: children.length,
     children_with_overdue_review: overdueChildren.length,
   };

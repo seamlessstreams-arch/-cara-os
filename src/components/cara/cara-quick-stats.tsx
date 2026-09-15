@@ -7,6 +7,7 @@
 // Shows key Cara metrics in a single row: requests, approved, pending, rate.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -98,7 +99,7 @@ export function CaraQuickStats({
 
       <StatItem
         icon={TrendingUp}
-        value={`${stats.approvalRate}%`}
+        value={`${formatRate(stats.approvalRate)}`}
         label="rate"
         color={
           stats.approvalRate >= 80
