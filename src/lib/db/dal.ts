@@ -109,7 +109,14 @@ function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessio
     child_voice: r.child_voice ?? "",
     worker_observations: strings(r.positive_observations).join("; "),
     actions_agreed: strings(r.actions),
-    mood_before: mood,
+    // cs_key_work_sessions records a SINGLE child_mood, not a before/after pair.
+    // Setting both would fabricate a zero-delta reading: the key-working page
+    // averages (mood_after - mood_before) as "mood improvement", so populating
+    // both equal would make that KPI structurally 0 for every live session, and
+    // show identical Mood Before/After columns for a pair never captured. Claim
+    // only the one reading we have (the session mood → mood_after); leaving
+    // mood_before null correctly excludes these from the improvement average.
+    mood_before: null,
     mood_after: mood,
     follow_up: strings(r.next_session_topics).join(", ") || null,
     follow_up_date: null,
