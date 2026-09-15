@@ -275,7 +275,7 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
     status: e.status ?? null,
     is_significant: !!e.is_significant,
   });
-  const sevRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sevRank: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
   const incidents = input.events
     .filter((e) => e.kind === "incident")
     .map(toEvent)
@@ -288,8 +288,8 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
       const ao = a.status?.toLowerCase() === "open" ? 0 : 1;
       const bo = b.status?.toLowerCase() === "open" ? 0 : 1;
       if (ao !== bo) return ao - bo;
-      const as = sevRank[String(a.severity).toLowerCase()] ?? 3;
-      const bs = sevRank[String(b.severity).toLowerCase()] ?? 3;
+      const as = sevRank[String(a.severity).toLowerCase()] ?? 4;
+      const bs = sevRank[String(b.severity).toLowerCase()] ?? 4;
       if (as !== bs) return as - bs;
       return b.date.localeCompare(a.date);
     });
@@ -310,7 +310,13 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
   const attention: AttentionItem[] = [];
   for (const e of incidents) {
     if (e.status?.toLowerCase() === "open") {
-      const sev = String(e.severity).toLowerCase() === "high" ? "critical" : "high";
+      // An OPEN incident is elevated one notch for the shift attention list.
+      // Both critical- AND high-severity open incidents are "critical" attention;
+      // mapping only "high"→critical would DOWNGRADE an open critical incident to
+      // "high" (incidents carry severity critical|high|medium|low), under-alarming
+      // the most serious ones.
+      const es = String(e.severity).toLowerCase();
+      const sev = es === "high" || es === "critical" ? "critical" : "high";
       attention.push({
         severity: sev as AttentionItem["severity"],
         kind: "incident",
