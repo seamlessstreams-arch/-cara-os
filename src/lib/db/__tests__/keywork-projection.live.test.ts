@@ -45,8 +45,9 @@ describe("dal.keyWorkingSessions (live leg — the consolidation projection)", (
     expect(done.staff_id).toBe("st-1");
     expect(done.topics).toEqual(["school", "contact"]);
     expect(done.child_voice).toContain("brother");
-    expect(done.mood_before).toBe(4);
-    expect(done.mood_after).toBe(4);              // one recording: no fabricated delta
+    expect(done.mood_before).toBeNull();          // single child_mood → no before reading to claim
+    expect(done.mood_after).toBe(4);              // the one recorded mood; leaving before null keeps
+                                                  // it out of the (after - before) improvement average
     expect(done.actions_agreed).toEqual(["arrange sibling call"]);
     expect(done.confidential).toBeNull();         // nothing recorded → not credited
 
