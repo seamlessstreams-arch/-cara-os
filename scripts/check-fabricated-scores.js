@@ -91,18 +91,6 @@ const ALLOWED = new Map([
     "no remedial actions required is vacuously complete, and the engine's own comment says so; the surrounding expression still returns null when nothing is measured",
   ],
   [
-    "src/lib/leaving-care/leaving-care-engine.ts:pathway.planCompletenessRate:100",
-    "suppresses an alert whose message interpolates the rate — unmeasured would render 'Only null%'. Suppression is the lesser wrong here; an explicit unmeasured alert is a product decision, not a guard's",
-  ],
-  [
-    "src/lib/medication-adherence-monitoring/medication-adherence-monitoring-engine.ts:errorRate:100",
-    "INVERTED: safetyScore = 2 * (100 - errorRate) / 100, so 100 earns NO safety credit — the unflattering direction, and commented as such",
-  ],
-  [
-    "src/lib/peer-relationship-dynamics/peer-relationship-dynamics-engine.ts:negativeInteractionRate:100",
-    "INVERTED: the value is subtracted from 100, so the fallback contributes zero rather than a full score",
-  ],
-  [
     "src/lib/cara-practice/cara-practice-engine.ts:gaps:100",
     "gaps come from detectDevelopmentalGaps(text); the function already returns all-null for an empty record, so zero gaps here means analysed-and-clear",
   ],
@@ -205,10 +193,6 @@ const ALLOWED = new Map([
     "AI-governance compliance % — no governed AI calls in window ⇒ nothing to score against, vacuously compliant",
   ],
   [
-    "src/lib/attachment-relationships/attachment-relationships-engine.ts:totalConflicts:100",
-    "conflict-resolution rate — no conflicts ⇒ nothing to resolve, vacuously complete (inverse-frequency)",
-  ],
-  [
     "src/lib/behaviour-trigger-patterns/behaviour-trigger-patterns-engine.ts:concerning_90d:100",
     "strategy_coverage_pct: no concerning entries in 90d ⇒ nothing to strategise for, vacuously covered (inverse-frequency)",
   ],
@@ -277,10 +261,6 @@ const ALLOWED = new Map([
   [
     "src/lib/cara/staffing-adequacy.ts:totalShiftGroups:100",
     "coveragePercent — 0 shift groups ⇒ no shifts to cover; vacuously covered (nothing/nothing = 100)",
-  ],
-  [
-    "src/lib/complaints-feedback-quality/complaints-feedback-quality-engine.ts:childLinked:1",
-    "childInformedNorm/childSupportedNorm — the parent function early-returns overallScore:25 on 0 complaints, so this only fires when complaints exist but none link to a child (adult-lodged); treating the child-dimension as N/A is defensible",
   ],
   [
     "src/lib/cpie/child-twin-engine.ts:relational.stability.connectionsLast30d:1",
@@ -428,30 +408,6 @@ const ALLOWED = new Map([
     "shift-completion rate — 0 completed + 0 no-shows ⇒ no shift outcomes yet, vacuously complete",
   ],
   [
-    "src/lib/inspection/readiness-engine.ts:inputs.complaintsInPeriod:100",
-    "complaint resolution rate — 0 complaints ⇒ vacuously resolved (inverse-frequency)",
-  ],
-  [
-    "src/lib/inspection/readiness-engine.ts:inputs.reg44Expected:100",
-    "Reg 44 visit completion rate — 0 expected in period ⇒ vacuously complete",
-  ],
-  [
-    "src/lib/inspection/readiness-engine.ts:inputs.returnInterviewsRequired:100",
-    "return-interview rate — 0 required ⇒ 0 missing episodes to interview about (inverse-frequency)",
-  ],
-  [
-    "src/lib/lessons-learned/lessons-learned-engine.ts:totalIncidents:100",
-    "incident-review rate — 0 incidents ⇒ nothing to review (inverse-frequency)",
-  ],
-  [
-    "src/lib/medication-management/medication-management-engine.ts:spanDays:1",
-    "divide-by-zero fallback for the week-span divisor (spanWeeks); not a score",
-  ],
-  [
-    "src/lib/notification-timeliness/notification-timeliness-engine.ts:metrics.totalEvents:1",
-    "0-1 on-time ratio — 0 events ⇒ vacuously on time (inverse-frequency)",
-  ],
-  [
     "src/lib/outcome-intelligence/home-outcome-overview.ts:input.windowDays:90",
     "config default (90-day window) for the analysis window param when the caller doesn't supply one; not a score",
   ],
@@ -464,14 +420,6 @@ const ALLOWED = new Map([
   [
     "src/lib/outcome-intelligence/outcome-intelligence-engine.ts:input.windowDays:90",
     "twin of :home-outcome-overview:input.windowDays:90 — 90-day config default",
-  ],
-  [
-    "src/lib/record-quality/record-quality-engine.ts:r.mandatoryFieldsTotal:100",
-    "per-record mandatory-fields completion — 0 expected fields ⇒ nothing to score against; matches the scoreCompleteness/oversight referral-completion allowlist reasoning",
-  ],
-  [
-    "src/lib/sanctions/sanctions-engine.ts:escalatedCount:1",
-    "noEscalation indicator (`escalatedCount === 0 ? 1 : 0`) — inverse-frequency: zero escalated outcomes is the safest sanction pattern",
   ],
   [
     "src/lib/services/complaints-service.ts:complianceDenominator:100",
@@ -501,10 +449,6 @@ const ALLOWED = new Map([
     "src/lib/services/safeguarding-service.ts:ofstedRequired:100",
     "Ofsted notification compliance — 0 required ⇒ vacuously compliant (inverse-frequency)",
   ],
-  [
-    "src/lib/trauma-informed/trauma-informed-engine.ts:reviewableCount:100",
-    "review currency rate on trauma-informed plans — 0 reviewable ⇒ vacuously current (inverse-frequency)",
-  ],
 
   // ── Baseline burn-down 2026-07-29 batch 7 (regex-tightening reveal) ──
   // The tighter body constraint on NON_EMPTY_TERNARY / NON_EMPTY_TERNARY_UNIT
@@ -512,20 +456,8 @@ const ALLOWED = new Map([
   // were previously misattributed to a nearby collection. Each was read at
   // the source and judged.
   [
-    "src/lib/advocacy-representation/advocacy-representation-engine.ts:complaintReferrals:100",
-    "complaint-support rate — 0 complaint referrals ⇒ vacuously supported; the code comment 'No complaints = full compliance' documents it explicitly",
-  ],
-  [
     "src/lib/engines/home-substance-misuse-prevention-intelligence-engine.ts:followUpRequired:100",
     "referralFollowUp sub-dimension of a composite referral-compliance rate — 0 follow-ups required ⇒ that sub-dimension defaults to 100; safe because the composite averages three dimensions and this ONE gets the vacuous default only when there's nothing to follow up",
-  ],
-  [
-    "src/lib/notification-timeliness/notification-timeliness-engine.ts:totalRequired:100",
-    "completenessRate — 0 required notifications ⇒ vacuously complete (inverse-frequency)",
-  ],
-  [
-    "src/lib/notification-timeliness/notification-timeliness-engine.ts:followUpRequired:100",
-    "followUpRate — 0 follow-ups required ⇒ vacuously complete (inverse-frequency)",
   ],
   [
     "src/lib/services/daily-recording-service.ts:total_expected:100",
@@ -550,14 +482,6 @@ const ALLOWED = new Map([
   [
     "src/lib/engines/home-staff-reflective-practice-intelligence-engine.ts:shadowings:1",
     "0 shadowings in the period ⇒ vacuously 1 on the reflective-practice sub-score (inverse-frequency; matches the sibling `if (X.length === 0) return 1` pattern that's ALLOWED elsewhere)",
-  ],
-  [
-    "src/lib/incident-pattern-analysis/incident-pattern-analysis-engine.ts:restraintRate:1",
-    "lowRestraintFactor — restraintRate===0 ⇒ 1 (the strongest inverse-frequency outcome, no restraint activity)",
-  ],
-  [
-    "src/lib/multi-agency-effectiveness/multi-agency-effectiveness-engine.ts:childEscalations:1",
-    "per-child escalation-resolution score — 0 escalations ⇒ 1 (best outcome, no escalations to resolve; graded down to 0.8/0.3 when there ARE escalations)",
   ],
   [
     "src/lib/quality-assurance/quality-assurance-engine.ts:followUpRequired:1",
