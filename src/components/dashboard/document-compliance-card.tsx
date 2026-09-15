@@ -7,6 +7,7 @@
 // SCCIF: "Does the home have clear policies that staff understand and follow?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -211,7 +212,7 @@ export function DocumentComplianceCard() {
                           : dp.sign_off_rate >= 50 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
                           : "bg-[--cs-risk-bg] text-[--cs-risk]",
                       )}>
-                        {dp.sign_off_rate}%
+                        {formatRate(dp.sign_off_rate)}
                       </Badge>
                       {dp.is_mandatory && (
                         <Badge className="text-[9px] bg-[--cs-oversight-bg] text-[--cs-oversight]">

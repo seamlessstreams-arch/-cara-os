@@ -23,7 +23,7 @@ import {
   type InspectionSnapshot,
 } from "@/lib/care-events/inspection-snapshot";
 import {
-  loadFilingCabinetIndex,
+  loadFilingCabinetIndexFromStore,
   type FilingCabinetIndex,
 } from "@/lib/care-events/filing-cabinet-index";
 import {
@@ -85,7 +85,7 @@ export function buildInspectionBundle(
     .findAll(homeId)
     .slice()
     .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
-  const filing_cabinet = loadFilingCabinetIndex(homeId);
+  const filing_cabinet = loadFilingCabinetIndexFromStore(homeId);
   const reg45_evidence = db.reg45EvidenceQueue
     .findAll()
     .filter((r) => r.home_id === homeId);

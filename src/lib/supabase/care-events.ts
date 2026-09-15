@@ -8,11 +8,11 @@
  * Never expose service-role operations to the client.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "./server";
 import type {
   CareEvent,
   CareEventRoute,
+  CareEventJob,
   CareEventAuditLog,
   Reg45EvidenceItem,
   AnnexAEvidenceItem,
@@ -23,53 +23,72 @@ import { generateId, todayStr } from "@/lib/utils";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseSupabase = SupabaseClient<any, "public", any>;
-function supabase(): LooseSupabase {
+import type { Database, Json } from "./types";
+
+/** Generated table rows — typing the mappers against these lets the compiler
+ *  adjudicate every legacy-name fallback limb. */
+type Tables = Database["public"]["Tables"];
+function supabase() {
   const client = createServerClient();
   if (!client) throw new Error("Supabase not configured — check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
-  return client as unknown as LooseSupabase;
+  // Every table this module touches is in the generated Database type — the
+  // client runs fully typed since the promotions un-broke the schema.
+  return client;
+}
+
+
+/** Amendments create a successor pointing back via previous_version_id — a
+ *  row is current when no other row in the result supersedes it. The old
+ *  `.eq("is_current_version", true)` filter named a column the live table
+ *  does not have, which 400s the WHOLE read — these lists always fell to
+ *  their error paths on live. */
+function currentVersions(rows: Tables["care_events"]["Row"][]): Tables["care_events"]["Row"][] {
+  const superseded = new Set(rows.map((r) => r.previous_version_id).filter(Boolean));
+  return rows.filter((r) => !superseded.has(r.id));
 }
 
 /** Map a DB row to the CareEvent domain type. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToCareEvent(row: Record<string, any>): CareEvent {
+function rowToCareEvent(row: Tables["care_events"]["Row"]): CareEvent {
   return {
     id: row.id,
     home_id: row.home_id,
-    child_id: row.child_id ?? null,
+    // The table stores child_ids (jsonb array); the domain is single-child.
+    child_id: row.child_ids?.[0] ?? null,
     shift_id: row.shift_id ?? null,
     staff_id: row.staff_id,
     verified_by: row.verified_by ?? null,
     returned_by: row.returned_by ?? null,
     locked_by: row.locked_by ?? null,
-    category: row.category,
+    category: row.category as CareEvent["category"],
     title: row.title,
-    content: row.body ?? row.content ?? "",
-    mood_score: row.mood_score ?? null,
-    is_significant: row.is_significant ?? false,
-    status: row.status,
-    event_date: row.event_date ?? row.created_at?.slice(0, 10) ?? todayStr(),
-    event_time: row.event_time ?? null,
+    content: row.body ?? "",
+    // Not stored in care_events — mood lives on daily-log entries.
+    mood_score: null,
+    is_significant: false, // not stored; significance is carried by category/routing
+    status: row.status as CareEvent["status"],
+    event_date: row.created_at?.slice(0, 10) ?? todayStr(),
+    event_time: null, // not stored — created_at carries the timestamp
     requires_manager_review: row.requires_manager_review ?? false,
     requires_reg40_triage: row.requires_reg40_triage ?? false,
     contributes_to_reg45: row.contributes_to_reg45 ?? false,
     contributes_to_annex_a: row.contributes_to_annex_a ?? false,
-    is_safeguarding: row.is_safeguarding ?? row.category === "safeguarding",
-    evidence_prompts: row.evidence_prompts ?? [],
+    is_safeguarding: row.category === "safeguarding",
+    evidence_prompts: [], // not stored; only the completion flag persists
     evidence_prompts_completed: row.evidence_prompts_completed ?? false,
-    staff_signature: row.staff_signature ?? false,
-    staff_signed_at: row.staff_signed_at ?? null,
-    manager_id: row.manager_id ?? row.manager_review_by ?? null,
-    manager_review_note: row.manager_review_note ?? row.manager_review_notes ?? null,
+    // Signatures are not stored on this table; submission is the recorded act.
+    staff_signature: false,
+    staff_signed_at: null,
+    manager_id: row.manager_review_by ?? null,
+    manager_review_note: row.manager_review_notes ?? null,
     manager_review_at: row.manager_review_at ?? null,
-    manager_review_completed: row.manager_review_completed ?? false,
-    manager_signature: row.manager_signature ?? false,
-    manager_notes: row.manager_notes ?? null,
+    // A recorded review timestamp is the completion evidence.
+    manager_review_completed: row.manager_review_at != null,
+    manager_signature: false, // not stored
+    manager_notes: null, // not stored — manager_review_notes carries the review
     return_reason: row.return_reason ?? null,
     returned_at: row.returned_at ?? null,
     submitted_at: row.submitted_at ?? null,
-    submitted_by: row.submitted_by ?? null,
+    submitted_by: null, // not stored — staff_id is the author
     verified_at: row.verified_at ?? null,
     locked_at: row.locked_at ?? null,
     version: row.version ?? 1,
@@ -77,25 +96,26 @@ function rowToCareEvent(row: Record<string, any>): CareEvent {
     amendment_reason: row.amendment_reason ?? null,
     amended_by: row.amended_by ?? null,
     amended_at: row.amended_at ?? null,
-    is_current_version: row.is_current_version ?? true,
+    // No stored flag: a row nothing supersedes is current (amendments create
+    // successors that point back via previous_version_id).
+    is_current_version: true,
     cara_suggested_summary: row.cara_suggested_summary ?? null,
-    cara_suggested_category: row.cara_suggested_category ?? null,
-    cara_suggested_routing: row.cara_suggested_routes ?? null,
+    cara_suggested_category: (row.cara_suggested_category as CareEvent["cara_suggested_category"]) ?? null,
+    cara_suggested_routing: (row.cara_suggested_routes as CareEvent["cara_suggested_routing"]) ?? null,
     cara_suggested_reg45: null,
     cara_suggested_annex_a: null,
     cara_suggestions_reviewed: false,
-    routing_summary: row.routing_summary ?? null,
+    routing_summary: (row.routing_preview as CareEvent["routing_summary"]) ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
 }
 
 /** Map CareEvent domain fields to the DB insert/update shape. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function careEventToRow(data: Partial<CareEvent>): Record<string, any> {
+function careEventToRow(data: Partial<CareEvent>): Partial<Tables["care_events"]["Row"]> {
   const row: Record<string, unknown> = {};
   if (data.home_id !== undefined) row.home_id = data.home_id;
-  if (data.child_id !== undefined) row.child_id = data.child_id;
+  if (data.child_id !== undefined) row.child_ids = data.child_id ? [data.child_id] : [];
   if (data.shift_id !== undefined) row.shift_id = data.shift_id;
   if (data.staff_id !== undefined) row.staff_id = data.staff_id;
   if (data.category !== undefined) row.category = data.category;
@@ -123,7 +143,7 @@ function careEventToRow(data: Partial<CareEvent>): Record<string, any> {
   if (data.manager_id !== undefined) row.manager_review_by = data.manager_id;
   if (data.manager_review_note !== undefined) row.manager_review_notes = data.manager_review_note;
   if (data.manager_review_at !== undefined) row.manager_review_at = data.manager_review_at;
-  if (data.routing_summary !== undefined) row.routing_summary = data.routing_summary as unknown;
+  if (data.routing_summary !== undefined) row.routing_preview = data.routing_summary as unknown;
   if (data.cara_suggested_summary !== undefined) row.cara_suggested_summary = data.cara_suggested_summary;
   if (data.cara_suggested_category !== undefined) row.cara_suggested_category = data.cara_suggested_category;
   if (data.cara_suggested_routing !== undefined) row.cara_suggested_routes = data.cara_suggested_routing as unknown;
@@ -162,10 +182,9 @@ export const sbCareEvents = {
     const { data, error } = await sb
       .from("care_events")
       .select("*")
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findByChild(childId: string): Promise<CareEvent[]> {
@@ -173,11 +192,12 @@ export const sbCareEvents = {
     const { data, error } = await sb
       .from("care_events")
       .select("*")
-      .eq("child_id", childId)
-      .eq("is_current_version", true)
+      // child linkage lives in the child_ids array — the old scalar filter
+      // named a column the live table does not have.
+      .contains("child_ids", [childId])
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findByStatus(status: CareEvent["status"]): Promise<CareEvent[]> {
@@ -186,10 +206,9 @@ export const sbCareEvents = {
       .from("care_events")
       .select("*")
       .eq("status", status)
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async findNeedingManagerReview(): Promise<CareEvent[]> {
@@ -210,10 +229,9 @@ export const sbCareEvents = {
       .from("care_events")
       .select("*")
       .eq("requires_reg40_triage", true)
-      .eq("is_current_version", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map(rowToCareEvent);
+    return currentVersions(data ?? []).map(rowToCareEvent);
   },
 
   async create(data: Partial<CareEvent>): Promise<CareEvent> {
@@ -223,7 +241,7 @@ export const sbCareEvents = {
     const row = {
       id,
       home_id: data.home_id ?? "home_oak",
-      child_id: data.child_id ?? null,
+      child_ids: data.child_id ? [data.child_id] : [],
       shift_id: data.shift_id ?? null,
       staff_id: data.staff_id ?? "staff_darren",
       category: data.category ?? "general",
@@ -240,7 +258,6 @@ export const sbCareEvents = {
       amendment_reason: data.amendment_reason ?? null,
       amended_at: data.amended_at ?? null,
       amended_by: data.amended_by ?? null,
-      is_current_version: true,
       return_reason: data.return_reason ?? null,
       returned_at: data.returned_at ?? null,
       submitted_at: data.submitted_at ?? null,
@@ -251,13 +268,13 @@ export const sbCareEvents = {
       cara_suggested_summary: data.cara_suggested_summary ?? null,
       cara_suggested_category: data.cara_suggested_category ?? null,
       cara_suggested_routes: data.cara_suggested_routing ?? null,
-      routing_summary: data.routing_summary ?? null,
+      routing_preview: data.routing_summary ?? null,
       created_at: now,
       updated_at: now,
     };
     const { data: inserted, error } = await sb
       .from("care_events")
-      .insert(row)
+      .insert(row as unknown as Tables["care_events"]["Insert"])
       .select()
       .single();
     if (error) throw error;
@@ -283,23 +300,22 @@ export const sbCareEvents = {
 
 // ── Care Event Routes ─────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToRoute(row: Record<string, any>): CareEventRoute {
+function rowToRoute(row: Tables["care_event_routes"]["Row"]): CareEventRoute {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
     home_id: row.home_id,
-    route_type: row.route_type,
-    status: row.status,
+    route_type: row.route_type as CareEventRoute["route_type"],
+    status: row.status as CareEventRoute["status"],
     linked_record_id: row.linked_record_id ?? null,
     linked_record_table: row.linked_record_type ?? null,
-    processing_notes: row.processing_notes ?? null,
+    processing_notes: null, // not stored — error_message carries failure detail
     error_message: row.error_message ?? null,
     retry_count: row.retry_count ?? 0,
     last_retried_at: row.last_attempted_at ?? null,
-    time_saved_minutes: row.time_saved_minutes ?? 0,
+    time_saved_minutes: 0, // not stored on routes
     created_at: row.created_at,
-    updated_at: row.updated_at ?? row.created_at,
+    updated_at: row.last_attempted_at ?? row.created_at,
   };
 }
 
@@ -341,7 +357,7 @@ export const sbCareEventRoutes = {
     };
     const { data: upserted, error } = await sb
       .from("care_event_routes")
-      .upsert(row, { onConflict: "care_event_id,route_type" })
+      .upsert(row as unknown as Tables["care_event_routes"]["Insert"], { onConflict: "care_event_id,route_type" })
       .select()
       .single();
     if (error) throw error;
@@ -350,8 +366,7 @@ export const sbCareEventRoutes = {
 
   async patch(id: string, data: Partial<CareEventRoute>): Promise<CareEventRoute | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.status !== undefined) row.status = data.status;
     if (data.linked_record_id !== undefined) row.linked_record_id = data.linked_record_id;
     if (data.linked_record_table !== undefined) row.linked_record_type = data.linked_record_table;
@@ -360,7 +375,7 @@ export const sbCareEventRoutes = {
     if (data.last_retried_at !== undefined) row.last_attempted_at = data.last_retried_at;
     const { data: updated, error } = await sb
       .from("care_event_routes")
-      .update(row)
+      .update(row as unknown as Tables["care_event_routes"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -374,20 +389,108 @@ export const sbCareEventRoutes = {
 
 // ── Care Event Audit Log ──────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAuditLog(row: Record<string, any>): CareEventAuditLog {
+function rowToAuditLog(row: Tables["care_event_audit_log"]["Row"]): CareEventAuditLog {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
     home_id: row.home_id,
-    action: row.action,
+    action: row.action as CareEventAuditLog["action"],
     actor_staff_id: row.actor_id ?? null,
-    actor_role: row.actor_role ?? null,
-    detail: row.detail ?? {},
+    actor_role: null, // not stored — actor_id identifies the actor
+    detail: (row.detail as Record<string, unknown>) ?? {},
     ip_address: null,
-    created_at: row.performed_at ?? row.created_at,
+    created_at: row.performed_at,
   };
 }
+
+// ── Care event jobs (Phase 6) ────────────────────────────────────────────────
+// The care_event_jobs table exists but careEventsDb never wired it — the whole
+// queue lived in memDb. The table's columns differ from the CareEventJob type
+// (attempts/max_attempts/run_after vs retry_count/max_retries/scheduled_at), so
+// this layer maps both ways. upsert is a manual find-then-insert/update keyed by
+// (care_event_id, job_type) — no ON CONFLICT, so it needs no unique constraint.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToCareEventJob(row: any): CareEventJob {
+  return {
+    id: row.id,
+    care_event_id: row.care_event_id,
+    home_id: row.home_id,
+    job_type: row.job_type,
+    status: row.status,
+    payload: row.payload ?? {},
+    result: row.result ?? null,
+    error_message: row.error_message ?? null,
+    retry_count: Number(row.attempts ?? 0),
+    max_retries: Number(row.max_attempts ?? 3),
+    scheduled_at: row.run_after ?? row.created_at,
+    started_at: row.started_at ?? null,
+    completed_at: row.completed_at ?? null,
+    last_retried_at: null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function careEventJobToRow(data: Partial<CareEventJob>): Record<string, unknown> {
+  const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (data.care_event_id !== undefined) row.care_event_id = data.care_event_id;
+  if (data.home_id !== undefined) row.home_id = data.home_id;
+  if (data.job_type !== undefined) row.job_type = data.job_type;
+  if (data.status !== undefined) row.status = data.status;
+  if (data.payload !== undefined) row.payload = data.payload;
+  if (data.result !== undefined) row.result = data.result;
+  if (data.error_message !== undefined) row.error_message = data.error_message;
+  if (data.retry_count !== undefined) row.attempts = data.retry_count;
+  if (data.max_retries !== undefined) row.max_attempts = data.max_retries;
+  if (data.scheduled_at !== undefined) row.run_after = data.scheduled_at;
+  if (data.started_at !== undefined) row.started_at = data.started_at;
+  if (data.completed_at !== undefined) row.completed_at = data.completed_at;
+  return row;
+}
+
+export const sbCareEventJobs = {
+  async findAll(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async findPending(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").eq("status", "pending");
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async findFailed(): Promise<CareEventJob[]> {
+    const sb = supabase();
+    const { data, error } = await sb.from("care_event_jobs").select("*").in("status", ["failed", "retry_required"]);
+    if (error) throw error;
+    return (data ?? []).map(rowToCareEventJob);
+  },
+  async upsert(data: Omit<CareEventJob, "id" | "created_at" | "updated_at">): Promise<CareEventJob> {
+    const sb = supabase();
+    const { data: existing } = await sb
+      .from("care_event_jobs").select("id")
+      .eq("care_event_id", data.care_event_id).eq("job_type", data.job_type).limit(1);
+    if (existing && existing.length > 0) {
+      const { data: up, error } = await sb
+        .from("care_event_jobs").update(careEventJobToRow(data) as never).eq("id", existing[0].id).select().single();
+      if (error) throw error;
+      return rowToCareEventJob(up);
+    }
+    const { data: ins, error } = await sb
+      .from("care_event_jobs").insert(careEventJobToRow(data) as never).select().single();
+    if (error) throw error;
+    return rowToCareEventJob(ins);
+  },
+  async patch(id: string, data: Partial<CareEventJob>): Promise<CareEventJob | null> {
+    const sb = supabase();
+    const { data: up, error } = await sb
+      .from("care_event_jobs").update(careEventJobToRow(data) as never).eq("id", id).select().single();
+    if (error) throw error;
+    return up ? rowToCareEventJob(up) : null;
+  },
+};
 
 export const sbCareEventAuditLog = {
   async findAll(): Promise<CareEventAuditLog[]> {
@@ -420,7 +523,7 @@ export const sbCareEventAuditLog = {
         home_id: data.home_id,
         action: data.action,
         actor_id: data.actor_staff_id,
-        detail: data.detail ?? {},
+        detail: (data.detail ?? {}) as Json,
       })
       .select()
       .single();
@@ -431,8 +534,7 @@ export const sbCareEventAuditLog = {
 
 // ── Reg 45 Evidence Queue ─────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToReg45Evidence(row: Record<string, any>): Reg45EvidenceItem {
+function rowToReg45Evidence(row: Tables["reg45_evidence_queue"]["Row"]): Reg45EvidenceItem {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
@@ -499,7 +601,7 @@ export const sbReg45EvidenceQueue = {
     };
     const { data: upserted, error } = await sb
       .from("reg45_evidence_queue")
-      .upsert(row, { onConflict: "care_event_id" })
+      .upsert(row as unknown as Tables["reg45_evidence_queue"]["Insert"], { onConflict: "care_event_id" })
       .select()
       .single();
     if (error) throw error;
@@ -508,8 +610,7 @@ export const sbReg45EvidenceQueue = {
 
   async patch(id: string, data: Partial<Reg45EvidenceItem>): Promise<Reg45EvidenceItem | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.manager_decision !== undefined) {
       row.status = data.manager_decision;
     }
@@ -519,7 +620,7 @@ export const sbReg45EvidenceQueue = {
     if (data.reviewed_at !== undefined) row.decided_at = data.reviewed_at;
     const { data: updated, error } = await sb
       .from("reg45_evidence_queue")
-      .update(row)
+      .update(row as unknown as Tables["reg45_evidence_queue"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -533,8 +634,7 @@ export const sbReg45EvidenceQueue = {
 
 // ── Annex A Evidence Queue ────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToAnnexAEvidence(row: Record<string, any>): AnnexAEvidenceItem {
+function rowToAnnexAEvidence(row: Tables["annex_a_evidence_queue"]["Row"]): AnnexAEvidenceItem {
   return {
     id: row.id,
     care_event_id: row.care_event_id,
@@ -594,7 +694,7 @@ export const sbAnnexAEvidenceQueue = {
     };
     const { data: upserted, error } = await sb
       .from("annex_a_evidence_queue")
-      .upsert(row, { onConflict: "care_event_id,annex_a_section" })
+      .upsert(row as unknown as Tables["annex_a_evidence_queue"]["Insert"], { onConflict: "care_event_id,annex_a_section" })
       .select()
       .single();
     if (error) throw error;
@@ -603,15 +703,14 @@ export const sbAnnexAEvidenceQueue = {
 
   async patch(id: string, data: Partial<AnnexAEvidenceItem>): Promise<AnnexAEvidenceItem | null> {
     const sb = supabase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: Record<string, any> = { updated_at: new Date().toISOString() };
+    const row: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.manager_decision !== undefined) row.status = data.manager_decision;
     if (data.manager_approved_text !== undefined) row.approved_text = data.manager_approved_text;
     if (data.reviewed_by !== undefined) row.manager_id = data.reviewed_by;
     if (data.reviewed_at !== undefined) row.decided_at = data.reviewed_at;
     const { data: updated, error } = await sb
       .from("annex_a_evidence_queue")
-      .update(row)
+      .update(row as unknown as Tables["annex_a_evidence_queue"]["Update"])
       .eq("id", id)
       .select()
       .single();
@@ -625,8 +724,7 @@ export const sbAnnexAEvidenceQueue = {
 
 // ── Child Daily Summaries ─────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToChildDailySummary(row: Record<string, any>): ChildDailySummary {
+function rowToChildDailySummary(row: Tables["child_daily_summaries"]["Row"]): ChildDailySummary {
   return {
     id: row.id,
     home_id: row.home_id,
@@ -691,7 +789,7 @@ export const sbChildDailySummaries = {
     };
     const { data: upserted, error } = await sb
       .from("child_daily_summaries")
-      .upsert(row, { onConflict: "home_id,child_id,summary_date" })
+      .upsert(row as unknown as Tables["child_daily_summaries"]["Insert"], { onConflict: "home_id,child_id,summary_date" })
       .select()
       .single();
     if (error) throw error;
@@ -701,16 +799,15 @@ export const sbChildDailySummaries = {
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToNotification(row: Record<string, any>): AppNotification {
+function rowToNotification(row: Tables["notifications"]["Row"]): AppNotification {
   return {
     id: row.id,
     home_id: row.home_id,
     recipient_id: row.recipient_id,
     title: row.title,
     body: row.body,
-    type: row.type ?? "system",
-    priority: row.priority ?? "normal",
+    type: (row.type as AppNotification["type"]) ?? "system",
+    priority: (row.priority as AppNotification["priority"]) ?? "normal",
     read: row.read ?? false,
     read_at: row.read_at ?? null,
     action_url: row.action_url ?? null,
@@ -752,6 +849,7 @@ export const sbNotifications = {
         action_url: data.action_url ?? null,
         entity_type: data.entity_type ?? null,
         entity_id: data.entity_id ?? null,
+        read_at: null,
       })
       .select()
       .single();

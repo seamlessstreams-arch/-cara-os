@@ -48,13 +48,39 @@ const ALLOWLIST = new Set([
 ]);
 
 // Fields whose string value is a person reference.
+// Derived from the field names the seed actually uses to point at a person,
+// not guessed. The original twenty covered `created_by` but not `updated_by`,
+// and `child_id` but not `linked_child_id` — a phantom in either passed the
+// guard in silence, which was confirmed by planting one.
 const STAFF_REF_FIELDS = [
   "staff_id", "supervised_by", "created_by", "key_worker_id", "keyworker_id",
   "supervisor_id", "authored_by", "assigned_to", "worker_id", "owner_id",
   "rm_id", "recorded_by", "completed_by", "reviewed_by", "approved_by",
   "signed_off_by", "escalated_by", "raised_by", "led_by", "reported_by",
+  "accessed_by", "acknowledged_by", "action_completed_by", "actor_id",
+  "actor_staff_id", "administered_by", "admission_checked_by",
+  "admission_witnessed_by", "agreed_by", "answeredBy", "appraiser_id",
+  "assessed_by", "assessed_by_id", "assigned_manager_id", "audited_by",
+  "authorised_by", "authorised_by_id", "buddy_id", "capturedBy", "changed_by",
+  "checked_by", "collected_by", "committed_by", "completed_by_user_id",
+  "conducted_by", "contributed_by", "cooked_by", "createdBy", "decision_by",
+  "facilitated_by", "facilitator_id", "generated_by", "handled_by",
+  "host_staff_id", "identified_by", "investigated_by", "issued_by",
+  "last_audit_by", "lead_by", "line_manager_id", "linked_staff_id", "logged_by",
+  "manager_id", "manager_responded_by", "manager_response_by", "observer_id",
+  "organiser_id", "oversight_by", "prepared_by", "recipient_id",
+  "registered_manager_id", "requester_id", "resolved_by",
+  "responsible_individual_id", "return_interview_by", "returned_by",
+  "reviewer_id", "ri_review_by", "rm_sign_off_by", "rtw_conducted_by_id",
+  "secondary_worker_id", "sent_by", "set_by", "shopped_by", "staff_debrief_by",
+  "started_by_user_id", "submitted_by", "target_staff_id", "updatedBy",
+  "updated_by", "user_id", "verbal_verified_by", "verified_by", "witnessed_by",
+  "yp_debrief_by",
 ];
-const CHILD_REF_FIELDS = ["child_id", "childId", "yp_id", "young_person_id"];
+const CHILD_REF_FIELDS = [
+  "child_id", "childId", "yp_id", "young_person_id",
+  "linked_child_id", "suggested_child_id",
+];
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

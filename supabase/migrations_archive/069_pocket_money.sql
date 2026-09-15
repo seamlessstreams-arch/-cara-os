@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS cs_financial_transactions (
   receipt_reference     text,
   authorised_by         text NOT NULL,
   witnessed_by          text,
-  child_present         boolean NOT NULL DEFAULT true,
+  child_present         boolean,
   balance_after         numeric(10,2),
   notes                 text,
   created_at            timestamptz NOT NULL DEFAULT now()

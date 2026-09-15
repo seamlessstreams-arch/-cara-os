@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS cs_restrictions_register (
   social_worker_informed    BOOLEAN NOT NULL DEFAULT FALSE,
   social_worker_informed_date DATE,
   parent_informed           BOOLEAN NOT NULL DEFAULT FALSE,
-  proportionate             BOOLEAN NOT NULL DEFAULT TRUE,
+  proportionate             boolean,
   status                    TEXT NOT NULL DEFAULT 'active',
   created_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at                TIMESTAMPTZ NOT NULL DEFAULT now()

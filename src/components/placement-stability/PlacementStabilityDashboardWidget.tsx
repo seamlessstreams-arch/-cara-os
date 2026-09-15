@@ -11,6 +11,7 @@
 //   Matching Quality, Outcomes, Strengths/Areas/Actions, Regulatory Framework
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Interfaces ─────────────────────────────────────────────────────────────
@@ -403,7 +404,7 @@ export function PlacementStabilityDashboardWidget() {
         <MetricCard
           label="Disruptions"
           value={data.disruptionManagement.totalDisruptions}
-          subValue={`${data.disruptionManagement.preventionSuccessRate}% prevented`}
+          subValue={`${formatRate(data.disruptionManagement.preventionSuccessRate)} prevented`}
           color="text-purple-700 bg-purple-50"
         />
         <MetricCard
@@ -414,7 +415,7 @@ export function PlacementStabilityDashboardWidget() {
         />
         <MetricCard
           label="Improvement Rate"
-          value={`${data.outcomesDuringPlacement.improvementRate}%`}
+          value={`${formatRate(data.outcomesDuringPlacement.improvementRate)}`}
           subValue={`${data.outcomesDuringPlacement.totalOutcomes} reviews`}
           color="text-green-700 bg-green-50"
         />
@@ -482,17 +483,17 @@ export function PlacementStabilityDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <MetricCard
               label="Anticipated"
-              value={`${data.disruptionManagement.anticipatedRate}%`}
+              value={`${formatRate(data.disruptionManagement.anticipatedRate)}`}
               color={data.disruptionManagement.anticipatedRate >= 70 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Prevention Attempted"
-              value={`${data.disruptionManagement.preventionAttemptedRate}%`}
+              value={`${formatRate(data.disruptionManagement.preventionAttemptedRate)}`}
               color={data.disruptionManagement.preventionAttemptedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Prevention Success"
-              value={`${data.disruptionManagement.preventionSuccessRate}%`}
+              value={`${formatRate(data.disruptionManagement.preventionSuccessRate)}`}
               color={data.disruptionManagement.preventionSuccessRate >= 60 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
           </div>
@@ -537,22 +538,22 @@ export function PlacementStabilityDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <MetricCard
               label="Impact Assessment"
-              value={`${data.matchingQuality.impactAssessmentRate}%`}
+              value={`${formatRate(data.matchingQuality.impactAssessmentRate)}`}
               color={data.matchingQuality.impactAssessmentRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Children Consulted"
-              value={`${data.matchingQuality.childrenConsultedRate}%`}
+              value={`${formatRate(data.matchingQuality.childrenConsultedRate)}`}
               color={data.matchingQuality.childrenConsultedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Child Views"
-              value={`${data.matchingQuality.childViewsRate}%`}
+              value={`${formatRate(data.matchingQuality.childViewsRate)}`}
               color={data.matchingQuality.childViewsRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Risk Assessment"
-              value={`${data.matchingQuality.riskAssessmentRate}%`}
+              value={`${formatRate(data.matchingQuality.riskAssessmentRate)}`}
               color={data.matchingQuality.riskAssessmentRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
           </div>
@@ -583,12 +584,12 @@ export function PlacementStabilityDashboardWidget() {
             />
             <MetricCard
               label="Health Appointments"
-              value={`${data.outcomesDuringPlacement.healthAppointmentRate}%`}
+              value={`${formatRate(data.outcomesDuringPlacement.healthAppointmentRate)}`}
               color={data.outcomesDuringPlacement.healthAppointmentRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Care Plan Up To Date"
-              value={`${data.outcomesDuringPlacement.carePlanUpToDateRate}%`}
+              value={`${formatRate(data.outcomesDuringPlacement.carePlanUpToDateRate)}`}
               color={data.outcomesDuringPlacement.carePlanUpToDateRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
           </div>

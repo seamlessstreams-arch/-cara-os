@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -128,8 +129,8 @@ export function MedicationManagementIntelligenceWidget() {
       <Section title="Controlled Drugs">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={cd.totalRecords} />
-          <Stat label="Witness Rate" value={`${cd.witnessRate}%`} />
-          <Stat label="Balance Accuracy" value={`${cd.balanceAccuracyRate}%`} />
+          <Stat label="Witness Rate" value={`${formatRateLoose(cd.witnessRate)}`} />
+          <Stat label="Balance Accuracy" value={`${formatRateLoose(cd.balanceAccuracyRate)}`} />
           <Stat label="Discrepancies" value={cd.discrepancyCount} />
         </div>
       </Section>

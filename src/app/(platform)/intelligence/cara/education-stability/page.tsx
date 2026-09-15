@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -280,7 +281,7 @@ export default function EducationStabilityPage() {
           >
             <p className="text-xs text-muted-foreground">Home Attendance</p>
             <p className={`text-2xl font-bold mt-1 ${summary.homeAttendanceRate >= 90 ? "text-emerald-600" : summary.homeAttendanceRate >= 75 ? "text-amber-600" : "text-red-600"}`}>
-              {summary.homeAttendanceRate}%
+              {formatRate(summary.homeAttendanceRate)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">across all children</p>
           </button>

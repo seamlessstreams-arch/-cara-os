@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -81,39 +82,39 @@ export function LanguageCommunicationSupportIntelligenceWidget() {
 
       <Section title="Needs Assessment" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Communication Plan Rate" value={`${na.communicationPlanRate}%`} />
-          <Stat label="Plan Current" value={`${na.planCurrentRate}%`} />
-          <Stat label="Interpreter Available" value={`${na.interpreterAvailableRate}%`} />
-          <Stat label="Device Provided" value={`${na.deviceProvidedRate}%`} />
+          <Stat label="Communication Plan Rate" value={`${formatRate(na.communicationPlanRate)}`} />
+          <Stat label="Plan Current" value={`${formatRate(na.planCurrentRate)}`} />
+          <Stat label="Interpreter Available" value={`${formatRate(na.interpreterAvailableRate)}`} />
+          <Stat label="Device Provided" value={`${formatRate(na.deviceProvidedRate)}`} />
         </div>
       </Section>
 
       <Section title="Support Provision">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Quality Good+" value={`${sp.qualityGoodPlusRate}%`} />
-          <Stat label="Child Engaged" value={`${sp.childEngagedRate}%`} />
-          <Stat label="Progress Noted" value={`${sp.progressNotedRate}%`} />
+          <Stat label="Quality Good+" value={`${formatRate(sp.qualityGoodPlusRate)}`} />
+          <Stat label="Child Engaged" value={`${formatRate(sp.childEngagedRate)}`} />
+          <Stat label="Progress Noted" value={`${formatRate(sp.progressNotedRate)}`} />
           <Stat label="Avg Sessions/Child" value={sp.averageSessionsPerChild} />
         </div>
       </Section>
 
       <Section title="Environment Accessibility">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Easy Read" value={`${ea.easyReadRate}%`} />
-          <Stat label="Visual Aids" value={`${ea.visualAidsRate}%`} />
-          <Stat label="Signage Accessible" value={`${ea.signageAccessibleRate}%`} />
-          <Stat label="Child Views Accessible" value={`${ea.childViewsAccessibleRate}%`} />
+          <Stat label="Easy Read" value={`${formatRate(ea.easyReadRate)}`} />
+          <Stat label="Visual Aids" value={`${formatRate(ea.visualAidsRate)}`} />
+          <Stat label="Signage Accessible" value={`${formatRate(ea.signageAccessibleRate)}`} />
+          <Stat label="Child Views Accessible" value={`${formatRate(ea.childViewsAccessibleRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Competence">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Awareness" value={`${sc.awarenessRate}%`} />
-          <Stat label="Sign Language" value={`${sc.signLanguageRate}%`} />
-          <Stat label="Augmentative Device" value={`${sc.augmentativeDeviceRate}%`} />
-          <Stat label="Easy Read" value={`${sc.easyReadRate}%`} />
-          <Stat label="Autism Communication" value={`${sc.autismCommunicationRate}%`} />
-          <Stat label="Interpreter Working" value={`${sc.interpreterWorkingRate}%`} />
+          <Stat label="Awareness" value={`${formatRate(sc.awarenessRate)}`} />
+          <Stat label="Sign Language" value={`${formatRate(sc.signLanguageRate)}`} />
+          <Stat label="Augmentative Device" value={`${formatRate(sc.augmentativeDeviceRate)}`} />
+          <Stat label="Easy Read" value={`${formatRate(sc.easyReadRate)}`} />
+          <Stat label="Autism Communication" value={`${formatRate(sc.autismCommunicationRate)}`} />
+          <Stat label="Interpreter Working" value={`${formatRate(sc.interpreterWorkingRate)}`} />
         </div>
       </Section>
 

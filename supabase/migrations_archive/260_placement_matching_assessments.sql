@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cs_placement_matching_assessments (
   family_contact_feasible boolean NOT NULL DEFAULT false,
   matching_panel_agreed boolean NOT NULL DEFAULT false,
   contingency_planned boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

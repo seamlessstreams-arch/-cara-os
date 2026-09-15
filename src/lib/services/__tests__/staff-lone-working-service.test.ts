@@ -8,30 +8,33 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffLoneWorkingRecord>): StaffLoneWorkingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    lone_working_scenario: overrides?.lone_working_scenario ?? "night_shift_solo",
-    risk_level: overrides?.risk_level ?? "medium",
-    check_in_frequency: overrides?.check_in_frequency ?? "hourly",
-    authorisation_level: overrides?.authorisation_level ?? "manager_approved",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    staff_name: overrides?.staff_name ?? "Staff A",
-    risk_assessed: overrides?.risk_assessed ?? true,
-    manager_authorised: overrides?.manager_authorised ?? true,
-    communication_plan: overrides?.communication_plan ?? true,
-    emergency_contacts_available: overrides?.emergency_contacts_available ?? true,
-    phone_charged: overrides?.phone_charged ?? true,
-    check_in_protocol_agreed: overrides?.check_in_protocol_agreed ?? true,
-    buddy_system_available: overrides?.buddy_system_available ?? true,
-    panic_alarm_available: overrides?.panic_alarm_available ?? true,
-    first_aid_trained: overrides?.first_aid_trained ?? true,
-    medication_trained: overrides?.medication_trained ?? true,
-    safeguarding_trained: overrides?.safeguarding_trained ?? true,
-    lone_working_policy_read: overrides?.lone_working_policy_read ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    assessed_by: overrides?.assessed_by ?? "Manager A",
+    id: "a-1", home_id: "home-1",
+    lone_working_scenario: "night_shift_solo",
+    risk_level: "medium",
+    check_in_frequency: "hourly",
+    authorisation_level: "manager_approved",
+    assessment_date: todayStr(),
+    staff_name: "Staff A",
+    risk_assessed: true,
+    manager_authorised: true,
+    communication_plan: true,
+    emergency_contacts_available: true,
+    phone_charged: true,
+    check_in_protocol_agreed: true,
+    buddy_system_available: true,
+    panic_alarm_available: true,
+    first_aid_trained: true,
+    medication_trained: true,
+    safeguarding_trained: true,
+    lone_working_policy_read: true,
+    issues_found: [], actions_taken: [],
+    assessed_by: "Manager A",
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("staff-lone-working-service", () => {
       expect(types).toContain("no_check_in_protocol");
       expect(types).toContain("policy_not_read");
     });
+  });
+});
+
+// ── Tri-state: very-high risk with unrecorded authorisation alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words unrecorded authorisation as a gap", () => {
+    const alerts = _testing.identifyStaffLoneWorkingAlerts([
+      makeRecord({ risk_level: "very_high", manager_authorised: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "very_high_not_authorised");
+    expect(a?.message).toMatch(/no authorisation recorded/i);
+  });
+  it("still asserts a recorded refusal", () => {
+    const alerts = _testing.identifyStaffLoneWorkingAlerts([
+      makeRecord({ risk_level: "very_high", manager_authorised: false }),
+    ]);
+    expect(alerts.some((x) => /without manager authorisation/i.test(x.message))).toBe(true);
   });
 });

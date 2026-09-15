@@ -6,6 +6,7 @@
 // CHR 2015 Reg 23/33. SCCIF: Health & Wellbeing.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +95,7 @@ export function HealthScreeningImmunisationCard() {
             <p className="text-[10px] text-muted-foreground">RHA Current</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", (c.overall_compliance_rate ?? 0) >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (c.overall_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{c.overall_compliance_rate}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", (c.overall_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(c.overall_compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Overall</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

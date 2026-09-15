@@ -8,30 +8,33 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<EnvironmentalAuditRecord>): EnvironmentalAuditRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    audit_area: overrides?.audit_area ?? "communal_living",
-    audit_rating: overrides?.audit_rating ?? "good",
-    audit_type: overrides?.audit_type ?? "scheduled_audit",
-    priority_level: overrides?.priority_level ?? "low",
-    audit_date: overrides?.audit_date ?? todayStr(),
-    area_name: overrides?.area_name ?? "Lounge",
-    homely_feel: overrides?.homely_feel ?? true,
-    child_friendly: overrides?.child_friendly ?? true,
-    personalised: overrides?.personalised ?? true,
-    clean_and_tidy: overrides?.clean_and_tidy ?? true,
-    well_maintained: overrides?.well_maintained ?? true,
-    safe_environment: overrides?.safe_environment ?? true,
-    accessible: overrides?.accessible ?? true,
-    adequate_lighting: overrides?.adequate_lighting ?? true,
-    temperature_comfortable: overrides?.temperature_comfortable ?? true,
-    noise_appropriate: overrides?.noise_appropriate ?? true,
-    privacy_maintained: overrides?.privacy_maintained ?? true,
-    children_consulted: overrides?.children_consulted ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    audited_by: overrides?.audited_by ?? "Manager A",
+    id: "a-1", home_id: "home-1",
+    audit_area: "communal_living",
+    audit_rating: "good",
+    audit_type: "scheduled_audit",
+    priority_level: "low",
+    audit_date: todayStr(),
+    area_name: "Lounge",
+    homely_feel: true,
+    child_friendly: true,
+    personalised: true,
+    clean_and_tidy: true,
+    well_maintained: true,
+    safe_environment: true,
+    accessible: true,
+    adequate_lighting: true,
+    temperature_comfortable: true,
+    noise_appropriate: true,
+    privacy_maintained: true,
+    children_consulted: true,
+    issues_found: [], actions_taken: [],
+    audited_by: "Manager A",
     next_audit_date: "next_audit_date" in (overrides ?? {}) ? (overrides!.next_audit_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -115,5 +118,18 @@ describe("environmental-audit-service", () => {
       expect(types).toContain("not_personalised");
       expect(types).toContain("children_not_consulted");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded child_friendly as a failure", () => {
+    // the alert thresholds at >= 2 — two records, both unanswered
+    const alerts = _testing.identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: null }), makeRecord({ id: "r-2", child_friendly: null })]);
+    expect(alerts.some((a) => /child-friendly/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: false }), makeRecord({ id: "r-2", child_friendly: false })]);
+    expect(alerts.some((a) => /child-friendly/i.test(a.message))).toBe(true);
   });
 });

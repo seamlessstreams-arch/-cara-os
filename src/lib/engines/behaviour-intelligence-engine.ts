@@ -80,12 +80,12 @@ export interface RestraintInput {
   start_time: string;
   end_time: string;
   duration: number; // minutes
-  reason: string;
+  reason: string | null;
   restraint_type: string;
   antecedent: string;
   de_escalation_attempts: string[];
   child_debriefed: boolean;
-  staff_debriefed: boolean;
+  staff_debriefed: boolean | null;
   injuries: { person: string; description: string }[];
   review_status: string;
   recorded_by: string;

@@ -13,6 +13,7 @@
 // - Group stability trend
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 interface DyadData {
@@ -168,13 +169,13 @@ function ChildProfileCard({ profile }: { profile: ChildProfileData }) {
         <div>
           <div className="text-xs text-gray-500">Positive</div>
           <div className={`text-sm font-bold ${profile.positiveInteractionRate >= 70 ? "text-green-700" : profile.positiveInteractionRate >= 50 ? "text-yellow-700" : "text-red-700"}`}>
-            {profile.positiveInteractionRate}%
+            {formatRate(profile.positiveInteractionRate)}
           </div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Conflict</div>
           <div className={`text-sm font-bold ${profile.conflictRate <= 20 ? "text-green-700" : profile.conflictRate <= 40 ? "text-yellow-700" : "text-red-700"}`}>
-            {profile.conflictRate}%
+            {formatRate(profile.conflictRate)}
           </div>
         </div>
       </div>
@@ -283,15 +284,15 @@ export function PeerDynamicsDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.positiveInteractionRate}%</div>
+          <div className="text-xl font-bold text-green-700">{formatRate(data.positiveInteractionRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Positive Rate</div>
         </div>
         <div className="text-center p-2 bg-red-50 rounded-lg">
-          <div className="text-xl font-bold text-red-700">{data.conflictRate}%</div>
+          <div className="text-xl font-bold text-red-700">{formatRate(data.conflictRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Conflict Rate</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.matching.complianceRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{formatRate(data.matching.complianceRate)}</div>
           <div className="text-[10px] text-gray-500 uppercase">Reg 12 Compliance</div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg flex items-center justify-center">

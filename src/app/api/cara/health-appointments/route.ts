@@ -55,9 +55,9 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchHealthData(sb: any, childId: string): Promise<HealthInput> {
-  const { data: child } = await (sb.from("children") as SB)
-    .select("id, first_name, last_name, date_of_birth, date_entered_care")
+async function fetchHealthData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<HealthInput> {
+  const { data: child } = await sb.from("young_people")
+    .select("id, first_name, last_name, date_of_birth, placement_start")
     .eq("id", childId)
     .single();
 
@@ -98,7 +98,8 @@ async function fetchHealthData(sb: any, childId: string): Promise<HealthInput> {
     childId,
     childName,
     age,
-    dateEnteredCare: child?.date_entered_care ?? "2025-01-01",
+    // placement_start is the entered-care date the live schema records
+    dateEnteredCare: child?.placement_start ?? "2025-01-01",
     hasIHA: healthRecord?.has_iha ?? false,
     ihaDate: healthRecord?.iha_date ?? undefined,
     ihaWithin20Days: healthRecord?.iha_within_20_days ?? undefined,
@@ -109,7 +110,7 @@ async function fetchHealthData(sb: any, childId: string): Promise<HealthInput> {
     sdqScore: healthRecord?.sdq_score ?? undefined,
     immunisationsUpToDate: healthRecord?.immunisations_up_to_date ?? false,
     appointments,
-    registeredWithGP: healthRecord?.registered_gp ?? true,
+    registeredWithGP: healthRecord?.registered_gp ?? null,
     registeredWithDentist: healthRecord?.registered_dentist ?? false,
     hasHealthPlan: healthRecord?.has_health_plan ?? false,
     healthPlanUpToDate: healthRecord?.health_plan_up_to_date ?? false,

@@ -72,18 +72,18 @@ export interface BehaviourPatternAnalysisRecord {
   child_name: string;
   child_id: string | null;
   staff_involved: string;
-  trigger_identified: boolean;
-  de_escalation_attempted: boolean;
-  child_views_sought: boolean;
-  debrief_completed: boolean;
-  pattern_identified: boolean;
-  care_plan_updated: boolean;
-  risk_assessment_updated: boolean;
-  positive_strategies_used: boolean;
-  therapeutic_input_considered: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  recorded_promptly: boolean;
+  trigger_identified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  de_escalation_attempted: boolean | null;
+  child_views_sought: boolean | null;
+  debrief_completed: boolean | null;
+  pattern_identified: boolean | null;
+  care_plan_updated: boolean | null;
+  risk_assessment_updated: boolean | null;
+  positive_strategies_used: boolean | null;
+  therapeutic_input_considered: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -169,10 +169,16 @@ export function computeBehaviourPatternMetrics(
   const restraint = records.filter((r) => r.intervention_outcome === "required_restraint").length;
   const unknownTrigger = records.filter((r) => r.trigger_type === "unknown").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof BehaviourPatternAnalysisRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -231,56 +237,58 @@ export function identifyBehaviourPatternAlerts(
 
   // Restraint without de-escalation attempt — per-record
   for (const r of records) {
-    if (r.intervention_outcome === "required_restraint" && !r.de_escalation_attempted) {
+    if (r.intervention_outcome === "required_restraint" && r.de_escalation_attempted !== true) {
       alerts.push({
         type: "restraint_no_deescalation",
         severity: "critical",
-        message: `${r.child_name} restrained without de-escalation attempt on ${r.incident_date} — review Reg 20 compliance`,
+        message: r.de_escalation_attempted === false
+          ? `${r.child_name} restrained without de-escalation attempt on ${r.incident_date} — review Reg 20 compliance`
+          : `${r.child_name} restrained on ${r.incident_date} with no de-escalation attempt recorded — evidence what was tried before the hold; Reg 20 compliance cannot be assessed until it is recorded`,
         id: r.id,
       });
     }
   }
 
   // Child not debriefed
-  const noDebrief = records.filter((r) => !r.debrief_completed).length;
+  const noDebrief = records.filter((r) => r.debrief_completed !== true).length;
   if (noDebrief >= 1) {
     alerts.push({
       type: "debrief_not_completed",
       severity: "high",
-      message: `${noDebrief} ${noDebrief === 1 ? "incident has" : "incidents have"} no debrief completed — ensure emotional support`,
+      message: `${noDebrief} ${noDebrief === 1 ? "incident has" : "incidents have"} no debrief evidenced — ensure emotional support`,
       id: "debrief_not_completed",
     });
   }
 
   // Positive strategies not used
-  const noPositive = records.filter((r) => !r.positive_strategies_used).length;
+  const noPositive = records.filter((r) => r.positive_strategies_used !== true).length;
   if (noPositive >= 1) {
     alerts.push({
       type: "positive_strategies_not_used",
       severity: "high",
-      message: `${noPositive} ${noPositive === 1 ? "incident has" : "incidents have"} no positive strategies used — review behaviour management approach`,
+      message: `${noPositive} ${noPositive === 1 ? "incident has" : "incidents have"} no positive strategies evidenced — review behaviour management approach`,
       id: "positive_strategies_not_used",
     });
   }
 
   // Pattern not identified
-  const noPattern = records.filter((r) => !r.pattern_identified).length;
+  const noPattern = records.filter((r) => r.pattern_identified !== true).length;
   if (noPattern >= 2) {
     alerts.push({
       type: "pattern_not_identified",
       severity: "medium",
-      message: `${noPattern} incidents without pattern identification — strengthen proactive analysis`,
+      message: `${noPattern} incidents without evidenced pattern identification — strengthen proactive analysis`,
       id: "pattern_not_identified",
     });
   }
 
   // Risk assessment not updated
-  const noRisk = records.filter((r) => !r.risk_assessment_updated).length;
+  const noRisk = records.filter((r) => r.risk_assessment_updated !== true).length;
   if (noRisk >= 2) {
     alerts.push({
       type: "risk_not_updated",
       severity: "medium",
-      message: `${noRisk} incidents without risk assessment update — ensure dynamic assessment`,
+      message: `${noRisk} incidents without an evidenced risk-assessment update — ensure dynamic assessment`,
       id: "risk_not_updated",
     });
   }
@@ -362,18 +370,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_involved: payload.staffInvolved,
-      trigger_identified: payload.triggerIdentified ?? true,
-      de_escalation_attempted: payload.deEscalationAttempted ?? true,
-      child_views_sought: payload.childViewsSought ?? true,
-      debrief_completed: payload.debriefCompleted ?? true,
-      pattern_identified: payload.patternIdentified ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
-      risk_assessment_updated: payload.riskAssessmentUpdated ?? true,
-      positive_strategies_used: payload.positiveStrategiesUsed ?? true,
-      therapeutic_input_considered: payload.therapeuticInputConsidered ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      trigger_identified: payload.triggerIdentified ?? null,
+      de_escalation_attempted: payload.deEscalationAttempted ?? null,
+      child_views_sought: payload.childViewsSought ?? null,
+      debrief_completed: payload.debriefCompleted ?? null,
+      pattern_identified: payload.patternIdentified ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
+      risk_assessment_updated: payload.riskAssessmentUpdated ?? null,
+      positive_strategies_used: payload.positiveStrategiesUsed ?? null,
+      therapeutic_input_considered: payload.therapeuticInputConsidered ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

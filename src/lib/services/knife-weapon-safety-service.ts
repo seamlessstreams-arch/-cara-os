@@ -124,10 +124,10 @@ export interface KnifeWeaponSafetyRow {
   weapon_type: string | null;
   location_found: string | null;
   risk_level: RiskLevel;
-  kitchen_knives_accounted_for: boolean;
+  kitchen_knives_accounted_for: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   kitchen_knife_count: number | null;
-  sharp_objects_secured: boolean;
-  tool_storage_locked: boolean;
+  sharp_objects_secured: boolean | null;
+  tool_storage_locked: boolean | null;
   search_consent_obtained: boolean | null;
   police_notified: boolean;
   social_worker_informed: boolean;
@@ -295,10 +295,13 @@ export function computeMetrics(
 } {
   const total = rows.length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof KnifeWeaponSafetyRow, subset?: KnifeWeaponSafetyRow[]): number | null => {
-    const pool = subset ?? rows;
-    const count = pool.filter((r) => r[field] === true).length;
-    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : null;
+    const recorded = (subset ?? rows).filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   // Record type breakdown
@@ -325,9 +328,7 @@ export function computeMetrics(
 
   // Kitchen knife audits — compliance rate
   const kitchenAudits = rows.filter((r) => r.record_type === "Kitchen Knife Audit");
-  const kitchenComplianceRate = kitchenAudits.length > 0
-    ? Math.round((kitchenAudits.filter((r) => r.kitchen_knives_accounted_for).length / kitchenAudits.length) * 1000) / 10
-    : null;
+  const kitchenComplianceRate = boolRate("kitchen_knives_accounted_for", kitchenAudits);
 
   // Sharp objects secured rate (for sharp object checks)
   const sharpChecks = rows.filter((r) => r.record_type === "Sharp Object Check");
@@ -471,11 +472,13 @@ export function computeAlerts(
 
   // Critical: Kitchen knives not accounted for
   for (const r of rows) {
-    if (r.record_type === "Kitchen Knife Audit" && !r.kitchen_knives_accounted_for) {
+    if (r.record_type === "Kitchen Knife Audit" && r.kitchen_knives_accounted_for !== true) {
       alerts.push({
         type: "knives_not_accounted",
         severity: "critical",
-        message: `Kitchen knife audit on ${r.record_date}: knives not fully accounted for — immediate lockdown of kitchen, full search, and incident report required per Reg 25`,
+        message: r.kitchen_knives_accounted_for === false
+          ? `Kitchen knife audit on ${r.record_date}: knives not fully accounted for — immediate lockdown of kitchen, full search, and incident report required per Reg 25`
+          : `Kitchen knife audit on ${r.record_date} has no record that knives were accounted for — complete the count and evidence it now per Reg 25`,
         record_id: r.id,
       });
     }
@@ -511,11 +514,13 @@ export function computeAlerts(
 
   // High: Sharp objects not secured
   for (const r of rows) {
-    if (r.record_type === "Sharp Object Check" && !r.sharp_objects_secured) {
+    if (r.record_type === "Sharp Object Check" && r.sharp_objects_secured !== true) {
       alerts.push({
         type: "sharp_objects_not_secured",
         severity: "high",
-        message: `Sharp object check on ${r.record_date}: sharp objects are not properly secured — secure immediately per Reg 25 premises safety`,
+        message: r.sharp_objects_secured === false
+          ? `Sharp object check on ${r.record_date}: sharp objects are not properly secured — secure immediately per Reg 25 premises safety`
+          : `Sharp object check on ${r.record_date} has no record sharp objects were secured — secure and evidence it per Reg 25 premises safety`,
         record_id: r.id,
       });
     }
@@ -525,12 +530,14 @@ export function computeAlerts(
   for (const r of rows) {
     if (
       (r.record_type === "Kitchen Knife Audit" || r.record_type === "Sharp Object Check" || r.record_type === "Communal Area Check") &&
-      !r.tool_storage_locked
+      r.tool_storage_locked !== true
     ) {
       alerts.push({
         type: "tool_storage_unlocked",
         severity: "high",
-        message: `${r.record_type} on ${r.record_date}: tool storage is not locked — lock immediately per Reg 25`,
+        message: r.tool_storage_locked === false
+          ? `${r.record_type} on ${r.record_date}: tool storage is not locked — lock immediately per Reg 25`
+          : `${r.record_type} on ${r.record_date} has no record tool storage was locked — check and evidence it per Reg 25`,
         record_id: r.id,
       });
     }
@@ -789,10 +796,10 @@ export async function createKnifeWeaponSafety(input: {
       weapon_type: input.weaponType ?? null,
       location_found: input.locationFound ?? null,
       risk_level: input.riskLevel,
-      kitchen_knives_accounted_for: input.kitchenKnivesAccountedFor ?? true,
+      kitchen_knives_accounted_for: input.kitchenKnivesAccountedFor ?? null,
       kitchen_knife_count: input.kitchenKnifeCount ?? null,
-      sharp_objects_secured: input.sharpObjectsSecured ?? true,
-      tool_storage_locked: input.toolStorageLocked ?? true,
+      sharp_objects_secured: input.sharpObjectsSecured ?? null,
+      tool_storage_locked: input.toolStorageLocked ?? null,
       search_consent_obtained: input.searchConsentObtained ?? null,
       police_notified: input.policeNotified ?? false,
       social_worker_informed: input.socialWorkerInformed ?? false,

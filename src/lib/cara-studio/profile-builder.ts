@@ -19,6 +19,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CaraChildProfile, EvidenceRef } from "./types";
 import { todayStr } from "@/lib/utils";
+import type { Json } from "@/lib/supabase/types";
 
 import { seedDay } from "@/lib/seed-date";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -40,8 +41,8 @@ export async function buildChildProfile(
   const evidenceRefs: EvidenceRef[] = [];
 
   // ── Fetch child basic info ─────────────────────────────────────────────────
-  const { data: child } = await (sb.from("children") as SB)
-    .select("id, first_name, last_name, preferred_name, date_of_birth, gender, pronouns, placement_start_date, key_worker_id")
+  const { data: child } = await sb.from("young_people")
+    .select("id, first_name, last_name, preferred_name, date_of_birth, gender, placement_start, key_worker_id")
     .eq("id", childId)
     .single();
 
@@ -72,18 +73,22 @@ export async function buildChildProfile(
 
   // ── Fetch recent incidents (last 28 days) ──────────────────────────────────
   const cutoff28 = new Date(Date.now() - 28 * 86400000).toISOString();
-  const { data: incidents } = await (sb.from("incidents") as SB)
-    .select("id, date, category, severity, trigger, description")
+  const { data: incidents } = await sb.from("incidents")
+    // category/trigger were phantom columns — naming them 400s the whole query
+    // on live, so every profile built with zero incident evidence.
+    .select("id, date, type, severity, description")
     .eq("child_id", childId)
     .gte("date", cutoff28)
     .order("date", { ascending: false })
     .limit(15);
 
-  const triggers = extractUnique(incidents?.map((i: any) => i.trigger).filter(Boolean) ?? []);
+  // No schema records an incident trigger (the archived one never had it) —
+  // honest empty until a capture field exists, not a keyword guess.
+  const triggers: string[] = [];
   const riskFlags: string[] = [];
-  if (incidents?.length >= 5) riskFlags.push("High incident frequency (5+ in 28 days)");
-  if (incidents?.some((i: any) => i.category === "self_harm")) riskFlags.push("Self-harm risk");
-  if (incidents?.some((i: any) => i.category === "missing")) riskFlags.push("Missing from care history");
+  if ((incidents?.length ?? 0) >= 5) riskFlags.push("High incident frequency (5+ in 28 days)");
+  if (incidents?.some((i) => i.type === "self_harm")) riskFlags.push("Self-harm risk");
+  if (incidents?.some((i) => i.type === "missing_from_care")) riskFlags.push("Missing from care history");
 
   if (incidents?.length) {
     evidenceRefs.push({
@@ -100,6 +105,15 @@ export async function buildChildProfile(
     .eq("child_id", childId)
     .order("date", { ascending: false })
     .limit(5);
+
+  if (keyWork?.length) {
+    evidenceRefs.push({
+      type: "key_work",
+      id: childId,
+      date: todayStr(),
+      summary: `${keyWork.length} recent key work sessions (latest: ${keyWork[0]?.topics ?? "general"})`,
+    });
+  }
 
   // ── Fetch risk assessment ──────────────────────────────────────────────────
   const { data: riskAssessment } = await (sb.from("risk_assessments") as SB)
@@ -136,8 +150,8 @@ export async function buildChildProfile(
     preferredName: child.preferred_name ?? undefined,
     age,
     gender: child.gender ?? undefined,
-    pronouns: child.pronouns ?? undefined,
-    placementStartDate: child.placement_start_date ?? undefined,
+    pronouns: undefined, // not recorded in the live young_people schema
+    placementStartDate: child.placement_start ?? undefined,
     strengths: Array.isArray(strengths) ? strengths.slice(0, 8) : [],
     needs: Array.isArray(needs) ? needs.slice(0, 8) : [],
     riskFlags,
@@ -151,12 +165,12 @@ export async function buildChildProfile(
   };
 
   // ── Persist profile snapshot ───────────────────────────────────────────────
-  await (sb.from("cara_studio_profiles") as SB).insert({
+  await sb.from("cara_studio_profiles").insert({
     organisation_id: organisationId,
     home_id: homeId,
     child_id: childId,
-    profile_json: profile,
-    evidence_refs: evidenceRefs,
+    profile_json: profile as unknown as Json,
+    evidence_refs: evidenceRefs as unknown as Json,
     risk_flags: riskFlags,
     strengths: profile.strengths,
     needs: profile.needs,
@@ -225,6 +239,3 @@ function buildDemoProfile(childId: string): CaraChildProfile {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function extractUnique(arr: string[]): string[] {
-  return [...new Set(arr)].slice(0, 6);
-}

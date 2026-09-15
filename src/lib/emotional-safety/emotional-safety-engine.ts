@@ -79,7 +79,7 @@ export interface EmotionalSafetyInput {
   behaviourLog: BehaviourEntry[];
   incidents: Incident[];
   /** Key-work sessions carry mood_before/mood_after — regulation in relational time. */
-  keyWorkingSessions: { child_id: string; mood_before?: number; mood_after?: number }[];
+  keyWorkingSessions: { child_id: string; mood_before?: number | null; mood_after?: number | null }[];
   /** PACE-known triggers and calming approaches (the team's existing knowledge). */
   knownTriggers: string[];
   calmingApproaches: string[];

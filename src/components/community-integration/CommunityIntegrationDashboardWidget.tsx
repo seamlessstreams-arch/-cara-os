@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { CommunityIntegrationIntelligence } from "@/lib/community-integration";
 
@@ -101,11 +102,11 @@ export function CommunityIntegrationDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Activities</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.activityParticipation.regularParticipationRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.activityParticipation.regularParticipationRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Regular Participation</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.socialNetworks.friendshipQualityRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.socialNetworks.friendshipQualityRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Good Friendships</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -113,7 +114,7 @@ export function CommunityIntegrationDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Barriers</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.inclusionOutcomes.communityBelongingRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.inclusionOutcomes.communityBelongingRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Feel Belonging</div>
         </div>
       </div>
@@ -151,39 +152,39 @@ export function CommunityIntegrationDashboardWidget() {
         <Section title="Activity Participation">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.activityParticipation.totalActivities}</span></div>
-            <div><span className="text-gray-500">Regular:</span> <span className="font-medium">{data.activityParticipation.regularParticipationRate}%</span></div>
+            <div><span className="text-gray-500">Regular:</span> <span className="font-medium">{formatRate(data.activityParticipation.regularParticipationRate)}</span></div>
             <div><span className="text-gray-500">Variety:</span> <span className="font-medium">{data.activityParticipation.activityVariety} types</span></div>
-            <div><span className="text-gray-500">Community:</span> <span className="font-medium">{data.activityParticipation.communityBasedRate}%</span></div>
-            <div><span className="text-gray-500">Enjoyment:</span> <span className="font-medium">{data.activityParticipation.enjoymentRate}%</span></div>
-            <div><span className="text-gray-500">Independent:</span> <span className="font-medium">{data.activityParticipation.independentAttendanceRate}%</span></div>
+            <div><span className="text-gray-500">Community:</span> <span className="font-medium">{formatRate(data.activityParticipation.communityBasedRate)}</span></div>
+            <div><span className="text-gray-500">Enjoyment:</span> <span className="font-medium">{formatRate(data.activityParticipation.enjoymentRate)}</span></div>
+            <div><span className="text-gray-500">Independent:</span> <span className="font-medium">{formatRate(data.activityParticipation.independentAttendanceRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Social Networks">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Networks:</span> <span className="font-medium">{data.socialNetworks.totalNetworks}</span></div>
-            <div><span className="text-gray-500">Quality:</span> <span className="font-medium">{data.socialNetworks.friendshipQualityRate}%</span></div>
-            <div><span className="text-gray-500">Outside Care:</span> <span className="font-medium">{data.socialNetworks.friendsOutsideCareRate}%</span></div>
-            <div><span className="text-gray-500">Mentors:</span> <span className="font-medium">{data.socialNetworks.mentorRate}%</span></div>
-            <div><span className="text-gray-500">Social Media:</span> <span className="font-medium">{data.socialNetworks.socialMediaSafetyRate}%</span></div>
+            <div><span className="text-gray-500">Quality:</span> <span className="font-medium">{formatRate(data.socialNetworks.friendshipQualityRate)}</span></div>
+            <div><span className="text-gray-500">Outside Care:</span> <span className="font-medium">{formatRate(data.socialNetworks.friendsOutsideCareRate)}</span></div>
+            <div><span className="text-gray-500">Mentors:</span> <span className="font-medium">{formatRate(data.socialNetworks.mentorRate)}</span></div>
+            <div><span className="text-gray-500">Social Media:</span> <span className="font-medium">{formatRate(data.socialNetworks.socialMediaSafetyRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Barrier Management">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.barrierManagement.totalBarriers}</span></div>
-            <div><span className="text-gray-500">Action Taken:</span> <span className="font-medium">{data.barrierManagement.actionTakenRate}%</span></div>
-            <div><span className="text-gray-500">Resolved:</span> <span className="font-medium">{data.barrierManagement.resolutionRate}%</span></div>
+            <div><span className="text-gray-500">Action Taken:</span> <span className="font-medium">{formatRate(data.barrierManagement.actionTakenRate)}</span></div>
+            <div><span className="text-gray-500">Resolved:</span> <span className="font-medium">{formatRate(data.barrierManagement.resolutionRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Inclusion Outcomes">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{data.inclusionOutcomes.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Belonging:</span> <span className="font-medium">{data.inclusionOutcomes.communityBelongingRate}%</span></div>
-            <div><span className="text-gray-500">Amenities:</span> <span className="font-medium">{data.inclusionOutcomes.amenityAccessRate}%</span></div>
-            <div><span className="text-gray-500">Relationships:</span> <span className="font-medium">{data.inclusionOutcomes.positiveRelationshipsRate}%</span></div>
-            <div><span className="text-gray-500">Travel Skills:</span> <span className="font-medium">{data.inclusionOutcomes.independentTravelRate}%</span></div>
+            <div><span className="text-gray-500">Belonging:</span> <span className="font-medium">{formatRate(data.inclusionOutcomes.communityBelongingRate)}</span></div>
+            <div><span className="text-gray-500">Amenities:</span> <span className="font-medium">{formatRate(data.inclusionOutcomes.amenityAccessRate)}</span></div>
+            <div><span className="text-gray-500">Relationships:</span> <span className="font-medium">{formatRate(data.inclusionOutcomes.positiveRelationshipsRate)}</span></div>
+            <div><span className="text-gray-500">Travel Skills:</span> <span className="font-medium">{formatRate(data.inclusionOutcomes.independentTravelRate)}</span></div>
           </div>
         </Section>
 

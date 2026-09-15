@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 import type { SafeguardingOversightIntelligence } from "@/lib/safeguarding-oversight";
 
@@ -101,11 +102,11 @@ export function SafeguardingOversightDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Staff</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.workforceSafety.enhancedDBSRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.workforceSafety.enhancedDBSRate)}</div>
           <div className="text-xs text-gray-500 mt-1">DBS Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.workforceSafety.currentTrainingRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.workforceSafety.currentTrainingRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Training Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -155,10 +156,10 @@ export function SafeguardingOversightDashboardWidget() {
         <Section title="Workforce Safety">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.workforceSafety.totalStaff}</span></div>
-            <div><span className="text-gray-500">DBS Current:</span> <span className="font-medium">{data.workforceSafety.enhancedDBSRate}%</span></div>
-            <div><span className="text-gray-500">Training:</span> <span className="font-medium">{data.workforceSafety.currentTrainingRate}%</span></div>
-            <div><span className="text-gray-500">Safer Recruitment:</span> <span className="font-medium">{data.workforceSafety.saferRecruitmentRate}%</span></div>
-            <div><span className="text-gray-500">Prevent:</span> <span className="font-medium">{data.workforceSafety.preventTrainedRate}%</span></div>
+            <div><span className="text-gray-500">DBS Current:</span> <span className="font-medium">{formatRate(data.workforceSafety.enhancedDBSRate)}</span></div>
+            <div><span className="text-gray-500">Training:</span> <span className="font-medium">{formatRate(data.workforceSafety.currentTrainingRate)}</span></div>
+            <div><span className="text-gray-500">Safer Recruitment:</span> <span className="font-medium">{formatRate(data.workforceSafety.saferRecruitmentRate)}</span></div>
+            <div><span className="text-gray-500">Prevent:</span> <span className="font-medium">{formatRate(data.workforceSafety.preventTrainedRate)}</span></div>
             <div><span className="text-gray-500">Expired DBS:</span> <span className={`font-medium ${data.workforceSafety.expiredDBSCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.workforceSafety.expiredDBSCount}</span></div>
             <div><span className="text-gray-500">DSL:</span> <span className={`font-medium ${data.workforceSafety.hasDSL ? "text-green-600" : "text-red-600"}`}>{data.workforceSafety.hasDSL ? "Yes" : "No"}</span></div>
             <div><span className="text-gray-500">Deputy DSL:</span> <span className={`font-medium ${data.workforceSafety.hasDeputyDSL ? "text-green-600" : "text-amber-600"}`}>{data.workforceSafety.hasDeputyDSL ? "Yes" : "No"}</span></div>
@@ -168,10 +169,10 @@ export function SafeguardingOversightDashboardWidget() {
         <Section title="Referral Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Referrals:</span> <span className="font-medium">{data.referralQuality.totalReferrals}</span></div>
-            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{data.referralQuality.timelyReferralRate}%</span></div>
-            <div><span className="text-gray-500">Management:</span> <span className="font-medium">{data.referralQuality.managementInformedRate}%</span></div>
-            <div><span className="text-gray-500">Recorded:</span> <span className="font-medium">{data.referralQuality.recordedAppropriatelyRate}%</span></div>
-            <div><span className="text-gray-500">Action Taken:</span> <span className="font-medium">{data.referralQuality.actionTakenRate}%</span></div>
+            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{formatRate(data.referralQuality.timelyReferralRate)}</span></div>
+            <div><span className="text-gray-500">Management:</span> <span className="font-medium">{formatRate(data.referralQuality.managementInformedRate)}</span></div>
+            <div><span className="text-gray-500">Recorded:</span> <span className="font-medium">{formatRate(data.referralQuality.recordedAppropriatelyRate)}</span></div>
+            <div><span className="text-gray-500">Action Taken:</span> <span className="font-medium">{formatRate(data.referralQuality.actionTakenRate)}</span></div>
             <div><span className="text-gray-500">High Priority:</span> <span className={`font-medium ${data.referralQuality.immediateHighCount > 0 ? "text-amber-600" : "text-green-600"}`}>{data.referralQuality.immediateHighCount}</span></div>
             <div><span className="text-gray-500">Awaiting:</span> <span className={`font-medium ${data.referralQuality.awaitingOutcomeCount > 0 ? "text-amber-600" : "text-green-600"}`}>{data.referralQuality.awaitingOutcomeCount}</span></div>
           </div>
@@ -180,22 +181,22 @@ export function SafeguardingOversightDashboardWidget() {
         <Section title="Audit Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Audits:</span> <span className="font-medium">{data.auditCompliance.totalAudits}</span></div>
-            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{data.auditCompliance.overallCompliantRate}%</span></div>
-            <div><span className="text-gray-500">Policies:</span> <span className="font-medium">{data.auditCompliance.policiesUpToDateRate}%</span></div>
-            <div><span className="text-gray-500">Risk Assessments:</span> <span className="font-medium">{data.auditCompliance.riskAssessmentsCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Children Aware:</span> <span className="font-medium">{data.auditCompliance.childrenKnowComplainRate}%</span></div>
-            <div><span className="text-gray-500">Visitor Sign-in:</span> <span className="font-medium">{data.auditCompliance.visitorSignInRate}%</span></div>
+            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{formatRate(data.auditCompliance.overallCompliantRate)}</span></div>
+            <div><span className="text-gray-500">Policies:</span> <span className="font-medium">{formatRate(data.auditCompliance.policiesUpToDateRate)}</span></div>
+            <div><span className="text-gray-500">Risk Assessments:</span> <span className="font-medium">{formatRate(data.auditCompliance.riskAssessmentsCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Children Aware:</span> <span className="font-medium">{formatRate(data.auditCompliance.childrenKnowComplainRate)}</span></div>
+            <div><span className="text-gray-500">Visitor Sign-in:</span> <span className="font-medium">{formatRate(data.auditCompliance.visitorSignInRate)}</span></div>
           </div>
         </Section>
 
         <Section title="DSL Oversight">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Reviews:</span> <span className="font-medium">{data.dslOversight.totalReviews}</span></div>
-            <div><span className="text-gray-500">Cases Reviewed:</span> <span className="font-medium">{data.dslOversight.caseReviewRate}%</span></div>
-            <div><span className="text-gray-500">Supervision:</span> <span className="font-medium">{data.dslOversight.supervisionRate}%</span></div>
-            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{data.dslOversight.multiAgencyRate}%</span></div>
-            <div><span className="text-gray-500">Training:</span> <span className="font-medium">{data.dslOversight.trainingDeliveredRate}%</span></div>
-            <div><span className="text-gray-500">Policy Review:</span> <span className="font-medium">{data.dslOversight.policyReviewRate}%</span></div>
+            <div><span className="text-gray-500">Cases Reviewed:</span> <span className="font-medium">{formatRate(data.dslOversight.caseReviewRate)}</span></div>
+            <div><span className="text-gray-500">Supervision:</span> <span className="font-medium">{formatRate(data.dslOversight.supervisionRate)}</span></div>
+            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{formatRate(data.dslOversight.multiAgencyRate)}</span></div>
+            <div><span className="text-gray-500">Training:</span> <span className="font-medium">{formatRate(data.dslOversight.trainingDeliveredRate)}</span></div>
+            <div><span className="text-gray-500">Policy Review:</span> <span className="font-medium">{formatRate(data.dslOversight.policyReviewRate)}</span></div>
           </div>
         </Section>
 

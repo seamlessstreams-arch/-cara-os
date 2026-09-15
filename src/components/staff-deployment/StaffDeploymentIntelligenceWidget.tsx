@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -71,8 +72,8 @@ export function StaffDeploymentIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
-        <Stat label="Fill Rate" value={`${adequacy.fillRate}%`} />
-        <Stat label="Agency Usage" value={`${agency.agencyUsageRate}%`} />
+        <Stat label="Fill Rate" value={`${formatRateLoose(adequacy.fillRate)}`} />
+        <Stat label="Agency Usage" value={`${formatRateLoose(agency.agencyUsageRate)}`} />
         <Stat label="Total Incidents" value={incidents.totalIncidents as number} />
       </div>
 
@@ -86,10 +87,10 @@ export function StaffDeploymentIntelligenceWidget() {
 
       <Section title="Staffing Adequacy">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Fill Rate" value={`${adequacy.fillRate}%`} />
+          <Stat label="Fill Rate" value={`${formatRateLoose(adequacy.fillRate)}`} />
           <Stat label="Staff:Child Ratio" value={adequacy.averageStaffChildRatio as number} />
           <Stat label="Shifts Understaffed" value={adequacy.shiftsUnderstaffed as number} />
-          <Stat label="Senior On Shift" value={`${adequacy.seniorOnShiftRate}%`} />
+          <Stat label="Senior On Shift" value={`${formatRateLoose(adequacy.seniorOnShiftRate)}`} />
           <Stat label="Total Shifts" value={adequacy.shiftsTotal as number} />
           <Stat label="Shifts Filled" value={adequacy.shiftsFilled as number} />
         </div>
@@ -97,10 +98,10 @@ export function StaffDeploymentIntelligenceWidget() {
 
       <Section title="Agency Minimisation">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Agency Usage" value={`${agency.agencyUsageRate}%`} />
+          <Stat label="Agency Usage" value={`${formatRateLoose(agency.agencyUsageRate)}`} />
           <Stat label="Agency Shifts" value={agency.agencyShiftsCount as number} />
-          <Stat label="Briefing Completed" value={`${agency.briefingCompletionRate}%`} />
-          <Stat label="Children Known" value={`${agency.childrenKnownRate}%`} />
+          <Stat label="Briefing Completed" value={`${formatRateLoose(agency.briefingCompletionRate)}`} />
+          <Stat label="Children Known" value={`${formatRateLoose(agency.childrenKnownRate)}`} />
         </div>
       </Section>
 
@@ -115,9 +116,9 @@ export function StaffDeploymentIntelligenceWidget() {
 
       <Section title="Rota Compliance">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Published On Time" value={`${rota.rotaPublishedOnTimeRate}%`} />
-          <Stat label="Long Day Compliance" value={`${rota.longDayComplianceRate}%`} />
-          <Stat label="Night Cover" value={`${rota.nightCoverRate}%`} />
+          <Stat label="Published On Time" value={`${formatRateLoose(rota.rotaPublishedOnTimeRate)}`} />
+          <Stat label="Long Day Compliance" value={`${formatRateLoose(rota.longDayComplianceRate)}`} />
+          <Stat label="Night Cover" value={`${formatRateLoose(rota.nightCoverRate)}`} />
         </div>
       </Section>
 
@@ -128,7 +129,7 @@ export function StaffDeploymentIntelligenceWidget() {
           <Stat label="Understaffed" value={incidents.understaffedIncidents as number} />
           <Stat label="No Senior" value={incidents.noSeniorIncidents as number} />
           <Stat label="Unplanned Absence" value={incidents.unplannedAbsenceIncidents as number} />
-          <Stat label="Resolution Rate" value={`${incidents.resolutionRate}%`} />
+          <Stat label="Resolution Rate" value={`${formatRateLoose(incidents.resolutionRate)}`} />
         </div>
       </Section>
 

@@ -146,11 +146,11 @@ export interface EatingDisorderSupportRow {
   supervised_meals: boolean;
   bathroom_supervision: boolean;
   exercise_monitoring: boolean;
-  purging_behaviours_identified: boolean;
-  food_restriction_identified: boolean;
-  binge_behaviours_identified: boolean;
-  self_induced_vomiting: boolean;
-  laxative_misuse: boolean;
+  purging_behaviours_identified: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  food_restriction_identified: boolean | null;
+  binge_behaviours_identified: boolean | null;
+  self_induced_vomiting: boolean | null;
+  laxative_misuse: boolean | null;
   body_weight_status: BodyWeightStatus;
   young_person_engaged: boolean;
   family_involved: boolean;
@@ -281,9 +281,13 @@ export function computeMetrics(
 } {
   const total = rows.length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof EatingDisorderSupportRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -719,11 +723,11 @@ export async function createEatingDisorderSupport(input: {
       supervised_meals: input.supervisedMeals ?? false,
       bathroom_supervision: input.bathroomSupervision ?? false,
       exercise_monitoring: input.exerciseMonitoring ?? false,
-      purging_behaviours_identified: input.purgingBehavioursIdentified ?? false,
-      food_restriction_identified: input.foodRestrictionIdentified ?? false,
-      binge_behaviours_identified: input.bingeBehavioursIdentified ?? false,
-      self_induced_vomiting: input.selfInducedVomiting ?? false,
-      laxative_misuse: input.laxativeMisuse ?? false,
+      purging_behaviours_identified: input.purgingBehavioursIdentified ?? null,
+      food_restriction_identified: input.foodRestrictionIdentified ?? null,
+      binge_behaviours_identified: input.bingeBehavioursIdentified ?? null,
+      self_induced_vomiting: input.selfInducedVomiting ?? null,
+      laxative_misuse: input.laxativeMisuse ?? null,
       body_weight_status: input.bodyWeightStatus,
       young_person_engaged: input.youngPersonEngaged ?? false,
       family_involved: input.familyInvolved ?? false,

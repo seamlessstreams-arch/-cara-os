@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function EducationIntelligenceWidget() {
       <Section title="Education Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Attainment" value={`${quality.attainmentRate}%`} />
-          <Stat label="Attendance" value={`${quality.attendanceRate}%`} />
-          <Stat label="No Exclusion" value={`${quality.noExclusionRate}%`} />
-          <Stat label="Designated Teacher" value={`${quality.designatedTeacherRate}%`} />
+          <Stat label="Attainment" value={`${formatRate(quality.attainmentRate)}`} />
+          <Stat label="Attendance" value={`${formatRate(quality.attendanceRate)}`} />
+          <Stat label="No Exclusion" value={`${formatRate(quality.noExclusionRate)}`} />
+          <Stat label="Designated Teacher" value={`${formatRate(quality.designatedTeacherRate)}`} />
         </div>
       </Section>
 
       <Section title="Education Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="PEP Rate" value={`${compliance.pepRate}%`} />
-          <Stat label="Pupil Premium" value={`${compliance.pupilPremiumRate}%`} />
-          <Stat label="Virtual School" value={`${compliance.virtualSchoolRate}%`} />
+          <Stat label="PEP Rate" value={`${formatRate(compliance.pepRate)}`} />
+          <Stat label="Pupil Premium" value={`${formatRate(compliance.pupilPremiumRate)}`} />
+          <Stat label="Virtual School" value={`${formatRate(compliance.virtualSchoolRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function EducationIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Education Regs" value={`${staff.educationRegulationsRate}%`} />
-          <Stat label="PEP Process" value={`${staff.pepProcessRate}%`} />
-          <Stat label="Attendance Support" value={`${staff.attendanceSupportRate}%`} />
-          <Stat label="SEN Awareness" value={`${staff.senAwarenessRate}%`} />
-          <Stat label="Virtual School" value={`${staff.virtualSchoolLiaisonRate}%`} />
-          <Stat label="Education Advocacy" value={`${staff.educationAdvocacyRate}%`} />
+          <Stat label="Education Regs" value={`${formatRate(staff.educationRegulationsRate)}`} />
+          <Stat label="PEP Process" value={`${formatRate(staff.pepProcessRate)}`} />
+          <Stat label="Attendance Support" value={`${formatRate(staff.attendanceSupportRate)}`} />
+          <Stat label="SEN Awareness" value={`${formatRate(staff.senAwarenessRate)}`} />
+          <Stat label="Virtual School" value={`${formatRate(staff.virtualSchoolLiaisonRate)}`} />
+          <Stat label="Education Advocacy" value={`${formatRate(staff.educationAdvocacyRate)}`} />
         </div>
       </Section>
 

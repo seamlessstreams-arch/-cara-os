@@ -8,6 +8,7 @@
 // the real-world impact of Cara-generated content over time.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -117,7 +118,7 @@ export default function OutcomeLoopPage() {
                   <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Completion</span>
                 </div>
                 <p className={cn("text-2xl font-bold", summary.completionRate >= 70 ? "text-emerald-700" : summary.completionRate >= 50 ? "text-amber-700" : "text-red-700")}>
-                  {summary.completionRate}%
+                  {formatRate(summary.completionRate)}
                 </p>
               </div>
               <div className={cn("rounded-xl border p-4", summary.followUpRate >= 70 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50")}>
@@ -126,7 +127,7 @@ export default function OutcomeLoopPage() {
                   <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Follow-up</span>
                 </div>
                 <p className={cn("text-2xl font-bold", summary.followUpRate >= 70 ? "text-emerald-700" : "text-amber-700")}>
-                  {summary.followUpRate}%
+                  {formatRate(summary.followUpRate)}
                 </p>
               </div>
               <div className="rounded-xl border border-[var(--cs-border)] bg-white p-4">
@@ -149,10 +150,10 @@ export default function OutcomeLoopPage() {
                         "h-full rounded-full transition-all",
                         summary.completionRate >= 70 ? "bg-emerald-500" : summary.completionRate >= 50 ? "bg-amber-500" : "bg-red-500",
                       )}
-                      style={{ width: `${summary.completionRate}%` }}
+                      style={{ width: `${formatRate(summary.completionRate)}` }}
                     />
                   </div>
-                  <span className="text-sm font-bold text-[var(--cs-navy)] min-w-[3rem] text-right">{summary.completionRate}%</span>
+                  <span className="text-sm font-bold text-[var(--cs-navy)] min-w-[3rem] text-right">{formatRate(summary.completionRate)}</span>
                 </div>
                 <p className="text-xs text-[var(--cs-text-muted)]">
                   {summary.actionsCompleted} of {summary.actionsTotal} actions completed across {summary.withActions} artifacts with linked actions.

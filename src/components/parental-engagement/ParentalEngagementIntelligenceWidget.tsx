@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,11 +78,11 @@ export function ParentalEngagementIntelligenceWidget() {
       <Section title="Contact Quality" defaultOpen>
         <ScoreBar label="Contact Quality" value={contactQuality.score as number} max={30} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Positive Outcome" value={`${contactQuality.positiveOutcomeRate}%`} />
-          <Stat label="Mood Uplift" value={`${contactQuality.moodUpliftRate}%`} />
-          <Stat label="Follow-Up Done" value={typeof contactQuality.followUpCompletionRate === "number" ? `${contactQuality.followUpCompletionRate}%` : "—"} />
-          <Stat label="Child Refusal" value={`${contactQuality.childRefusalRate}%`} />
-          <Stat label="Parent No-Show" value={`${contactQuality.parentNoShowRate}%`} />
+          <Stat label="Positive Outcome" value={`${formatRateLoose(contactQuality.positiveOutcomeRate)}`} />
+          <Stat label="Mood Uplift" value={`${formatRateLoose(contactQuality.moodUpliftRate)}`} />
+          <Stat label="Follow-Up Done" value={typeof contactQuality.followUpCompletionRate === "number" ? `${formatRate(contactQuality.followUpCompletionRate)}` : "—"} />
+          <Stat label="Child Refusal" value={`${formatRateLoose(contactQuality.childRefusalRate)}`} />
+          <Stat label="Parent No-Show" value={`${formatRateLoose(contactQuality.parentNoShowRate)}`} />
           <Stat label="Avg Duration" value={`${contactQuality.averageDurationMinutes} min`} />
         </div>
       </Section>
@@ -90,8 +91,8 @@ export function ParentalEngagementIntelligenceWidget() {
         <ScoreBar label="Parental Support" value={parentalSupport.score} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Active Supports" value={parentalSupport.activeSupports} />
-          <Stat label="Effective Rate" value={`${parentalSupport.effectiveRate}%`} />
-          <Stat label="Referral Rate" value={`${parentalSupport.referralRate}%`} />
+          <Stat label="Effective Rate" value={`${formatRate(parentalSupport.effectiveRate)}`} />
+          <Stat label="Referral Rate" value={`${formatRate(parentalSupport.referralRate)}`} />
           <Stat label="Parents Supported" value={parentalSupport.parentsReceivingSupport} />
         </div>
       </Section>
@@ -99,9 +100,9 @@ export function ParentalEngagementIntelligenceWidget() {
       <Section title="Family Planning">
         <ScoreBar label="Family Planning" value={familyPlanning.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Goal Achievement" value={`${familyPlanning.goalAchievementRate}%`} />
-          <Stat label="Family Involvement" value={`${familyPlanning.familyInvolvementRate}%`} />
-          <Stat label="Child Involvement" value={`${familyPlanning.childInvolvementRate}%`} />
+          <Stat label="Goal Achievement" value={`${formatRateLoose(familyPlanning.goalAchievementRate)}`} />
+          <Stat label="Family Involvement" value={`${formatRateLoose(familyPlanning.familyInvolvementRate)}`} />
+          <Stat label="Child Involvement" value={`${formatRateLoose(familyPlanning.childInvolvementRate)}`} />
           <Stat label="Overdue Plans" value={familyPlanning.overduePlans as number} />
         </div>
       </Section>

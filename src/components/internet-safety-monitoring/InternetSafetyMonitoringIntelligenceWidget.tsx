@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -75,11 +76,11 @@ export function InternetSafetyMonitoringIntelligenceWidget() {
       <Section title="Incident Management" defaultOpen>
         <ScoreBar label="Incident Management" value={d.incidentManagementScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Action Taken" value={`${d.actionTakenRate}%`} />
-          <Stat label="Child Supported" value={`${d.childSupportedRate}%`} />
-          <Stat label="Recorded Timely" value={`${d.recordedTimelyRate}%`} />
-          <Stat label="Lessons Applied" value={`${d.lessonsAppliedRate}%`} />
-          <Stat label="Referral Appropriateness" value={`${d.referralAppropriatenessRate}%`} />
+          <Stat label="Action Taken" value={`${formatRateLoose(d.actionTakenRate)}`} />
+          <Stat label="Child Supported" value={`${formatRateLoose(d.childSupportedRate)}`} />
+          <Stat label="Recorded Timely" value={`${formatRateLoose(d.recordedTimelyRate)}`} />
+          <Stat label="Lessons Applied" value={`${formatRateLoose(d.lessonsAppliedRate)}`} />
+          <Stat label="Referral Appropriateness" value={`${formatRateLoose(d.referralAppropriatenessRate)}`} />
         </div>
       </Section>
 
@@ -94,7 +95,7 @@ export function InternetSafetyMonitoringIntelligenceWidget() {
       <Section title="Staff Internet Readiness">
         <ScoreBar label="Staff Readiness" value={d.staffInternetReadinessScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Training Coverage" value={`${d.staffTrainingCoverageRate}%`} />
+          <Stat label="Training Coverage" value={`${formatRateLoose(d.staffTrainingCoverageRate)}`} />
         </div>
       </Section>
 

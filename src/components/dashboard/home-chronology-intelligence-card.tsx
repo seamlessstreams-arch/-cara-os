@@ -153,7 +153,7 @@ export function HomeChronologyIntelligenceCard() {
                   (d.quality_profile.description_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.quality_profile.description_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.quality_profile.description_rate}%
+                  {formatRate(d.quality_profile.description_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Detailed</p>
@@ -195,7 +195,7 @@ export function HomeChronologyIntelligenceCard() {
                 <p>Last 30d: <span className="font-medium text-slate-600">{d.timeliness_profile.entries_last_30_days}</span></p>
                 <p>Time recorded: <span className={cn("font-medium",
                   (d.quality_profile.time_recording_rate ?? 0) >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.quality_profile.time_recording_rate}%</span></p>
+                )}>{formatRate(d.quality_profile.time_recording_rate)}</span></p>
               </div>
             </div>
           </div>

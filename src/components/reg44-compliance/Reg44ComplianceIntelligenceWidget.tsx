@@ -1,4 +1,5 @@
 "use client";
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -65,16 +66,16 @@ export function Reg44ComplianceIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
         <Stat label="Visits Completed" value={`${visitCompliance.totalVisitsCompleted}/${visitCompliance.totalVisitsExpected}`} />
-        <Stat label="Rec. Completion" value={`${recommendations.completionRate}%`} />
+        <Stat label="Rec. Completion" value={`${formatRateLoose(recommendations.completionRate)}`} />
         <Stat label="Child Coverage" value={`${childParticipation.childCoverage}%`} />
       </div>
 
       <Section title="Visit Compliance (max 30)" defaultOpen>
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Completion Rate" value={`${visitCompliance.visitCompletionRate}%`} />
-          <Stat label="Independent Visitor" value={`${visitCompliance.independentVisitorRate}%`} />
-          <Stat label="Report On-Time" value={`${visitCompliance.reportOnTimeRate}%`} />
-          <Stat label="Shared with Ofsted" value={`${visitCompliance.ofstedSharedRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRateLoose(visitCompliance.visitCompletionRate)}`} />
+          <Stat label="Independent Visitor" value={`${formatRateLoose(visitCompliance.independentVisitorRate)}`} />
+          <Stat label="Report On-Time" value={`${formatRateLoose(visitCompliance.reportOnTimeRate)}`} />
+          <Stat label="Shared with Ofsted" value={`${formatRateLoose(visitCompliance.ofstedSharedRate)}`} />
           <Stat label="Longest Gap (Days)" value={visitCompliance.longestGapDays as number} />
           <Stat label="Missed Months" value={(visitCompliance.missedMonths as string[]).length} />
         </div>
@@ -83,27 +84,27 @@ export function Reg44ComplianceIntelligenceWidget() {
       <Section title="Recommendations (max 25)">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <Stat label="Total" value={recommendations.totalRecommendations as number} />
-          <Stat label="Completed" value={`${recommendations.completionRate}%`} />
+          <Stat label="Completed" value={`${formatRateLoose(recommendations.completionRate)}`} />
           <Stat label="Overdue" value={recommendations.overdueCount as number} />
-          <Stat label="Impact Assessed" value={`${recommendations.impactAssessedRate}%`} />
+          <Stat label="Impact Assessed" value={`${formatRateLoose(recommendations.impactAssessedRate)}`} />
         </div>
       </Section>
 
       <Section title="Child Participation (max 25)">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Spoken To Rate" value={`${childParticipation.childrenSpokenToRate}%`} />
-          <Stat label="Views Captured" value={`${childParticipation.viewsCapturedRate}%`} />
-          <Stat label="Issues Actioned" value={`${childParticipation.issuesActionedRate}%`} />
+          <Stat label="Spoken To Rate" value={`${formatRateLoose(childParticipation.childrenSpokenToRate)}`} />
+          <Stat label="Views Captured" value={`${formatRateLoose(childParticipation.viewsCapturedRate)}`} />
+          <Stat label="Issues Actioned" value={`${formatRateLoose(childParticipation.issuesActionedRate)}`} />
           <Stat label="Unheard Children" value={(childParticipation.unheardChildren as unknown[]).length} />
         </div>
       </Section>
 
       <Section title="Management Response (max 20)">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="On-Time Rate" value={`${managementResponse.respondedOnTimeRate}%`} />
-          <Stat label="Acceptance Rate" value={`${managementResponse.averageAcceptanceRate}%`} />
-          <Stat label="Action Plans" value={`${managementResponse.actionPlanCreatedRate}%`} />
-          <Stat label="Shared with RI" value={`${managementResponse.sharedWithRIRate}%`} />
+          <Stat label="On-Time Rate" value={`${formatRateLoose(managementResponse.respondedOnTimeRate)}`} />
+          <Stat label="Acceptance Rate" value={`${formatRateLoose(managementResponse.averageAcceptanceRate)}`} />
+          <Stat label="Action Plans" value={`${formatRateLoose(managementResponse.actionPlanCreatedRate)}`} />
+          <Stat label="Shared with RI" value={`${formatRateLoose(managementResponse.sharedWithRIRate)}`} />
         </div>
       </Section>
 

@@ -86,7 +86,7 @@ export interface StaffDevelopmentPlanRecord {
   staff_response: string | null;
   approved_by: string | null;
   approved_at: string | null;
-  evidence_based: boolean;
+  evidence_based: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   strengths_identified: boolean;
   staff_consulted: boolean;
   manager_actions_set: boolean;
@@ -97,7 +97,7 @@ export interface StaffDevelopmentPlanRecord {
   review_date_set: boolean;
   staff_agreed: boolean;
   approved_by_senior: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -181,10 +181,16 @@ export function computeDevelopmentPlanMetrics(
   const pendingApprovalCount = records.filter((r) => r.approval_status === "pending").length;
   const completedCount = records.filter((r) => r.plan_status === "completed").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof StaffDevelopmentPlanRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -407,7 +413,7 @@ export async function createDevelopmentPlan(
       staff_response: input.staffResponse ?? null,
       approved_by: input.approvedBy ?? null,
       approved_at: input.approvedAt ?? null,
-      evidence_based: input.evidenceBased ?? true,
+      evidence_based: input.evidenceBased ?? null,
       strengths_identified: input.strengthsIdentified ?? false,
       staff_consulted: input.staffConsulted ?? false,
       manager_actions_set: input.managerActionsSet ?? false,
@@ -418,7 +424,7 @@ export async function createDevelopmentPlan(
       review_date_set: input.reviewDateSet ?? false,
       staff_agreed: input.staffAgreed ?? false,
       approved_by_senior: input.approvedBySenior ?? false,
-      recorded_promptly: input.recordedPromptly ?? true,
+      recorded_promptly: input.recordedPromptly ?? null,
       issues_found: input.issuesFound ?? [],
       actions_taken: input.actionsTaken ?? [],
       next_review_date: input.nextReviewDate ?? null,

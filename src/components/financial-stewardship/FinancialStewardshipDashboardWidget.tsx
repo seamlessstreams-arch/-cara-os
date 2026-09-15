@@ -116,15 +116,15 @@ export function FinancialStewardshipDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.allowanceManagement.regularPocketMoneyRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.allowanceManagement.regularPocketMoneyRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Pocket Money Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.savingsInvestment.savingsAccountRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.savingsInvestment.savingsAccountRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Savings Accounts</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.financialLiteracy.assessmentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.financialLiteracy.assessmentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Literacy Assessed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -174,31 +174,31 @@ export function FinancialStewardshipDashboardWidget() {
 
         <Section title="Allowance Management">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Regular Pocket Money:</span> <span className="font-medium">{data.allowanceManagement.regularPocketMoneyRate}%</span></div>
-            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{data.allowanceManagement.ageAppropriateRate}%</span></div>
-            <div><span className="text-gray-500">Child Consent:</span> <span className="font-medium">{data.allowanceManagement.childConsentRate}%</span></div>
-            <div><span className="text-gray-500">Receipts:</span> <span className="font-medium">{data.allowanceManagement.receiptRate}%</span></div>
-            <div><span className="text-gray-500">Authorised:</span> <span className="font-medium">{data.allowanceManagement.authorisationRate}%</span></div>
+            <div><span className="text-gray-500">Regular Pocket Money:</span> <span className="font-medium">{formatRate(data.allowanceManagement.regularPocketMoneyRate)}</span></div>
+            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{formatRate(data.allowanceManagement.ageAppropriateRate)}</span></div>
+            <div><span className="text-gray-500">Child Consent:</span> <span className="font-medium">{formatRate(data.allowanceManagement.childConsentRate)}</span></div>
+            <div><span className="text-gray-500">Receipts:</span> <span className="font-medium">{formatRate(data.allowanceManagement.receiptRate)}</span></div>
+            <div><span className="text-gray-500">Authorised:</span> <span className="font-medium">{formatRate(data.allowanceManagement.authorisationRate)}</span></div>
             <div><span className="text-gray-500">Savings Encouraged:</span> <span className="font-medium">{data.allowanceManagement.savingsEncouraged ? "Yes" : "No"}</span></div>
           </div>
         </Section>
 
         <Section title="Savings & Investment">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Savings Accounts:</span> <span className="font-medium">{data.savingsInvestment.savingsAccountRate}%</span></div>
-            <div><span className="text-gray-500">Positive Balance:</span> <span className="font-medium">{data.savingsInvestment.positiveBalanceRate}%</span></div>
-            <div><span className="text-gray-500">Budget Plans:</span> <span className="font-medium">{data.savingsInvestment.budgetPlanRate}%</span></div>
+            <div><span className="text-gray-500">Savings Accounts:</span> <span className="font-medium">{formatRate(data.savingsInvestment.savingsAccountRate)}</span></div>
+            <div><span className="text-gray-500">Positive Balance:</span> <span className="font-medium">{formatRate(data.savingsInvestment.positiveBalanceRate)}</span></div>
+            <div><span className="text-gray-500">Budget Plans:</span> <span className="font-medium">{formatRate(data.savingsInvestment.budgetPlanRate)}</span></div>
             <div><span className="text-gray-500">Savings Growth:</span> <span className="font-medium">{data.savingsInvestment.savingsGrowthDetected ? "Yes" : "No"}</span></div>
-            <div><span className="text-gray-500">Appropriate Accounts:</span> <span className="font-medium">{data.savingsInvestment.ageAppropriateAccountRate}%</span></div>
+            <div><span className="text-gray-500">Appropriate Accounts:</span> <span className="font-medium">{formatRate(data.savingsInvestment.ageAppropriateAccountRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Financial Literacy">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{data.financialLiteracy.assessmentRate}%</span></div>
-            <div><span className="text-gray-500">Competent+:</span> <span className="font-medium">{data.financialLiteracy.competentOrIndependentRate}%</span></div>
-            <div><span className="text-gray-500">Developing+:</span> <span className="font-medium">{data.financialLiteracy.developingPlusRate}%</span></div>
-            <div><span className="text-gray-500">Budget Plans:</span> <span className="font-medium">{data.financialLiteracy.budgetPlanRate}%</span></div>
+            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{formatRate(data.financialLiteracy.assessmentRate)}</span></div>
+            <div><span className="text-gray-500">Competent+:</span> <span className="font-medium">{formatRate(data.financialLiteracy.competentOrIndependentRate)}</span></div>
+            <div><span className="text-gray-500">Developing+:</span> <span className="font-medium">{formatRate(data.financialLiteracy.developingPlusRate)}</span></div>
+            <div><span className="text-gray-500">Budget Plans:</span> <span className="font-medium">{formatRate(data.financialLiteracy.budgetPlanRate)}</span></div>
             <div><span className="text-gray-500">Improvement Trend:</span> <span className="font-medium">{data.financialLiteracy.improvementTrendDetected ? "Yes" : "No"}</span></div>
           </div>
         </Section>
@@ -207,8 +207,8 @@ export function FinancialStewardshipDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Recent Audit:</span> <span className="font-medium">{data.auditCompliance.auditCompletedRecently ? "Yes" : "No"}</span></div>
             <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{data.auditCompliance.compliantStatus ? "Yes" : "No"}</span></div>
-            <div><span className="text-gray-500">Discrepancies Resolved:</span> <span className="font-medium">{data.auditCompliance.discrepancyResolutionRate}%</span></div>
-            <div><span className="text-gray-500">Actions Completed:</span> <span className="font-medium">{data.auditCompliance.recommendationsActionedRate}%</span></div>
+            <div><span className="text-gray-500">Discrepancies Resolved:</span> <span className="font-medium">{formatRate(data.auditCompliance.discrepancyResolutionRate)}</span></div>
+            <div><span className="text-gray-500">Actions Completed:</span> <span className="font-medium">{formatRate(data.auditCompliance.recommendationsActionedRate)}</span></div>
             <div><span className="text-gray-500">Policy Current:</span> <span className="font-medium">{data.auditCompliance.policyCurrent ? "Yes" : "No"}</span></div>
             <div><span className="text-gray-500">Records Accurate:</span> <span className="font-medium">{data.auditCompliance.recordsAccurate ? "Yes" : "No"}</span></div>
           </div>

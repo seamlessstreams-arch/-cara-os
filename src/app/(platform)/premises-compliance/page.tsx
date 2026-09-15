@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { api } from "@/hooks/use-api";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
@@ -163,7 +164,7 @@ export default function PremisesCompliancePage() {
                 <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Building2 className="h-4 w-4 text-[var(--cs-teal-strong)]" />{` ${homeName} — premises compliance`}</div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{data.headline}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                  <Stat value={s.compliance_rate != null ? `${s.compliance_rate}%` : "—"} label="In date" tone="bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)] text-[var(--cs-success)]" Icon={ShieldCheck} />
+                  <Stat value={s.compliance_rate != null ? `${formatRate(s.compliance_rate)}` : "—"} label="In date" tone="bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)] text-[var(--cs-success)]" Icon={ShieldCheck} />
                   <Stat value={s.overdue} label="Overdue" tone="bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)] text-[var(--cs-risk)]" Icon={AlertOctagon} />
                   <Stat value={s.action} label="Action needed" tone="bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)] text-[var(--cs-warning)]" Icon={AlertTriangle} />
                   <Stat value={s.due_soon} label="Due soon" tone="bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)] text-[var(--cs-warning)]" Icon={Clock} />

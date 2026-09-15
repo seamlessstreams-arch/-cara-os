@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -148,7 +149,7 @@ export default function ReflectiveSupervisionPage() {
                 <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><MessageSquare className="h-4 w-4 text-[var(--cs-teal-strong)]" /> Supervision across the team</div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{ov.headline}</p>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <Stat value={`${ov.summary.supervision_rate}%`} label="Current" tone="bg-green-50 border-green-200 text-green-800" />
+                  <Stat value={`${formatRate(ov.summary.supervision_rate)}`} label="Current" tone="bg-green-50 border-green-200 text-green-800" />
                   <Stat value={ov.summary.overdue} label="Overdue / none" tone="bg-red-50 border-red-200 text-red-800" />
                   <Stat value={ov.summary.wellbeing_concerns} label="Wellbeing indicators" tone="bg-amber-50 border-amber-200 text-amber-800" />
                   <Stat value={ov.summary.outstanding_actions} label="Open actions" tone="bg-[var(--cs-bg)] border-[var(--cs-border)] text-[var(--cs-navy)]" />

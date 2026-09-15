@@ -8,25 +8,28 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<HomeClosurePlanningRow>): HomeClosurePlanningRow {
   return {
-    id: overrides?.id ?? "r-1", home_id: overrides?.home_id ?? "home-1",
-    closure_reason: overrides?.closure_reason ?? "provider_decision",
-    closure_phase: overrides?.closure_phase ?? "pre_planning",
-    planned_closure_date: overrides?.planned_closure_date ?? "2026-09-01",
+    id: "r-1", home_id: "home-1",
+    closure_reason: "provider_decision",
+    closure_phase: "pre_planning",
+    planned_closure_date: "2026-09-01",
     actual_closure_date: "actual_closure_date" in (overrides ?? {}) ? (overrides!.actual_closure_date ?? null) : null,
-    child_name: overrides?.child_name ?? "Child A",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    child_transfer_status: overrides?.child_transfer_status ?? "not_started",
+    child_transfer_status: "not_started",
     receiving_home: "receiving_home" in (overrides ?? {}) ? (overrides!.receiving_home ?? null) : null,
-    stakeholder_notified: overrides?.stakeholder_notified ?? "ofsted",
+    stakeholder_notified: "ofsted",
     notification_date: "notification_date" in (overrides ?? {}) ? (overrides!.notification_date ?? null) : null,
-    child_views_sought: overrides?.child_views_sought ?? true,
-    child_wishes_documented: overrides?.child_wishes_documented ?? true,
-    staff_consultation_completed: overrides?.staff_consultation_completed ?? true,
-    regulatory_notification_sent: overrides?.regulatory_notification_sent ?? true,
-    transition_plan_in_place: overrides?.transition_plan_in_place ?? true,
-    risk_assessment_completed: overrides?.risk_assessment_completed ?? true,
+    child_views_sought: true,
+    child_wishes_documented: true,
+    staff_consultation_completed: true,
+    regulatory_notification_sent: true,
+    transition_plan_in_place: true,
+    risk_assessment_completed: true,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

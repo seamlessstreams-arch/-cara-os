@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS cs_career_guidance (
   employer_name               text NULL,
   placement_sector            text NULL,
   duration_hours              numeric NULL,
-  young_person_engaged        boolean NOT NULL DEFAULT true,
+  young_person_engaged        boolean,
   practical_component         boolean NOT NULL DEFAULT false,
   cv_created_updated          boolean NOT NULL DEFAULT false,
   interview_skills_practised  boolean NOT NULL DEFAULT false,

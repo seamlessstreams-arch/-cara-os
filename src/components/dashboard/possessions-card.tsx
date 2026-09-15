@@ -6,6 +6,7 @@
 // Reg 20 (children's belongings), Reg 36 (records), SCCIF Experiences.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,7 +106,7 @@ export function PossessionsCard() {
               "text-lg font-bold tabular-nums",
               (o.photo_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (o.photo_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.photo_compliance_rate}%
+              {formatRate(o.photo_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Photos</p>
           </div>
@@ -196,7 +197,7 @@ export function PossessionsCard() {
           </div>
           <div>
             <p className={cn("font-bold tabular-nums", (o.insurance_rate ?? 0) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.insurance_rate}%
+              {formatRate(o.insurance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Insured</p>
           </div>

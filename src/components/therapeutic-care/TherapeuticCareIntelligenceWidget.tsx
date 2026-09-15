@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -76,12 +77,12 @@ export function TherapeuticCareIntelligenceWidget() {
       <Section title="Session Quality" defaultOpen>
         <ScoreBar label="Session Quality" value={sessionQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Attendance" value={`${sessionQuality.attendanceRate}%`} />
-          <Stat label="Positive Outcomes" value={`${sessionQuality.positiveOutcomeRate}%`} />
-          <Stat label="Engagement" value={`${sessionQuality.childEngagementRate}%`} />
-          <Stat label="Consent" value={`${sessionQuality.consentRate}%`} />
-          <Stat label="Key Worker Briefed" value={`${sessionQuality.keyWorkerBriefingRate}%`} />
-          <Stat label="Goals Addressed" value={`${sessionQuality.goalsAddressedRate}%`} />
+          <Stat label="Attendance" value={`${formatRate(sessionQuality.attendanceRate)}`} />
+          <Stat label="Positive Outcomes" value={`${formatRate(sessionQuality.positiveOutcomeRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(sessionQuality.childEngagementRate)}`} />
+          <Stat label="Consent" value={`${formatRate(sessionQuality.consentRate)}`} />
+          <Stat label="Key Worker Briefed" value={`${formatRate(sessionQuality.keyWorkerBriefingRate)}`} />
+          <Stat label="Goals Addressed" value={`${formatRate(sessionQuality.goalsAddressedRate)}`} />
         </div>
       </Section>
 
@@ -89,7 +90,7 @@ export function TherapeuticCareIntelligenceWidget() {
         <ScoreBar label="Referral Efficiency" value={referralEfficiency.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Avg Wait (days)" value={referralEfficiency.averageWaitTimeDays} />
-          <Stat label="Acceptance" value={`${referralEfficiency.acceptanceRate}%`} />
+          <Stat label="Acceptance" value={`${formatRate(referralEfficiency.acceptanceRate)}`} />
           <Stat label="Active" value={referralEfficiency.activeReferrals} />
           <Stat label="Waitlisted" value={referralEfficiency.waitlistedCount} />
         </div>
@@ -98,10 +99,10 @@ export function TherapeuticCareIntelligenceWidget() {
       <Section title="Therapy Planning">
         <ScoreBar label="Therapy Planning" value={therapyPlanning.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Plan Review" value={`${therapyPlanning.planReviewRate}%`} />
-          <Stat label="Co-Produced" value={`${therapyPlanning.coProducedRate}%`} />
-          <Stat label="Child Views" value={`${therapyPlanning.childViewsIncludedRate}%`} />
-          <Stat label="Goals Achieved" value={`${therapyPlanning.goalsAchievedRate}%`} />
+          <Stat label="Plan Review" value={`${formatRate(therapyPlanning.planReviewRate)}`} />
+          <Stat label="Co-Produced" value={`${formatRate(therapyPlanning.coProducedRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(therapyPlanning.childViewsIncludedRate)}`} />
+          <Stat label="Goals Achieved" value={`${formatRate(therapyPlanning.goalsAchievedRate)}`} />
         </div>
       </Section>
 

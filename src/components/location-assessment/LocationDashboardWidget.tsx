@@ -4,6 +4,7 @@
 
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 interface AssessmentSummary {
@@ -238,6 +239,19 @@ export function LocationDashboardWidget() {
             ))}
           </ul>
         </div>
+        {childrenViews.length > 0 && (
+          <div className="bg-sky-50/50 rounded-lg p-3 md:col-span-2">
+            <h4 className="text-xs font-medium text-sky-700 mb-2">Children&apos;s Views</h4>
+            <ul className="space-y-1">
+              {childrenViews.slice(0, 3).map((v, i) => (
+                <li key={i} className="text-xs text-sky-600 flex items-start gap-1.5">
+                  <span className="mt-0.5 shrink-0">&ldquo;</span>
+                  <span>{v}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Action Plan Summary */}
@@ -254,7 +268,7 @@ export function LocationDashboardWidget() {
         <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
           <div
             className="h-full bg-green-500 rounded-full"
-            style={{ width: `${metrics.actionCompletionRate}%` }}
+            style={{ width: `${formatRate(metrics.actionCompletionRate)}` }}
           />
         </div>
       </div>

@@ -8,6 +8,7 @@
 // Required under Quality Standard 25 (Protection of children) & Regulation 22.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -244,7 +245,7 @@ export default function EmergencyProtocolDrillsPage() {
           },
           {
             label: "Pass Rate",
-            value: `${stats.passRate}%`,
+            value: `${formatRate(stats.passRate)}`,
             icon: CheckCircle2,
             colour: "text-green-600",
           },

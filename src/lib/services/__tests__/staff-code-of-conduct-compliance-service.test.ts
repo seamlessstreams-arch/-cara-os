@@ -1180,3 +1180,15 @@ describe("makeRow factory helper", () => {
     expect(r.notes).toBe("Discussed in supervision");
   });
 });
+
+describe("tri-state judgements", () => {
+  it("splits the supervision alert between recorded not-discussed and unrecorded", () => {
+    const nullAlert = computeCodeOfConductAlerts([makeRow({ compliance_status: "significant_concern", supervision_discussed: null })])
+      .find((a) => a.type === "concern_not_in_supervision");
+    const falseAlert = computeCodeOfConductAlerts([makeRow({ compliance_status: "significant_concern", supervision_discussed: false })])
+      .find((a) => a.type === "concern_not_in_supervision");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+});

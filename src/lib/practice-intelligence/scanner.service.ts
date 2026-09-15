@@ -8,6 +8,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
+
+// Zero code-vs-DDL drift (promotion census): the domain shape IS the column
+// contract, so one documented boundary cast per write replaces field-by-field.
+type Ins<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"];
 import type {
   PracticeIntelligenceScan,
   HomeDynamicsSummary,
@@ -45,32 +50,27 @@ export async function runPracticeIntelligenceScan(
   // Gather data from multiple tables
   const [incidentsResult, dailyLogsResult, gapsResult, safeguardingResult, warningsResult] =
     await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("cara_studio_sources") as any)
+      sb.from("cara_studio_sources")
         .select("id, child_id, content, summary, source_type, source_date")
         .eq("home_id", hid)
         .eq("source_type", "incident")
         .gte("source_date", weekAgo)
         .order("source_date", { ascending: false }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("cara_studio_sources") as any)
+      sb.from("cara_studio_sources")
         .select("id, child_id, content, summary, source_type, source_date")
         .eq("home_id", hid)
         .eq("source_type", "daily_log")
         .gte("source_date", weekAgo)
         .order("source_date", { ascending: false }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("cara_studio_gaps") as any)
+      sb.from("cara_studio_gaps")
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("cara_studio_safeguarding_patterns") as any)
+      sb.from("cara_studio_safeguarding_patterns")
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("cara_studio_early_warnings") as any)
+      sb.from("cara_studio_early_warnings")
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),
@@ -118,9 +118,8 @@ export async function runPracticeIntelligenceScan(
   };
 
   // Persist
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_intelligence_scans") as any)
-    .insert(scan)
+  const { data, error } = await sb.from("practice_intelligence_scans")
+    .insert(scan as unknown as Ins<"practice_intelligence_scans">)
     .select("*")
     .single();
 
@@ -129,7 +128,7 @@ export async function runPracticeIntelligenceScan(
     return getDemoScan(hid, scanType);
   }
 
-  return data as PracticeIntelligenceScan;
+  return data as unknown as PracticeIntelligenceScan;
 }
 
 // ── Get latest scan ─────────────────────────────────────────────────────────
@@ -140,8 +139,7 @@ export async function getLatestScan(hId?: string): Promise<PracticeIntelligenceS
 
   if (!sb) return getDemoScan(hid, "daily");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_intelligence_scans") as any)
+  const { data, error } = await sb.from("practice_intelligence_scans")
     .select("*")
     .eq("home_id", hid)
     .order("created_at", { ascending: false })
@@ -160,15 +158,14 @@ export async function listScans(hId?: string, limit: number = 10): Promise<Pract
 
   if (!sb) return [getDemoScan(hid, "daily")];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("practice_intelligence_scans") as any)
+  const { data, error } = await sb.from("practice_intelligence_scans")
     .select("*")
     .eq("home_id", hid)
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) return [];
-  return (data ?? []) as PracticeIntelligenceScan[];
+  return (data ?? []) as unknown as PracticeIntelligenceScan[];
 }
 
 // ── Analysis helpers ────────────────────────────────────────────────────────

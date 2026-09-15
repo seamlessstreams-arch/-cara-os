@@ -147,7 +147,7 @@ export function MedicationConsentCard() {
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-muted-foreground">
                     <span className="text-[10px]">
-                      {profile.adherence_rate === null ? "No doses recorded (30d)" : `${profile.adherence_rate}% adherence`}
+                      {profile.adherence_rate === null ? "No doses recorded (30d)" : `${formatRate(profile.adherence_rate)} adherence`}
                     </span>
                     {profile.refusal_count_30d > 0 && (
                       <Badge className="text-[9px] bg-[--cs-warning-bg] text-[--cs-warning]">

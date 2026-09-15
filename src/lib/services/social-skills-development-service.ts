@@ -67,18 +67,20 @@ export interface SocialSkillsDevelopmentRecord {
   child_name: string;
   child_id: string | null;
   facilitated_by: string;
-  child_engaged: boolean;
-  age_appropriate: boolean;
-  strengths_identified: boolean;
-  targets_set: boolean;
-  positive_reinforcement: boolean;
-  peer_modelling_used: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  family_updated: boolean;
-  school_linked: boolean;
-  therapeutic_input: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements: null = not recorded. Absence is never an answer —
+   *  rates are taken over the records where the question was answered. */
+  child_engaged: boolean | null;
+  age_appropriate: boolean | null;
+  strengths_identified: boolean | null;
+  targets_set: boolean | null;
+  positive_reinforcement: boolean | null;
+  peer_modelling_used: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  family_updated: boolean | null;
+  school_linked: boolean | null;
+  therapeutic_input: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +161,14 @@ export function computeSocialSkillsMetrics(
   const disruptive = records.filter((r) => r.group_dynamic === "disruptive").length;
   const withdrawn = records.filter((r) => r.group_dynamic === "withdrawn").length;
 
+  // Rated over the records where the question was answered either way. An
+  // unrecorded judgement in the denominator would score silence as a "no" —
+  // the same fabrication the old `?? true` create made in the other direction.
   const boolRate = (field: keyof SocialSkillsDevelopmentRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifySocialSkillsAlerts(
   }
 
   // No targets set
-  const noTargets = records.filter((r) => !r.targets_set).length;
+  const noTargets = records.filter((r) => r.targets_set !== true).length;
   if (noTargets >= 1) {
     alerts.push({
       type: "no_targets_set",
       severity: "high",
-      message: `${noTargets} ${noTargets === 1 ? "session has" : "sessions have"} no targets set — ensure structured development goals`,
+      message: `${noTargets} ${noTargets === 1 ? "session has" : "sessions have"} no targets set evidenced — ensure structured development goals`,
       id: "no_targets_set",
     });
   }
 
   // Strengths not identified
-  const noStrengths = records.filter((r) => !r.strengths_identified).length;
+  const noStrengths = records.filter((r) => r.strengths_identified !== true).length;
   if (noStrengths >= 1) {
     alerts.push({
       type: "strengths_not_identified",
       severity: "high",
-      message: `${noStrengths} ${noStrengths === 1 ? "session has" : "sessions have"} strengths not identified — build on existing competencies`,
+      message: `${noStrengths} ${noStrengths === 1 ? "session has" : "sessions have"} no strengths identification evidenced — build on existing competencies`,
       id: "strengths_not_identified",
     });
   }
 
   // No positive reinforcement
-  const noReinforcement = records.filter((r) => !r.positive_reinforcement).length;
+  const noReinforcement = records.filter((r) => r.positive_reinforcement !== true).length;
   if (noReinforcement >= 2) {
     alerts.push({
       type: "no_positive_reinforcement",
       severity: "medium",
-      message: `${noReinforcement} sessions without positive reinforcement — essential for skill development`,
+      message: `${noReinforcement} sessions without evidenced positive reinforcement — essential for skill development`,
       id: "no_positive_reinforcement",
     });
   }
 
   // No therapeutic input
-  const noTherapeutic = records.filter((r) => !r.therapeutic_input).length;
+  const noTherapeutic = records.filter((r) => r.therapeutic_input !== true).length;
   if (noTherapeutic >= 2) {
     alerts.push({
       type: "no_therapeutic_input",
       severity: "medium",
-      message: `${noTherapeutic} sessions without therapeutic input — consider specialist involvement`,
+      message: `${noTherapeutic} sessions without evidenced therapeutic input — consider specialist involvement`,
       id: "no_therapeutic_input",
     });
   }
@@ -344,18 +350,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       facilitated_by: payload.facilitatedBy,
-      child_engaged: payload.childEngaged ?? true,
-      age_appropriate: payload.ageAppropriate ?? true,
-      strengths_identified: payload.strengthsIdentified ?? true,
-      targets_set: payload.targetsSet ?? true,
-      positive_reinforcement: payload.positiveReinforcement ?? true,
-      peer_modelling_used: payload.peerModellingUsed ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      family_updated: payload.familyUpdated ?? true,
-      school_linked: payload.schoolLinked ?? true,
-      therapeutic_input: payload.therapeuticInput ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_engaged: payload.childEngaged ?? null,
+      age_appropriate: payload.ageAppropriate ?? null,
+      strengths_identified: payload.strengthsIdentified ?? null,
+      targets_set: payload.targetsSet ?? null,
+      positive_reinforcement: payload.positiveReinforcement ?? null,
+      peer_modelling_used: payload.peerModellingUsed ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      family_updated: payload.familyUpdated ?? null,
+      school_linked: payload.schoolLinked ?? null,
+      therapeutic_input: payload.therapeuticInput ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

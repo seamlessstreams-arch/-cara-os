@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ReligiousCulturalObservanceRecord>): ReligiousCulturalObservanceRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    observance_type: overrides?.observance_type ?? "daily_prayer",
-    accommodation_level: overrides?.accommodation_level ?? "fully_accommodated",
-    cultural_sensitivity: overrides?.cultural_sensitivity ?? "good",
-    staff_competence: overrides?.staff_competence ?? "competent",
-    observance_date: overrides?.observance_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    observance_type: "daily_prayer",
+    accommodation_level: "fully_accommodated",
+    cultural_sensitivity: "good",
+    staff_competence: "competent",
+    observance_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    supported_by: overrides?.supported_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    family_consulted: overrides?.family_consulted ?? true,
-    dietary_needs_met: overrides?.dietary_needs_met ?? true,
-    resources_provided: overrides?.resources_provided ?? true,
-    community_links_used: overrides?.community_links_used ?? true,
-    staff_trained: overrides?.staff_trained ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    respectful_approach: overrides?.respectful_approach ?? true,
-    celebration_supported: overrides?.celebration_supported ?? true,
-    discrimination_addressed: overrides?.discrimination_addressed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    supported_by: "Staff A",
+    child_views_sought: true,
+    family_consulted: true,
+    dietary_needs_met: true,
+    resources_provided: true,
+    community_links_used: true,
+    staff_trained: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    respectful_approach: true,
+    celebration_supported: true,
+    discrimination_addressed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -125,5 +128,22 @@ describe("religious-cultural-observance-service", () => {
       expect(types).toContain("staff_not_trained");
       expect(types).toContain("community_links_not_used");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts unrecorded dietary provision in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyReligiousCulturalAlerts([makeRecord({ dietary_needs_met: null })]);
+    const alert = alerts.find((a) => a.type === "dietary_needs_not_met");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidence");
+  });
+  it("raises no dietary gap when needs are recorded as met", () => {
+    const alerts = identifyReligiousCulturalAlerts([makeRecord({ dietary_needs_met: true })]);
+    expect(alerts.some((a) => a.type === "dietary_needs_not_met")).toBe(false);
+  });
+  it("does not dilute the dietary rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, dietary_needs_met: v }));
+    expect(computeReligiousCulturalMetrics(rows).dietary_needs_rate).toBe(100);
   });
 });

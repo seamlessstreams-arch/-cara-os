@@ -309,7 +309,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
         </div>
         <div className="p-3 text-center">
           <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-            {analysis.actionCompletionRate}%
+            {formatRate(analysis.actionCompletionRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Actions Done</p>
         </div>
@@ -355,7 +355,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
                     </span>
                     {area.hasActions && (
                       <span className="text-[10px] text-muted-foreground">
-                        {area.actionCompletionRate}% actions done
+                        {formatRate(area.actionCompletionRate)} actions done
                       </span>
                     )}
                   </div>

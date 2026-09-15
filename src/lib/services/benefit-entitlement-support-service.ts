@@ -179,7 +179,7 @@ export interface BenefitEntitlementSupportRow {
   support_stage: SupportStage;
   amount_awarded: number | null;
   payment_frequency: PaymentFrequency | null;
-  young_person_engaged: boolean;
+  young_person_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
   application_successful: boolean | null;
   appeal_outcome: string | null;
   personal_adviser_involved: boolean;
@@ -874,7 +874,7 @@ export async function createRecord(input: {
       support_stage: input.supportStage,
       amount_awarded: input.amountAwarded ?? null,
       payment_frequency: input.paymentFrequency ?? null,
-      young_person_engaged: input.youngPersonEngaged ?? true,
+      young_person_engaged: input.youngPersonEngaged ?? null,
       application_successful: input.applicationSuccessful ?? null,
       appeal_outcome: input.appealOutcome ?? null,
       personal_adviser_involved: input.personalAdviserInvolved ?? false,

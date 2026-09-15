@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -70,8 +71,8 @@ export function MedicationAdherenceMonitoringIntelligenceWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Total Records" value={aq.totalRecords} />
-        <Stat label="Correct Admin" value={`${aq.correctAdministrationRate}%`} />
-        <Stat label="Error Rate" value={`${ms.errorRate}%`} />
+        <Stat label="Correct Admin" value={`${formatRate(aq.correctAdministrationRate)}`} />
+        <Stat label="Error Rate" value={`${formatRate(ms.errorRate)}`} />
       </div>
 
       <ScoreBar label="Administration Quality" value={aq.overallScore} />
@@ -81,19 +82,19 @@ export function MedicationAdherenceMonitoringIntelligenceWidget() {
 
       <Section title="Administration Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Correct Administration" value={`${aq.correctAdministrationRate}%`} />
-          <Stat label="Two-Staff Witnessed" value={`${aq.twoStaffWitnessedRate}%`} />
-          <Stat label="Documented Immediately" value={`${aq.documentedImmediatelyRate}%`} />
-          <Stat label="Consent Obtained" value={`${aq.consentObtainedRate}%`} />
-          <Stat label="Side Effects Monitored" value={`${aq.sideEffectsMonitoredRate}%`} />
+          <Stat label="Correct Administration" value={`${formatRate(aq.correctAdministrationRate)}`} />
+          <Stat label="Two-Staff Witnessed" value={`${formatRate(aq.twoStaffWitnessedRate)}`} />
+          <Stat label="Documented Immediately" value={`${formatRate(aq.documentedImmediatelyRate)}`} />
+          <Stat label="Consent Obtained" value={`${formatRate(aq.consentObtainedRate)}`} />
+          <Stat label="Side Effects Monitored" value={`${formatRate(aq.sideEffectsMonitoredRate)}`} />
         </div>
       </Section>
 
       <Section title="Medication Safety">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Error Rate" value={`${ms.errorRate}%`} />
-          <Stat label="Storage Correct" value={`${ms.storageCorrectRate}%`} />
-          <Stat label="Review Compliance" value={`${ms.reviewComplianceRate}%`} />
+          <Stat label="Error Rate" value={`${formatRate(ms.errorRate)}`} />
+          <Stat label="Storage Correct" value={`${formatRate(ms.storageCorrectRate)}`} />
+          <Stat label="Review Compliance" value={`${formatRate(ms.reviewComplianceRate)}`} />
         </div>
       </Section>
 
@@ -111,12 +112,12 @@ export function MedicationAdherenceMonitoringIntelligenceWidget() {
 
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Med Administration" value={`${sr.medicationAdministrationRate}%`} />
-          <Stat label="Controlled Drugs" value={`${sr.controlledDrugsRate}%`} />
-          <Stat label="Error Reporting" value={`${sr.errorReportingRate}%`} />
-          <Stat label="Consent Practice" value={`${sr.consentPracticeRate}%`} />
-          <Stat label="Side Effect Recognition" value={`${sr.sideEffectRecognitionRate}%`} />
-          <Stat label="Storage Compliance" value={`${sr.storageComplianceRate}%`} />
+          <Stat label="Med Administration" value={`${formatRate(sr.medicationAdministrationRate)}`} />
+          <Stat label="Controlled Drugs" value={`${formatRate(sr.controlledDrugsRate)}`} />
+          <Stat label="Error Reporting" value={`${formatRate(sr.errorReportingRate)}`} />
+          <Stat label="Consent Practice" value={`${formatRate(sr.consentPracticeRate)}`} />
+          <Stat label="Side Effect Recognition" value={`${formatRate(sr.sideEffectRecognitionRate)}`} />
+          <Stat label="Storage Compliance" value={`${formatRate(sr.storageComplianceRate)}`} />
         </div>
       </Section>
 

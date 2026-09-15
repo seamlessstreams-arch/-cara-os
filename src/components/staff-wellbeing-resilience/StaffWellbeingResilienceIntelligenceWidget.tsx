@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -71,25 +72,25 @@ export function StaffWellbeingResilienceIntelligenceWidget() {
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
         <Stat label="Assessments" value={quality.totalAssessments as number} />
         <Stat label="Staff" value={readiness.totalStaff as number} />
-        <Stat label="Wellbeing Rate" value={`${quality.wellbeingRate}%`} />
+        <Stat label="Wellbeing Rate" value={`${formatRateLoose(quality.wellbeingRate)}`} />
       </div>
 
       <Section title="Wellbeing Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Wellbeing Rate" value={`${quality.wellbeingRate}%`} />
-          <Stat label="Stress Managed" value={`${quality.stressManagedRate}%`} />
-          <Stat label="Support Provided" value={`${quality.supportProvidedRate}%`} />
-          <Stat label="Workload Reviewed" value={`${quality.workloadReviewedRate}%`} />
+          <Stat label="Wellbeing Rate" value={`${formatRateLoose(quality.wellbeingRate)}`} />
+          <Stat label="Stress Managed" value={`${formatRateLoose(quality.stressManagedRate)}`} />
+          <Stat label="Support Provided" value={`${formatRateLoose(quality.supportProvidedRate)}`} />
+          <Stat label="Workload Reviewed" value={`${formatRateLoose(quality.workloadReviewedRate)}`} />
         </div>
       </Section>
 
       <Section title="Wellbeing Compliance">
         <ScoreBar label="Compliance" value={compliance.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Action Plans" value={`${compliance.actionPlanRate}%`} />
-          <Stat label="Follow-Up" value={`${compliance.followUpRate}%`} />
-          <Stat label="Feedback" value={`${compliance.feedbackRate}%`} />
+          <Stat label="Action Plans" value={`${formatRateLoose(compliance.actionPlanRate)}`} />
+          <Stat label="Follow-Up" value={`${formatRateLoose(compliance.followUpRate)}`} />
+          <Stat label="Feedback" value={`${formatRateLoose(compliance.feedbackRate)}`} />
           <Stat label="Type Diversity" value={compliance.wellbeingTypeDiversityRatio as number} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function StaffWellbeingResilienceIntelligenceWidget() {
       <Section title="Staff Resilience Readiness">
         <ScoreBar label="Readiness" value={readiness.score as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Stress Management" value={`${readiness.stressManagementRate}%`} />
-          <Stat label="Emotional Resilience" value={`${readiness.emotionalResilienceRate}%`} />
-          <Stat label="Boundary Maintenance" value={`${readiness.boundaryMaintenanceRate}%`} />
-          <Stat label="Self Care" value={`${readiness.selfCareRate}%`} />
-          <Stat label="Team Support" value={`${readiness.teamSupportRate}%`} />
-          <Stat label="Debriefing Skills" value={`${readiness.debriefingSkillsRate}%`} />
+          <Stat label="Stress Management" value={`${formatRateLoose(readiness.stressManagementRate)}`} />
+          <Stat label="Emotional Resilience" value={`${formatRateLoose(readiness.emotionalResilienceRate)}`} />
+          <Stat label="Boundary Maintenance" value={`${formatRateLoose(readiness.boundaryMaintenanceRate)}`} />
+          <Stat label="Self Care" value={`${formatRateLoose(readiness.selfCareRate)}`} />
+          <Stat label="Team Support" value={`${formatRateLoose(readiness.teamSupportRate)}`} />
+          <Stat label="Debriefing Skills" value={`${formatRateLoose(readiness.debriefingSkillsRate)}`} />
         </div>
       </Section>
 

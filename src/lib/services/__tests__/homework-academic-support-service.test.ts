@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HomeworkAcademicSupportRecord>): HomeworkAcademicSupportRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    subject_area: overrides?.subject_area ?? "english",
-    support_type: overrides?.support_type ?? "homework_help",
-    engagement_level: overrides?.engagement_level ?? "engaged",
-    progress_outcome: overrides?.progress_outcome ?? "met_expectations",
-    session_date: overrides?.session_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    subject_area: "english",
+    support_type: "homework_help",
+    engagement_level: "engaged",
+    progress_outcome: "met_expectations",
+    session_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    supported_by: overrides?.supported_by ?? "Staff A",
-    homework_completed: overrides?.homework_completed ?? true,
-    quiet_space_provided: overrides?.quiet_space_provided ?? true,
-    resources_available: overrides?.resources_available ?? true,
-    school_liaison_made: overrides?.school_liaison_made ?? true,
-    learning_needs_met: overrides?.learning_needs_met ?? true,
-    positive_encouragement: overrides?.positive_encouragement ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    pep_updated: overrides?.pep_updated ?? true,
-    attendance_checked: overrides?.attendance_checked ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    supported_by: "Staff A",
+    homework_completed: true,
+    quiet_space_provided: true,
+    resources_available: true,
+    school_liaison_made: true,
+    learning_needs_met: true,
+    positive_encouragement: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    pep_updated: true,
+    attendance_checked: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -126,5 +129,22 @@ describe("homework-academic-support-service", () => {
       expect(types).toContain("no_quiet_space");
       expect(types).toContain("no_resources");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded PEP update in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: null })]);
+    const alert = alerts.find((a) => a.type === "pep_not_updated");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no PEP gap when the update is recorded as done", () => {
+    const alerts = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: true })]);
+    expect(alerts.some((a) => a.type === "pep_not_updated")).toBe(false);
+  });
+  it("does not dilute the PEP rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, pep_updated: v }));
+    expect(computeHomeworkAcademicMetrics(rows).pep_updated_rate).toBe(100);
   });
 });

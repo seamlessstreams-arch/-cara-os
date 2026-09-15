@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SleepQualityAssessmentRecord>): SleepQualityAssessmentRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    sleep_quality: overrides?.sleep_quality ?? "good",
-    bedtime_routine: overrides?.bedtime_routine ?? "fully_followed",
-    sleep_environment: overrides?.sleep_environment ?? "good",
-    waking_frequency: overrides?.waking_frequency ?? "none",
-    sleep_concern: overrides?.sleep_concern ?? "none_identified",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    sleep_quality: "good",
+    bedtime_routine: "fully_followed",
+    sleep_environment: "good",
+    waking_frequency: "none",
+    sleep_concern: "none_identified",
+    assessment_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessed_by: overrides?.assessed_by ?? "Staff A",
-    bedtime_consistent: overrides?.bedtime_consistent ?? true,
-    wake_time_consistent: overrides?.wake_time_consistent ?? true,
-    room_comfortable: overrides?.room_comfortable ?? true,
-    temperature_appropriate: overrides?.temperature_appropriate ?? true,
-    noise_minimised: overrides?.noise_minimised ?? true,
-    screen_free_before_bed: overrides?.screen_free_before_bed ?? true,
-    relaxation_supported: overrides?.relaxation_supported ?? true,
-    child_preferences_met: overrides?.child_preferences_met ?? true,
-    gp_referral_considered: overrides?.gp_referral_considered ?? true,
-    sleep_plan_in_place: overrides?.sleep_plan_in_place ?? true,
-    care_plan_linked: overrides?.care_plan_linked ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    sleep_hours: overrides?.sleep_hours ?? 8.0,
+    assessed_by: "Staff A",
+    bedtime_consistent: true,
+    wake_time_consistent: true,
+    room_comfortable: true,
+    temperature_appropriate: true,
+    noise_minimised: true,
+    screen_free_before_bed: true,
+    relaxation_supported: true,
+    child_preferences_met: true,
+    gp_referral_considered: true,
+    sleep_plan_in_place: true,
+    care_plan_linked: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
+    sleep_hours: 8.0,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -132,5 +135,22 @@ describe("sleep-quality-assessment-service", () => {
       expect(types).toContain("screens_before_bed");
       expect(types).toContain("room_not_comfortable");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded sleep plan in the gap alert, worded as unevidenced", () => {
+    const alerts = identifySleepQualityAlerts([makeRecord({ sleep_plan_in_place: null })]);
+    const alert = alerts.find((a) => a.type === "no_sleep_plan");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no sleep-plan gap when the plan is recorded", () => {
+    const alerts = identifySleepQualityAlerts([makeRecord({ sleep_plan_in_place: true })]);
+    expect(alerts.some((a) => a.type === "no_sleep_plan")).toBe(false);
+  });
+  it("does not dilute the sleep-plan rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, sleep_plan_in_place: v }));
+    expect(computeSleepQualityMetrics(rows).sleep_plan_rate).toBe(100);
   });
 });

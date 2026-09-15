@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -88,9 +89,9 @@ export function ProfessionalBoundaryComplianceIntelligenceWidget() {
       <Section title="Child Safeguarding">
         <ScoreBar label="Child Safeguarding" value={safeguarding.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Child Feedback" value={`${safeguarding.childFeedbackSoughtRate}%`} />
-          <Stat label="Risk Assessed" value={`${safeguarding.riskAssessedRate}%`} />
-          <Stat label="Non-Compliance" value={`${safeguarding.nonComplianceRate}%`} />
+          <Stat label="Child Feedback" value={`${formatRate(safeguarding.childFeedbackSoughtRate)}`} />
+          <Stat label="Risk Assessed" value={`${formatRate(safeguarding.riskAssessedRate)}`} />
+          <Stat label="Non-Compliance" value={`${formatRate(safeguarding.nonComplianceRate)}`} />
         </div>
       </Section>
 
@@ -109,12 +110,12 @@ export function ProfessionalBoundaryComplianceIntelligenceWidget() {
       <Section title="Staff Boundary Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Boundaries" value={`${staffReadiness.professionalBoundariesRate}%`} />
-          <Stat label="Safeguarding" value={`${staffReadiness.safeguardingAwarenessRate}%`} />
-          <Stat label="Ethical Conduct" value={`${staffReadiness.ethicalConductRate}%`} />
-          <Stat label="Social Media" value={`${staffReadiness.socialMediaSafetyRate}%`} />
-          <Stat label="Reporting" value={`${staffReadiness.reportingProceduresRate}%`} />
-          <Stat label="Reflective" value={`${staffReadiness.reflectivePracticeRate}%`} />
+          <Stat label="Boundaries" value={`${formatRate(staffReadiness.professionalBoundariesRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(staffReadiness.safeguardingAwarenessRate)}`} />
+          <Stat label="Ethical Conduct" value={`${formatRate(staffReadiness.ethicalConductRate)}`} />
+          <Stat label="Social Media" value={`${formatRate(staffReadiness.socialMediaSafetyRate)}`} />
+          <Stat label="Reporting" value={`${formatRate(staffReadiness.reportingProceduresRate)}`} />
+          <Stat label="Reflective" value={`${formatRate(staffReadiness.reflectivePracticeRate)}`} />
         </div>
       </Section>
 

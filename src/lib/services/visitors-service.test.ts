@@ -10,23 +10,24 @@ import {
 
 function makeEntry(overrides: Partial<VisitorEntry> = {}): VisitorEntry {
   return {
-    id: overrides.id ?? "entry-1",
-    home_id: overrides.home_id ?? "home-1",
-    visitor_name: overrides.visitor_name ?? "Visitor A",
-    visitor_type: overrides.visitor_type ?? "social_worker",
+    id: "entry-1",
+    home_id: "home-1",
+    visitor_name: "Visitor A",
+    visitor_type: "social_worker",
     organisation: "organisation" in overrides ? overrides.organisation : null,
-    purpose: overrides.purpose ?? "statutory_visit",
+    purpose: "statutory_visit",
     child_visited: "child_visited" in overrides ? overrides.child_visited : null,
     child_name: "child_name" in overrides ? overrides.child_name : null,
-    arrival_time: overrides.arrival_time ?? "2025-01-15T10:00:00Z",
+    arrival_time: "2025-01-15T10:00:00Z",
     departure_time: "departure_time" in overrides ? overrides.departure_time : "2025-01-15T11:00:00Z",
     duration_minutes: "duration_minutes" in overrides ? overrides.duration_minutes : 60,
-    dbs_checked: overrides.dbs_checked ?? true,
-    id_verified: overrides.id_verified ?? true,
+    dbs_checked: true,
+    id_verified: true,
     notes: "notes" in overrides ? overrides.notes : null,
-    recorded_by: overrides.recorded_by ?? "Staff A",
-    date: overrides.date ?? "2025-01-15",
-    created_at: overrides.created_at ?? "2025-01-15T00:00:00Z",
+    recorded_by: "Staff A",
+    date: "2025-01-15",
+    created_at: "2025-01-15T00:00:00Z",
+      ...overrides,
   };
 }
 

@@ -43,15 +43,15 @@ export interface RestraintInput {
   duration_minutes: number;
   child_id: string;
   staff_involved: StaffInvolvedInput[];
-  reason: RestraintReason;
+  reason: RestraintReason | null;
   restraint_type: RestraintType;
   de_escalation_attempts: string[];
   injuries: InjuryInput[];
   child_debriefed: boolean;
-  staff_debriefed: boolean;
+  staff_debriefed: boolean | null;
   review_status: ReviewStatus;
   body_map_completed: boolean;
-  medical_check_completed: boolean;
+  medical_check_completed: boolean | null;
   notifications_sent: number; // count of parties notified
 }
 
@@ -196,7 +196,8 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
 
   const withInjury = within90d.filter((r) => r.injuries.length > 0).length;
   const childDebrief = within90d.filter((r) => r.child_debriefed).length;
-  const staffDebrief = within90d.filter((r) => r.staff_debriefed).length;
+  const staffDebriefRecorded = within90d.filter((r) => r.staff_debriefed !== null);
+  const staffDebrief = staffDebriefRecorded.filter((r) => r.staff_debriefed).length;
   const reviewed = within90d.filter((r) => r.review_status === "reviewed" || r.review_status === "referred").length;
   const bodyMaps = within90d.filter((r) => r.body_map_completed).length;
   const deEscDoc = within90d.filter((r) => r.de_escalation_attempts.length > 0).length;
@@ -217,7 +218,8 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
     children_involved_30d: childrenInvolved30d,
     incidents_with_injury: withInjury,
     child_debrief_rate: pct(childDebrief),
-    staff_debrief_rate: pct(staffDebrief),
+    // Only recorded answers enter the denominator — an unasked staff debrief is not a missed one.
+    staff_debrief_rate: rate(staffDebrief, staffDebriefRecorded.length),
     review_completion_rate: pct(reviewed),
     body_map_rate: pct(bodyMaps),
     de_escalation_documented_rate: pct(deEscDoc),
@@ -232,7 +234,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
       const childIncidents90d = within90d.filter((r) => r.child_id === child.id);
       const childIncidents30d = within30d.filter((r) => r.child_id === child.id);
 
-      const reasons = childIncidents90d.map((r) => r.reason);
+      const reasons = childIncidents90d.map((r) => r.reason).filter((x): x is RestraintReason => x !== null);
       const types = childIncidents90d.map((r) => r.restraint_type);
       const injuryCount = childIncidents90d.filter((r) => r.injuries.length > 0).length;
       const debriefed = childIncidents90d.filter((r) => r.child_debriefed).length;
@@ -254,7 +256,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   // ── Reason Breakdown ──────────────────────────────────────────────────
   const reasonCounts = new Map<RestraintReason, number>();
   for (const r of within90d) {
-    reasonCounts.set(r.reason, (reasonCounts.get(r.reason) ?? 0) + 1);
+    if (r.reason !== null) reasonCounts.set(r.reason, (reasonCounts.get(r.reason) ?? 0) + 1);
   }
   const reason_breakdown: ReasonBreakdown[] = [...reasonCounts.entries()]
     .map(([reason, count]) => ({

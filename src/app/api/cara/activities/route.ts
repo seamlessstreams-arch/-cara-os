@@ -49,8 +49,8 @@ export async function GET(req: NextRequest) {
 
 // ── Supabase Fetch ──────────────────────────────────────────────────────────
 
-async function fetchData(sb: any, childId: string): Promise<ActivityInput> {
-  const { data: child } = await (sb.from("children") as SB)
+async function fetchData(sb: NonNullable<ReturnType<typeof createServerClient>>, childId: string): Promise<ActivityInput> {
+  const { data: child } = await sb.from("young_people")
     .select("id, first_name, last_name, date_of_birth")
     .eq("id", childId)
     .single();
@@ -74,7 +74,7 @@ async function fetchData(sb: any, childId: string): Promise<ActivityInput> {
     name: a.name ?? "Activity",
     category: (a.category ?? "other") as ActivityCategory,
     duration: a.duration ?? 60,
-    childChose: a.child_chose ?? true,
+    childChose: a.child_chose ?? null,
     childEngagement: a.engagement ?? "moderate",
     communityBased: a.community_based ?? false,
     peerInteraction: a.peer_interaction ?? false,
@@ -94,13 +94,13 @@ async function fetchData(sb: any, childId: string): Promise<ActivityInput> {
     childName,
     age,
     activities,
-    hobbiesIdentified: config?.hobbies_identified ?? true,
-    interestsExplored: config?.interests_explored ?? true,
-    activityBudgetAvailable: config?.budget_available ?? true,
+    hobbiesIdentified: config?.hobbies_identified ?? null,
+    interestsExplored: config?.interests_explored ?? null,
+    activityBudgetAvailable: config?.budget_available ?? null,
     memberOfClubOrGroup: config?.club_member ?? false,
     attendsCommunityActivities: config?.community_activities ?? false,
     hasAchievementsRecorded: config?.achievements_recorded ?? false,
-    pocketMoneyForActivities: config?.pocket_money ?? true,
+    pocketMoneyForActivities: config?.pocket_money ?? null,
     restrictedFromActivities: config?.restricted ?? false,
     restrictionReason: config?.restriction_reason ?? undefined,
   };

@@ -7,6 +7,7 @@
 // metrics (requests, approvals, tasks, transcriptions) and top commands.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ActivityStats } from "@/app/api/cara/activity/route";
@@ -109,7 +110,7 @@ export function CaraActivityCard({
     },
     {
       label: "Approval rate",
-      value: `${stats.approvalRate}%`,
+      value: `${formatRate(stats.approvalRate)}`,
       icon: TrendingUp,
       color: "text-emerald-600",
     },

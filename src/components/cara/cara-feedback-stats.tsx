@@ -11,6 +11,7 @@
 //   <CaraFeedbackStats homeId="demo-home" days={30} />
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -136,7 +137,7 @@ export function CaraFeedbackStats({
       <div className="px-5 pb-3 grid grid-cols-3 gap-3">
         <div className={cn("rounded-xl px-3 py-2.5 text-center", satisfactionBg)}>
           <div className={cn("text-xl font-bold tabular-nums", satisfactionColour)}>
-            {stats.satisfactionRate}%
+            {formatRate(stats.satisfactionRate)}
           </div>
           <div className="text-[9px] text-[var(--cs-text-muted)] font-medium">
             Satisfaction

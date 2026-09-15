@@ -71,7 +71,7 @@ export async function fileCommittedArtifact(
   if (!sb) return { success: false, path: null, recordId: null };
 
   // Fetch the artifact
-  const { data: artifact, error: fetchErr } = await (sb.from("cara_studio_artifacts") as any)
+  const { data: artifact, error: fetchErr } = await sb.from("cara_studio_artifacts")
     .select("*")
     .eq("id", artifactId)
     .single();
@@ -89,7 +89,7 @@ export async function fileCommittedArtifact(
   const path = buildFilingPath(artifact as CaraStudioArtifact);
 
   // Update the artifact with filing path
-  const { error: updateErr } = await (sb.from("cara_studio_artifacts") as any)
+  const { error: updateErr } = await sb.from("cara_studio_artifacts")
     .update({ filing_cabinet_path: path })
     .eq("id", artifactId);
 
@@ -109,7 +109,7 @@ export async function listFiledArtifacts(
   const sb = createServerClient();
   if (!sb) return [];
 
-  const { data, error } = await (sb.from("cara_studio_artifacts") as any)
+  const { data, error } = await sb.from("cara_studio_artifacts")
     .select("*")
     .eq("home_id", homeId())
     .eq("status", "committed")
@@ -137,7 +137,7 @@ export async function getFilingStructure(childId?: string): Promise<FilingCabine
   const sb = createServerClient();
   if (!sb) return getDemoFilingStructure(childId);
 
-  let query = (sb.from("cara_studio_artifacts") as any)
+  let query = sb.from("cara_studio_artifacts")
     .select("filing_cabinet_path")
     .eq("home_id", homeId())
     .eq("status", "committed")

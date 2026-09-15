@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function AdmissionsIntelligenceWidget() {
       <Section title="Admission Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Thorough Assessment" value={`${quality.thoroughAssessmentRate}%`} />
-          <Stat label="Child Consulted" value={`${quality.childConsultedRate}%`} />
-          <Stat label="Impact Considered" value={`${quality.impactConsideredRate}%`} />
-          <Stat label="Transition Plan" value={`${quality.transitionPlanRate}%`} />
+          <Stat label="Thorough Assessment" value={`${formatRate(quality.thoroughAssessmentRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRate(quality.childConsultedRate)}`} />
+          <Stat label="Impact Considered" value={`${formatRate(quality.impactConsideredRate)}`} />
+          <Stat label="Transition Plan" value={`${formatRate(quality.transitionPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Admission Compliance">
         <ScoreBar label="Compliance" value={compliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Process" value={`${compliance.timelyRate}%`} />
-          <Stat label="Impact Assessment" value={`${compliance.impactAssessmentRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Process" value={`${formatRate(compliance.timelyRate)}`} />
+          <Stat label="Impact Assessment" value={`${formatRate(compliance.impactAssessmentRate)}`} />
           <Stat label="Category Diversity" value={`${compliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function AdmissionsIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Assessment Skills" value={`${staff.assessmentSkillsRate}%`} />
-          <Stat label="Matching Expertise" value={`${staff.matchingExpertiseRate}%`} />
-          <Stat label="Transition Planning" value={`${staff.transitionPlanningRate}%`} />
-          <Stat label="Child Participation" value={`${staff.childParticipationRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentRate}%`} />
-          <Stat label="Family Engagement" value={`${staff.familyEngagementRate}%`} />
+          <Stat label="Assessment Skills" value={`${formatRate(staff.assessmentSkillsRate)}`} />
+          <Stat label="Matching Expertise" value={`${formatRate(staff.matchingExpertiseRate)}`} />
+          <Stat label="Transition Planning" value={`${formatRate(staff.transitionPlanningRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(staff.childParticipationRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(staff.riskAssessmentRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRate(staff.familyEngagementRate)}`} />
         </div>
       </Section>
 

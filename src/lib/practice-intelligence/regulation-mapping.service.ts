@@ -231,8 +231,7 @@ export async function createFrameworkMapping(opts: {
     return { id: crypto.randomUUID(), ...record, created_at: new Date().toISOString() };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("framework_mappings") as any)
+  const { data, error } = await sb.from("framework_mappings")
     .insert(record)
     .select("*")
     .single();
@@ -255,8 +254,7 @@ export async function listFrameworkMappings(opts?: {
 
   if (!sb) return getDemoMappings(hid);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("framework_mappings") as any)
+  let query = sb.from("framework_mappings")
     .select("*")
     .eq("home_id", hid)
     .order("created_at", { ascending: false })
@@ -288,8 +286,7 @@ export async function getRegulationCoverage(hId?: string): Promise<RegulationCov
 
   if (!sb) return getDemoCoverage();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: mappings } = await (sb.from("framework_mappings") as any)
+  const { data: mappings } = await sb.from("framework_mappings")
     .select("regulation, sccif_theme, created_at")
     .eq("home_id", hid)
     .eq("framework", "childrens_homes_regs_2015");

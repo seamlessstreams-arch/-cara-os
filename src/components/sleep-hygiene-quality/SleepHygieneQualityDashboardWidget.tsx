@@ -11,6 +11,7 @@
 // - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
@@ -236,7 +237,7 @@ export default function SleepHygieneQualityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sleep Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sleepQuality.sleepQualityRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.sleepQuality.sleepQualityRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Good+ Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">

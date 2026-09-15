@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,19 +78,19 @@ export function HandoverIntelligenceWidget() {
       <Section title="Handover Quality" defaultOpen>
         <ScoreBar label="Quality" value={quality.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Children Covered" value={`${quality.allChildrenCoveredRate}%`} />
-          <Stat label="Medication Updated" value={`${quality.medicationStatusUpdatedRate}%`} />
-          <Stat label="Incidents Communicated" value={`${quality.incidentsCommunicatedRate}%`} />
-          <Stat label="Tasks Handed Over" value={`${quality.tasksHandedOverRate}%`} />
+          <Stat label="Children Covered" value={`${formatRate(quality.allChildrenCoveredRate)}`} />
+          <Stat label="Medication Updated" value={`${formatRate(quality.medicationStatusUpdatedRate)}`} />
+          <Stat label="Incidents Communicated" value={`${formatRate(quality.incidentsCommunicatedRate)}`} />
+          <Stat label="Tasks Handed Over" value={`${formatRate(quality.tasksHandedOverRate)}`} />
         </div>
       </Section>
 
       <Section title="Handover Compliance">
         <ScoreBar label="Compliance" value={compliance.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Documentation" value={`${compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${compliance.timelyRecordingRate}%`} />
-          <Stat label="Children Covered" value={`${compliance.allChildrenCoveredRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(compliance.timelyRecordingRate)}`} />
+          <Stat label="Children Covered" value={`${formatRate(compliance.allChildrenCoveredRate)}`} />
           <Stat label="Categories" value={`${compliance.uniqueCategories}/8`} />
         </div>
       </Section>
@@ -116,12 +117,12 @@ export function HandoverIntelligenceWidget() {
       <Section title="Staff Readiness">
         <ScoreBar label="Staff Readiness" value={staff.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Communication" value={`${staff.handoverCommunicationRate}%`} />
-          <Stat label="Medication Skills" value={`${staff.medicationHandoverSkillsRate}%`} />
-          <Stat label="Incident Reporting" value={`${staff.incidentReportingRate}%`} />
-          <Stat label="Task Prioritisation" value={`${staff.taskPrioritisationRate}%`} />
-          <Stat label="Child Status" value={`${staff.childStatusAssessmentRate}%`} />
-          <Stat label="Documentation" value={`${staff.handoverDocumentationRate}%`} />
+          <Stat label="Communication" value={`${formatRate(staff.handoverCommunicationRate)}`} />
+          <Stat label="Medication Skills" value={`${formatRate(staff.medicationHandoverSkillsRate)}`} />
+          <Stat label="Incident Reporting" value={`${formatRate(staff.incidentReportingRate)}`} />
+          <Stat label="Task Prioritisation" value={`${formatRate(staff.taskPrioritisationRate)}`} />
+          <Stat label="Child Status" value={`${formatRate(staff.childStatusAssessmentRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(staff.handoverDocumentationRate)}`} />
         </div>
       </Section>
 

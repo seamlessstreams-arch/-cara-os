@@ -9,21 +9,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import type { StaffMember } from "@/types";
 import { todayStr } from "@/lib/utils";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
-  try {
-    const r = await p;
-    return Array.isArray(r) ? r : [];
-  } catch {
-    return [];
-  }
-}
 
 export type StaffComplianceSignal = "urgent" | "attention" | "due_soon" | "good";
 

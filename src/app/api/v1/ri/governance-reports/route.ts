@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   const record = intelligenceDb.riGovernanceReports.create({
     home_id: body.home_id ?? "home_oak",
     report_type: body.report_type ?? "strategic_summary",
+    // absence-ok: unstated provenance defaults to Cara-generated — over-declaring AI authorship is the safe direction for governance transparency
     generated_by_cara: body.generated_by_cara ?? true,
     content: body.content ?? {},
     status: body.status ?? "draft",

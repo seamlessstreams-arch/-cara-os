@@ -72,18 +72,18 @@ export interface SelfHarmRiskMonitoringRecord {
   child_name: string;
   child_id: string | null;
   monitored_by: string;
-  child_engaged: boolean;
-  safety_plan_shared: boolean;
+  child_engaged: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  safety_plan_shared: boolean | null;
   camhs_involved: boolean;
   gp_informed: boolean;
-  social_worker_informed: boolean;
+  social_worker_informed: boolean | null;
   parent_informed: boolean;
-  environment_checked: boolean;
-  means_restriction_applied: boolean;
-  observation_level_set: boolean;
-  staff_trained: boolean;
-  care_plan_updated: boolean;
-  recorded_promptly: boolean;
+  environment_checked: boolean | null;
+  means_restriction_applied: boolean | null;
+  observation_level_set: boolean | null;
+  staff_trained: boolean | null;
+  care_plan_updated: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -169,10 +169,16 @@ export function computeSelfHarmRiskMetrics(
   const noSafetyPlan = records.filter((r) => r.safety_plan_status === "not_in_place").length;
   const needsReview = records.filter((r) => r.safety_plan_status === "active_needs_review").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof SelfHarmRiskMonitoringRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -255,34 +261,34 @@ export function identifySelfHarmRiskAlerts(
   }
 
   // Staff not trained
-  const noTrained = records.filter((r) => !r.staff_trained).length;
+  const noTrained = records.filter((r) => r.staff_trained !== true).length;
   if (noTrained >= 1) {
     alerts.push({
       type: "staff_not_trained",
       severity: "high",
-      message: `${noTrained} ${noTrained === 1 ? "monitoring record shows" : "monitoring records show"} staff not trained in self-harm support — arrange training urgently`,
+      message: `${noTrained} ${noTrained === 1 ? "monitoring record shows" : "monitoring records show"} no evidenced self-harm training for staff — arrange training urgently`,
       id: "staff_not_trained",
     });
   }
 
   // Environment not checked
-  const noEnvCheck = records.filter((r) => !r.environment_checked).length;
+  const noEnvCheck = records.filter((r) => r.environment_checked !== true).length;
   if (noEnvCheck >= 2) {
     alerts.push({
       type: "environment_not_checked",
       severity: "medium",
-      message: `${noEnvCheck} records without environmental safety check — review ligature and hazard assessments`,
+      message: `${noEnvCheck} records without an evidenced environmental safety check — review ligature and hazard assessments`,
       id: "environment_not_checked",
     });
   }
 
   // Means restriction not applied
-  const noMeans = records.filter((r) => !r.means_restriction_applied).length;
+  const noMeans = records.filter((r) => r.means_restriction_applied !== true).length;
   if (noMeans >= 2) {
     alerts.push({
       type: "no_means_restriction",
       severity: "medium",
-      message: `${noMeans} records without means restriction applied — review environmental safety`,
+      message: `${noMeans} records without evidenced means restriction — review environmental safety`,
       id: "no_means_restriction",
     });
   }
@@ -364,18 +370,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       monitored_by: payload.monitoredBy,
-      child_engaged: payload.childEngaged ?? true,
-      safety_plan_shared: payload.safetyPlanShared ?? true,
+      child_engaged: payload.childEngaged ?? null,
+      safety_plan_shared: payload.safetyPlanShared ?? null,
       camhs_involved: payload.camhsInvolved ?? false,
       gp_informed: payload.gpInformed ?? false,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
       parent_informed: payload.parentInformed ?? false,
-      environment_checked: payload.environmentChecked ?? true,
-      means_restriction_applied: payload.meansRestrictionApplied ?? true,
-      observation_level_set: payload.observationLevelSet ?? true,
-      staff_trained: payload.staffTrained ?? true,
-      care_plan_updated: payload.carePlanUpdated ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      environment_checked: payload.environmentChecked ?? null,
+      means_restriction_applied: payload.meansRestrictionApplied ?? null,
+      observation_level_set: payload.observationLevelSet ?? null,
+      staff_trained: payload.staffTrained ?? null,
+      care_plan_updated: payload.carePlanUpdated ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

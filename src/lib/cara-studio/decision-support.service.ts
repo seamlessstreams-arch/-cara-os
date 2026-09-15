@@ -8,6 +8,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import type { CaraStudioDecisionSupport } from "@/types/cara-studio";
+import type { Json } from "@/lib/supabase/types";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -19,17 +20,17 @@ export async function createDecisionSupport(
   const sb = createServerClient();
   if (!sb) return getDemoDecisionSupport(record.decision_context);
 
-  const { data, error } = await (sb.from("cara_studio_decision_support") as any)
+  const { data, error } = await sb.from("cara_studio_decision_support")
     .insert({
       home_id: record.home_id || homeId(),
       decision_context: record.decision_context,
       child_id: record.child_id, staff_id: record.staff_id,
-      known_facts: record.known_facts, unknowns: record.unknowns,
-      risks: record.risks, options: record.options, pros_cons: record.pros_cons,
+      known_facts: record.known_facts as Json, unknowns: record.unknowns as Json,
+      risks: record.risks as Json, options: record.options as Json, pros_cons: record.pros_cons as Json,
       child_impact: record.child_impact, staff_impact: record.staff_impact,
       compliance_impact: record.compliance_impact,
-      recommended_next_steps: record.recommended_next_steps,
-      evidence_needed: record.evidence_needed, decision_made_by: null,
+      recommended_next_steps: record.recommended_next_steps as Json,
+      evidence_needed: record.evidence_needed as Json, decision_made_by: null,
     })
     .select().single();
 
@@ -41,7 +42,7 @@ export async function getDecisionSupport(id: string): Promise<CaraStudioDecision
   const sb = createServerClient();
   if (!sb) return getDemoDecisionSupport();
 
-  const { data, error } = await (sb.from("cara_studio_decision_support") as any)
+  const { data, error } = await sb.from("cara_studio_decision_support")
     .select("*").eq("id", id).single();
   if (error) return null;
   return data as CaraStudioDecisionSupport;
@@ -51,7 +52,7 @@ export async function listDecisionSupport(hId: string, childId?: string): Promis
   const sb = createServerClient();
   if (!sb) return [getDemoDecisionSupport()];
 
-  let query = (sb.from("cara_studio_decision_support") as any)
+  let query = sb.from("cara_studio_decision_support")
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
 
@@ -64,7 +65,7 @@ export async function recordDecision(id: string, decisionMadeBy: string): Promis
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("cara_studio_decision_support") as any)
+  const { error } = await sb.from("cara_studio_decision_support")
     .update({ decision_made_by: decisionMadeBy, decision_recorded_at: new Date().toISOString() })
     .eq("id", id);
 

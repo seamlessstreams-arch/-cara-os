@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate, formatRateLoose } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -76,10 +77,10 @@ export function CriticalIncidentReviewIntelligenceWidget() {
       <Section title="Debrief Quality" defaultOpen>
         <ScoreBar label="Debrief Quality" value={debrief.overallScore} max={30} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Completion Rate" value={`${debrief.debriefCompletionRate}%`} />
-          <Stat label="Timely Debrief" value={`${debrief.timelyDebriefRate}%`} />
-          <Stat label="Child Included" value={`${debrief.childIncludedRate}%`} />
-          <Stat label="Root Cause ID" value={`${debrief.rootCauseIdentifiedRate}%`} />
+          <Stat label="Completion Rate" value={`${formatRate(debrief.debriefCompletionRate)}`} />
+          <Stat label="Timely Debrief" value={`${formatRate(debrief.timelyDebriefRate)}`} />
+          <Stat label="Child Included" value={`${formatRate(debrief.childIncludedRate)}`} />
+          <Stat label="Root Cause ID" value={`${formatRate(debrief.rootCauseIdentifiedRate)}`} />
           <Stat label="On Time" value={debrief.debriefedOnTime} />
           <Stat label="Not Debriefed" value={debrief.notDebriefed} />
         </div>
@@ -89,9 +90,9 @@ export function CriticalIncidentReviewIntelligenceWidget() {
         <ScoreBar label="Learning" value={learning.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Learnings" value={learning.totalLearnings} />
-          <Stat label="Implementation" value={`${learning.implementationRate}%`} />
-          <Stat label="Shared with Team" value={`${learning.sharedWithTeamRate}%`} />
-          <Stat label="In Supervision" value={`${learning.sharedInSupervisionRate}%`} />
+          <Stat label="Implementation" value={`${formatRate(learning.implementationRate)}`} />
+          <Stat label="Shared with Team" value={`${formatRate(learning.sharedWithTeamRate)}`} />
+          <Stat label="In Supervision" value={`${formatRate(learning.sharedInSupervisionRate)}`} />
           <Stat label="Embedded" value={learning.embedded} />
           <Stat label="Not Identified" value={learning.notIdentified} />
         </div>
@@ -101,9 +102,9 @@ export function CriticalIncidentReviewIntelligenceWidget() {
         <ScoreBar label="Practice Change" value={practice.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Changes" value={practice.totalChanges as number} />
-          <Stat label="Impact Assessed" value={`${practice.impactAssessedRate}%`} />
-          <Stat label="Positive Impact" value={`${practice.positiveImpactRate}%`} />
-          <Stat label="Sustainability" value={`${practice.sustainabilityReviewedRate}%`} />
+          <Stat label="Impact Assessed" value={`${formatRateLoose(practice.impactAssessedRate)}`} />
+          <Stat label="Positive Impact" value={`${formatRateLoose(practice.positiveImpactRate)}`} />
+          <Stat label="Sustainability" value={`${formatRateLoose(practice.sustainabilityReviewedRate)}`} />
         </div>
       </Section>
 
@@ -113,7 +114,7 @@ export function CriticalIncidentReviewIntelligenceWidget() {
           <Stat label="Current Period" value={trend.totalIncidents as number} />
           <Stat label="Previous Period" value={trend.previousPeriodTotal as number} />
           <Stat label="Overall Trend" value={trend.overallTrend as string} />
-          <Stat label="Repeat Rate" value={`${trend.repeatIncidentRate}%`} />
+          <Stat label="Repeat Rate" value={`${formatRateLoose(trend.repeatIncidentRate)}`} />
           <Stat label="High Severity" value={trend.highSeverityCount as number} />
           <Stat label="Critical Severity" value={trend.criticalSeverityCount as number} />
         </div>

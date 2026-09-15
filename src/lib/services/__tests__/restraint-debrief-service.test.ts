@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<RestraintDebriefRecord>): RestraintDebriefRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    debrief_type: overrides?.debrief_type ?? "child_debrief",
-    restraint_type: overrides?.restraint_type ?? "planned_intervention",
-    debrief_outcome: overrides?.debrief_outcome ?? "no_concerns",
-    child_emotional_state: overrides?.child_emotional_state ?? "calm",
-    debrief_date: overrides?.debrief_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    debrief_type: "child_debrief",
+    restraint_type: "planned_intervention",
+    debrief_outcome: "no_concerns",
+    child_emotional_state: "calm",
+    debrief_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    staff_involved: overrides?.staff_involved ?? "Staff A",
-    child_debrief_completed: overrides?.child_debrief_completed ?? true,
-    staff_debrief_completed: overrides?.staff_debrief_completed ?? true,
-    medical_check_done: overrides?.medical_check_done ?? true,
-    body_map_completed: overrides?.body_map_completed ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? true,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
-    parent_notified: overrides?.parent_notified ?? true,
-    witness_statements_taken: overrides?.witness_statements_taken ?? true,
-    cctv_reviewed: overrides?.cctv_reviewed ?? true,
-    proportionate_response: overrides?.proportionate_response ?? true,
-    learning_documented: overrides?.learning_documented ?? true,
-    plan_updated: overrides?.plan_updated ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    debriefed_by: overrides?.debriefed_by ?? "Manager A",
-    restraint_duration_minutes: overrides?.restraint_duration_minutes ?? 5,
+    staff_involved: "Staff A",
+    child_debrief_completed: true,
+    staff_debrief_completed: true,
+    medical_check_done: true,
+    body_map_completed: true,
+    ofsted_notified: true,
+    social_worker_notified: true,
+    parent_notified: true,
+    witness_statements_taken: true,
+    cctv_reviewed: true,
+    proportionate_response: true,
+    learning_documented: true,
+    plan_updated: true,
+    issues_found: [], actions_taken: [],
+    debriefed_by: "Manager A",
+    restraint_duration_minutes: 5,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -121,5 +124,23 @@ describe("restraint-debrief-service", () => {
       expect(types).toContain("ofsted_not_notified");
       expect(types).toContain("learning_not_documented");
     });
+  });
+});
+
+// ── Tri-state: unassessed proportionality is not "assessed as disproportionate" ──
+describe("tri-state judgements", () => {
+  it("surfaces an unassessed restraint as unassessed", () => {
+    const alerts = _testing.identifyRestraintDebriefAlerts([
+      makeRecord({ proportionate_response: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "disproportionate_response");
+    expect(a?.message).toMatch(/no proportionality assessment recorded/i);
+    expect(a?.message).not.toMatch(/assessed as disproportionate/i);
+  });
+  it("still asserts a recorded disproportionate response", () => {
+    const alerts = _testing.identifyRestraintDebriefAlerts([
+      makeRecord({ proportionate_response: false }),
+    ]);
+    expect(alerts.some((x) => /assessed as disproportionate/i.test(x.message))).toBe(true);
   });
 });

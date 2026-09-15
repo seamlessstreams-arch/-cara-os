@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useMemo } from "react";
 import {
   ChevronDown,
@@ -275,7 +276,7 @@ export default function StaffCompetencyPage() {
               "font-bold tabular-nums",
               (stats.compliancePct ?? 0) >= 80 ? "text-[--cs-success]" : (stats.compliancePct ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {stats.compliancePct}%
+              {formatRate(stats.compliancePct)}
             </span>
           </div>
           <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
@@ -284,7 +285,7 @@ export default function StaffCompetencyPage() {
                 "h-full rounded-full transition-all",
                 (stats.compliancePct ?? 0) >= 80 ? "bg-green-500" : (stats.compliancePct ?? 0) >= 60 ? "bg-amber-500" : "bg-red-500",
               )}
-              style={{ width: `${stats.compliancePct}%` }}
+              style={{ width: `${formatRate(stats.compliancePct)}` }}
             />
           </div>
         </div>

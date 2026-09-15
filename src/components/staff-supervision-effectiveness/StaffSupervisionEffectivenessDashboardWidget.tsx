@@ -136,7 +136,7 @@ export default function StaffSupervisionEffectivenessDashboardWidget() {
             {data.staffProfiles.map((sp) => (
               <div key={sp.staffId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{sp.staffName}</span><span className="text-sm font-semibold text-gray-600">{sp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {sp.totalSessions}</span><span>Effectiveness: {sp.effectivenessRate}%</span><span>Safeguarding: {sp.safeguardingRate}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Sessions: {sp.totalSessions}</span><span>Effectiveness: {formatRate(sp.effectivenessRate)}</span><span>Safeguarding: {formatRate(sp.safeguardingRate)}</span></div>
               </div>
             ))}
           </div>

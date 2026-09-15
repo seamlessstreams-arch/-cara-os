@@ -6,6 +6,7 @@
 // Reg 16/33/34 — staffing levels, shift coverage, workforce compliance.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -103,7 +104,7 @@ export function RotaIntelligenceCard() {
               "text-lg font-bold tabular-nums",
               o.completion_rate >= 95 ? "text-[--cs-success]" : o.completion_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.completion_rate}%
+              {formatRate(o.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>

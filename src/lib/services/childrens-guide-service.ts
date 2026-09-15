@@ -538,14 +538,25 @@ export async function updateGuide(
   // OTHER active guide for the home superseded — mirrors updateStatement.
   // Best-effort: a failure here never fails the activation itself.
   if (updates.status === "active" && data?.home_id) {
-    try {
-      await (s.from("cs_childrens_guides") as SB)
-        .update({ status: "superseded", updated_at: new Date().toISOString() })
-        .eq("home_id", data.home_id)
-        .eq("status", "active")
-        .neq("id", id);
-    } catch {
-      /* activation stands; supersession is retried on the next activate */
+    // The client returns an error rather than throwing, so the try/catch this
+    // replaced never saw a failed supersession. Activation still stands — that
+    // decision is unchanged — but a failure leaves two guides marked active,
+    // and a child can be handed the wrong version, so it is no longer silent.
+    const { error: supersedeError } = await (s.from("cs_childrens_guides") as SB)
+      .update({ status: "superseded", updated_at: new Date().toISOString() })
+      .eq("home_id", data.home_id)
+      .eq("status", "active")
+      .neq("id", id);
+
+    if (supersedeError) {
+      console.error("[childrens-guide] supersession failed for home", data.home_id, supersedeError);
+      return {
+        ok: true,
+        data,
+        warning:
+          "This guide is active, but the previous version could not be marked superseded — " +
+          "more than one guide is showing as active until that is corrected.",
+      };
     }
   }
 

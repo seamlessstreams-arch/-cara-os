@@ -13,7 +13,7 @@ create table if not exists public.cs_parental_contact_arrangements (
   duration_minutes integer not null default 0,
   supervised boolean not null default false,
   supervisor_name text,
-  court_order_complied boolean not null default true,
+  court_order_complied boolean,
   child_views_before boolean not null default false,
   child_views_after boolean not null default false,
   social_worker_informed boolean not null default false,

@@ -18,7 +18,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
-import type { LACReview, LACReviewType, LACReviewOutcome, LACChildParticipation, LACPlacementStability } from "@/types/extended";
+import type { LACReview, LACReviewType, LACReviewOutcome, LACChildParticipation } from "@/types/extended";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -68,6 +68,8 @@ const TYPE_META: Record<LACReviewType, { label: string; color: string }> = {
   subsequent:    { label: "Subsequent (6 monthly)",  color: "bg-green-100 text-green-800" },
   emergency:     { label: "Emergency Review",   color: "bg-red-100 text-red-800" },
   disruption:    { label: "Disruption Meeting",  color: "bg-orange-100 text-orange-800" },
+  additional:    { label: "Additional Review",   color: "bg-amber-100 text-amber-800" },
+  pre_discharge: { label: "Pre-Discharge Review", color: "bg-indigo-100 text-indigo-800" },
 };
 
 const OUTCOME_META: Record<LACReviewOutcome, { label: string; color: string }> = {
@@ -76,6 +78,7 @@ const OUTCOME_META: Record<LACReviewOutcome, { label: string; color: string }> =
   care_plan_amended:   { label: "Care Plan Amended",    color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   actions_agreed:      { label: "Actions Agreed",       color: "bg-[--cs-info-bg] text-[--cs-info]" },
   return_home:         { label: "Return Home Plan",     color: "bg-purple-100 text-purple-700" },
+  escalation_required: { label: "Escalation Required",  color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 const OUTCOME_TEXT: Record<LACReviewOutcome, string> = {
@@ -84,6 +87,7 @@ const OUTCOME_TEXT: Record<LACReviewOutcome, string> = {
   care_plan_amended:   "text-[--cs-warning]",
   actions_agreed:      "text-[--cs-info]",
   return_home:         "text-purple-700",
+  escalation_required: "text-[--cs-risk]",
 };
 
 const STABILITY_ROW: Record<string, RowSeverity> = { stable: "success", some_concerns: "warning" };
@@ -105,10 +109,10 @@ const EXPORT_COLS: ExportColumn<LACReview>[] = [
   { header: "Venue",            accessor: (r: LACReview) => r.venue },
   { header: "Participation",    accessor: (r: LACReview) => PARTICIPATION_META[r.child_participation] },
   { header: "Child Views",      accessor: (r: LACReview) => r.child_views },
-  { header: "Outcome",          accessor: (r: LACReview) => OUTCOME_META[r.outcome].label },
+  { header: "Outcome",          accessor: (r: LACReview) => (r.outcome ? OUTCOME_META[r.outcome].label : "—") },
   { header: "Recommendations",  accessor: (r: LACReview) => r.recommendations.join("; ") },
   { header: "Next Review",      accessor: (r: LACReview) => r.next_review_date },
-  { header: "Stability",        accessor: (r: LACReview) => r.placement_stability },
+  { header: "Stability",        accessor: (r: LACReview) => r.placement_stability ?? "—" },
   { header: "Notes",            accessor: (r: LACReview) => r.notes },
   { header: "Recorded By",      accessor: (r: LACReview) => getStaffName(r.recorded_by) },
 ];
@@ -255,16 +259,16 @@ export default function LACReviewsPage() {
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const typeM = TYPE_META[r.review_type];
-            const outcomeM = OUTCOME_META[r.outcome];
+            const outcomeM = r.outcome ? OUTCOME_META[r.outcome] : null;
             const pendingActions = r.actions_agreed.filter((a) => !a.completed).length;
             return (
               <div key={r.id}>
-                <FlatListRow severity={STABILITY_ROW[r.placement_stability] ?? "risk"} onClick={() => toggle(r.id)} aria-expanded={open}>
+                <FlatListRow severity={r.placement_stability ? (STABILITY_ROW[r.placement_stability] ?? "risk") : "neutral"} onClick={() => toggle(r.id)} aria-expanded={open}>
                   <div className="flex items-start justify-between flex-1 min-w-0">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", typeM.color)}>{typeM.label}</Badge>
-                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", OUTCOME_TEXT[r.outcome])}>{outcomeM.label}</span>
+                        {outcomeM && r.outcome && <span className={cn("text-[11px] font-semibold uppercase tracking-wide", OUTCOME_TEXT[r.outcome])}>{outcomeM.label}</span>}
                         {pendingActions > 0 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">{pendingActions} pending</span>}
                       </div>
                       <p className="font-semibold">{getYPName(r.child_id)} — LAC Review</p>
@@ -371,17 +375,18 @@ export default function LACReviewsPage() {
             const fd = new FormData(e.currentTarget);
             const childId = fd.get("child_id") as string;
             const reviewType = fd.get("review_type") as string;
-            if (!childId || !reviewType) return;
+            const participation = fd.get("child_participation") as string;
+            if (!childId || !reviewType || !participation) return;
             createReview.mutate({
               child_id: childId, review_type: reviewType as LACReviewType,
               date: fd.get("date") as string || todayStr(),
               iro: fd.get("iro") as string || "", venue: fd.get("venue") as string || "",
-              attendees: [], child_participation: "attended" as LACChildParticipation,
+              attendees: [], child_participation: participation as LACChildParticipation,
               child_views: fd.get("child_views") as string || "",
               key_discussions: (fd.get("key_discussions") as string || "").split("\n").filter(Boolean),
-              recommendations: [], outcome: "actions_agreed" as LACReviewOutcome, actions_agreed: [],
+              recommendations: [], outcome: null, actions_agreed: [],
               next_review_date: fd.get("next_review_date") as string || "",
-              placement_stability: "stable" as LACPlacementStability, care_plan_updated: false,
+              placement_stability: null, care_plan_updated: null,
               notes: "", recorded_by: "staff_darren", home_id: "home_oak",
             }, {
               onSuccess: () => { toast.success("LAC review recorded"); setShowNew(false); },
@@ -413,6 +418,12 @@ export default function LACReviewsPage() {
             <div>
               <label htmlFor="6e4b-venue" className="text-sm font-medium">Venue</label>
               <Input id="6e4b-venue" name="venue" placeholder="Where was the review held?" />
+            </div>
+            <div>
+              <label htmlFor="6e4b-participation" className="text-sm font-medium">Child&apos;s Participation</label>
+              <Select name="child_participation"><SelectTrigger id="6e4b-participation"><SelectValue placeholder="How did the child take part?" /></SelectTrigger>
+                <SelectContent>{Object.entries(PARTICIPATION_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <label htmlFor="6e4b-child-apos-s-views" className="text-sm font-medium">Child&apos;s Views</label>

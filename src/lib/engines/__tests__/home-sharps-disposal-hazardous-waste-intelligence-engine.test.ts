@@ -34,7 +34,7 @@ function uid(): string {
 
 function makeSharpsBin(overrides: Partial<SharpsBinRecordInput> = {}): SharpsBinRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     location: "Medical Room",
     bin_type: "standard",
     is_locked: true,
@@ -58,7 +58,7 @@ function makeSharpsBin(overrides: Partial<SharpsBinRecordInput> = {}): SharpsBin
 
 function makeHazardousWaste(overrides: Partial<HazardousWasteRecordInput> = {}): HazardousWasteRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     waste_type: "chemical",
     substance_name: "Bleach",
     quantity: "5L",
@@ -83,7 +83,7 @@ function makeHazardousWaste(overrides: Partial<HazardousWasteRecordInput> = {}):
 
 function makeCoshh(overrides: Partial<CoshhRecordInput> = {}): CoshhRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     substance_name: "Floor Cleaner",
     substance_category: "cleaning",
     coshh_assessment_completed: true,
@@ -109,7 +109,7 @@ function makeCoshh(overrides: Partial<CoshhRecordInput> = {}): CoshhRecordInput 
 
 function makeClinicalWaste(overrides: Partial<ClinicalWasteRecordInput> = {}): ClinicalWasteRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     waste_category: "infectious",
     waste_stream_colour: "orange",
     segregation_correct: true,
@@ -135,8 +135,8 @@ function makeClinicalWaste(overrides: Partial<ClinicalWasteRecordInput> = {}): C
 
 function makeChildSafety(overrides: Partial<ChildSafetyRecordInput> = {}): ChildSafetyRecordInput {
   return {
-    id: overrides.id ?? uid(),
-    child_id: overrides.child_id ?? "child_1",
+    id: uid(),
+    child_id: "child_1",
     awareness_session_date: "2026-05-10",
     awareness_topic: "sharps_safety",
     session_completed: true,

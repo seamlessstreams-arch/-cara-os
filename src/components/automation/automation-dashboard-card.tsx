@@ -10,7 +10,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Zap, Loader2, CheckCircle2, AlertTriangle, XCircle,
+  Zap, Loader2,
   ChevronRight, ToggleLeft, ToggleRight, Activity,
 } from "lucide-react";
 import type {
@@ -35,11 +35,6 @@ interface AutomationRulesResponse {
 
 // ── Status badge styles ────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeof CheckCircle2 }> = {
-  success: { bg: "bg-green-100", text: "text-green-700", icon: CheckCircle2 },
-  partial: { bg: "bg-amber-100", text: "text-amber-700", icon: AlertTriangle },
-  failed:  { bg: "bg-red-100",   text: "text-red-700",   icon: XCircle },
-};
 
 // ── Helper: format trigger name for display ────────────────────────────────
 

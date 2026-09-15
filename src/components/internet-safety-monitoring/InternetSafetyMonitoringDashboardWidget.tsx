@@ -13,6 +13,7 @@
 // - Strengths, areas for improvement, and actions
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // ── Local interfaces for the API response shape ──────────────────────────
@@ -257,21 +258,21 @@ export default function InternetSafetyMonitoringDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-blue-50 rounded-lg">
           <Stat
-            value={`${data.actionTakenRate}%`}
+            value={`${formatRate(data.actionTakenRate)}`}
             label="Action Taken"
             colorClass="text-blue-700"
           />
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
           <Stat
-            value={`${data.childSupportedRate}%`}
+            value={`${formatRate(data.childSupportedRate)}`}
             label="Child Supported"
             colorClass="text-green-700"
           />
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
           <Stat
-            value={`${data.recordedTimelyRate}%`}
+            value={`${formatRate(data.recordedTimelyRate)}`}
             label="Recorded Timely"
             colorClass="text-purple-700"
           />
@@ -358,7 +359,7 @@ export default function InternetSafetyMonitoringDashboardWidget() {
                     <div>
                       <div className="text-xs text-gray-500">Supported</div>
                       <div className="text-sm font-bold text-green-600">
-                        {profile.supportedRate}%
+                        {formatRate(profile.supportedRate)}
                       </div>
                     </div>
                   </div>
@@ -414,13 +415,13 @@ export default function InternetSafetyMonitoringDashboardWidget() {
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-2 bg-blue-50 rounded">
               <div className="text-lg font-bold text-blue-700">
-                {data.lessonsAppliedRate}%
+                {formatRate(data.lessonsAppliedRate)}
               </div>
               <div className="text-[10px] text-gray-500">Lessons Applied</div>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded">
               <div className="text-lg font-bold text-purple-700">
-                {data.referralAppropriatenessRate}%
+                {formatRate(data.referralAppropriatenessRate)}
               </div>
               <div className="text-[10px] text-gray-500">
                 Referral Appropriateness
@@ -428,7 +429,7 @@ export default function InternetSafetyMonitoringDashboardWidget() {
             </div>
             <div className="text-center p-2 bg-green-50 rounded">
               <div className="text-lg font-bold text-green-700">
-                {data.staffTrainingCoverageRate}%
+                {formatRate(data.staffTrainingCoverageRate)}
               </div>
               <div className="text-[10px] text-gray-500">
                 Training Coverage

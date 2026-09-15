@@ -70,17 +70,17 @@ export interface ReligiousSpiritualNeedsRecord {
   child_name: string;
   child_id: string | null;
   staff_name: string;
-  facilitated: boolean;
-  child_views_sought: boolean;
-  parent_carer_consulted: boolean;
-  culturally_appropriate: boolean;
-  dietary_observance_met: boolean;
-  worship_access_provided: boolean;
-  prayer_space_available: boolean;
-  festival_recognised: boolean;
+  facilitated: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_views_sought: boolean | null;
+  parent_carer_consulted: boolean | null;
+  culturally_appropriate: boolean | null;
+  dietary_observance_met: boolean | null;
+  worship_access_provided: boolean | null;
+  prayer_space_available: boolean | null;
+  festival_recognised: boolean | null;
   faith_leader_contacted: boolean;
-  careplan_updated: boolean;
-  recorded_promptly: boolean;
+  careplan_updated: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -157,16 +157,22 @@ export function computeReligiousSpiritualMetrics(
   by_satisfaction_level: Record<string, number>;
 } {
   const facilitated = records.filter((r) => r.facilitated).length;
-  const notFacilitated = records.filter((r) => !r.facilitated).length;
+  const notFacilitated = records.filter((r) => r.facilitated === false).length;
   const satisfied = records.filter(
     (r) => r.satisfaction_level === "very_satisfied" || r.satisfaction_level === "satisfied",
   ).length;
   const dissatisfied = records.filter((r) => r.satisfaction_level === "dissatisfied").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ReligiousSpiritualNeedsRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -225,67 +231,69 @@ export function identifyReligiousSpiritualAlerts(
 
   // Dissatisfied and views not sought
   for (const r of records) {
-    if (r.satisfaction_level === "dissatisfied" && !r.child_views_sought) {
+    if (r.satisfaction_level === "dissatisfied" && r.child_views_sought !== true) {
       alerts.push({
         type: "dissatisfied_views_not_sought",
         severity: "critical",
-        message: `${r.child_name} is dissatisfied with ${r.support_type.replace(/_/g, " ")} support and their views were not sought — UNCRC Article 14 requires respect for freedom of religion`,
+        message: r.child_views_sought === false
+          ? `${r.child_name} is dissatisfied with ${r.support_type.replace(/_/g, " ")} support and their views were not sought — UNCRC Article 14 requires respect for freedom of religion`
+          : `${r.child_name} is dissatisfied with ${r.support_type.replace(/_/g, " ")} support and there is no record their views were sought — seek and evidence them; UNCRC Article 14 requires respect for freedom of religion`,
         id: r.id,
       });
     }
   }
 
   // Not facilitated
-  const notFacilitated = records.filter((r) => !r.facilitated).length;
+  const notFacilitated = records.filter((r) => r.facilitated !== true).length;
   if (notFacilitated >= 1) {
     alerts.push({
       type: "not_facilitated",
       severity: "high",
-      message: `${notFacilitated} religious support ${notFacilitated === 1 ? "session was" : "sessions were"} not facilitated — the home must actively enable children's religious practice`,
+      message: `${notFacilitated} religious support ${notFacilitated === 1 ? "session was" : "sessions were"} without evidenced facilitation — the home must actively enable children's religious practice`,
       id: "not_facilitated",
     });
   }
 
   // Careplan not updated
-  const noCareplan = records.filter((r) => !r.careplan_updated).length;
+  const noCareplan = records.filter((r) => r.careplan_updated !== true).length;
   if (noCareplan >= 1) {
     alerts.push({
       type: "careplan_not_updated",
       severity: "high",
-      message: `${noCareplan} ${noCareplan === 1 ? "record shows" : "records show"} care plan not updated for religious needs — NMS 3 requires placement plans to address religious observance`,
+      message: `${noCareplan} ${noCareplan === 1 ? "record shows" : "records show"} no care-plan update for religious needs evidenced — NMS 3 requires placement plans to address religious observance`,
       id: "careplan_not_updated",
     });
   }
 
   // Not culturally appropriate
-  const notAppropriate = records.filter((r) => !r.culturally_appropriate).length;
+  const notAppropriate = records.filter((r) => r.culturally_appropriate !== true).length;
   if (notAppropriate >= 1) {
     alerts.push({
       type: "not_culturally_appropriate",
       severity: "high",
-      message: `${notAppropriate} ${notAppropriate === 1 ? "support session was" : "support sessions were"} not culturally appropriate — review faith-sensitive practice`,
+      message: `${notAppropriate} ${notAppropriate === 1 ? "support session was" : "support sessions were"} without evidenced cultural appropriateness — review faith-sensitive practice`,
       id: "not_culturally_appropriate",
     });
   }
 
   // Dietary observance not met
-  const noDiet = records.filter((r) => !r.dietary_observance_met).length;
+  const noDiet = records.filter((r) => r.dietary_observance_met !== true).length;
   if (noDiet >= 2) {
     alerts.push({
       type: "dietary_not_met",
       severity: "medium",
-      message: `${noDiet} sessions where dietary observance was not met — faith-based dietary needs are non-negotiable`,
+      message: `${noDiet} sessions without evidence dietary observance was met — faith-based dietary needs are non-negotiable`,
       id: "dietary_not_met",
     });
   }
 
   // Parent not consulted
-  const noParent = records.filter((r) => !r.parent_carer_consulted).length;
+  const noParent = records.filter((r) => r.parent_carer_consulted !== true).length;
   if (noParent >= 2) {
     alerts.push({
       type: "parent_not_consulted",
       severity: "medium",
-      message: `${noParent} religious support sessions without parent/carer consultation — families hold essential faith knowledge`,
+      message: `${noParent} religious support sessions without evidenced parent/carer consultation — families hold essential faith knowledge`,
       id: "parent_not_consulted",
     });
   }
@@ -366,17 +374,17 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       staff_name: payload.staffName,
-      facilitated: payload.facilitated ?? true,
-      child_views_sought: payload.childViewsSought ?? true,
-      parent_carer_consulted: payload.parentCarerConsulted ?? true,
-      culturally_appropriate: payload.culturallyAppropriate ?? true,
-      dietary_observance_met: payload.dietaryObservanceMet ?? true,
-      worship_access_provided: payload.worshipAccessProvided ?? true,
-      prayer_space_available: payload.prayerSpaceAvailable ?? true,
-      festival_recognised: payload.festivalRecognised ?? true,
+      facilitated: payload.facilitated ?? null,
+      child_views_sought: payload.childViewsSought ?? null,
+      parent_carer_consulted: payload.parentCarerConsulted ?? null,
+      culturally_appropriate: payload.culturallyAppropriate ?? null,
+      dietary_observance_met: payload.dietaryObservanceMet ?? null,
+      worship_access_provided: payload.worshipAccessProvided ?? null,
+      prayer_space_available: payload.prayerSpaceAvailable ?? null,
+      festival_recognised: payload.festivalRecognised ?? null,
       faith_leader_contacted: payload.faithLeaderContacted ?? false,
-      careplan_updated: payload.careplanUpdated ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      careplan_updated: payload.careplanUpdated ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

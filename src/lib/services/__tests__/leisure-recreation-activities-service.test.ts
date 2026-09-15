@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<LeisureRecreationActivitiesRecord>): LeisureRecreationActivitiesRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    activity_type: overrides?.activity_type ?? "sport",
-    participation_level: overrides?.participation_level ?? "enthusiastic",
-    enjoyment_rating: overrides?.enjoyment_rating ?? "enjoyed",
-    skill_development: overrides?.skill_development ?? "good_growth",
-    activity_date: overrides?.activity_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    activity_type: "sport",
+    participation_level: "enthusiastic",
+    enjoyment_rating: "enjoyed",
+    skill_development: "good_growth",
+    activity_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_chose_activity: overrides?.child_chose_activity ?? true,
-    age_appropriate: overrides?.age_appropriate ?? true,
-    inclusive_access: overrides?.inclusive_access ?? true,
-    peer_interaction: overrides?.peer_interaction ?? true,
-    community_based: overrides?.community_based ?? true,
-    new_experience: overrides?.new_experience ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    risk_assessed: overrides?.risk_assessed ?? true,
-    transport_arranged: overrides?.transport_arranged ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    facilitated_by: "Staff A",
+    child_chose_activity: true,
+    age_appropriate: true,
+    inclusive_access: true,
+    peer_interaction: true,
+    community_based: true,
+    new_experience: true,
+    care_plan_reflects: true,
+    social_worker_informed: true,
+    parent_informed: true,
+    risk_assessed: true,
+    transport_arranged: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,29 @@ describe("leisure-recreation-activities-service", () => {
       expect(types).toContain("not_risk_assessed");
       expect(types).toContain("no_community_activities");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("counts an unrecorded risk assessment in the gap alert, worded as unevidenced", () => {
+    const alerts = identifyLeisureRecreationAlerts([
+      makeRecord({ risk_assessed: null }),
+      makeRecord({ id: "r-2", risk_assessed: null }),
+    ]);
+    const alert = alerts.find((a) => a.type === "not_risk_assessed");
+    expect(alert).toBeTruthy();
+    expect(alert!.message).toContain("evidenced");
+  });
+  it("raises no risk gap when the assessment is recorded as done", () => {
+    const alerts = identifyLeisureRecreationAlerts([makeRecord({ risk_assessed: true })]);
+    expect(alerts.some((a) => a.type === "not_risk_assessed")).toBe(false);
+  });
+  it("does not count unrecorded child choice in the refused-choice metric", () => {
+    const rows = [null, null, false].map((v, i) => makeRecord({ id: `r-${i}`, child_chose_activity: v }));
+    expect(computeLeisureRecreationMetrics(rows).no_choice_count).toBe(1);
+  });
+  it("does not dilute the risk-assessed rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, risk_assessed: v }));
+    expect(computeLeisureRecreationMetrics(rows).risk_assessed_rate).toBe(100);
   });
 });

@@ -55,7 +55,6 @@ export function CaraStudioArtifactCard({
   artifact,
   onSubmit,
   onArchive,
-  onDelete,
   onRecover,
 }: CaraStudioArtifactCardProps) {
   const statusCfg = STATUS_CONFIG[artifact.status] ?? STATUS_CONFIG.draft;

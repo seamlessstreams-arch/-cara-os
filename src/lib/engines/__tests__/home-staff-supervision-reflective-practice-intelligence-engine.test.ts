@@ -36,7 +36,7 @@ function makeSupervision(
 ): SupervisionInput {
   return {
     id: uid(),
-    staff_id: overrides.staff_id ?? uid(),
+    staff_id: uid(),
     supervision_date: "2026-05-01",
     supervisor_id: "sup-1",
     type: "formal",
@@ -57,7 +57,7 @@ function makeReflection(
 ): StaffReflectionInput {
   return {
     id: uid(),
-    staff_id: overrides.staff_id ?? uid(),
+    staff_id: uid(),
     reflection_date: "2026-05-01",
     reflection_type: "individual",
     topic: "Test topic",
@@ -74,7 +74,7 @@ function makeSafeguardingSupervision(
 ): SafeguardingSupervisionInput {
   return {
     id: uid(),
-    staff_id: overrides.staff_id ?? uid(),
+    staff_id: uid(),
     date: "2026-05-01",
     supervisor_id: "sup-1",
     cases_discussed: 1,
@@ -105,7 +105,7 @@ function makeMatrix(
 ): SupervisionMatrixInput {
   return {
     id: uid(),
-    staff_id: overrides.staff_id ?? uid(),
+    staff_id: uid(),
     frequency_weeks: 4,
     last_supervision_date: "2026-05-01",
     next_due_date: "2026-05-29",

@@ -8,33 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CommunityLinksIntegrationRecord>): CommunityLinksIntegrationRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    activity_type: overrides?.activity_type ?? "sports_club",
-    engagement_level: overrides?.engagement_level ?? "fully_engaged",
-    link_status: overrides?.link_status ?? "active",
-    funding_source: overrides?.funding_source ?? "home_budget",
-    start_date: overrides?.start_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    activity_type: "sports_club",
+    engagement_level: "fully_engaged",
+    link_status: "active",
+    funding_source: "home_budget",
+    start_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    activity_name: overrides?.activity_name ?? "Football Club",
-    provider_name: overrides?.provider_name ?? "Local FC",
-    safeguarding_checked: overrides?.safeguarding_checked ?? true,
-    dbs_verified: overrides?.dbs_verified ?? true,
-    risk_assessed: overrides?.risk_assessed ?? true,
-    consent_obtained: overrides?.consent_obtained ?? true,
-    transport_arranged: overrides?.transport_arranged ?? true,
-    child_chose_activity: overrides?.child_chose_activity ?? true,
-    feedback_obtained: overrides?.feedback_obtained ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    care_plan_linked: overrides?.care_plan_linked ?? true,
-    cultural_needs_met: overrides?.cultural_needs_met ?? true,
-    inclusive_access: overrides?.inclusive_access ?? true,
-    review_scheduled: overrides?.review_scheduled ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    recorded_by: overrides?.recorded_by ?? "Manager A",
+    activity_name: "Football Club",
+    provider_name: "Local FC",
+    safeguarding_checked: true,
+    dbs_verified: true,
+    risk_assessed: true,
+    consent_obtained: true,
+    transport_arranged: true,
+    child_chose_activity: true,
+    feedback_obtained: true,
+    social_worker_informed: true,
+    care_plan_linked: true,
+    cultural_needs_met: true,
+    inclusive_access: true,
+    review_scheduled: true,
+    issues_found: [], actions_taken: [],
+    recorded_by: "Manager A",
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,29 @@ describe("community-links-integration-service", () => {
       expect(types).toContain("not_child_chosen");
       expect(types).toContain("cultural_needs_not_met");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the active-link safeguarding critical between recorded no-check and unrecorded", () => {
+    const nullAlert = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: null }),
+    ]).find((a) => a.type === "active_no_safeguarding");
+    const falseAlert = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: false }),
+    ]).find((a) => a.type === "active_no_safeguarding");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no safeguarding critical when the check is recorded as done", () => {
+    const alerts = identifyCommunityLinksAlerts([
+      makeRecord({ link_status: "active", safeguarding_checked: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "active_no_safeguarding")).toBe(false);
+  });
+  it("does not dilute the DBS rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, dbs_verified: v }));
+    expect(computeCommunityLinksMetrics(rows).dbs_verified_rate).toBe(100);
   });
 });

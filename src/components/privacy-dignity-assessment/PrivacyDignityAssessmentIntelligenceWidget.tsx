@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,44 +78,44 @@ export function PrivacyDignityAssessmentIntelligenceWidget() {
       <Section title="Personal Privacy" defaultOpen>
         <ScoreBar label="Personal Privacy" value={personal.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Fully Compliant" value={`${personal.fullyCompliantRate}%`} />
-          <Stat label="Knocking Observed" value={`${personal.knockingObservedRate}%`} />
-          <Stat label="Lockable Storage" value={`${personal.lockableStorageRate}%`} />
-          <Stat label="Personal Space" value={`${personal.personalSpaceRate}%`} />
-          <Stat label="Passed" value={`${personal.passedRate}%`} />
+          <Stat label="Fully Compliant" value={`${formatRate(personal.fullyCompliantRate)}`} />
+          <Stat label="Knocking Observed" value={`${formatRate(personal.knockingObservedRate)}`} />
+          <Stat label="Lockable Storage" value={`${formatRate(personal.lockableStorageRate)}`} />
+          <Stat label="Personal Space" value={`${formatRate(personal.personalSpaceRate)}`} />
+          <Stat label="Passed" value={`${formatRate(personal.passedRate)}`} />
         </div>
       </Section>
 
       <Section title="Communication Privacy">
         <ScoreBar label="Communication Privacy" value={comms.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Privacy Respected" value={`${comms.feelsPrivacyRespectedRate}%`} />
-          <Stat label="Private Calls" value={`${comms.canMakePrivateCallsRate}%`} />
-          <Stat label="Belongings Safe" value={`${comms.belongingsSafeRate}%`} />
-          <Stat label="Bedroom Own" value={`${comms.feelsBedroomIsOwnRate}%`} />
-          <Stat label="Positive Rating" value={`${comms.positiveRatingRate}%`} />
+          <Stat label="Privacy Respected" value={`${formatRate(comms.feelsPrivacyRespectedRate)}`} />
+          <Stat label="Private Calls" value={`${formatRate(comms.canMakePrivateCallsRate)}`} />
+          <Stat label="Belongings Safe" value={`${formatRate(comms.belongingsSafeRate)}`} />
+          <Stat label="Bedroom Own" value={`${formatRate(comms.feelsBedroomIsOwnRate)}`} />
+          <Stat label="Positive Rating" value={`${formatRate(comms.positiveRatingRate)}`} />
         </div>
       </Section>
 
       <Section title="Confidentiality Compliance">
         <ScoreBar label="Confidentiality" value={confid.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Investigated" value={`${confid.investigationCompletedRate}%`} />
-          <Stat label="Action Taken" value={`${confid.actionTakenRate}%`} />
-          <Stat label="Child Informed" value={`${confid.childInformedRate}%`} />
-          <Stat label="Preventive Measures" value={`${confid.preventiveMeasuresRate}%`} />
+          <Stat label="Investigated" value={`${formatRate(confid.investigationCompletedRate)}`} />
+          <Stat label="Action Taken" value={`${formatRate(confid.actionTakenRate)}`} />
+          <Stat label="Child Informed" value={`${formatRate(confid.childInformedRate)}`} />
+          <Stat label="Preventive Measures" value={`${formatRate(confid.preventiveMeasuresRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Privacy Readiness">
         <ScoreBar label="Staff Readiness" value={staffReadiness.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Privacy Rights" value={`${staffReadiness.privacyRightsRate}%`} />
-          <Stat label="Knocking Policy" value={`${staffReadiness.knockingPolicyRate}%`} />
-          <Stat label="Confidentiality" value={`${staffReadiness.confidentialityRate}%`} />
-          <Stat label="Data Protection" value={`${staffReadiness.dataProtectionRate}%`} />
-          <Stat label="Body Autonomy" value={`${staffReadiness.bodyAutonomyRate}%`} />
-          <Stat label="Digital Privacy" value={`${staffReadiness.digitalPrivacyRate}%`} />
+          <Stat label="Privacy Rights" value={`${formatRate(staffReadiness.privacyRightsRate)}`} />
+          <Stat label="Knocking Policy" value={`${formatRate(staffReadiness.knockingPolicyRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(staffReadiness.confidentialityRate)}`} />
+          <Stat label="Data Protection" value={`${formatRate(staffReadiness.dataProtectionRate)}`} />
+          <Stat label="Body Autonomy" value={`${formatRate(staffReadiness.bodyAutonomyRate)}`} />
+          <Stat label="Digital Privacy" value={`${formatRate(staffReadiness.digitalPrivacyRate)}`} />
         </div>
       </Section>
 

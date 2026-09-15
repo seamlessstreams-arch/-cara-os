@@ -67,18 +67,18 @@ export interface GardenHorticultureActivitiesRecord {
   child_name: string;
   child_id: string | null;
   supported_by: string;
-  age_appropriate: boolean;
-  risk_assessment_done: boolean;
-  tools_safe: boolean;
-  supervision_adequate: boolean;
-  child_chose_activity: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  parent_informed: boolean;
-  therapeutic_value_noted: boolean;
-  seasonal_learning: boolean;
-  organic_methods_used: boolean;
-  recorded_promptly: boolean;
+  age_appropriate: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  risk_assessment_done: boolean | null;
+  tools_safe: boolean | null;
+  supervision_adequate: boolean | null;
+  child_chose_activity: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  parent_informed: boolean | null;
+  therapeutic_value_noted: boolean | null;
+  seasonal_learning: boolean | null;
+  organic_methods_used: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeGardenHorticultureMetrics(
   const noBenefit = records.filter((r) => r.health_benefit === "no_benefit").length;
   const refused = records.filter((r) => r.engagement_level === "refused").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof GardenHorticultureActivitiesRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -232,45 +238,45 @@ export function identifyGardenHorticultureAlerts(
   }
 
   // No risk assessment completed
-  const noRiskAssessment = records.filter((r) => !r.risk_assessment_done).length;
+  const noRiskAssessment = records.filter((r) => r.risk_assessment_done !== true).length;
   if (noRiskAssessment >= 1) {
     alerts.push({
       type: "no_risk_assessment",
       severity: "high",
-      message: `${noRiskAssessment} ${noRiskAssessment === 1 ? "session has" : "sessions have"} no risk assessment completed`,
+      message: `${noRiskAssessment} ${noRiskAssessment === 1 ? "session has" : "sessions have"} no risk assessment evidenced`,
       id: "no_risk_assessment",
     });
   }
 
   // Unsafe tools reported
-  const toolsNotSafe = records.filter((r) => !r.tools_safe).length;
+  const toolsNotSafe = records.filter((r) => r.tools_safe !== true).length;
   if (toolsNotSafe >= 1) {
     alerts.push({
       type: "tools_not_safe",
       severity: "high",
-      message: `${toolsNotSafe} ${toolsNotSafe === 1 ? "session has" : "sessions have"} unsafe tools reported`,
+      message: `${toolsNotSafe} ${toolsNotSafe === 1 ? "session has" : "sessions have"} no evidenced tool-safety check`,
       id: "tools_not_safe",
     });
   }
 
   // No child choice
-  const noChildChoice = records.filter((r) => !r.child_chose_activity).length;
+  const noChildChoice = records.filter((r) => r.child_chose_activity !== true).length;
   if (noChildChoice >= 2) {
     alerts.push({
       type: "no_child_choice",
       severity: "medium",
-      message: `${noChildChoice} sessions have children not choosing their activity`,
+      message: `${noChildChoice} sessions have no evidenced child choice of activity`,
       id: "no_child_choice",
     });
   }
 
   // No therapeutic value noted
-  const noTherapeuticValue = records.filter((r) => !r.therapeutic_value_noted).length;
+  const noTherapeuticValue = records.filter((r) => r.therapeutic_value_noted !== true).length;
   if (noTherapeuticValue >= 2) {
     alerts.push({
       type: "no_therapeutic_value",
       severity: "medium",
-      message: `${noTherapeuticValue} sessions have no therapeutic value noted`,
+      message: `${noTherapeuticValue} sessions have no evidenced therapeutic value`,
       id: "no_therapeutic_value",
     });
   }
@@ -344,18 +350,18 @@ export async function createGardenHorticultureActivity(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       supported_by: payload.supportedBy,
-      age_appropriate: payload.ageAppropriate ?? true,
-      risk_assessment_done: payload.riskAssessmentDone ?? true,
-      tools_safe: payload.toolsSafe ?? true,
-      supervision_adequate: payload.supervisionAdequate ?? true,
-      child_chose_activity: payload.childChoseActivity ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      therapeutic_value_noted: payload.therapeuticValueNoted ?? true,
-      seasonal_learning: payload.seasonalLearning ?? true,
-      organic_methods_used: payload.organicMethodsUsed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      age_appropriate: payload.ageAppropriate ?? null,
+      risk_assessment_done: payload.riskAssessmentDone ?? null,
+      tools_safe: payload.toolsSafe ?? null,
+      supervision_adequate: payload.supervisionAdequate ?? null,
+      child_chose_activity: payload.childChoseActivity ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      therapeutic_value_noted: payload.therapeuticValueNoted ?? null,
+      seasonal_learning: payload.seasonalLearning ?? null,
+      organic_methods_used: payload.organicMethodsUsed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

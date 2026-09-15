@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
 
   const input: TaskOversightInput = {
     taskName: body.taskName,
+    // absence-ok: an unstated task is treated as required — more oversight, never less
     required: body.required ?? true,
     completed: body.completed ?? false,
     completedByRole: body.completedByRole,

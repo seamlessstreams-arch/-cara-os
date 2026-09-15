@@ -71,7 +71,7 @@ export interface HealthInput {
   sdqScore?: number;
   immunisationsUpToDate: boolean;
   appointments: HealthAppointment[];
-  registeredWithGP: boolean;
+  registeredWithGP: boolean | null;
   registeredWithDentist: boolean;
   hasHealthPlan: boolean;
   healthPlanUpToDate: boolean;
@@ -100,7 +100,8 @@ export interface HealthAssessment {
 export interface StatutoryCheck {
   type: string;
   description: string;
-  status: "met" | "overdue" | "not_applicable" | "due_soon";
+  /** "late" = the assessment happened, but outside the statutory window. */
+  status: "met" | "overdue" | "not_applicable" | "due_soon" | "late";
   lastDate?: string;
   nextDue?: string;
   daysOverdue?: number;
@@ -227,7 +228,10 @@ function assessStatutoryChecks(input: HealthInput, today: string): StatutoryChec
     checks.push({
       type: "IHA",
       description: "Initial Health Assessment",
-      status: input.ihaWithin20Days ? "met" : "met", // done but possibly late
+      // The IHA is due within 20 working days of entry to care. Both arms of
+      // this ternary used to read "met", so an assessment done outside the
+      // window reported as fully compliant and scored the full 25 points.
+      status: input.ihaWithin20Days ? "met" : "late",
       lastDate: input.ihaDate,
     });
   } else {
@@ -536,6 +540,7 @@ function scoreStatutoryCompliance(checks: StatutoryCheck[]): number {
     const weight = weights[check.type] ?? 10;
     if (check.status === "met") score += weight;
     else if (check.status === "due_soon") score += weight * 0.7;
+    else if (check.status === "late") score += weight * 0.5;
     else if (check.status === "not_applicable") score += weight;
     // overdue = 0
   }
@@ -564,7 +569,7 @@ function scoreCoverage(input: HealthInput): number {
   let score = 0;
   const max = 100;
 
-  if (input.registeredWithGP) score += 20;
+  if (input.registeredWithGP === true) score += 20;
   if (input.registeredWithDentist) score += 15;
   if (input.hasHealthPlan) score += 20;
   if (input.healthPlanUpToDate) score += 15;
@@ -604,12 +609,19 @@ function identifyConcerns(
     });
   }
 
-  // Not registered with GP
-  if (!input.registeredWithGP) {
+  // Not registered with GP. Only a recorded "not registered" is the critical
+  // concern; an unrecorded registration is a recording gap, not a breach.
+  if (input.registeredWithGP === false) {
     concerns.push({
       severity: "critical",
       category: "registration",
       description: "Not registered with a GP — immediate action required",
+    });
+  } else if (input.registeredWithGP === null) {
+    concerns.push({
+      severity: "significant",
+      category: "registration",
+      description: "GP registration is not recorded — it cannot be evidenced",
     });
   }
 
@@ -692,11 +704,20 @@ function identifyStrengths(
 ): HealthStrength[] {
   const strengths: HealthStrength[] = [];
 
+  // "late" is deliberately excluded from allMet: an assessment done outside its
+  // statutory window is not a strength, so the claim is narrowed rather than
+  // dropped.
   const allMet = checks.every(c => c.status === "met" || c.status === "not_applicable");
-  if (allMet) {
+  const anyLate = checks.some(c => c.status === "late");
+  if (allMet && !anyLate) {
     strengths.push({
       category: "compliance",
       description: "All statutory health assessments up to date",
+    });
+  } else if (allMet && anyLate) {
+    strengths.push({
+      category: "compliance",
+      description: "All statutory health assessments completed, though not all within their statutory window",
     });
   }
 
@@ -754,7 +775,7 @@ function assessRegulatory(
   const flags: RegulatoryFlag[] = [];
 
   // CHR 2015 Reg 6(2)(b) — Health needs
-  const hasCritical = overdue.some(o => o.severity === "critical") || !input.registeredWithGP;
+  const hasCritical = overdue.some(o => o.severity === "critical") || input.registeredWithGP === false;
   const hasSignificant = overdue.some(o => o.severity === "significant") || !input.hasHealthPlan;
   flags.push({
     regulation: "CHR 2015 Reg 6(2)(b)",

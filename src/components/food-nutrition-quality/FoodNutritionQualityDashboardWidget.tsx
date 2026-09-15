@@ -146,8 +146,8 @@ export default function FoodNutritionQualityDashboardWidget() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Meals: <span className="font-medium">{child.totalMeals}</span></div>
-                    <div>Nutrition: <span className="font-medium">{child.nutritionRate}%</span></div>
-                    <div>Dietary Met: <span className="font-medium">{child.dietaryNeedsMetRate}%</span></div>
+                    <div>Nutrition: <span className="font-medium">{formatRate(child.nutritionRate)}</span></div>
+                    <div>Dietary Met: <span className="font-medium">{formatRate(child.dietaryNeedsMetRate)}</span></div>
                     <div>Meal Types: <span className="font-medium">{child.uniqueMealTypes}</span></div>
                   </div>
                 </div>

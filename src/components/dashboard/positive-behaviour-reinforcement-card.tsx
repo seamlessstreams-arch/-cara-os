@@ -6,6 +6,7 @@
 // CHR 2015 Reg 11/12. SCCIF: Overall Experiences.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +92,7 @@ export function PositiveBehaviourReinforcementCard() {
             <p className="text-[10px] text-muted-foreground">Rewards</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-blue-600">{profile.de_escalation_success_rate}%</p>
+            <p className="text-lg font-bold tabular-nums text-blue-600">{formatRate(profile.de_escalation_success_rate)}</p>
             <p className="text-[10px] text-muted-foreground">De-escal</p>
           </div>
         </div>

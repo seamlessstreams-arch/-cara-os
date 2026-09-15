@@ -9,7 +9,7 @@ create table if not exists public.cs_child_modern_slavery_risks (
   nrm_referral_made boolean not null default false,
   nrm_decision text,
   police_notified boolean not null default false,
-  social_worker_notified boolean not null default true,
+  social_worker_notified boolean,
   multi_agency_referral boolean not null default false,
   safety_plan_in_place boolean not null default false,
   specialist_service_involved boolean not null default false,

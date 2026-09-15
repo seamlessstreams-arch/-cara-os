@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useEffect, useState } from "react";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
@@ -77,10 +78,10 @@ export function CulturalIdentitySupportIntelligenceWidget() {
         <ScoreBar label="Needs Assessment" value={needs.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Assessments" value={needs.totalAssessments} />
-          <Stat label="Fully Met" value={`${needs.fullyMetRate}%`} />
-          <Stat label="Review Current" value={`${needs.reviewCurrentRate}%`} />
-          <Stat label="Child Consulted" value={`${needs.childConsultedRate}%`} />
-          <Stat label="Family Consulted" value={`${needs.familyConsultedRate}%`} />
+          <Stat label="Fully Met" value={`${formatRate(needs.fullyMetRate)}`} />
+          <Stat label="Review Current" value={`${formatRate(needs.reviewCurrentRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRate(needs.childConsultedRate)}`} />
+          <Stat label="Family Consulted" value={`${formatRate(needs.familyConsultedRate)}`} />
           <Stat label="Need Types" value={needs.needTypeCoverage} />
         </div>
       </Section>
@@ -89,10 +90,10 @@ export function CulturalIdentitySupportIntelligenceWidget() {
         <ScoreBar label="Activities" value={activities.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Activities" value={activities.totalActivities} />
-          <Stat label="Engagement" value={`${activities.engagementRate}%`} />
-          <Stat label="Resources" value={`${activities.resourcesRate}%`} />
-          <Stat label="Positive Feedback" value={`${activities.positiveFeedbackRate}%`} />
-          <Stat label="Children Reached" value={`${activities.childrenReachedRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(activities.engagementRate)}`} />
+          <Stat label="Resources" value={`${formatRate(activities.resourcesRate)}`} />
+          <Stat label="Positive Feedback" value={`${formatRate(activities.positiveFeedbackRate)}`} />
+          <Stat label="Children Reached" value={`${formatRate(activities.childrenReachedRate)}`} />
           <Stat label="Activity Variety" value={activities.activityVariety} />
         </div>
       </Section>
@@ -101,11 +102,11 @@ export function CulturalIdentitySupportIntelligenceWidget() {
         <ScoreBar label="Planning" value={planning.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Plans" value={planning.totalPlans} />
-          <Stat label="Plan in Place" value={`${planning.planInPlaceRate}%`} />
-          <Stat label="Identity Documented" value={`${planning.identityDocumentedRate}%`} />
-          <Stat label="Life Story Work" value={`${planning.lifeStoryRate}%`} />
-          <Stat label="Mentor Assigned" value={`${planning.mentorRate}%`} />
-          <Stat label="Community Links" value={`${planning.communityLinksRate}%`} />
+          <Stat label="Plan in Place" value={`${formatRate(planning.planInPlaceRate)}`} />
+          <Stat label="Identity Documented" value={`${formatRate(planning.identityDocumentedRate)}`} />
+          <Stat label="Life Story Work" value={`${formatRate(planning.lifeStoryRate)}`} />
+          <Stat label="Mentor Assigned" value={`${formatRate(planning.mentorRate)}`} />
+          <Stat label="Community Links" value={`${formatRate(planning.communityLinksRate)}`} />
         </div>
       </Section>
 
@@ -113,11 +114,11 @@ export function CulturalIdentitySupportIntelligenceWidget() {
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Staff" value={staff.totalStaff} />
-          <Stat label="Awareness" value={`${staff.awarenessRate}%`} />
-          <Stat label="Anti-Racism" value={`${staff.antiRacismRate}%`} />
-          <Stat label="Religious Literacy" value={`${staff.religiousLiteracyRate}%`} />
-          <Stat label="Identity Support" value={`${staff.identitySupportRate}%`} />
-          <Stat label="LGBTQ+ Awareness" value={`${staff.lgbtqAwarenessRate}%`} />
+          <Stat label="Awareness" value={`${formatRate(staff.awarenessRate)}`} />
+          <Stat label="Anti-Racism" value={`${formatRate(staff.antiRacismRate)}`} />
+          <Stat label="Religious Literacy" value={`${formatRate(staff.religiousLiteracyRate)}`} />
+          <Stat label="Identity Support" value={`${formatRate(staff.identitySupportRate)}`} />
+          <Stat label="LGBTQ+ Awareness" value={`${formatRate(staff.lgbtqAwarenessRate)}`} />
         </div>
       </Section>
 

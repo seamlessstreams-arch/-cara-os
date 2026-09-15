@@ -67,18 +67,18 @@ export interface ChildDevelopmentMilestoneRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  child_views_included: boolean;
-  age_appropriate_targets: boolean;
-  care_plan_linked: boolean;
-  school_input_obtained: boolean;
+  child_views_included: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate_targets: boolean | null;
+  care_plan_linked: boolean | null;
+  school_input_obtained: boolean | null;
   specialist_input_obtained: boolean;
   parent_informed: boolean;
-  social_worker_informed: boolean;
-  celebration_of_achievement: boolean;
-  next_steps_identified: boolean;
-  resources_in_place: boolean;
+  social_worker_informed: boolean | null;
+  celebration_of_achievement: boolean | null;
+  next_steps_identified: boolean | null;
+  resources_in_place: boolean | null;
   multi_agency_coordinated: boolean;
-  recorded_promptly: boolean;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeChildDevelopmentMetrics(
   const intensiveSupport = records.filter((r) => r.support_level === "intensive_support").length;
   const noProgress = records.filter((r) => r.progress_rating === "no_progress").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof ChildDevelopmentMilestoneRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -245,34 +251,34 @@ export function identifyChildDevelopmentAlerts(
   }
 
   // Next steps not identified
-  const noNextSteps = records.filter((r) => !r.next_steps_identified).length;
+  const noNextSteps = records.filter((r) => r.next_steps_identified !== true).length;
   if (noNextSteps >= 1) {
     alerts.push({
       type: "no_next_steps",
       severity: "high",
-      message: `${noNextSteps} ${noNextSteps === 1 ? "milestone has" : "milestones have"} no next steps identified — update development plans`,
+      message: `${noNextSteps} ${noNextSteps === 1 ? "milestone has" : "milestones have"} no next steps evidenced — update development plans`,
       id: "no_next_steps",
     });
   }
 
   // Achievement not celebrated
-  const noCelebration = records.filter((r) => !r.celebration_of_achievement).length;
+  const noCelebration = records.filter((r) => r.celebration_of_achievement !== true).length;
   if (noCelebration >= 2) {
     alerts.push({
       type: "achievement_not_celebrated",
       severity: "medium",
-      message: `${noCelebration} milestones without celebration of achievement — recognise children's progress`,
+      message: `${noCelebration} milestones without evidenced celebration of achievement — recognise children's progress`,
       id: "achievement_not_celebrated",
     });
   }
 
   // Resources not in place
-  const noResources = records.filter((r) => !r.resources_in_place).length;
+  const noResources = records.filter((r) => r.resources_in_place !== true).length;
   if (noResources >= 2) {
     alerts.push({
       type: "resources_not_in_place",
       severity: "medium",
-      message: `${noResources} milestones without resources in place — review developmental support`,
+      message: `${noResources} milestones without evidenced resources in place — review developmental support`,
       id: "resources_not_in_place",
     });
   }
@@ -354,18 +360,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      child_views_included: payload.childViewsIncluded ?? true,
-      age_appropriate_targets: payload.ageAppropriateTargets ?? true,
-      care_plan_linked: payload.carePlanLinked ?? true,
-      school_input_obtained: payload.schoolInputObtained ?? true,
+      child_views_included: payload.childViewsIncluded ?? null,
+      age_appropriate_targets: payload.ageAppropriateTargets ?? null,
+      care_plan_linked: payload.carePlanLinked ?? null,
+      school_input_obtained: payload.schoolInputObtained ?? null,
       specialist_input_obtained: payload.specialistInputObtained ?? false,
       parent_informed: payload.parentInformed ?? false,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      celebration_of_achievement: payload.celebrationOfAchievement ?? true,
-      next_steps_identified: payload.nextStepsIdentified ?? true,
-      resources_in_place: payload.resourcesInPlace ?? true,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      celebration_of_achievement: payload.celebrationOfAchievement ?? null,
+      next_steps_identified: payload.nextStepsIdentified ?? null,
+      resources_in_place: payload.resourcesInPlace ?? null,
       multi_agency_coordinated: payload.multiAgencyCoordinated ?? false,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

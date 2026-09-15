@@ -48,7 +48,7 @@ function makeSignOff(overrides: Partial<SignOffInput> = {}): SignOffInput {
 
 function makeHandover(overrides: Partial<HandoverInput> = {}): HandoverInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     shift_date: TODAY,
     shift_from: "day",
     shift_to: "night",

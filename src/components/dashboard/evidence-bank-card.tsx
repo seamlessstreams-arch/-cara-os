@@ -6,6 +6,7 @@
 // event stream. Powered by the Evidence Bank engine (Reg 44/45).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate } from "@/lib/metrics/rate";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +60,7 @@ export function EvidenceBankCard() {
       <CardContent className="space-y-4">
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.coverage_rate >= 80 ? "bg-green-50" : "bg-amber-50")}><p className={cn("text-lg font-bold tabular-nums", o.coverage_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.coverage_rate}%</p><p className="text-[10px] text-muted-foreground">Coverage</p></div>
+          <div className={cn("text-center rounded-lg p-2.5", o.coverage_rate >= 80 ? "bg-green-50" : "bg-amber-50")}><p className={cn("text-lg font-bold tabular-nums", o.coverage_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(o.coverage_rate)}</p><p className="text-[10px] text-muted-foreground">Coverage</p></div>
           <div className="text-center rounded-lg bg-green-50 p-2.5"><p className="text-lg font-bold tabular-nums text-green-600">{o.well_evidenced}</p><p className="text-[10px] text-muted-foreground">Strong</p></div>
           <div className="text-center rounded-lg bg-amber-50 p-2.5"><p className="text-lg font-bold tabular-nums text-amber-600">{o.thin}</p><p className="text-[10px] text-muted-foreground">Thin</p></div>
           <div className={cn("text-center rounded-lg p-2.5", o.gaps > 0 ? "bg-red-50" : "bg-green-50")}><p className={cn("text-lg font-bold tabular-nums", o.gaps > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{o.gaps}</p><p className="text-[10px] text-muted-foreground">Gaps</p></div>

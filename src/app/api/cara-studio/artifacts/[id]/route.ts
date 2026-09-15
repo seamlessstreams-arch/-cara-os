@@ -8,6 +8,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { getUserIdFromRequest } from "@/lib/auth-guard";
 import { submitForReview, approveArtifact, commitArtifact, rejectArtifact, reviewArtifact } from "@/lib/cara-studio/approval.service";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
+import type { Database } from "@/lib/supabase/types";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -19,17 +20,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const sb = createServerClient();
     if (!sb) return NextResponse.json({ error: "Database not available" }, { status: 503 });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: artifact, error } = await (sb.from("cara_studio_artifacts") as any)
+    const { data: artifact, error } = await sb.from("cara_studio_artifacts")
       .select("*").eq("id", id).single();
     if (error || !artifact) return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
 
     // Fetch related data
 
     const [sources, versions, reviews] = await Promise.all([
-      (sb.from("cara_studio_artifact_sources") as any).select("*").eq("artifact_id", id),
-      (sb.from("cara_studio_artifact_versions") as any).select("*").eq("artifact_id", id).order("version_number", { ascending: false }),
-      (sb.from("cara_studio_artifact_reviews") as any).select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
+      sb.from("cara_studio_artifact_sources").select("*").eq("artifact_id", id),
+      sb.from("cara_studio_artifact_versions").select("*").eq("artifact_id", id).order("version_number", { ascending: false }),
+      sb.from("cara_studio_artifact_reviews").select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
     ]);
 
     return NextResponse.json({
@@ -71,8 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           return NextResponse.json({ success: true, status: "changes_requested" });
         case "archive":
           if (sb) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (sb.from("cara_studio_artifacts") as any).update({
+            await sb.from("cara_studio_artifacts").update({
               status: "archived", archived_at: new Date().toISOString(),
             }).eq("id", id);
             await writeStudioAuditLog({ home_id: homeId(), actor_id: userId, action_type: "artifact_archived", artifact_id: id });
@@ -94,9 +93,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     if (Object.keys(updates).length) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (sb.from("cara_studio_artifacts") as any)
-        .update(updates).eq("id", id).select("*").single();
+      const { data, error } = await sb.from("cara_studio_artifacts")
+        .update(updates as unknown as Database["public"]["Tables"]["cara_studio_artifacts"]["Update"]) // fields allowlisted above
+        .eq("id", id).select("*").single();
       if (error) throw error;
 
       await writeStudioAuditLog({
@@ -121,8 +120,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!sb) return NextResponse.json({ error: "Database not available" }, { status: 503 });
 
     // Soft delete
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (sb.from("cara_studio_artifacts") as any).update({
+    await sb.from("cara_studio_artifacts").update({
       status: "deleted_recoverable",
     }).eq("id", id);
 

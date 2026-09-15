@@ -186,8 +186,8 @@ export interface CreativeArtsActivityRow {
   activity_type: ActivityType;
   therapeutic_intent: boolean;
   therapist_qualified: boolean | null;
-  emotional_expression_enabled: boolean;
-  child_choice: boolean;
+  emotional_expression_enabled: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  child_choice: boolean | null;
   group_or_individual: GroupType;
   engagement_level: EngagementLevel;
   mood_before: MoodLevel;
@@ -773,8 +773,8 @@ export async function createRecord(input: {
       activity_type: input.activityType,
       therapeutic_intent: input.therapeuticIntent ?? false,
       therapist_qualified: input.therapistQualified ?? null,
-      emotional_expression_enabled: input.emotionalExpressionEnabled ?? true,
-      child_choice: input.childChoice ?? true,
+      emotional_expression_enabled: input.emotionalExpressionEnabled ?? null,
+      child_choice: input.childChoice ?? null,
       group_or_individual: input.groupOrIndividual ?? "Individual",
       engagement_level: input.engagementLevel ?? "Participated",
       mood_before: input.moodBefore ?? "Neutral",

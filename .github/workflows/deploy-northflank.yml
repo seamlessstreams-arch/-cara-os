@@ -1,0 +1,59 @@
+name: Deploy to Northflank
+
+# Triggers a Northflank build + deploy on every push to `main` (and on manual
+# dispatch), replacing Vercel's git auto-deploy. It calls the Northflank API to
+# start a build of the pushed commit on the git-linked service; the service's
+# pipeline then builds the Dockerfile and rolls out the new image.
+#
+# ── Required repo secrets (Settings → Secrets and variables → Actions) ──
+#   NORTHFLANK_API_TOKEN   — a Northflank API token with build/deploy scope
+#   NORTHFLANK_PROJECT_ID  — the project id (Northflank → project → Settings)
+#   NORTHFLANK_SERVICE_ID  — the combined/build service id
+#
+# ── One-time setup note ──
+# If you use THIS workflow to deploy, turn OFF the service's native
+# "Build on push" in Northflank, or each push builds twice (once via the
+# webhook, once via this API call).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# One deploy trigger at a time for main; don't cancel an in-flight trigger
+# (the API call is quick and we never want to drop a build).
+concurrency:
+  group: northflank-deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Trigger Northflank build & deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start build for the pushed commit
+        env:
+          NF_TOKEN: ${{ secrets.NORTHFLANK_API_TOKEN }}
+          NF_PROJECT: ${{ secrets.NORTHFLANK_PROJECT_ID }}
+          NF_SERVICE: ${{ secrets.NORTHFLANK_SERVICE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NF_TOKEN}" ] || [ -z "${NF_PROJECT}" ] || [ -z "${NF_SERVICE}" ]; then
+            echo "::error::Set NORTHFLANK_API_TOKEN, NORTHFLANK_PROJECT_ID and NORTHFLANK_SERVICE_ID as repo secrets."
+            exit 1
+          fi
+          echo "Triggering Northflank build of ${GITHUB_SHA} on main…"
+          code=$(curl --silent --show-error --output /tmp/nf-response.json --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer ${NF_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "{\"branch\":\"main\",\"sha\":\"${GITHUB_SHA}\"}" \
+            "https://api.northflank.com/v1/projects/${NF_PROJECT}/services/${NF_SERVICE}/build")
+          echo "Northflank responded HTTP ${code}:"
+          cat /tmp/nf-response.json || true
+          echo
+          # 2xx = build accepted; anything else fails the workflow.
+          case "${code}" in
+            2*) echo "Build queued on Northflank." ;;
+            *)  echo "::error::Northflank build trigger failed (HTTP ${code})."; exit 1 ;;
+          esac

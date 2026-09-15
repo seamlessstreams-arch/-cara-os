@@ -289,10 +289,10 @@ export default function ConsentManagementDashboardWidget() {
                     Records: <span className="font-medium">{child.totalRecords}</span>
                   </div>
                   <div>
-                    Obtained: <span className="font-medium">{child.obtainedRate}%</span>
+                    Obtained: <span className="font-medium">{formatRate(child.obtainedRate)}</span>
                   </div>
                   <div>
-                    Child Views: <span className="font-medium">{child.childViewsRate}%</span>
+                    Child Views: <span className="font-medium">{formatRate(child.childViewsRate)}</span>
                   </div>
                   <div>
                     Categories: <span className="font-medium">{child.uniqueCategories}</span>

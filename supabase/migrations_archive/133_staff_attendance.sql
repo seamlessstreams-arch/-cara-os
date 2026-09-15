@@ -24,7 +24,7 @@ create table if not exists cs_staff_attendance (
   late_minutes                  integer not null default 0,
   compliance_flag               text    not null default 'not_checked',
   agency_staff_used             boolean not null default false,
-  minimum_staffing_met          boolean not null default true,
+  minimum_staffing_met          boolean,
   handover_completed            boolean not null default false,
   notes                         text,
 

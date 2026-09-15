@@ -8,32 +8,35 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FamilyEngagementTrackingRecord>): FamilyEngagementTrackingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    engagement_type: overrides?.engagement_type ?? "phone_contact",
-    family_response: overrides?.family_response ?? "engaged",
-    participation_level: overrides?.participation_level ?? "full_participation",
-    relationship_quality: overrides?.relationship_quality ?? "good",
-    engagement_date: overrides?.engagement_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    engagement_type: "phone_contact",
+    family_response: "engaged",
+    participation_level: "full_participation",
+    relationship_quality: "good",
+    engagement_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    family_member_name: overrides?.family_member_name ?? "Mum A",
-    facilitated_by: overrides?.facilitated_by ?? "Staff A",
-    child_views_sought: overrides?.child_views_sought ?? true,
-    child_prepared: overrides?.child_prepared ?? true,
-    family_supported: overrides?.family_supported ?? true,
-    barriers_identified: overrides?.barriers_identified ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    risk_assessment_current: overrides?.risk_assessment_current ?? true,
-    outcome_recorded: overrides?.outcome_recorded ?? true,
-    follow_up_planned: overrides?.follow_up_planned ?? true,
-    safeguarding_considered: overrides?.safeguarding_considered ?? true,
-    court_order_complied: overrides?.court_order_complied ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    family_member_name: "Mum A",
+    facilitated_by: "Staff A",
+    child_views_sought: true,
+    child_prepared: true,
+    family_supported: true,
+    barriers_identified: true,
+    social_worker_informed: true,
+    care_plan_updated: true,
+    risk_assessment_current: true,
+    outcome_recorded: true,
+    follow_up_planned: true,
+    safeguarding_considered: true,
+    court_order_complied: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,28 @@ describe("family-engagement-tracking-service", () => {
       expect(types).toContain("follow_up_not_planned");
       expect(types).toContain("outcome_not_recorded");
     });
+  });
+});
+
+// ── Tri-state: hostile contact with unrecorded safeguarding alerts as a gap ──
+describe("tri-state judgements", () => {
+  it("words the unrecorded case as a gap", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ family_response: "hostile", safeguarding_considered: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "hostile_no_safeguarding");
+    expect(a?.message).toMatch(/no safeguarding consideration recorded/i);
+  });
+  it("still asserts a recorded omission", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ family_response: "hostile", safeguarding_considered: false }),
+    ]);
+    expect(alerts.some((x) => /hostile without safeguarding consideration/i.test(x.message))).toBe(true);
+  });
+  it("does not count an unrecorded child_prepared as a failure", () => {
+    const alerts = _testing.identifyFamilyEngagementAlerts([
+      makeRecord({ child_prepared: null }), makeRecord({ id: "r-2", child_prepared: null }),
+    ]);
+    expect(alerts.some((a) => a.type === "child_not_prepared")).toBe(false);
   });
 });

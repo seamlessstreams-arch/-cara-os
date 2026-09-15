@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS cs_staff_whistleblowing_disclosures (
   investigation_outcome   text    NULL CHECK (investigation_outcome IS NULL OR investigation_outcome IN ('Substantiated','Partially Substantiated','Unsubstantiated','Inconclusive','Ongoing')),
   action_taken            boolean NOT NULL DEFAULT false,
 
-  whistleblower_protected boolean NOT NULL DEFAULT true,
-  anonymity_maintained    boolean NOT NULL DEFAULT true,
+  whistleblower_protected boolean,
+  anonymity_maintained    boolean,
   detriment_reported      boolean NOT NULL DEFAULT false,
   feedback_provided       boolean NOT NULL DEFAULT false,
   regulator_notified      boolean NOT NULL DEFAULT false,

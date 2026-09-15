@@ -11,6 +11,7 @@
 //   Stability, Strengths/Areas/Actions, Regulatory Framework
 // ==============================================================================
 
+import { formatRate } from "@/lib/metrics/rate";
 import { useState, useEffect } from "react";
 
 // -- Interfaces ---------------------------------------------------------------
@@ -301,7 +302,7 @@ export function PlacementMatchingQualityDashboardWidget() {
         <MetricCard
           label="Placements"
           value={data.matchingProcess.totalPlacements}
-          subValue={`${data.matchingProcess.excellentGoodRate}% excellent/good`}
+          subValue={`${formatRate(data.matchingProcess.excellentGoodRate)} excellent/good`}
           color="text-blue-700 bg-blue-50"
         />
         <MetricCard
@@ -385,12 +386,12 @@ export function PlacementMatchingQualityDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           <MetricCard
             label="Impact Assessment"
-            value={`${data.matchingProcess.impactAssessmentRate}%`}
+            value={`${formatRate(data.matchingProcess.impactAssessmentRate)}`}
             color={data.matchingProcess.impactAssessmentRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Consultation"
-            value={`${data.matchingProcess.consultationRate}%`}
+            value={`${formatRate(data.matchingProcess.consultationRate)}`}
             color={data.matchingProcess.consultationRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
@@ -400,7 +401,7 @@ export function PlacementMatchingQualityDashboardWidget() {
           />
           <MetricCard
             label="Risk Assessment"
-            value={`${data.matchingProcess.riskAssessmentRate}%`}
+            value={`${formatRate(data.matchingProcess.riskAssessmentRate)}`}
             color={data.matchingProcess.riskAssessmentRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
@@ -422,7 +423,7 @@ export function PlacementMatchingQualityDashboardWidget() {
           />
           <MetricCard
             label="Positive Relationships"
-            value={`${data.compatibility.positiveRelationshipRate}%`}
+            value={`${formatRate(data.compatibility.positiveRelationshipRate)}`}
             color={data.compatibility.positiveRelationshipRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
@@ -432,7 +433,7 @@ export function PlacementMatchingQualityDashboardWidget() {
           />
           <MetricCard
             label="Management Plans"
-            value={`${data.compatibility.managementPlanRate}%`}
+            value={`${formatRate(data.compatibility.managementPlanRate)}`}
             subValue="where risk identified"
             color={data.compatibility.managementPlanRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
           />

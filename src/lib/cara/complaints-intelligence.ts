@@ -54,9 +54,9 @@ export interface Complaint {
   resolutionDays?: number;
   outcome?: string;
   childSatisfied?: boolean;
-  acknowledgedWithin24Hours: boolean;
-  investigatedProperly: boolean;
-  childKeptInformed: boolean;
+  acknowledgedWithin24Hours: boolean | null;
+  investigatedProperly: boolean | null;
+  childKeptInformed: boolean | null;
   escalationLevel: EscalationLevel;
   escalatedToOfsted?: boolean;
   advocateInvolved: boolean;
@@ -71,13 +71,13 @@ export interface ComplaintsInput {
   childName: string;
   age: number;
   complaints: Complaint[];
-  complaintsProcessExplained: boolean;
-  childKnowsHowToComplain: boolean;
-  advocateAvailable: boolean;
-  complaintsDisplayedAccessibly: boolean;
+  complaintsProcessExplained: boolean | null;
+  childKnowsHowToComplain: boolean | null;
+  advocateAvailable: boolean | null;
+  complaintsDisplayedAccessibly: boolean | null;
   independentVisitorAssigned: boolean;
-  regulatoryBodyInfoProvided: boolean; // Ofsted contact info given
-  complaintsReviewedByRM: boolean;
+  regulatoryBodyInfoProvided: boolean | null; // Ofsted contact info given
+  complaintsReviewedByRM: boolean | null;
   lastComplaintsAuditDate?: string;
 }
 
@@ -126,7 +126,7 @@ export interface ComplaintStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -246,12 +246,12 @@ function analyseThemes(complaints: Complaint[]): ComplaintTheme[] {
 
 function scoreAccessibility(input: ComplaintsInput): number {
   let score = 0;
-  if (input.complaintsProcessExplained) score += 20;
-  if (input.childKnowsHowToComplain) score += 25;
-  if (input.advocateAvailable) score += 15;
-  if (input.complaintsDisplayedAccessibly) score += 15;
+  if (input.complaintsProcessExplained === true) score += 20;
+  if (input.childKnowsHowToComplain === true) score += 25;
+  if (input.advocateAvailable === true) score += 15;
+  if (input.complaintsDisplayedAccessibly === true) score += 15;
   if (input.independentVisitorAssigned) score += 10;
-  if (input.regulatoryBodyInfoProvided) score += 15;
+  if (input.regulatoryBodyInfoProvided === true) score += 15;
   return Math.min(100, score);
 }
 
@@ -261,9 +261,11 @@ function scoreResponsiveness(complaints: Complaint[]): number | null {
   let total = 0;
   for (const c of complaints) {
     let cScore = 100;
-    if (!c.acknowledgedWithin24Hours) cScore -= 30;
-    if (!c.childKeptInformed) cScore -= 25;
-    if (!c.investigatedProperly) cScore -= 30;
+    // A recorded failure costs the complaint points. An unanswered question
+    // is not a failure — and under the old default it was silently a pass.
+    if (c.acknowledgedWithin24Hours === false) cScore -= 30;
+    if (c.childKeptInformed === false) cScore -= 25;
+    if (c.investigatedProperly === false) cScore -= 30;
     total += Math.max(0, cScore);
   }
   return Math.round(total / complaints.length);
@@ -297,18 +299,21 @@ function scoreVoice(input: ComplaintsInput, complaints: Complaint[]): number {
   let score = 0;
 
   // Child knows how to complain (30 pts)
-  if (input.childKnowsHowToComplain) score += 30;
+  if (input.childKnowsHowToComplain === true) score += 30;
 
   // Advocate involved when needed (25 pts)
-  if (input.advocateAvailable) score += 15;
+  if (input.advocateAvailable === true) score += 15;
   const advocateUsed = complaints.some(c => c.advocateInvolved);
   if (advocateUsed || complaints.length === 0) score += 10;
 
-  // Child kept informed (25 pts)
-  if (complaints.length > 0) {
-    const informed = complaints.filter(c => c.childKeptInformed).length;
-    score += Math.round((informed / complaints.length) * 25);
-  } else {
+  // Child kept informed (25 pts), rated over the complaints where it was
+  // recorded either way. Leaving an unrecorded complaint in the denominator
+  // would score it as a child who was not kept informed.
+  const informedRecorded = complaints.filter(c => c.childKeptInformed !== null);
+  if (informedRecorded.length > 0) {
+    const informed = informedRecorded.filter(c => c.childKeptInformed === true).length;
+    score += Math.round((informed / informedRecorded.length) * 25);
+  } else if (complaints.length === 0) {
     score += 25;
   }
 
@@ -317,7 +322,7 @@ function scoreVoice(input: ComplaintsInput, complaints: Complaint[]): number {
 
   // Child-made complaints exist (they feel able to) (10 pts)
   const childMade = complaints.filter(c => c.madeBy === "child").length;
-  if (childMade > 0 || input.childKnowsHowToComplain) score += 10;
+  if (childMade > 0 || input.childKnowsHowToComplain === true) score += 10;
 
   return Math.min(100, score);
 }
@@ -335,7 +340,7 @@ function identifyConcerns(
   const concerns: ComplaintConcern[] = [];
 
   // Child doesn't know how to complain
-  if (!input.childKnowsHowToComplain) {
+  if (input.childKnowsHowToComplain === false) {
     concerns.push({
       severity: "significant",
       category: "accessibility",
@@ -412,7 +417,7 @@ function identifyConcerns(
   }
 
   // Not acknowledged within 24h
-  const notAcknowledged = complaints.filter(c => !c.acknowledgedWithin24Hours).length;
+  const notAcknowledged = complaints.filter(c => c.acknowledgedWithin24Hours === false).length;
   if (notAcknowledged > 0 && complaints.length > 0 && notAcknowledged / complaints.length > 0.3) {
     concerns.push({
       severity: "moderate",
@@ -431,7 +436,7 @@ function identifyConcerns(
   }
 
   // Regulatory body info not provided
-  if (!input.regulatoryBodyInfoProvided) {
+  if (input.regulatoryBodyInfoProvided === false) {
     concerns.push({
       severity: "moderate",
       category: "accessibility",
@@ -452,7 +457,7 @@ function identifyStrengths(
 ): ComplaintStrength[] {
   const strengths: ComplaintStrength[] = [];
 
-  if (input.childKnowsHowToComplain && input.complaintsProcessExplained) {
+  if (input.childKnowsHowToComplain === true && input.complaintsProcessExplained === true) {
     strengths.push({
       category: "accessibility",
       description: "Child informed of and understands complaints process",
@@ -473,21 +478,21 @@ function identifyStrengths(
     });
   }
 
-  if (complaints.length > 0 && complaints.every(c => c.acknowledgedWithin24Hours)) {
+  if (complaints.length > 0 && complaints.every(c => c.acknowledgedWithin24Hours === true)) {
     strengths.push({
       category: "responsiveness",
       description: "All complaints acknowledged within 24 hours",
     });
   }
 
-  if (input.advocateAvailable && input.independentVisitorAssigned) {
+  if (input.advocateAvailable === true && input.independentVisitorAssigned) {
     strengths.push({
       category: "independence",
       description: "Advocate and independent visitor in place",
     });
   }
 
-  if (input.complaintsReviewedByRM) {
+  if (input.complaintsReviewedByRM === true) {
     strengths.push({
       category: "oversight",
       description: "Complaints reviewed by Registered Manager for patterns",
@@ -517,45 +522,61 @@ function assessRegulatory(
   const flags: RegulatoryFlag[] = [];
 
   // Reg 39(3) — Accessible to children
-  const accessible = input.childKnowsHowToComplain && input.complaintsProcessExplained && input.complaintsDisplayedAccessibly;
+  const accessible = input.childKnowsHowToComplain === true && input.complaintsProcessExplained === true && input.complaintsDisplayedAccessibly === true;
   flags.push({
     regulation: "CHR 2015 Reg 39(3)",
     area: "Accessibility",
-    status: accessible ? "met" : input.childKnowsHowToComplain ? "partially_met" : "not_met",
+    status: accessible ? "met"
+      : input.childKnowsHowToComplain === true ? "partially_met"
+      : input.childKnowsHowToComplain === null ? "not_evidenced"
+      : "not_met",
     detail: accessible
       ? "Complaints process accessible to children"
       : "Complaints process not fully accessible — child awareness gaps",
   });
 
   // Reg 39 — Complaints handling
-  const allAcknowledged = complaints.length === 0 || complaints.every(c => c.acknowledgedWithin24Hours);
-  const allInvestigated = complaints.length === 0 || complaints.every(c => c.investigatedProperly);
+  const allAcknowledged = complaints.length === 0 || complaints.every(c => c.acknowledgedWithin24Hours === true);
+  const allInvestigated = complaints.length === 0 || complaints.every(c => c.investigatedProperly === true);
+  const handlingUnrecorded = complaints.some(
+    c => c.acknowledgedWithin24Hours === null || c.investigatedProperly === null,
+  );
+  const reg39Met = allAcknowledged && allInvestigated && avgDays <= 28;
   flags.push({
     regulation: "CHR 2015 Reg 39",
     area: "Complaints Handling",
-    status: (allAcknowledged && allInvestigated && avgDays <= 28) ? "met" :
-      (avgDays > 28 || openCount >= 3) ? "not_met" : "partially_met",
-    detail: (allAcknowledged && allInvestigated && avgDays <= 28)
+    status: reg39Met ? "met"
+      : (avgDays > 28 || openCount >= 3) ? "not_met"
+      : handlingUnrecorded ? "not_evidenced"
+      : "partially_met",
+    detail: reg39Met
       ? "Complaints handled appropriately and timely"
-      : "Complaints handling requires improvement",
+      : handlingUnrecorded
+        ? "Cannot be evidenced — acknowledgement or investigation is unrecorded on one or more complaints"
+        : "Complaints handling requires improvement",
   });
 
   // Reg 39(4) — Records
   flags.push({
     regulation: "CHR 2015 Reg 39(4)",
     area: "Records & Monitoring",
-    status: input.complaintsReviewedByRM ? "met" : "partially_met",
-    detail: input.complaintsReviewedByRM
+    status: input.complaintsReviewedByRM === true ? "met"
+      : input.complaintsReviewedByRM === null ? "not_evidenced"
+      : "partially_met",
+    detail: input.complaintsReviewedByRM === true
       ? "Complaints records reviewed for patterns"
       : "Complaints not evidenced as reviewed for patterns",
   });
 
   // SCCIF — Children's voice
-  const voiceGood = input.childKnowsHowToComplain && input.advocateAvailable;
+  const voiceGood = input.childKnowsHowToComplain === true && input.advocateAvailable === true;
   flags.push({
     regulation: "SCCIF",
     area: "Children's Voice",
-    status: voiceGood ? "met" : input.childKnowsHowToComplain ? "partially_met" : "not_met",
+    status: voiceGood ? "met"
+      : input.childKnowsHowToComplain === true ? "partially_met"
+      : input.childKnowsHowToComplain === null ? "not_evidenced"
+      : "not_met",
     detail: voiceGood
       ? "Children's voice actively promoted through complaints process"
       : "Children's voice needs stronger support in complaints process",
@@ -576,19 +597,19 @@ function buildRecommendations(
 ): string[] {
   const recs: string[] = [];
 
-  if (!input.childKnowsHowToComplain) {
+  if (input.childKnowsHowToComplain === false) {
     recs.push("Explain complaints process to child in age-appropriate way");
   }
 
-  if (!input.complaintsDisplayedAccessibly) {
+  if (input.complaintsDisplayedAccessibly === false) {
     recs.push("Display complaints information accessibly in communal areas");
   }
 
-  if (!input.regulatoryBodyInfoProvided) {
+  if (input.regulatoryBodyInfoProvided === false) {
     recs.push("Provide child with Ofsted contact information");
   }
 
-  if (!input.advocateAvailable) {
+  if (input.advocateAvailable === false) {
     recs.push("Ensure independent advocate is available to support with complaints");
   }
 
@@ -609,7 +630,7 @@ function buildRecommendations(
     recs.push("Address repeat complaints about staff behaviour through supervision");
   }
 
-  if (!input.complaintsReviewedByRM) {
+  if (input.complaintsReviewedByRM === false) {
     recs.push("Registered Manager to regularly review complaints for patterns");
   }
 

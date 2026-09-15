@@ -23,25 +23,28 @@ function makeRow(
 ): ChildFgmRiskAssessmentRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    risk_level: overrides?.risk_level ?? "Low",
-    risk_indicators_count: overrides?.risk_indicators_count ?? 0,
-    mandatory_report_made: overrides?.mandatory_report_made ?? true,
-    police_notified: overrides?.police_notified ?? true,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
-    fgm_protection_order: overrides?.fgm_protection_order ?? false,
-    multi_agency_referral: overrides?.multi_agency_referral ?? true,
-    safety_plan_in_place: overrides?.safety_plan_in_place ?? true,
-    cultural_sensitivity_considered: overrides?.cultural_sensitivity_considered ?? true,
-    specialist_service_involved: overrides?.specialist_service_involved ?? false,
+    home_id: "home-1",
+    child_name: "Child A",
+    assessment_date: todayStr(),
+    risk_level: "Low",
+    risk_indicators_count: 0,
+    mandatory_report_made: true,
+    police_notified: true,
+    social_worker_notified: true,
+    fgm_protection_order: false,
+    multi_agency_referral: true,
+    safety_plan_in_place: true,
+    cultural_sensitivity_considered: true,
+    specialist_service_involved: false,
     specialist_service_name: "specialist_service_name" in (overrides ?? {}) ? (overrides!.specialist_service_name ?? null) : null,
     review_date: "review_date" in (overrides ?? {}) ? (overrides!.review_date ?? null) : null,
-    assessor_name: overrides?.assessor_name ?? "Assessor 1",
+    assessor_name: "Assessor 1",
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -703,5 +706,21 @@ describe("child-fgm-risk-assessment-service", () => {
       const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("?");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the cultural-sensitivity alert between recorded not-considered and unrecorded", () => {
+    const nullAlert = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: null })])
+      .find((a) => a.type === "cultural_sensitivity_not_considered");
+    const falseAlert = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: false })])
+      .find((a) => a.type === "cultural_sensitivity_not_considered");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no sensitivity alert when consideration is recorded", () => {
+    const alerts = computeFgmRiskAlerts([makeRow({ cultural_sensitivity_considered: true })]);
+    expect(alerts.some((a) => a.type === "cultural_sensitivity_not_considered")).toBe(false);
   });
 });

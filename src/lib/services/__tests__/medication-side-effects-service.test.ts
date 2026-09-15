@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationSideEffectsRecord>): MedicationSideEffectsRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    side_effect_type: overrides?.side_effect_type ?? "drowsiness",
-    severity: overrides?.severity ?? "mild",
-    gp_response: overrides?.gp_response ?? "no_change_needed",
-    medication_category: overrides?.medication_category ?? "antidepressant",
-    reported_date: overrides?.reported_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    side_effect_type: "drowsiness",
+    severity: "mild",
+    gp_response: "no_change_needed",
+    medication_category: "antidepressant",
+    reported_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    reported_by: overrides?.reported_by ?? "Staff A",
-    child_informed: overrides?.child_informed ?? true,
-    parent_informed: overrides?.parent_informed ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    gp_contacted_promptly: overrides?.gp_contacted_promptly ?? true,
-    pharmacy_consulted: overrides?.pharmacy_consulted ?? true,
-    medication_review_requested: overrides?.medication_review_requested ?? true,
-    daily_functioning_assessed: overrides?.daily_functioning_assessed ?? true,
-    wellbeing_monitored: overrides?.wellbeing_monitored ?? true,
-    care_plan_updated: overrides?.care_plan_updated ?? true,
-    yellow_card_considered: overrides?.yellow_card_considered ?? true,
-    staff_aware: overrides?.staff_aware ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    reported_by: "Staff A",
+    child_informed: true,
+    parent_informed: true,
+    social_worker_informed: true,
+    gp_contacted_promptly: true,
+    pharmacy_consulted: true,
+    medication_review_requested: true,
+    daily_functioning_assessed: true,
+    wellbeing_monitored: true,
+    care_plan_updated: true,
+    yellow_card_considered: true,
+    staff_aware: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -128,5 +131,29 @@ describe("medication-side-effects-service", () => {
       expect(types).toContain("wellbeing_not_monitored");
       expect(types).toContain("functioning_not_assessed");
     });
+  });
+});
+
+describe("tri-state judgements", () => {
+  it("splits the severe-side-effect critical between recorded no-GP-contact and unrecorded", () => {
+    const nullAlert = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: null }),
+    ]).find((a) => a.type === "severe_no_gp_contact");
+    const falseAlert = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: false }),
+    ]).find((a) => a.type === "severe_no_gp_contact");
+    expect(nullAlert).toBeTruthy();
+    expect(falseAlert).toBeTruthy();
+    expect(nullAlert!.message).not.toBe(falseAlert!.message);
+  });
+  it("raises no critical when GP contact is recorded as prompt", () => {
+    const alerts = identifyMedicationSideEffectsAlerts([
+      makeRecord({ severity: "severe", gp_contacted_promptly: true }),
+    ]);
+    expect(alerts.some((a) => a.type === "severe_no_gp_contact")).toBe(false);
+  });
+  it("does not dilute the GP-contact rate with unrecorded rows", () => {
+    const rows = [true, null, null, null].map((v, i) => makeRecord({ id: `r-${i}`, gp_contacted_promptly: v }));
+    expect(computeMedicationSideEffectsMetrics(rows).gp_contacted_promptly_rate).toBe(100);
   });
 });

@@ -67,18 +67,18 @@ export interface HealthScreeningImmunisationRecord {
   child_name: string;
   child_id: string | null;
   conducted_by: string;
-  child_consented: boolean;
-  age_appropriate_explanation: boolean;
-  parent_informed: boolean;
-  gp_notified: boolean;
-  follow_up_arranged: boolean;
-  referral_made: boolean;
-  care_plan_reflects: boolean;
-  social_worker_informed: boolean;
-  school_aware: boolean;
-  records_updated: boolean;
-  confidentiality_maintained: boolean;
-  recorded_promptly: boolean;
+  child_consented: boolean | null; // null = not recorded; judgements are tri-state — credit needs === true, breach needs === false
+  age_appropriate_explanation: boolean | null;
+  parent_informed: boolean | null;
+  gp_notified: boolean | null;
+  follow_up_arranged: boolean | null;
+  referral_made: boolean | null;
+  care_plan_reflects: boolean | null;
+  social_worker_informed: boolean | null;
+  school_aware: boolean | null;
+  records_updated: boolean | null;
+  confidentiality_maintained: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -159,10 +159,16 @@ export function computeHealthScreeningMetrics(
   const behindImmunisation = records.filter((r) => r.immunisation_status === "significantly_behind").length;
   const highRisk = records.filter((r) => r.health_risk === "high" || r.health_risk === "critical").length;
 
+  // Rated over the records where the question was answered either way. With the
+  // judgement columns tri-state (null = not recorded), an unrecorded answer in
+  // the denominator would score silence as a "no" — the same fabrication the
+  // old `?? true` creates made in the other direction. While every field is
+  // still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof HealthScreeningImmunisationRecord) => {
-    const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0
-      ? Math.round((count / records.length) * 1000) / 10
+    const recorded = records.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0
+      ? Math.round((count / recorded.length) * 1000) / 10
       : null;
   };
 
@@ -221,11 +227,13 @@ export function identifyHealthScreeningAlerts(
 
   // High risk without follow-up — per-record
   for (const r of records) {
-    if ((r.health_risk === "high" || r.health_risk === "critical") && !r.follow_up_arranged) {
+    if ((r.health_risk === "high" || r.health_risk === "critical") && r.follow_up_arranged !== true) {
       alerts.push({
         type: "high_risk_no_followup",
         severity: "critical",
-        message: `${r.child_name} has ${r.health_risk} health risk from ${r.screening_type.replace(/_/g, " ")} without follow-up arranged — urgent action needed`,
+        message: r.follow_up_arranged === false
+          ? `${r.child_name} has ${r.health_risk} health risk from ${r.screening_type.replace(/_/g, " ")} without follow-up arranged — urgent action needed`
+          : `${r.child_name} has ${r.health_risk} health risk from ${r.screening_type.replace(/_/g, " ")} with no follow-up recorded — arrange and evidence follow-up now`,
         id: r.id,
       });
     }
@@ -243,34 +251,34 @@ export function identifyHealthScreeningAlerts(
   }
 
   // GP not notified
-  const noGP = records.filter((r) => !r.gp_notified).length;
+  const noGP = records.filter((r) => r.gp_notified !== true).length;
   if (noGP >= 1) {
     alerts.push({
       type: "gp_not_notified",
       severity: "high",
-      message: `${noGP} ${noGP === 1 ? "screening has" : "screenings have"} GP not notified — ensure health professionals are informed`,
+      message: `${noGP} ${noGP === 1 ? "screening has" : "screenings have"} no GP notification evidenced — ensure health professionals are informed`,
       id: "gp_not_notified",
     });
   }
 
   // Confidentiality not maintained
-  const noConfidentiality = records.filter((r) => !r.confidentiality_maintained).length;
+  const noConfidentiality = records.filter((r) => r.confidentiality_maintained !== true).length;
   if (noConfidentiality >= 2) {
     alerts.push({
       type: "confidentiality_breach",
       severity: "medium",
-      message: `${noConfidentiality} screenings with confidentiality concerns — review data handling procedures`,
+      message: `${noConfidentiality} screenings without evidenced confidentiality — review data handling procedures`,
       id: "confidentiality_breach",
     });
   }
 
   // Records not updated
-  const noRecords = records.filter((r) => !r.records_updated).length;
+  const noRecords = records.filter((r) => r.records_updated !== true).length;
   if (noRecords >= 2) {
     alerts.push({
       type: "records_not_updated",
       severity: "medium",
-      message: `${noRecords} screenings without health records updated — ensure comprehensive record keeping`,
+      message: `${noRecords} screenings without evidenced health-record updates — ensure comprehensive record keeping`,
       id: "records_not_updated",
     });
   }
@@ -344,18 +352,18 @@ export async function createRecord(payload: {
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       conducted_by: payload.conductedBy,
-      child_consented: payload.childConsented ?? true,
-      age_appropriate_explanation: payload.ageAppropriateExplanation ?? true,
-      parent_informed: payload.parentInformed ?? true,
-      gp_notified: payload.gpNotified ?? true,
-      follow_up_arranged: payload.followUpArranged ?? true,
-      referral_made: payload.referralMade ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      social_worker_informed: payload.socialWorkerInformed ?? true,
-      school_aware: payload.schoolAware ?? true,
-      records_updated: payload.recordsUpdated ?? true,
-      confidentiality_maintained: payload.confidentialityMaintained ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      child_consented: payload.childConsented ?? null,
+      age_appropriate_explanation: payload.ageAppropriateExplanation ?? null,
+      parent_informed: payload.parentInformed ?? null,
+      gp_notified: payload.gpNotified ?? null,
+      follow_up_arranged: payload.followUpArranged ?? null,
+      referral_made: payload.referralMade ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      social_worker_informed: payload.socialWorkerInformed ?? null,
+      school_aware: payload.schoolAware ?? null,
+      records_updated: payload.recordsUpdated ?? null,
+      confidentiality_maintained: payload.confidentialityMaintained ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,

@@ -27,6 +27,7 @@ export async function GET() {
     const roundsWithBuildingSecure = recentRounds.filter((r) => r.building_secure === true).length;
     const roundsWithFireClear = recentRounds.filter((r) => r.fire_exits_clear === true).length;
     const buildingSecureRate = totalRounds > 0 ? Math.round((roundsWithBuildingSecure / totalRounds) * 100) : null;
+    const fireExitsClearRate = totalRounds > 0 ? Math.round((roundsWithFireClear / totalRounds) * 100) : null;
 
     // Check status breakdown
     const okChecks = recentChecks.filter((c) => c.status === "ok").length;
@@ -112,6 +113,7 @@ export async function GET() {
         totalRounds,
         totalChecks,
         buildingSecureRate,
+        fireExitsClearRate,
         overnightCoverage,
         checkStatusBreakdown: {
           ok: okChecks,
