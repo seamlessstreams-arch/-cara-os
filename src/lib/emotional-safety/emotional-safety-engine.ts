@@ -123,18 +123,27 @@ const REGULATION_WORDS = [
   "grounded",
 ];
 
+// Negation immediately BEFORE a regulation word ("could not calm", "unable to settle").
+const NEG_BEFORE = /\b(not|never|unable|cannot|can'?t|won'?t|couldn'?t|wouldn'?t|didn'?t|wasn'?t|weren'?t|don'?t|doesn'?t|isn'?t)\b/;
+// Negation tied to a failure/undoing verb shortly AFTER a regulation word
+// ("de-escalation was not achieved", "calming didn't work", "settled but didn't
+// last"). Scoped to a failure verb on purpose so a genuine regulation that merely
+// mentions a later negative ("calmed down and did not want dinner") is NOT rejected.
+const NEG_FAILURE_AFTER = /(?:\bnot\b|\bnever\b|\bno\b|n'?t\b)[\s\w]{0,14}?(achiev|success|effect|\bwork|\bhelp|possibl|\blast|sustain|maintain)/;
+
 /** Did this behaviour entry end in regulation? (positive direction, or the
- *  outcome text describes the child settling). */
+ *  outcome text describes the child settling — and not a negated/failed attempt). */
 function endedRegulated(b: BehaviourEntry): boolean {
   if (b.direction === "positive") return true;
   const o = (b.outcome ?? "").toLowerCase();
   return REGULATION_WORDS.some((w) => {
     const idx = o.indexOf(w);
     if (idx < 0) return false;
-    // Don't credit a NEGATED outcome ("could not calm", "wouldn't settle",
-    // "unable to calm down") — check the words immediately before the match.
-    const before = o.slice(Math.max(0, idx - 18), idx);
-    return !/\b(not|never|unable|cannot|can'?t|won'?t|couldn'?t|wouldn'?t|didn'?t|wasn'?t|weren'?t|don'?t|doesn'?t|isn'?t)\b/.test(before);
+    // Reject a negated outcome, whether the negation sits before the regulation
+    // word ("could not calm") or after it as a failure ("calming was not achieved").
+    if (NEG_BEFORE.test(o.slice(Math.max(0, idx - 18), idx))) return false;
+    if (NEG_FAILURE_AFTER.test(o.slice(idx + w.length, idx + w.length + 26))) return false;
+    return true;
   });
 }
 
