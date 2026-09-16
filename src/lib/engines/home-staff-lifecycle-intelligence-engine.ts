@@ -279,7 +279,7 @@ export function computeHomeStaffLifecycle(
     if (meets(inductionCompletionRate, 95)) score += 5;
     else if (meets(inductionCompletionRate, 80)) score += 3;
     else if (meets(inductionCompletionRate, 60)) score += 0;
-    else score -= 5;
+    else if (below(inductionCompletionRate, 60)) score -= 5;
   }
   // No inductions → +0
 
@@ -302,7 +302,7 @@ export function computeHomeStaffLifecycle(
     if (meets(rtwRate, 90)) score += 4;
     else if (meets(rtwRate, 70)) score += 2;
     else if (meets(rtwRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(rtwRate, 50)) score -= 4;
   } else {
     // None needed → +2
     score += 2;
@@ -317,7 +317,7 @@ export function computeHomeStaffLifecycle(
     if (meets(exitCompletionRate, 90)) score += 3;
     else if (meets(exitCompletionRate, 70)) score += 1;
     else if (meets(exitCompletionRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(exitCompletionRate, 50)) score -= 3;
   } else {
     // No exits → +1
     score += 1;
@@ -363,7 +363,7 @@ export function computeHomeStaffLifecycle(
     if (meets(ohRate, 80)) score += 3;
     else if (meets(ohRate, 60)) score += 1;
     else if (meets(ohRate, 40)) score += 0;
-    else score -= 3;
+    else if (below(ohRate, 40)) score -= 3;
   } else {
     // None with triggers → +1
     score += 1;

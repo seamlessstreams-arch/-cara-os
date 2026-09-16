@@ -281,7 +281,7 @@ export function computeHomeReg44(
   if (allRecs.length > 0) {
     if (meets(recCompletionRate, 80)) score += 5;
     else if (meets(recCompletionRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(recCompletionRate, 60)) score -= 3;
   }
 
   // 4. High priority outstanding (±3)

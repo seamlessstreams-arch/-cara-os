@@ -244,7 +244,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(preventChildCoverage, 90)) score += 4;
     else if (meets(preventChildCoverage, 70)) score += 2;
     else if (meets(preventChildCoverage, 50)) score += 0;
-    else score -= 4;
+    else if (below(preventChildCoverage, 50)) score -= 4;
   }
 
   // mod4: Prevent training compliance (+/-3)
@@ -254,7 +254,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(preventTrainingRate, 90)) score += 3;
     else if (meets(preventTrainingRate, 70)) score += 1;
     else if (meets(preventTrainingRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(preventTrainingRate, 50)) score -= 3;
   }
 
   // mod5: Court attendance preparation (+/-3)
@@ -265,7 +265,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(courtFullyPrepRate, 90)) score += 3;
     else if (meets(courtFullyPrepRate, 70)) score += 1;
     else if (meets(courtFullyPrepRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(courtFullyPrepRate, 50)) score -= 3;
   }
 
   // mod6: Restorative practice (+/-3)
@@ -275,7 +275,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(bullyingRestorativeRate, 80)) score += 3;
     else if (meets(bullyingRestorativeRate, 60)) score += 1;
     else if (meets(bullyingRestorativeRate, 40)) score += 0;
-    else score -= 3;
+    else if (below(bullyingRestorativeRate, 40)) score -= 3;
   }
 
   // mod7: Support provision (+/-3)
@@ -290,7 +290,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(supportRate, 90)) score += 3;
     else if (meets(supportRate, 70)) score += 1;
     else if (meets(supportRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(supportRate, 50)) score -= 3;
   }
 
   // mod8: Child voice in safeguarding (+/-3)
@@ -305,7 +305,7 @@ export function computeHomeSafeguardingPrevention(
     if (meets(voiceRate, 90)) score += 3;
     else if (meets(voiceRate, 70)) score += 1;
     else if (meets(voiceRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(voiceRate, 50)) score -= 3;
   }
 
   // Clamp

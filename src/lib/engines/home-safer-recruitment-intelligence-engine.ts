@@ -246,7 +246,7 @@ export function computeHomeSaferRecruitment(
     if (meets(verificationRate, 80)) score += 5;
     else if (meets(verificationRate, 50)) score += 2;
     else if (meets(verificationRate, 30)) score -= 1;
-    else score -= 4;
+    else if (below(verificationRate, 30)) score -= 4;
   } else {
     score += 1; // No checks needed = no risk
   }
@@ -271,14 +271,14 @@ export function computeHomeSaferRecruitment(
   if (references.length > 0) {
     if (meets(refVerificationRate, 80)) score += 4;
     else if (meets(refVerificationRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(refVerificationRate, 50)) score -= 2;
   }
 
   // 5. Compliance rate (±3)
   if (candidates.length > 0) {
     if (meets(complianceRate, 80)) score += 3;
     else if (meets(complianceRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(complianceRate, 50)) score -= 2;
   }
 
   // 6. Concern flags (±3)

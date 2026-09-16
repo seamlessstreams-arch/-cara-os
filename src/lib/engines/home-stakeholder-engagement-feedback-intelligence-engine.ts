@@ -137,7 +137,7 @@ export function computeStakeholderEngagementFeedback(
     if (meets(posRate, 80)) score += 6;
     else if (meets(posRate, 60)) score += 3;
     else if (meets(posRate, 40)) score += 0;
-    else score -= 6;
+    else if (below(posRate, 40)) score -= 6;
   }
 
   // ── Mod 3: Response rate (+-5) ─────────────────────────────────────
@@ -145,7 +145,7 @@ export function computeStakeholderEngagementFeedback(
     if (meets(responseRate, 90)) score += 5;
     else if (meets(responseRate, 75)) score += 3;
     else if (meets(responseRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(responseRate, 50)) score -= 5;
   }
 
   // ── Mod 4: Parent partnership quality (+-6) ────────────────────────
@@ -153,7 +153,7 @@ export function computeStakeholderEngagementFeedback(
     if (meets(parentEngagementRate, 80)) score += 6;
     else if (meets(parentEngagementRate, 60)) score += 3;
     else if (meets(parentEngagementRate, 40)) score += 0;
-    else score -= 6;
+    else if (below(parentEngagementRate, 40)) score -= 6;
   } else {
     score -= 1;
   }
@@ -163,7 +163,7 @@ export function computeStakeholderEngagementFeedback(
     if (meets(viewsRate, 90)) score += 4;
     else if (meets(viewsRate, 70)) score += 2;
     else if (meets(viewsRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(viewsRate, 50)) score -= 4;
   }
 
   // ── Mod 6: Community sentiment (+-5) ──────────────────────────────
@@ -171,7 +171,7 @@ export function computeStakeholderEngagementFeedback(
     if (meets(comPosRate, 80)) score += 5;
     else if (meets(comPosRate, 60)) score += 3;
     else if (meets(comPosRate, 40)) score += 0;
-    else score -= 5;
+    else if (below(comPosRate, 40)) score -= 5;
   }
 
   // ── Clamp ────────────────────────────────────────────────────────────

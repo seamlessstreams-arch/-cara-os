@@ -305,7 +305,7 @@ export function computeYoungPersonDailyWellbeing(
       score += 4;
     } else if (meets(followupRate, 50)) {
       score += 2;
-    } else {
+    } else if (below(followupRate, 50)) {
       score -= 4;
     }
   }

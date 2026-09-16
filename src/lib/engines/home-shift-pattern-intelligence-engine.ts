@@ -314,7 +314,7 @@ export function computeHomeShiftPattern(
     if (meets(onTimeRate, 90)) score += 4;
     else if (meets(onTimeRate, 75)) score += 2;
     else if (meets(onTimeRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(onTimeRate, 50)) score -= 3;
   }
   // No actual starts = neutral
 
@@ -331,7 +331,7 @@ export function computeHomeShiftPattern(
   if (meets(staffCoverageRate, 80)) score += 4;
   else if (meets(staffCoverageRate, 60)) score += 2;
   else if (meets(staffCoverageRate, 40)) score += 0;
-  else score -= 3;
+  else if (below(staffCoverageRate, 40)) score -= 3;
 
   // Modifier 5: Shift type balance (±3)
   if (dayShifts.length > 0 && sleepInShifts.length > 0) {
@@ -349,7 +349,7 @@ export function computeHomeShiftPattern(
     if (meets(swapResolutionRate, 80)) score += 3;
     else if (meets(swapResolutionRate, 50)) score += 1;
     else if (meets(swapResolutionRate, 25)) score += 0;
-    else score -= 2;
+    else if (below(swapResolutionRate, 25)) score -= 2;
   } else {
     score += 3; // No swaps needed = excellent stability
   }
@@ -359,7 +359,7 @@ export function computeHomeShiftPattern(
   if (meets(completionRate, 70)) score += 4;
   else if (meets(completionRate, 50)) score += 2;
   else if (meets(completionRate, 30)) score += 0;
-  else score -= 3;
+  else if (below(completionRate, 30)) score -= 3;
 
   // Modifier 8: Workload fairness (±3)
   if (staffShiftCounts.length >= 2 && fairnessRatio !== null) {

@@ -274,7 +274,7 @@ export function computeHomeSafeguarding(
   if (contextual_risks.length > 0) {
     if (meets(multiAgencyRate, 80)) score += 4;
     else if (meets(multiAgencyRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(multiAgencyRate, 60)) score -= 3;
   }
 
   // 4. Exploitation screening coverage (±5)
@@ -290,7 +290,7 @@ export function computeHomeSafeguarding(
   // 6. Social worker notification (±3)
   if (latestScreenings.length > 0) {
     if (meets(swNotificationRate, 80)) score += 3;
-    else score -= 2;
+    else if (below(swNotificationRate, 80)) score -= 2;
   }
 
   // 7. Online safety — unresolved high/critical (±3)
@@ -309,7 +309,7 @@ export function computeHomeSafeguarding(
   // 9. Protective actions on active risks (±3)
   if (activeRisks.length > 0) {
     if (meets(protectiveRate, 80)) score += 3;
-    else score -= 2;
+    else if (below(protectiveRate, 80)) score -= 2;
   }
 
   score = clamp(score, 0, 100);

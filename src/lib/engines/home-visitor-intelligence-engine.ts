@@ -223,28 +223,28 @@ export function computeHomeVisitor(
   // 1. DBS check rate (±5) — professionals & visitors with child contact must be checked
   if (meets(dbsCheckRate, 90)) score += 5;
   else if (meets(dbsCheckRate, 70)) score += 2;
-  else score -= 4;
+  else if (below(dbsCheckRate, 70)) score -= 4;
 
   // 2. ID verification rate (±4)
   if (meets(idVerificationRate, 90)) score += 4;
   else if (meets(idVerificationRate, 70)) score += 2;
-  else score -= 3;
+  else if (below(idVerificationRate, 70)) score -= 3;
 
   // 3. Sign-out completion (±3)
   if (meets(signOutRate, 90)) score += 3;
   else if (meets(signOutRate, 70)) score += 1;
-  else score -= 2;
+  else if (below(signOutRate, 70)) score -= 2;
 
   // 4. Documentation rate (±3)
   if (meets(docRate, 70)) score += 3;
   else if (meets(docRate, 50)) score += 1;
-  else score -= 2;
+  else if (below(docRate, 50)) score -= 2;
 
   // 5. Tradesperson DBS/supervision (±4)
   if (tradespeople.length > 0) {
     if (meets(tradespersonDbsRate, 80)) score += 4;
     else if (meets(tradespersonDbsRate, 50)) score += 1;
-    else score -= 3;
+    else if (below(tradespersonDbsRate, 50)) score -= 3;
   } else {
     score += 2; // no tradespeople to worry about
   }
@@ -253,7 +253,7 @@ export function computeHomeVisitor(
   if (withChildContact.length > 0) {
     if (meets(childContactDbsRate, 90)) score += 4;
     else if (meets(childContactDbsRate, 70)) score += 1;
-    else score -= 4;
+    else if (below(childContactDbsRate, 70)) score -= 4;
   } else {
     score += 2; // no child contact visitors
   }

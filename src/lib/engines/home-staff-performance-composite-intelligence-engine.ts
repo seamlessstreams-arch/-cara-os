@@ -261,7 +261,7 @@ export function computeStaffPerformanceComposite(
       score += 2;
     } else if (meets(supervisionCompletionRate, 60)) {
       score += 0;
-    } else {
+    } else if (below(supervisionCompletionRate, 60)) {
       score -= 5;
     }
   }
@@ -276,7 +276,7 @@ export function computeStaffPerformanceComposite(
       score += 2;
     } else if (meets(safeguardingDiscussionRate, 60)) {
       score += 0;
-    } else {
+    } else if (below(safeguardingDiscussionRate, 60)) {
       score -= 4;
     }
   }
@@ -306,7 +306,7 @@ export function computeStaffPerformanceComposite(
       score += 2;
     } else if (meets(actionCompletionRate, 50)) {
       score += 0;
-    } else {
+    } else if (below(actionCompletionRate, 50)) {
       score -= 4;
     }
   }
