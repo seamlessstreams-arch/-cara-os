@@ -191,7 +191,7 @@ export function computeLessonsLearnedImprovement(
       score += 1;
     } else if (meets(auditActionRate, 40)) {
       score += 0;
-    } else {
+    } else if (below(auditActionRate, 40)) {
       score -= 4;
     }
   }

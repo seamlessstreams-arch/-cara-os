@@ -1444,15 +1444,14 @@ describe("computePlacementDisruptionPrevention", () => {
         stability_factors: [],
       };
       const r = computePlacementDisruptionPrevention(input);
-      // Plan: 0/5 = 0% → -5
-      // Endings: none → +3
-      // Involvement: pct(0,0)=0% → -4
+      // Plan coverage: 0/5 = 0% (MEASURED — children exist, none have plans) → -5
+      // Endings: none → +3 (no disruptions is positive)
+      // Involvement / Prof / Review: no plans → rate(0,0) = null → unmeasured → NEUTRAL
+      //   (plan quality can't be assessed for plans that don't exist; was wrongly -4/-4/-5)
       // Stability: no factors → -1
-      // Prof: pct(0,0)=0% → -4
-      // Review: pct(0,0)=0% → -5
-      // 52-5+3-4-1-4-5 = 36 → inadequate
-      expect(r.disruption_score).toBe(36);
-      expect(r.disruption_rating).toBe("inadequate");
+      // 52 - 5 + 3 + 0 - 1 + 0 + 0 = 49 → adequate
+      expect(r.disruption_score).toBe(49);
+      expect(r.disruption_rating).toBe("adequate");
     });
 
     it("handles all placement ends being disruptions", () => {

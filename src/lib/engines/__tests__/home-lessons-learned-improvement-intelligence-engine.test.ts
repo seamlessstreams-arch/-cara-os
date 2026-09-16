@@ -1418,15 +1418,16 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
       expect(r.objective_completion_rate).toBe(0);
     });
 
-    it("handles audit with 0 actions identified", () => {
+    it("handles audit with 0 actions identified (no actions ⇒ unmeasured, not penalised)", () => {
       const r = computeLessonsLearnedImprovement(baseInput({
         audits: [
           makeAudit({ id: "aud_1", audit_score: 90, actions_identified: 0, actions_completed: 0 }),
         ],
       }));
-      // pct(0, 0) = 0 → <40% → -4 (vs +4 = -8)
-      // 82 - 8 = 74
-      expect(r.lessons_score).toBe(74);
+      // auditActionRate = rate(0, 0) = null → unmeasured → NEUTRAL (an audit that
+      // identified no actions has nothing to complete; was wrongly scored -4).
+      // vs baseInput's +4 for mod5 → 82 - 4 = 78.
+      expect(r.lessons_score).toBe(78);
     });
 
     it("handles all 8 theme areas", () => {
