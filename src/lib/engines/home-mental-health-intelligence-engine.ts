@@ -262,7 +262,7 @@ export function computeHomeMentalHealth(
   else if (meets(checkInCoverageRate, 75)) score += 3;
   else if (meets(checkInCoverageRate, 50)) score += 0;
   else if (meets(checkInCoverageRate, 25)) score -= 2;
-  else score -= 5;
+  else if (below(checkInCoverageRate, 25)) score -= 5;
 
   // mod2: Check-in frequency (±4) — sufficient volume of check-ins
   const checkInsPerChild = total_children > 0
@@ -302,7 +302,7 @@ export function computeHomeMentalHealth(
     if (meets(followUpRate, 100)) score += 4;
     else if (meets(followUpRate, 75)) score += 2;
     else if (meets(followUpRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(followUpRate, 50)) score -= 4;
   }
 
   // mod6: Mood trends (±3) — overall emotional wellbeing

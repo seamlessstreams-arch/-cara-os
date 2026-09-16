@@ -376,7 +376,7 @@ export function computeHomeNutritionCatering(
     if (meets(combinedPassRate, 95)) score += 5;
     else if (meets(combinedPassRate, 80)) score += 3;
     else if (meets(combinedPassRate, 60)) score += 0;
-    else score -= 5;
+    else if (below(combinedPassRate, 60)) score -= 5;
   }
 
   // mod2: Dietary plan coverage (±4) — every child's needs documented
@@ -388,7 +388,7 @@ export function computeHomeNutritionCatering(
     if (meets(dietaryCoverage, 90)) score += 4;
     else if (meets(dietaryCoverage, 70)) score += 2;
     else if (meets(dietaryCoverage, 50)) score += 0;
-    else score -= 4;
+    else if (below(dietaryCoverage, 50)) score -= 4;
   }
 
   // mod3: Temperature compliance (±4) — fridge/freezer governance
@@ -398,7 +398,7 @@ export function computeHomeNutritionCatering(
     if (meets(tempCompliance, 100)) score += 4;
     else if (meets(tempCompliance, 90)) score += 2;
     else if (meets(tempCompliance, 70)) score += 0;
-    else score -= 4;
+    else if (below(tempCompliance, 70)) score -= 4;
   }
 
   // mod4: Child voice in dietary plans (±3) — reviewed with child & agreed
@@ -412,7 +412,7 @@ export function computeHomeNutritionCatering(
     if (meets(combinedVoice, 90)) score += 3;
     else if (meets(combinedVoice, 70)) score += 1;
     else if (meets(combinedVoice, 50)) score += 0;
-    else score -= 3;
+    else if (below(combinedVoice, 50)) score -= 3;
   }
 
   // mod5: Allergen labelling (±3) — protecting children with allergies
@@ -422,7 +422,7 @@ export function computeHomeNutritionCatering(
     if (meets(allergenLabellingRate, 100)) score += 3;
     else if (meets(allergenLabellingRate, 80)) score += 1;
     else if (meets(allergenLabellingRate, 60)) score += 0;
-    else score -= 3;
+    else if (below(allergenLabellingRate, 60)) score -= 3;
   }
 
   // mod6: Meal planning regularity (±3) — consistent, planned nutrition

@@ -167,7 +167,7 @@ export function computeDiversityInclusionEquality(
   if (meets(culturalPlanCoverage, 80)) score += 5;
   else if (meets(culturalPlanCoverage, 50)) score += 2;
   else if (meets(culturalPlanCoverage, 20)) score += 0;
-  else score -= 5;
+  else if (below(culturalPlanCoverage, 20)) score -= 5;
 
   // ── Mod 2: Identity affirmation (±6/+3 neutral) ────────────────────
   if (lgbtq_records.length === 0) {
@@ -176,7 +176,7 @@ export function computeDiversityInclusionEquality(
     if (meets(identity_affirmation_rate, 90)) score += 6;
     else if (meets(identity_affirmation_rate, 70)) score += 3;
     else if (meets(identity_affirmation_rate, 40)) score += 0;
-    else score -= 5;
+    else if (below(identity_affirmation_rate, 40)) score -= 5;
   }
 
   // ── Mod 3: Diversity event engagement (±5/-1) ──────────────────────
@@ -186,7 +186,7 @@ export function computeDiversityInclusionEquality(
     if (meets(eventCompletionRate, 80)) score += 5;
     else if (meets(eventCompletionRate, 60)) score += 2;
     else if (meets(eventCompletionRate, 30)) score += 0;
-    else score -= 4;
+    else if (below(eventCompletionRate, 30)) score -= 4;
   }
 
   // ── Mod 4: Hate incident management (±5) ───────────────────────────
@@ -195,7 +195,7 @@ export function computeDiversityInclusionEquality(
   } else {
     if (meets(hate_resolution_rate, 90)) score += 3;
     else if (meets(hate_resolution_rate, 60)) score += 0;
-    else score -= 5;
+    else if (below(hate_resolution_rate, 60)) score -= 5;
   }
 
   // ── Mod 5: Cultural plan quality — child-led (±4/-1) ───────────────
@@ -205,7 +205,7 @@ export function computeDiversityInclusionEquality(
     if (meets(childLedRate, 80)) score += 4;
     else if (meets(childLedRate, 50)) score += 1;
     else if (meets(childLedRate, 20)) score += 0;
-    else score -= 4;
+    else if (below(childLedRate, 20)) score -= 4;
   }
 
   // ── Mod 6: Prevention & learning (±5/+2 neutral) ──────────────────
@@ -215,7 +215,7 @@ export function computeDiversityInclusionEquality(
     if (meets(preventionLearningRate, 90)) score += 5;
     else if (meets(preventionLearningRate, 70)) score += 2;
     else if (meets(preventionLearningRate, 40)) score += 0;
-    else score -= 5;
+    else if (below(preventionLearningRate, 40)) score -= 5;
   }
 
   // ── Clamp ────────────────────────────────────────────────────────────

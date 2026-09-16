@@ -246,7 +246,7 @@ export function computeHomeKeyworker(
   // 3. Duration quality (±3)
   if (meets(adequateDurationRate, 90)) score += 3;
   else if (meets(adequateDurationRate, 70)) score += 1;
-  else score -= 2;
+  else if (below(adequateDurationRate, 70)) score -= 2;
 
   // 4. Child satisfaction (±4)
   if (avgSatisfaction >= 4.0) score += 4;
@@ -258,7 +258,7 @@ export function computeHomeKeyworker(
   if (validMood.length > 0) {
     if (meets(moodImprovementRate, 70)) score += 3;
     else if (meets(moodImprovementRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(moodImprovementRate, 50)) score -= 2;
   } else {
     score += 1; // No mood data recorded — not a penalty
   }

@@ -233,13 +233,13 @@ export function computeHomeDigitalSafety(
   else if (meets(agreementCoverageRate, 75)) score += 3;
   else if (meets(agreementCoverageRate, 50)) score += 0;
   else if (meets(agreementCoverageRate, 25)) score -= 2;
-  else score -= 5;
+  else if (below(agreementCoverageRate, 25)) score -= 5;
 
   // mod2: Photo consent coverage (±4) — GDPR compliance
   if (meets(photoConsentCoverageRate, 100)) score += 4;
   else if (meets(photoConsentCoverageRate, 75)) score += 2;
   else if (meets(photoConsentCoverageRate, 50)) score += 0;
-  else score -= 4;
+  else if (below(photoConsentCoverageRate, 50)) score -= 4;
 
   // mod3: Incident response quality (±4) — actions taken on incidents
   if (incidents90d.length === 0) {
@@ -259,7 +259,7 @@ export function computeHomeDigitalSafety(
     if (meets(signedRate, 100)) score += 3;
     else if (meets(signedRate, 75)) score += 1;
     else if (meets(signedRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(signedRate, 50)) score -= 3;
   }
 
   // mod5: Overdue reviews (±4) — keeping agreements and consents current
@@ -283,7 +283,7 @@ export function computeHomeDigitalSafety(
     if (meets(controlRate, 80)) score += 3;
     else if (meets(controlRate, 50)) score += 1;
     else if (meets(controlRate, 25)) score += 0;
-    else score -= 3;
+    else if (below(controlRate, 25)) score -= 3;
   }
 
   // mod8: Media consent governance (±2) — expired consents and child voice

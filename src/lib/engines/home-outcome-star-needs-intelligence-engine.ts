@@ -165,7 +165,7 @@ export function computeOutcomeStarNeeds(
   if (meets(assessmentCoverage, 90)) score += 6;
   else if (meets(assessmentCoverage, 70)) score += 3;
   else if (meets(assessmentCoverage, 50)) score += 0;
-  else score -= 6;
+  else if (below(assessmentCoverage, 50)) score -= 6;
 
   // ── Mod 2: Outcome score quality (±5) ───────────────────────────────
   if (outcome_stars.length > 0) {
@@ -181,7 +181,7 @@ export function computeOutcomeStarNeeds(
     if (meets(improvementRate, 70)) score += 5;
     else if (meets(improvementRate, 50)) score += 2;
     else if (meets(improvementRate, 30)) score += 0;
-    else score -= 5;
+    else if (below(improvementRate, 30)) score -= 5;
   } else {
     score += 1;
   }
@@ -191,7 +191,7 @@ export function computeOutcomeStarNeeds(
     if (meets(participationRate, 90)) score += 4;
     else if (meets(participationRate, 70)) score += 2;
     else if (meets(participationRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(participationRate, 50)) score -= 4;
   }
   // If no stars, +0
 
@@ -200,7 +200,7 @@ export function computeOutcomeStarNeeds(
     if (meets(needsAddressedRate, 85)) score += 5;
     else if (meets(needsAddressedRate, 70)) score += 3;
     else if (meets(needsAddressedRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(needsAddressedRate, 50)) score -= 5;
   }
   // If no needs assessments, +0
 
@@ -209,7 +209,7 @@ export function computeOutcomeStarNeeds(
     if (meets(kpiMetRate, 80)) score += 4;
     else if (meets(kpiMetRate, 60)) score += 2;
     else if (meets(kpiMetRate, 40)) score += 0;
-    else score -= 4;
+    else if (below(kpiMetRate, 40)) score -= 4;
   } else {
     score += 1;
   }

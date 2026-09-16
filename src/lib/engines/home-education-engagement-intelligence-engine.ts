@@ -338,7 +338,7 @@ export function computeHomeEducationEngagement(
     if (meets(attendanceRate, 95)) score += 5;
     else if (meets(attendanceRate, 90)) score += 3;
     else if (meets(attendanceRate, 80)) score += 0;
-    else score -= 5;
+    else if (below(attendanceRate, 80)) score -= 5;
   }
 
   // mod2: PEP compliance (±4) — current PEPs / total_children
@@ -349,7 +349,7 @@ export function computeHomeEducationEngagement(
     if (meets(pepCurrentRate, 90)) score += 4;
     else if (meets(pepCurrentRate, 70)) score += 2;
     else if (meets(pepCurrentRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(pepCurrentRate, 50)) score -= 4;
   }
 
   // mod3: EHCP annual review timeliness (±3)
@@ -360,7 +360,7 @@ export function computeHomeEducationEngagement(
     if (meets(ehcpOnTimeRate, 100)) score += 3;
     else if (meets(ehcpOnTimeRate, 80)) score += 1;
     else if (meets(ehcpOnTimeRate, 60)) score += 0;
-    else score -= 3;
+    else if (below(ehcpOnTimeRate, 60)) score -= 3;
   }
 
   // mod4: School engagement (±3) — events per child in 90d
@@ -394,7 +394,7 @@ export function computeHomeEducationEngagement(
     if (meets(completionRate, 90)) score += 4;
     else if (meets(completionRate, 75)) score += 2;
     else if (meets(completionRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(completionRate, 50)) score -= 4;
   }
 
   // mod7: PEP target achievement (±3)
@@ -407,7 +407,7 @@ export function computeHomeEducationEngagement(
     if (meets(targetAchievementRate, 80)) score += 3;
     else if (meets(targetAchievementRate, 60)) score += 1;
     else if (meets(targetAchievementRate, 40)) score += 0;
-    else score -= 3;
+    else if (below(targetAchievementRate, 40)) score -= 3;
   }
 
   // mod8: Exclusion incidents (±3) — from PEP records
