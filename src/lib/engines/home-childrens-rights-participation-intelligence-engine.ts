@@ -382,7 +382,7 @@ export function computeHomeChildrensRightsParticipation(
     else if (meets(fullyMetRate, 70)) score += 3;
     else if (meets(fullyMetRate, 50)) score += 0;
     else if (notMet.length > 0) score -= 5;
-    else score -= 2;
+    else if (below(fullyMetRate, 50)) score -= 2;
   }
 
   // mod2: Feedback loop responsiveness (±4) — child_accepts rate + duration
@@ -392,7 +392,7 @@ export function computeHomeChildrensRightsParticipation(
     if (meets(childAcceptsRate, 85) && (typeof avgClosureDays === "number" && avgClosureDays <= 14)) score += 4;
     else if (meets(childAcceptsRate, 70) && (typeof avgClosureDays === "number" && avgClosureDays <= 21)) score += 2;
     else if (meets(childAcceptsRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(childAcceptsRate, 50)) score -= 4;
   }
 
   // mod3: Child-led meeting quality (±3) — decisions + child agenda
@@ -413,7 +413,7 @@ export function computeHomeChildrensRightsParticipation(
     if (meets(healthyPledgeRate, 90) && meets(avgEvidence, 2)) score += 4;
     else if (meets(healthyPledgeRate, 70) && meets(avgEvidence, 1)) score += 2;
     else if (meets(healthyPledgeRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(healthyPledgeRate, 50)) score -= 4;
   }
 
   // mod5: Participation influence (±3) — child_influenced rate
@@ -433,7 +433,7 @@ export function computeHomeChildrensRightsParticipation(
     if (meets(advocacyCoverage, 60) && meets(avgVisits, 2)) score += 3;
     else if (meets(advocacyCoverage, 40) && meets(avgVisits, 1)) score += 1;
     else if (meets(advocacyCoverage, 20)) score += 0;
-    else score -= 3;
+    else if (below(advocacyCoverage, 20)) score -= 3;
   }
 
   // mod7: Child voice diversity (±3) — voice captured across multiple domains

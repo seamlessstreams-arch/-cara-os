@@ -441,7 +441,7 @@ export function computeHomeNutritionCatering(
     if (meets(withinBudgetRate, 90) && (avgScratch ?? 0) >= 50) score += 3;
     else if (meets(withinBudgetRate, 70)) score += 1;
     else if (meets(withinBudgetRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(withinBudgetRate, 50)) score -= 3;
   }
 
   // mod8: Cultural and sensory inclusion (±3) — Reg 9 cultural dietary needs
@@ -451,7 +451,7 @@ export function computeHomeNutritionCatering(
     if (meets(culturalRate, 80) && meets(sensoryRate, 80)) score += 3;
     else if (meets(culturalRate, 60) || meets(sensoryRate, 60)) score += 1;
     else if (meets(culturalRate, 30) || meets(sensoryRate, 30)) score += 0;
-    else score -= 3;
+    else if (below(culturalRate, 30) || below(sensoryRate, 30)) score -= 3;
   }
 
   // Clamp

@@ -238,7 +238,7 @@ export function computeHomeOrganizationalLearning(
     if (meets(sirActionCompletionRate, 90) && overdueSIRActions === 0) score += 5;
     else if (meets(sirActionCompletionRate, 70)) score += 3;
     else if (meets(sirActionCompletionRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(sirActionCompletionRate, 50)) score -= 5;
   }
 
   // mod2: Debrief completion rate (±4) — learning from incidents
@@ -272,7 +272,7 @@ export function computeHomeOrganizationalLearning(
     if (meets(progressRate, 60) && redRag === 0) score += 4;
     else if (meets(progressRate, 40)) score += 2;
     else if (meets(progressRate, 20)) score += 0;
-    else score -= 4;
+    else if (below(progressRate, 20)) score -= 4;
   }
 
   // mod6: Lessons learned volume (±3) — depth of reflection

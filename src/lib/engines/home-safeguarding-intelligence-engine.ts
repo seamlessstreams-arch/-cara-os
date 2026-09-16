@@ -303,7 +303,7 @@ export function computeHomeSafeguarding(
   if (online90d.length > 0) {
     if (meets(discussionRate, 80) && meets(followUpRate, 80)) score += 3;
     else if (meets(discussionRate, 60) || meets(followUpRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(discussionRate, 60) || below(followUpRate, 60)) score -= 2;
   }
 
   // 9. Protective actions on active risks (±3)
