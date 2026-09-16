@@ -468,14 +468,22 @@ function computeStability(
   } else if (!hasTrusted && connectionsLast30d === 0 && ruptures.length > 0) {
     status = "fragile";
     statusReason = "No trusted adult identified, no recent connection, and unresolved rupture — prioritise relational repair.";
-  } else if (connectionsLast30d === 0) {
+  } else if (connectionsLast30d === 0 && moments.length > 0) {
+    // Isolation for an ESTABLISHED child (has a relational record, but no connection
+    // in the last 30 days) is a real concern. A child with NO relational record at
+    // all is NOT fragile-red — absence of data falls through to "developing" (the
+    // engine's no-false-red rule; matches the documented "isolation + unrepaired
+    // rupture ⇒ fragile" intent rather than isolation-from-emptiness).
     status = "fragile";
     statusReason = "No connection moments recorded in the last 30 days — relational consistency needs attention.";
   } else {
     status = "developing";
-    statusReason = hasTrusted
-      ? "Trusted relationships forming; keep connection consistent and repair after every rupture."
-      : "Connection is happening but no clear trusted adult yet — build relational anchors.";
+    statusReason =
+      connectionsLast30d === 0
+        ? "Not enough recorded yet to read relational stability — capture key-work and connection moments."
+        : hasTrusted
+          ? "Trusted relationships forming; keep connection consistent and repair after every rupture."
+          : "Connection is happening but no clear trusted adult yet — build relational anchors.";
   }
 
   return {

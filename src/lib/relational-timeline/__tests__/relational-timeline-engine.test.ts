@@ -121,6 +121,14 @@ describe("buildRelationalTimeline", () => {
     expect(t.insights.some((i) => i.key === "no-trusted-adult")).toBe(true);
   });
 
+  it("does NOT read a child with no relational record as fragile (no false red)", () => {
+    // Empty input: no connections, no ruptures, no trusted adult, no records at all.
+    // Absence of data must never be fragile-red — only an evidenced concern is
+    // (an established child whose connection has lapsed, or an unrepaired rupture).
+    const t = buildRelationalTimeline(baseInput());
+    expect(t.stability.status).toBe("developing");
+  });
+
   it("flags a repair GAP when a recent rupture has no repair recorded", () => {
     const t = buildRelationalTimeline(
       baseInput({
