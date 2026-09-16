@@ -170,6 +170,29 @@ describe("computeGovernanceManagementOversight", () => {
       const r = computeGovernanceManagementOversight(baseInput({ total_children: 0 }));
       expect(r.headline).toContain("No children");
     });
+
+    it("returns insufficient_data when children are placed but NO governance activity is recorded", () => {
+      // The false-red this guards: an operating home early in adoption, before
+      // governance is digitised, must not be branded "inadequate" purely from
+      // absence. Unmeasured governance is a data gap, not a Well-Led failure.
+      const r = computeGovernanceManagementOversight({
+        today: TODAY,
+        total_children: 3,
+        walkrounds: [],
+        governance_meetings: [],
+        board_reports: [],
+        operational_meetings: [],
+        commissioning_feedback: [],
+      });
+      expect(r.governance_rating).toBe("insufficient_data");
+      expect(r.governance_score).toBe(0);
+      expect(r.headline).not.toContain("inadequate");
+      expect(r.headline.toLowerCase()).toContain("recorded");
+      expect(r.operational_meeting_rate).toBeNull();
+      expect(r.commissioning_satisfaction_rate).toBeNull();
+      // still nudges the home to start recording — evidence is the finding
+      expect(r.recommendations.some(rec => rec.urgency === "immediate")).toBe(true);
+    });
   });
 
   // ─── Outstanding Rating ──────────────────────────────────────────
@@ -298,37 +321,34 @@ describe("computeGovernanceManagementOversight", () => {
   // ─── Inadequate Rating ───────────────────────────────────────────
 
   describe("inadequate rating", () => {
-    it("rates inadequate with all penalties — score clamps within bounds", () => {
-      // Mod 1: 0 walkrounds → -5
-      // Mod 2: 0 gov meetings → 0% < 30% → -5
-      // Mod 3: 0 board reports → 0% < 30% → -5
-      // Mod 4: 0 ops meetings → 0% < 30% → -4
-      // Mod 5: 0 comm feedback → 0% < 30% → -5
-      // Mod 6: 0 gov meetings → -1
-      // Score: 52 - 5 - 5 - 5 - 4 - 5 - 1 = 27
-      const r = computeGovernanceManagementOversight({
-        today: TODAY,
-        total_children: 4,
-        walkrounds: [],
-        governance_meetings: [],
-        board_reports: [],
-        operational_meetings: [],
-        commissioning_feedback: [],
-      });
-      expect(r.governance_score).toBe(27);
+    // A genuinely poor home: one MEASURED-weak record in every dimension. This
+    // is a real inadequate rating (evidence exists and is weak) — distinct from
+    // the empty-record case, which is insufficient_data, not inadequate.
+    // Mod 1: 1 walkround < 2 → -5
+    // Mod 2: 0/1 engaged = 0% (measured) → -5
+    // Mod 3: 0/1 responded = 0% (measured) → -5
+    // Mod 4: 0/1 effective = 0% (measured) → -4
+    // Mod 5: 0/1 satisfied = 0% (measured) → -5
+    // Mod 6: 0/1 risk = 0% (measured) → -4
+    // Score: 52 - 5 - 5 - 5 - 4 - 5 - 4 = 24
+    const measuredPoor = (): GovernanceOversightInput => ({
+      today: TODAY,
+      total_children: 4,
+      walkrounds: [makeWalkround("w1", { child_interactions: 0 })],
+      governance_meetings: [makeGovernanceMeeting("gm1", { regulatory_topics_discussed: false, children_discussed_count: 0, risk_items_count: 0 })],
+      board_reports: [makeBoardReport("br1", { board_response_received: false })],
+      operational_meetings: [makeOpsMeeting("om1", { key_decisions_count: 0, actions_agreed_count: 0 })],
+      commissioning_feedback: [makeCommFeedback("cf1", { overall_rating: 2 })],
+    });
+
+    it("rates inadequate when every measured dimension is weak", () => {
+      const r = computeGovernanceManagementOversight(measuredPoor());
+      expect(r.governance_score).toBe(24);
       expect(r.governance_rating).toBe("inadequate");
     });
 
     it("headline contains inadequate", () => {
-      const r = computeGovernanceManagementOversight({
-        today: TODAY,
-        total_children: 4,
-        walkrounds: [],
-        governance_meetings: [],
-        board_reports: [],
-        operational_meetings: [],
-        commissioning_feedback: [],
-      });
+      const r = computeGovernanceManagementOversight(measuredPoor());
       expect(r.headline).toContain("inadequate");
     });
   });
@@ -648,13 +668,18 @@ describe("computeGovernanceManagementOversight", () => {
       expect(r.governance_score).toBe(74);
     });
 
-    it("awards -1 when no governance meetings at all", () => {
-      // No gov meetings → Mod 6 = -1 instead of +4. Also Mod 2 changes: 0 meetings → 0% < 30% → -5 instead of +6.
-      // 52 + 5(mod1) + (-5)(mod2 no meetings 0%) + 5(mod3) + 5(mod4) + 5(mod5) + (-1)(mod6 no meetings) = 66
+    it("does not penalise the score when no governance meetings are recorded (unmeasured ⇒ neutral)", () => {
+      // baseInput minus governance meetings: Mod 2 (engagement) and Mod 6 (risk
+      // governance) are unmeasured → neutral, not penalised. The gap is carried
+      // by the 'establish governance meetings' recommendation, not a lower score.
+      // 52 + 5(mod1) + 0(mod2 neutral) + 5(mod3) + 5(mod4) + 5(mod5) + 0(mod6 neutral) = 72
+      // (Was 66 before the fix — the old code penalised the two unmeasured modules.)
       const r = computeGovernanceManagementOversight(baseInput({
         governance_meetings: [],
       }));
-      expect(r.governance_score).toBe(66);
+      expect(r.governance_score).toBe(72);
+      expect(r.governance_rating).toBe("good");
+      expect(r.recommendations.some(rec => rec.recommendation.includes("governance meeting"))).toBe(true);
     });
 
     it("treats risk_items_count = 0 as not addressing risk", () => {
@@ -1098,21 +1123,37 @@ describe("computeGovernanceManagementOversight", () => {
     });
 
     it("inadequate headline", () => {
+      // measured-weak in every dimension → genuine inadequate (empty would be
+      // insufficient_data, not inadequate)
       const r = computeGovernanceManagementOversight({
         today: TODAY,
         total_children: 4,
+        walkrounds: [makeWalkround("w1", { child_interactions: 0 })],
+        governance_meetings: [makeGovernanceMeeting("gm1", { regulatory_topics_discussed: false, children_discussed_count: 0, risk_items_count: 0 })],
+        board_reports: [makeBoardReport("br1", { board_response_received: false })],
+        operational_meetings: [makeOpsMeeting("om1", { key_decisions_count: 0, actions_agreed_count: 0 })],
+        commissioning_feedback: [makeCommFeedback("cf1", { overall_rating: 2 })],
+      });
+      expect(r.headline).toContain("inadequate");
+    });
+
+    it("insufficient data headline (no children)", () => {
+      const r = computeGovernanceManagementOversight(baseInput({ total_children: 0 }));
+      expect(r.headline).toContain("No children");
+    });
+
+    it("insufficient data headline (no governance activity recorded)", () => {
+      const r = computeGovernanceManagementOversight({
+        today: TODAY,
+        total_children: 3,
         walkrounds: [],
         governance_meetings: [],
         board_reports: [],
         operational_meetings: [],
         commissioning_feedback: [],
       });
-      expect(r.headline).toContain("inadequate");
-    });
-
-    it("insufficient data headline", () => {
-      const r = computeGovernanceManagementOversight(baseInput({ total_children: 0 }));
-      expect(r.headline).toContain("No children");
+      expect(r.governance_rating).toBe("insufficient_data");
+      expect(r.headline).not.toContain("inadequate");
     });
   });
 
@@ -1120,17 +1161,16 @@ describe("computeGovernanceManagementOversight", () => {
 
   describe("edge cases", () => {
     it("score is clamped to 0 minimum", () => {
-      // Even with many penalties, score should not go below 0.
-      // We can't actually get below 0 with the current modifiers (min possible = 27),
-      // but verify the clamp is in effect.
+      // A weak record in every dimension keeps the score within [0, 100].
+      // (The minimum reachable measured score is ~24, so the 0-floor is defensive.)
       const r = computeGovernanceManagementOversight({
         today: TODAY,
         total_children: 4,
-        walkrounds: [],
-        governance_meetings: [],
-        board_reports: [],
-        operational_meetings: [],
-        commissioning_feedback: [],
+        walkrounds: [makeWalkround("w1", { child_interactions: 0 })],
+        governance_meetings: [makeGovernanceMeeting("gm1", { regulatory_topics_discussed: false, children_discussed_count: 0, risk_items_count: 0 })],
+        board_reports: [makeBoardReport("br1", { board_response_received: false })],
+        operational_meetings: [makeOpsMeeting("om1", { key_decisions_count: 0, actions_agreed_count: 0 })],
+        commissioning_feedback: [makeCommFeedback("cf1", { overall_rating: 2 })],
       });
       expect(r.governance_score).toBeGreaterThanOrEqual(0);
     });
@@ -1161,7 +1201,7 @@ describe("computeGovernanceManagementOversight", () => {
       expect(r.governance_rating).toBe("good");
     });
 
-    it("handles empty arrays with children present", () => {
+    it("handles empty arrays with children present (insufficient_data, not inadequate)", () => {
       const r = computeGovernanceManagementOversight({
         today: TODAY,
         total_children: 3,
@@ -1171,8 +1211,23 @@ describe("computeGovernanceManagementOversight", () => {
         operational_meetings: [],
         commissioning_feedback: [],
       });
-      expect(r.governance_rating).toBe("inadequate");
-      expect(r.governance_score).toBe(27);
+      expect(r.governance_rating).toBe("insufficient_data");
+      expect(r.governance_score).toBe(0);
+    });
+
+    it("does not penalise a small home for governance structures it has no records for", () => {
+      // Strong walkrounds + engaged governance meetings, but no external board
+      // and no commissioning feedback (normal for a single-home provider).
+      // Board (Mod 3) and commissioning (Mod 5) are unmeasured → neutral, so the
+      // home is scored on the governance it evidences, not dragged toward
+      // inadequate for absent structures. 52 + 5 + 6 + 0 + 5 + 0 + 4 = 72.
+      const r = computeGovernanceManagementOversight(baseInput({
+        board_reports: [],
+        commissioning_feedback: [],
+      }));
+      expect(r.governance_score).toBe(72);
+      expect(r.governance_rating).toBe("good");
+      expect(r.commissioning_satisfaction_rate).toBeNull();
     });
 
     it("treats walkround threshold boundary correctly (exactly 4 walkrounds with exactly 2 avg interactions)", () => {

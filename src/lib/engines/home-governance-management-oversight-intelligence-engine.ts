@@ -144,6 +144,40 @@ export function computeGovernanceManagementOversight(
     };
   }
 
+  // No governance evidence recorded at all ⇒ cannot assess. An empty
+  // governance record is a data gap, not an "inadequate" judgement — Ofsted
+  // judges on evidence, and branding a home with no logged oversight as
+  // inadequate would penalise absence rather than reflect quality. (Mirrors
+  // the rate.ts contract: an unmeasured domain can neither flatter nor
+  // penalise a home.)
+  if (
+    walkrounds.length === 0 &&
+    governance_meetings.length === 0 &&
+    board_reports.length === 0 &&
+    operational_meetings.length === 0 &&
+    commissioning_feedback.length === 0
+  ) {
+    return {
+      governance_rating: "insufficient_data",
+      governance_score: 0,
+      headline: "No governance or management oversight activity recorded yet — governance quality cannot be assessed.",
+      total_walkrounds: 0,
+      total_governance_meetings: 0,
+      total_board_reports: 0,
+      operational_meeting_rate: null,
+      commissioning_satisfaction_rate: null,
+      strengths: [],
+      concerns: [],
+      recommendations: [{
+        rank: 1,
+        recommendation: "Begin recording governance and management oversight activity — walkrounds, governance meetings, board reports, operational meetings, and commissioning feedback. Ofsted judges on evidence, so an empty governance record is itself a finding.",
+        urgency: "immediate",
+        regulatory_ref: "CHR 2015 Reg 45",
+      }],
+      insights: [{ text: "No governance or management oversight activity has been recorded. Governance quality cannot be assessed until walkrounds, meetings, or reports are logged.", severity: "warning" }],
+    };
+  }
+
   // ── Metrics ───────────────────────────────────────────────────────
   const totalWalkrounds = walkrounds.length;
   const totalGovMeetings = governance_meetings.length;
@@ -194,61 +228,69 @@ export function computeGovernanceManagementOversight(
     score -= 5;
   }
 
-  // Mod 2: Governance meeting engagement
-  if (meets(govEngagementPct, 80)) {
-    score += 6;
-  } else if (meets(govEngagementPct, 50)) {
-    score += 3;
-  } else if (meets(govEngagementPct, 30)) {
-    score += 0;
-  } else {
-    score -= 5;
+  // Mod 2: Governance meeting engagement (unmeasured ⇒ neutral, never penalised)
+  if (govEngagementPct !== null) {
+    if (meets(govEngagementPct, 80)) {
+      score += 6;
+    } else if (meets(govEngagementPct, 50)) {
+      score += 3;
+    } else if (meets(govEngagementPct, 30)) {
+      score += 0;
+    } else {
+      score -= 5;
+    }
   }
 
-  // Mod 3: Board reporting & responsiveness
-  if (meets(boardResponsePct, 80)) {
-    score += 5;
-  } else if (meets(boardResponsePct, 50)) {
-    score += 2;
-  } else if (meets(boardResponsePct, 30)) {
-    score += 0;
-  } else {
-    score -= 5;
+  // Mod 3: Board reporting & responsiveness (unmeasured ⇒ neutral, never penalised)
+  if (boardResponsePct !== null) {
+    if (meets(boardResponsePct, 80)) {
+      score += 5;
+    } else if (meets(boardResponsePct, 50)) {
+      score += 2;
+    } else if (meets(boardResponsePct, 30)) {
+      score += 0;
+    } else {
+      score -= 5;
+    }
   }
 
-  // Mod 4: Operational meeting effectiveness
-  if (meets(opsEffectivenessPct, 80)) {
-    score += 5;
-  } else if (meets(opsEffectivenessPct, 50)) {
-    score += 2;
-  } else if (meets(opsEffectivenessPct, 30)) {
-    score += 0;
-  } else {
-    score -= 4;
+  // Mod 4: Operational meeting effectiveness (unmeasured ⇒ neutral, never penalised)
+  if (opsEffectivenessPct !== null) {
+    if (meets(opsEffectivenessPct, 80)) {
+      score += 5;
+    } else if (meets(opsEffectivenessPct, 50)) {
+      score += 2;
+    } else if (meets(opsEffectivenessPct, 30)) {
+      score += 0;
+    } else {
+      score -= 4;
+    }
   }
 
-  // Mod 5: Commissioning satisfaction
-  if (meets(commSatisfactionPct, 80)) {
-    score += 5;
-  } else if (meets(commSatisfactionPct, 50)) {
-    score += 2;
-  } else if (meets(commSatisfactionPct, 30)) {
-    score += 0;
-  } else {
-    score -= 5;
+  // Mod 5: Commissioning satisfaction (unmeasured ⇒ neutral, never penalised)
+  if (commSatisfactionPct !== null) {
+    if (meets(commSatisfactionPct, 80)) {
+      score += 5;
+    } else if (meets(commSatisfactionPct, 50)) {
+      score += 2;
+    } else if (meets(commSatisfactionPct, 30)) {
+      score += 0;
+    } else {
+      score -= 5;
+    }
   }
 
-  // Mod 6: Risk governance
-  if (totalGovMeetings === 0) {
-    score -= 1;
-  } else if (meets(riskGovPct, 70)) {
-    score += 4;
-  } else if (meets(riskGovPct, 40)) {
-    score += 1;
-  } else if (meets(riskGovPct, 20)) {
-    score += 0;
-  } else {
-    score -= 4;
+  // Mod 6: Risk governance (unmeasured — no governance meetings — ⇒ neutral)
+  if (riskGovPct !== null) {
+    if (meets(riskGovPct, 70)) {
+      score += 4;
+    } else if (meets(riskGovPct, 40)) {
+      score += 1;
+    } else if (meets(riskGovPct, 20)) {
+      score += 0;
+    } else {
+      score -= 4;
+    }
   }
 
   score = clamp(score, 0, 100);
