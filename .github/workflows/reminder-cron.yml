@@ -1,0 +1,73 @@
+# ── Scheduled jobs (reminder cron) ───────────────────────────────────────────
+#
+# Replaces the dead Vercel cron (vercel.json `crons` → /api/cron). Vercel is
+# historical; Northflank is the live host and does not run vercel.json crons, so
+# the daily reminder sweep is driven from here instead: this workflow calls the
+# live /api/cron endpoint on a schedule, exactly as Vercel used to.
+#
+# /api/cron runs the idempotent registered jobs (runDueReminders +
+# materialiseRecurringChecks). It is fail-closed and gated three ways, so this
+# workflow is inert until BOTH sides are configured:
+#
+#   ON NORTHFLANK (service env vars — set by a human in the Northflank dashboard):
+#     • CARA_CRON_ENABLED = 1      → turns the cron_scheduler feature flag ON
+#     • CRON_SECRET        = <random secret>
+#
+#   ON GITHUB (this repo → Settings → Secrets and variables → Actions):
+#     • secret CRON_SECRET  = the SAME value as on Northflank (required)
+#     • variable CARA_LIVE_URL = https://…code.run  (optional; falls back to the
+#       known Oak House host below if unset)
+#
+# Until CARA_CRON_ENABLED is set the endpoint returns 200 {ran:false}; this
+# workflow then passes with a warning (expected pre-enablement). A missing or
+# mismatched CRON_SECRET returns 500/401 and fails the run so the breakage is loud.
+# The jobs are idempotent (dedupe per occurrence), so a delayed or double run is
+# safe.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Reminder cron
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # daily 07:00 UTC — matches the retired Vercel cron
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: reminder-cron
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    name: Trigger /api/cron on the live host
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the scheduled-jobs endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CARA_LIVE_URL: ${{ vars.CARA_LIVE_URL }}
+        run: |
+          set -euo pipefail
+          BASE="${CARA_LIVE_URL:-https://site--cara-os-web--5v5g794zf969.code.run}"
+          if [ -z "${CRON_SECRET}" ]; then
+            echo "::error::CRON_SECRET is not set in this repo's Actions secrets. Add it (matching the value on Northflank) — see this workflow's header."
+            exit 1
+          fi
+          echo "POST-less GET ${BASE}/api/cron"
+          code=$(curl -sS -o /tmp/cron-resp.json -w "%{http_code}" \
+            --max-time 90 --retry 3 --retry-delay 15 --retry-all-errors \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${BASE}/api/cron")
+          echo "HTTP ${code}"
+          cat /tmp/cron-resp.json 2>/dev/null || true
+          echo
+          if [ "${code}" != "200" ]; then
+            echo "::error::/api/cron returned HTTP ${code} (500 = CRON_SECRET not set on Northflank; 401 = secret mismatch)."
+            exit 1
+          fi
+          if grep -q '"ran":false' /tmp/cron-resp.json; then
+            echo "::warning::/api/cron returned ran:false — set CARA_CRON_ENABLED=1 on Northflank to activate the sweep (secret is otherwise accepted)."
+          else
+            echo "Scheduled jobs ran."
+          fi

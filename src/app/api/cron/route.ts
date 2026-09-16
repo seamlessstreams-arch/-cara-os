@@ -4,18 +4,24 @@ import { runDueReminders } from "@/lib/calendar/calendar-service";
 import { materialiseRecurringChecks } from "@/lib/recurring-checks/materialise";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CARA — SCHEDULED JOBS ENDPOINT (Phase 1 infra · 3/3, Vercel cron)
+// CARA — SCHEDULED JOBS ENDPOINT (Phase 1 infra · 3/3)
 //
-// Vercel cron invokes this on the schedule in vercel.json. It runs the registered
-// idempotent sweeps (currently the calendar reminder sweep — runDueReminders,
-// which dedupes per occurrence, so repeat runs are safe).
+// Invoked on a schedule by .github/workflows/reminder-cron.yml (a GitHub Actions
+// cron that calls this endpoint on the live Northflank host, sending the Bearer
+// secret below). This replaced the retired Vercel cron — Northflank does not run
+// vercel.json crons. It runs the registered idempotent sweeps (currently the
+// calendar reminder sweep — runDueReminders, which dedupes per occurrence, so
+// repeat runs are safe).
 //
 // Gating (in order):
-//   1. Feature flag — isFeatureEnabled("cron_scheduler"), OPT-IN default OFF. When
-//      off (the demo's state) the endpoint is a 200 no-op: a disabled scheduler
-//      must never error, and the cron firing on the demo does nothing.
-//   2. Secret configured — CRON_SECRET must be set to run authenticated. Vercel
-//      automatically sends `Authorization: Bearer $CRON_SECRET` when it is set.
+//   1. Feature flag — isFeatureEnabled("cron_scheduler") (env CARA_CRON_ENABLED),
+//      OPT-IN default OFF. When off (the demo's state) the endpoint is a 200
+//      no-op: a disabled scheduler must never error, and the cron firing on the
+//      demo does nothing.
+//   2. Secret configured — CRON_SECRET must be set to run authenticated. The
+//      scheduler must send `Authorization: Bearer $CRON_SECRET` (the GitHub
+//      Actions workflow does; set the same value on Northflank and in the repo's
+//      Actions secrets).
 //   3. Authorised — the header must match. Fail-closed (401) otherwise, so the
 //      endpoint can't be triggered by an unauthenticated caller.
 //
@@ -74,7 +80,7 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ran: true, at: now, jobs });
 }
 
-// Vercel cron issues a GET; POST is accepted for a manual authenticated trigger.
+// The scheduler issues a GET; POST is accepted for a manual authenticated trigger.
 export async function GET(request: NextRequest) {
   return handle(request);
 }
