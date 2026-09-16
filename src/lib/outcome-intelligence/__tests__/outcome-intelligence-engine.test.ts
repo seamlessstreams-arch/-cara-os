@@ -46,10 +46,14 @@ describe("buildOutcomeIntelligence", () => {
   });
 
   it("never marks a domain needs_focus purely from empty data (no false red)", () => {
-    const out = buildOutcomeIntelligence(emptyInput({ trustedAdults: ["Emma (RM)"] }));
-    // With a trusted adult and no concerns, nothing should be red.
+    // Genuinely empty — no records AND no trusted adult (the default). No domain,
+    // including relationships, may read red from absence alone: only an evidenced
+    // concern (a decline, a low mood, a rupture) is needs_focus.
+    const out = buildOutcomeIntelligence(emptyInput());
     expect(out.domainsNeedingFocus).toBe(0);
+    expect(out.overallStatus).not.toBe("needs_focus");
     expect(out.domains.find((d) => d.key === "safety")!.status).toBe("on_track");
+    expect(out.domains.find((d) => d.key === "relationships")!.status).toBe("progressing");
   });
 
   it("flags safety as needs_focus on a recent high-severity incident", () => {
@@ -106,6 +110,20 @@ describe("buildOutcomeIntelligence", () => {
     );
     const rel = out.domains.find((d) => d.key === "relationships")!;
     expect(rel.status).toBe("on_track");
+  });
+
+  it("flags relationships needs_focus only on an evidenced decline (connections dried up, no trusted adult)", () => {
+    const out = buildOutcomeIntelligence(
+      emptyInput({
+        trustedAdults: [],
+        // A connection in the PRIOR window, none recent → an evidenced drop, not
+        // mere absence. This is the one case that is red; the empty case above is not.
+        keyWorkingSessions: [
+          { id: "k1", child_id: CHILD, date: PRIOR, staff_id: "s1", mood_before: 3, mood_after: 4 } as never,
+        ],
+      }),
+    );
+    expect(out.domains.find((d) => d.key === "relationships")!.status).toBe("needs_focus");
   });
 
   it("reads voice on_track when captured twice recently across sources", () => {

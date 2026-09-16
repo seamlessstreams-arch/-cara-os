@@ -332,9 +332,13 @@ function buildRelationships(input: OutcomeIntelligenceInput, windowDays: number)
   if (hasTrusted && recentConnections >= 2) {
     status = "on_track";
     headline = `${input.trustedAdults.length} trusted adult${input.trustedAdults.length === 1 ? "" : "s"} and ${recentConnections} connection moments recently — belonging is strong.`;
-  } else if (!hasTrusted && recentConnections === 0) {
+  } else if (!hasTrusted && recentConnections === 0 && priorConnections > 0) {
+    // Evidenced decline only: connections existed in the prior window, none now,
+    // and no trusted anchor. Absence with NO prior baseline (a new or sparsely
+    // recorded placement) is NOT red — it falls through to "progressing" per the
+    // engine's no-false-red rule (mirrors buildVoice, which requires priorVoice>0).
     status = "needs_focus";
-    headline = "No trusted adult identified and no recent connection — make relationship-building a priority.";
+    headline = `Connection moments have dropped to none (from ${priorConnections} in the prior window) and no trusted adult is identified — make relationship-building a priority.`;
   } else {
     status = "progressing";
     headline = hasTrusted
