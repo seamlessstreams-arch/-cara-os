@@ -229,13 +229,13 @@ export function computeHomeHandoverContinuity(
   if (meets(completionRate, 90)) score += 5;
   else if (meets(completionRate, 70)) score += 2;
   else if (meets(completionRate, 50)) score -= 1;
-  else score -= 4;
+  else if (below(completionRate, 50)) score -= 4;
 
   // 2. Manager sign-off rate (±4)
   if (meets(signOffRate, 80)) score += 4;
   else if (meets(signOffRate, 60)) score += 1;
   else if (meets(signOffRate, 30)) score -= 1;
-  else score -= 3;
+  else if (below(signOffRate, 30)) score -= 3;
 
   // 3. Staff sign-off coverage (±3)
   if ((avgStaffSignOffRate ?? 0) >= 80) score += 3;
@@ -252,19 +252,19 @@ export function computeHomeHandoverContinuity(
   if (totalChildUpdates > 0) {
     if (meets(moodRecordingRate, 80)) score += 3;
     else if (meets(moodRecordingRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(moodRecordingRate, 50)) score -= 2;
   }
 
   // 6. Full coverage consistency (±3)
   const fullCoverageRate = rate(fullCoverageCount, handovers.length);
   if (meets(fullCoverageRate, 80)) score += 3;
   else if (meets(fullCoverageRate, 50)) score += 1;
-  else score -= 1;
+  else if (below(fullCoverageRate, 50)) score -= 1;
 
   // 7. Notes recording (±3)
   if (meets(notesRate, 80)) score += 3;
   else if (meets(notesRate, 50)) score += 1;
-  else score -= 1;
+  else if (below(notesRate, 50)) score -= 1;
 
   // 8. Incident linkage bonus (±3)
   if (handoversWithIncidents > 0) {

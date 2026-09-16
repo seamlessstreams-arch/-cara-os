@@ -312,13 +312,13 @@ describe("adequate rating", () => {
 
 describe("inadequate rating", () => {
   it("scores inadequate when all modifiers are negative", () => {
-    // Mod 1: 0/4 = 0% < 50% -> -5
-    // Mod 2: 0 items, pct(0,0) = 0% < 60% -> -6
-    // Mod 3: 0/4 = 0% < 30% -> -5
-    // Mod 4: 0/4 = 0% < 20% -> -4
-    // Mod 5: 0/0 banks -> pct(0,0) = 0% < 30% -> -4
-    // Mod 6: 0/4 = 0% < 10% -> -4
-    // Total: 52 + (-5) + (-6) + (-5) + (-4) + (-4) + (-4) = 24
+    // Mod 1: 0/4 = 0% (measured — children exist) < 50% -> -5
+    // Mod 2: receiptComplianceRate = rate(0,0) = null (no petty cash) -> NEUTRAL
+    // Mod 3: 0/4 = 0% (measured) < 30% -> -5
+    // Mod 4: 0/4 = 0% (measured) < 20% -> -4
+    // Mod 5: financialLiteracyRate = rate(0,0) = null (no bank accounts) -> NEUTRAL
+    // Mod 6: 0/4 = 0% (measured) < 10% -> -4
+    // Total: 52 - 5 + 0 - 5 - 4 + 0 - 4 = 34 (was 24; the two null rates no longer penalise)
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
       pocket_money: [],
       bank_accounts: [],
@@ -326,7 +326,7 @@ describe("inadequate rating", () => {
       savings_accounts: [],
       charity_grants: [],
     }));
-    expect(r.financial_score).toBe(24);
+    expect(r.financial_score).toBe(34);
     expect(r.financial_rating).toBe("inadequate");
   });
 
@@ -521,15 +521,14 @@ describe("modifier 2: receipt compliance", () => {
 
 describe("modifier 3: bank account coverage", () => {
   it("awards +5 for >= 80% coverage", () => {
-    // 4/4 = 100% -> +5, 0/4 = 0% < 30% -> -5, diff = 10
     const full = computeFinancialLiteracyMoneyManagement(baseInput());
     const none = computeFinancialLiteracyMoneyManagement(baseInput({
       bank_accounts: [],
     }));
-    // Mod 3: +5 vs -5 = 10
-    // Mod 5 also changes: full has 100% literacy -> +4, none has pct(0,0)=0% -> -4 = 8 diff
-    // Total diff = 10 + 8 = 18
-    expect(full.financial_score - none.financial_score).toBe(18);
+    // Mod 3: bankAccountCoverage 4/4=100% (+5) vs 0/4=0% measured (-5) = 10 diff
+    // Mod 5: financialLiteracyRate 100% (+4) vs rate(_,0)=null → NEUTRAL (0) = 4 diff
+    // Total diff = 10 + 4 = 14
+    expect(full.financial_score - none.financial_score).toBe(14);
   });
 
   it("awards +2 for 50-79% coverage", () => {
@@ -1041,15 +1040,14 @@ describe("edge cases", () => {
     expect(r.receipt_compliance_rate).toBeNull();
   });
 
-  it("pct returns 0 when denominator is 0", () => {
-    // total_children = 0 returns insufficient_data, but we can check
-    // the metric calculation via no bank accounts for literacy rate
+  it("leaves financialLiteracyRate unmeasured when there are no bank accounts", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
       bank_accounts: [],
     }));
-    // financialLiteracyRate = pct(0, 0) = 0 — tested indirectly via Mod 5 = -4
-    // The score without bank accounts: 82 - 10 (mod3) - 8 (mod5) = 64
-    expect(r.financial_score).toBe(64);
+    // Mod 3: bankAccountCoverage 0/4 = 0% (measured) -> -5 (a -10 swing from base +5)
+    // Mod 5: financialLiteracyRate = rate(_, 0) = null -> NEUTRAL (was wrongly -4)
+    // 82 - 10 (mod3) - 4 (mod5: +4 → 0) = 68
+    expect(r.financial_score).toBe(68);
   });
 });
 
@@ -1088,13 +1086,13 @@ describe("full modifier breakdown", () => {
   });
 
   it("verifies all-negative scenario score", () => {
-    // Mod 1: 0/4 = 0% < 50% -> -5
-    // Mod 2: pct(0, 0) = 0% < 60% -> -6
-    // Mod 3: 0/4 = 0% < 30% -> -5
-    // Mod 4: 0/4 = 0% < 20% -> -4
-    // Mod 5: pct(0, 0) = 0% < 30% -> -4
-    // Mod 6: 0/4 = 0% < 10% -> -4
-    // Total: 52 + (-5) + (-6) + (-5) + (-4) + (-4) + (-4) = 24
+    // Mod 1: 0/4 = 0% (measured) < 50% -> -5
+    // Mod 2: receiptComplianceRate = rate(0,0) = null -> NEUTRAL
+    // Mod 3: 0/4 = 0% (measured) < 30% -> -5
+    // Mod 4: 0/4 = 0% (measured) < 20% -> -4
+    // Mod 5: financialLiteracyRate = rate(0,0) = null -> NEUTRAL
+    // Mod 6: 0/4 = 0% (measured) < 10% -> -4
+    // Total: 52 - 5 + 0 - 5 - 4 + 0 - 4 = 34
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
       pocket_money: [],
       bank_accounts: [],
@@ -1102,6 +1100,6 @@ describe("full modifier breakdown", () => {
       savings_accounts: [],
       charity_grants: [],
     }));
-    expect(r.financial_score).toBe(24);
+    expect(r.financial_score).toBe(34);
   });
 });

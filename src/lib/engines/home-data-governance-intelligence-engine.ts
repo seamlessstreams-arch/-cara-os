@@ -387,7 +387,7 @@ export function computeHomeDataGovernance(
     if (meets(timelyRate, 100)) score += 3;
     else if (meets(timelyRate, 75)) score += 1;
     else if (meets(timelyRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(timelyRate, 50)) score -= 3;
   }
 
   // mod6: DPA/GDPR policy compliance (±3) — records current
@@ -412,7 +412,7 @@ export function computeHomeDataGovernance(
     if (meets(retentionCompletionRate, 100)) score += 3;
     else if (meets(retentionCompletionRate, 75)) score += 1;
     else if (meets(retentionCompletionRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(retentionCompletionRate, 50)) score -= 3;
   }
 
   // mod8: Incident learning (±3) — breach lessons documented

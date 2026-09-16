@@ -260,7 +260,7 @@ export function computeHomePlacementStability(
   if (totalEpisodes > 0) {
     if (meets(returnInterviewRate, 90)) score += 3;
     else if (meets(returnInterviewRate, 70)) score += 1;
-    else score -= 2;
+    else if (below(returnInterviewRate, 70)) score -= 2;
   } else {
     score += 3; // No episodes — best possible state
   }
@@ -268,7 +268,7 @@ export function computeHomePlacementStability(
   // 7. Stability rate (±3)
   if (meets(stabilityRate, 80)) score += 3;
   else if (meets(stabilityRate, 50)) score += 1;
-  else score -= 2;
+  else if (below(stabilityRate, 50)) score -= 2;
 
   // 8. Risk flags (±3)
   if (avgRiskFlags <= 1) score += 3;

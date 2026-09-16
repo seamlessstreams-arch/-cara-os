@@ -233,7 +233,7 @@ export function computeHomeFinancial(
   if (allowanceTxns.length > 0) {
     if (meets(regularityRate, 80)) score += 5;
     else if (meets(regularityRate, 50)) score += 2;
-    else score -= 3;
+    else if (below(regularityRate, 50)) score -= 3;
   } else if (recent.length > 0) {
     // Has other transactions but no allowances — children spending without recorded income
     score -= 3;
@@ -246,7 +246,7 @@ export function computeHomeFinancial(
   if (spendingTxns.length > 0) {
     if (meets(receiptRate, 80)) score += 4;
     else if (meets(receiptRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(receiptRate, 60)) score -= 3;
   } else {
     score += 1; // no spending to receipt
   }
@@ -255,7 +255,7 @@ export function computeHomeFinancial(
   if (recent.length > 0) {
     if (meets(approvalRate, 90)) score += 3;
     else if (meets(approvalRate, 70)) score += 1;
-    else score -= 2;
+    else if (below(approvalRate, 70)) score -= 2;
   }
 
   // 4. Savings engagement (±4)

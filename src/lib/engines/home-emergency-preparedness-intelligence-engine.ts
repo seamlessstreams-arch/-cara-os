@@ -248,14 +248,14 @@ export function computeHomeEmergencyPreparedness(
   if (recentDrills.length > 0) {
     if (meets(satisfactoryRate, 80)) score += 3;
     else if (meets(satisfactoryRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(satisfactoryRate, 60)) score -= 2;
   }
 
   // 5. Protocol followed rate (±3)
   if (recentDrills.length > 0) {
     if (meets(protocolRate, 90)) score += 3;
     else if (meets(protocolRate, 70)) score += 1;
-    else score -= 2;
+    else if (below(protocolRate, 70)) score -= 2;
   }
 
   // 6. Overdue drills (±3)
@@ -273,7 +273,7 @@ export function computeHomeEmergencyPreparedness(
   if (emergency_plans.length > 0) {
     if (meets(childConsRate, 80)) score += 3;
     else if (meets(childConsRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(childConsRate, 50)) score -= 2;
   }
 
   // 9. Drill scenario diversity (±2)

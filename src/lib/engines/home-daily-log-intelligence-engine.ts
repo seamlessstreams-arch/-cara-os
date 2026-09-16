@@ -259,32 +259,32 @@ export function computeHomeDailyLog(
   else if (meets(frequencyRate, 75)) score += 3;
   else if (meets(frequencyRate, 50)) score += 0;
   else if (meets(frequencyRate, 30)) score -= 2;
-  else score -= 5;
+  else if (below(frequencyRate, 30)) score -= 5;
 
   // mod2: Child coverage (±4) — all children have entries
   if (meets(childCoverageRate, 100)) score += 4;
   else if (meets(childCoverageRate, 75)) score += 2;
   else if (meets(childCoverageRate, 50)) score += 0;
-  else score -= 4;
+  else if (below(childCoverageRate, 50)) score -= 4;
 
   // mod3: Entry type diversity (±4) — breadth of recording
   if (meets(typeDiversityRate, 70)) score += 4;
   else if (meets(typeDiversityRate, 50)) score += 2;
   else if (meets(typeDiversityRate, 30)) score += 0;
-  else score -= 4;
+  else if (below(typeDiversityRate, 30)) score -= 4;
 
   // mod4: Mood tracking (±3) — entries with mood scores
   if (meets(moodTrackingRate, 80)) score += 3;
   else if (meets(moodTrackingRate, 60)) score += 1;
   else if (meets(moodTrackingRate, 40)) score += 0;
   else if (meets(moodTrackingRate, 20)) score -= 1;
-  else score -= 3;
+  else if (below(moodTrackingRate, 20)) score -= 3;
 
   // mod5: Staff participation (±4) — diverse staff logging
   if (meets(staffParticipationRate, 70)) score += 4;
   else if (meets(staffParticipationRate, 50)) score += 2;
   else if (meets(staffParticipationRate, 30)) score += 0;
-  else score -= 4;
+  else if (below(staffParticipationRate, 30)) score -= 4;
 
   // mod6: Content quality (±3) — average content length
   if ((avgContentLength ?? 0) >= 100) score += 3;

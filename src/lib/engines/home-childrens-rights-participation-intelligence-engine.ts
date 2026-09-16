@@ -423,7 +423,7 @@ export function computeHomeChildrensRightsParticipation(
     if (meets(childInfluenceRate, 80)) score += 3;
     else if (meets(childInfluenceRate, 60)) score += 1;
     else if (meets(childInfluenceRate, 40)) score += 0;
-    else score -= 3;
+    else if (below(childInfluenceRate, 40)) score -= 3;
   }
 
   // mod6: Advocacy access (±3) — coverage + visits

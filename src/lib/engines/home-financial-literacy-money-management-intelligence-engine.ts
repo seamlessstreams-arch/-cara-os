@@ -190,37 +190,37 @@ export function computeFinancialLiteracyMoneyManagement(
   if (meets(pocketMoneyCoverage, 90)) score += 5;
   else if (meets(pocketMoneyCoverage, 70)) score += 2;
   else if (meets(pocketMoneyCoverage, 50)) score += 0;
-  else score -= 5;
+  else if (below(pocketMoneyCoverage, 50)) score -= 5;
 
   // Mod 2: Receipt compliance (±6)
   if (meets(receiptComplianceRate, 95)) score += 6;
   else if (meets(receiptComplianceRate, 80)) score += 3;
   else if (meets(receiptComplianceRate, 60)) score += 0;
-  else score -= 6;
+  else if (below(receiptComplianceRate, 60)) score -= 6;
 
   // Mod 3: Bank account coverage (±5)
   if (meets(bankAccountCoverage, 80)) score += 5;
   else if (meets(bankAccountCoverage, 50)) score += 2;
   else if (meets(bankAccountCoverage, 30)) score += 0;
-  else score -= 5;
+  else if (below(bankAccountCoverage, 30)) score -= 5;
 
   // Mod 4: Savings engagement (±5/−4)
   if (meets(savingsEngagementRate, 70)) score += 5;
   else if (meets(savingsEngagementRate, 40)) score += 2;
   else if (meets(savingsEngagementRate, 20)) score += 0;
-  else score -= 4;
+  else if (below(savingsEngagementRate, 20)) score -= 4;
 
   // Mod 5: Financial literacy assessment (±4)
   if (meets(financialLiteracyRate, 80)) score += 4;
   else if (meets(financialLiteracyRate, 50)) score += 1;
   else if (meets(financialLiteracyRate, 30)) score += 0;
-  else score -= 4;
+  else if (below(financialLiteracyRate, 30)) score -= 4;
 
   // Mod 6: Charity grant access (±5/−4)
   if (meets(charityAccessRate, 50)) score += 5;
   else if (meets(charityAccessRate, 25)) score += 2;
   else if (meets(charityAccessRate, 10)) score += 0;
-  else score -= 4;
+  else if (below(charityAccessRate, 10)) score -= 4;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);

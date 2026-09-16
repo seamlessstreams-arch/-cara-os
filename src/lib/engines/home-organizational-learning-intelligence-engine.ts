@@ -248,7 +248,7 @@ export function computeHomeOrganizationalLearning(
     if (meets(debriefCompletedRate, 90)) score += 4;
     else if (meets(debriefCompletedRate, 75)) score += 2;
     else if (meets(debriefCompletedRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(debriefCompletedRate, 50)) score -= 4;
   }
 
   // mod3: Practice changes from reviews (±4) — evidence of learning embedding
