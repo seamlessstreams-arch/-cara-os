@@ -484,10 +484,6 @@ const ALLOWED = new Map([
     "0 shadowings in the period ⇒ vacuously 1 on the reflective-practice sub-score (inverse-frequency; matches the sibling `if (X.length === 0) return 1` pattern that's ALLOWED elsewhere)",
   ],
   [
-    "src/lib/quality-assurance/quality-assurance-engine.ts:followUpRequired:1",
-    "followUp completion rate (0-1) — 0 follow-ups required ⇒ vacuously complete (inverse-frequency)",
-  ],
-  [
     "src/lib/services/policies-register-service.ts:policyAcks:1",
     "divisor floor for the totalExpected accumulator (`policyAcks.length > 0 ? policyAcks.length : 1`) — 1 is a divisor floor, not a score",
   ],

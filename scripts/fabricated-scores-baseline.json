@@ -49,7 +49,6 @@
   "src/lib/engines/home-staff-wellbeing-retention-intelligence-engine.ts:nums:0",
   "src/lib/engines/plan-currency-engine.ts:dated:0",
   "src/lib/engines/therapeutic-progress-intelligence-engine.ts:nums:0",
-  "src/lib/health/health-intelligence-engine.ts:den:0",
   "src/lib/recording-quality-trend/recording-quality-trend-engine.ts:n:0",
   "src/lib/search/search-engine.ts:scores:0",
   "src/lib/services/regulatory-reporting-service.ts:total_sections:0"

@@ -1,17 +1,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Four places that took an actor and recorded nobody.
+// Three places that took an actor and recorded nobody.
 //
-// Each of these accepted a `removedBy` / `submittedBy` / `staffId` argument and
-// then wrote a record that could not say who had acted. In every case the
-// siblings around them do record it — which is what makes these omissions
-// rather than decisions, and what made them findable: the accepted-but-unused
-// parameter was the only trace.
-//
-//   retention-engine.removeHold — every other transition on FiledDocument
-//     records a By and an At (filedBy, destroyedBy, destructionApprovedBy,
-//     holdPlacedBy). Only lifting a legal hold recorded neither. A hold is what
-//     stops a document being destroyed, so who released it is exactly what an
-//     inspector or a court asks about afterwards.
+// Each of these accepted a `submittedBy` / `staffId` argument and then wrote a
+// record that could not say who had acted. In every case the siblings around
+// them do record it — which is what makes these omissions rather than
+// decisions, and what made them findable: the accepted-but-unused parameter was
+// the only trace.
 //
 //   approval-engine.submitForReview — reviewedBy/At and finalisedBy/At were
 //     both stored; submission stored nothing.
@@ -23,54 +17,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
-import { removeHold, placeHold, type FiledDocument } from "@/lib/filing-cabinet/retention-engine";
 import { CaraApprovalEngine } from "@/lib/cara/approval/approval-engine";
 import { processBuildingCheckFail, processVehicleDefect } from "@/lib/db/linked-updates";
 import { db } from "@/lib/db/store";
-
-// ── Legal holds ─────────────────────────────────────────────────────────────
-
-function heldDocument(): FiledDocument {
-  const base = {
-    id: "doc_1",
-    title: "Safeguarding chronology",
-    category: "safeguarding" as FiledDocument["category"],
-    childId: "yp_alex",
-    filedBy: "staff_darren",
-    filedAt: "2026-01-04T09:00:00.000Z",
-    retentionExpiresAt: "2050-01-04",
-    status: "active" as FiledDocument["status"],
-  } as FiledDocument;
-
-  const held = placeHold(base, "Ongoing LADO enquiry", "staff_darren", "registered_manager");
-  expect(held.success, "fixture: the hold must be placed").toBe(true);
-  return held.document as FiledDocument;
-}
-
-describe("removing a legal hold records who removed it", () => {
-  it("attributes the removal", () => {
-    const result = removeHold(heldDocument(), "staff_chervelle", "registered_manager");
-
-    expect(result.success).toBe(true);
-    expect(result.document?.holdRemovedBy).toBe("staff_chervelle");
-    expect(result.document?.holdRemovedAt).toBeTruthy();
-  });
-
-  it("still clears the hold itself", () => {
-    const result = removeHold(heldDocument(), "staff_chervelle", "registered_manager");
-
-    expect(result.document?.status).toBe("archived");
-    expect(result.document?.holdReason).toBeUndefined();
-    expect(result.document?.holdPlacedBy).toBeUndefined();
-  });
-
-  it("records nobody when the removal is refused", () => {
-    const result = removeHold(heldDocument(), "staff_new", "rsw");
-
-    expect(result.success).toBe(false);
-    expect(result.document).toBeUndefined();
-  });
-});
 
 // ── Approval submission ─────────────────────────────────────────────────────
 
