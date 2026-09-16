@@ -53,6 +53,21 @@ describe("buildEmotionalSafetyAnalysis", () => {
     expect(help?.count).toBe(1); // only the one that ended regulated
   });
 
+  it("does not credit a strategy when the outcome negates the regulation after the word", () => {
+    const a = buildEmotionalSafetyAnalysis(
+      baseInput({
+        behaviourLog: [
+          // post-word negation: a regulation word appears but the outcome says it failed
+          b({ id: "1", child_id: "child-alex", date: "2026-06-20", time: "15:00", direction: "concern", intensity: "moderate", trigger: "x", strategy_used: "Sensory box", outcome: "de-escalation was not achieved" }),
+          // genuine regulation that merely mentions a later, unrelated negative — must STILL credit
+          b({ id: "2", child_id: "child-alex", date: "2026-06-19", time: "15:00", direction: "concern", intensity: "moderate", trigger: "x", strategy_used: "Walk outside", outcome: "she calmed down and did not want dinner" }),
+        ],
+      }),
+    );
+    expect(a.whatHelps.find((h) => h.label === "Sensory box")).toBeUndefined();
+    expect(a.whatHelps.find((h) => h.label === "Walk outside")?.count).toBe(1);
+  });
+
   it("detects a RISING escalation trend and rates CONCERN", () => {
     const a = buildEmotionalSafetyAnalysis(
       baseInput({
