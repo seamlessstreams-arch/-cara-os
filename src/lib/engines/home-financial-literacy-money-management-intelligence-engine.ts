@@ -121,11 +121,19 @@ export function computeFinancialLiteracyMoneyManagement(
   } = input;
 
   // ── Insufficient data ─────────────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no financial-
+  // literacy records at all — a wholly-unrecorded domain is UNASSESSED, not
+  // "inadequate" (empty must not read as a measured failing).
+  const noFinancialLiteracyRecords =
+    pocket_money.length === 0 && bank_accounts.length === 0 && petty_cash.length === 0 &&
+    savings_accounts.length === 0 && charity_grants.length === 0;
+  if (total_children === 0 || noFinancialLiteracyRecords) {
     return {
       financial_rating: "insufficient_data",
       financial_score: 0,
-      headline: "No children recorded — financial literacy and money management cannot be assessed.",
+      headline: total_children === 0
+        ? "No children recorded — financial literacy and money management cannot be assessed."
+        : "No financial literacy or money-management activity recorded yet — cannot be assessed.",
       children_with_pocket_money: 0,
       children_with_bank_accounts: 0,
       receipt_compliance_rate: null,

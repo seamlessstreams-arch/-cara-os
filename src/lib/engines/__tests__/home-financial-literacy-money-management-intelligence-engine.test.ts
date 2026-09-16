@@ -311,28 +311,25 @@ describe("adequate rating", () => {
 // ── 5. Inadequate Rating ───────────────────────────────────────────────────
 
 describe("inadequate rating", () => {
-  it("scores inadequate when all modifiers are negative", () => {
-    // Mod 1: 0/4 = 0% (measured — children exist) < 50% -> -5
-    // Mod 2: receiptComplianceRate = rate(0,0) = null (no petty cash) -> NEUTRAL
-    // Mod 3: 0/4 = 0% (measured) < 30% -> -5
-    // Mod 4: 0/4 = 0% (measured) < 20% -> -4
-    // Mod 5: financialLiteracyRate = rate(0,0) = null (no bank accounts) -> NEUTRAL
-    // Mod 6: 0/4 = 0% (measured) < 10% -> -4
-    // Total: 52 - 5 + 0 - 5 - 4 + 0 - 4 = 34 (was 24; the two null rates no longer penalise)
+  it("scores inadequate when measured metrics are weak", () => {
+    // One poor pocket-money record so the domain isn't wholly-empty (→ not
+    // insufficient_data), everything else absent → measured-low coverage across
+    // dimensions. Mod1 25% (-5), Mod2 0% receipts (-6), Mod3 0% bank (-5),
+    // Mod4 0% savings (-4), Mod5 null literacy (neutral), Mod6 0% charity (-4).
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
-      pocket_money: [],
+      pocket_money: [makePocketMoney("pm1", "yp_1", { receipt_held: false, approved_by_staff: false })],
       bank_accounts: [],
       petty_cash: [],
       savings_accounts: [],
       charity_grants: [],
     }));
-    expect(r.financial_score).toBe(34);
     expect(r.financial_rating).toBe("inadequate");
+    expect(r.financial_score).toBeLessThan(45);
   });
 
   it("generates concerns for all weak metrics", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
-      pocket_money: [],
+      pocket_money: [makePocketMoney("pm1", "yp_1", { receipt_held: false, approved_by_staff: false })],
       bank_accounts: [],
       petty_cash: [],
       savings_accounts: [],
@@ -343,7 +340,7 @@ describe("inadequate rating", () => {
 
   it("generates recommendations for weak metrics", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
-      pocket_money: [],
+      pocket_money: [makePocketMoney("pm1", "yp_1", { receipt_held: false, approved_by_staff: false })],
       bank_accounts: [],
       petty_cash: [],
       savings_accounts: [],
@@ -936,7 +933,7 @@ describe("headlines", () => {
 
   it("reflects inadequate rating", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
-      pocket_money: [],
+      pocket_money: [makePocketMoney("pm1", "yp_1", { receipt_held: false, approved_by_staff: false })],
       bank_accounts: [],
       petty_cash: [],
       savings_accounts: [],
@@ -1007,7 +1004,7 @@ describe("edge cases", () => {
     expect(r.financial_rating).toBe("outstanding");
   });
 
-  it("handles children with no data arrays at all", () => {
+  it("returns insufficient_data when children present but no financial records at all", () => {
     const r = computeFinancialLiteracyMoneyManagement({
       today: "2026-05-27",
       total_children: 3,
@@ -1017,8 +1014,9 @@ describe("edge cases", () => {
       savings_accounts: [],
       charity_grants: [],
     });
-    expect(r.financial_rating).not.toBe("insufficient_data");
-    expect(r.financial_score).toBeGreaterThanOrEqual(0);
+    // wholly-unrecorded domain = UNASSESSED, not "inadequate" (no false-red)
+    expect(r.financial_rating).toBe("insufficient_data");
+    expect(r.financial_score).toBe(0);
   });
 
   it("handles duplicate child IDs across different record types", () => {
@@ -1085,21 +1083,17 @@ describe("full modifier breakdown", () => {
     expect(r.financial_score).toBe(76);
   });
 
-  it("verifies all-negative scenario score", () => {
-    // Mod 1: 0/4 = 0% (measured) < 50% -> -5
-    // Mod 2: receiptComplianceRate = rate(0,0) = null -> NEUTRAL
-    // Mod 3: 0/4 = 0% (measured) < 30% -> -5
-    // Mod 4: 0/4 = 0% (measured) < 20% -> -4
-    // Mod 5: financialLiteracyRate = rate(0,0) = null -> NEUTRAL
-    // Mod 6: 0/4 = 0% (measured) < 10% -> -4
-    // Total: 52 - 5 + 0 - 5 - 4 + 0 - 4 = 34
+  it("verifies a measured-weak scenario scores inadequate", () => {
+    // One poor pocket-money record + all else absent (not wholly-empty, so it
+    // scores rather than returning insufficient_data): 52 - 5 - 6 - 5 - 4 + 0 - 4 = 28.
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
-      pocket_money: [],
+      pocket_money: [makePocketMoney("pm1", "yp_1", { receipt_held: false, approved_by_staff: false })],
       bank_accounts: [],
       petty_cash: [],
       savings_accounts: [],
       charity_grants: [],
     }));
-    expect(r.financial_score).toBe(34);
+    expect(r.financial_rating).toBe("inadequate");
+    expect(r.financial_score).toBeLessThan(45);
   });
 });
