@@ -229,14 +229,14 @@ export function computeHomeRecordingQuality(
   if (meets(submissionRate, 90)) score += 5;
   else if (meets(submissionRate, 70)) score += 2;
   else if (meets(submissionRate, 50)) score -= 1;
-  else score -= 4;
+  else if (below(submissionRate, 50)) score -= 4;
 
   // 2. Review rate (±4)
   if (submitted.length > 0) {
     if (meets(reviewRate, 80)) score += 4;
     else if (meets(reviewRate, 60)) score += 1;
     else if (meets(reviewRate, 30)) score -= 1;
-    else score -= 3;
+    else if (below(reviewRate, 30)) score -= 3;
   }
 
   // 3. Review timeliness (±3)
@@ -251,7 +251,7 @@ export function computeHomeRecordingQuality(
   if (reviewed.length > 0) {
     if (meets(approvalRate, 80)) score += 4;
     else if (meets(approvalRate, 50)) score += 1;
-    else score -= 2;
+    else if (below(approvalRate, 50)) score -= 2;
   }
 
   // 5. Overdue forms (±3)

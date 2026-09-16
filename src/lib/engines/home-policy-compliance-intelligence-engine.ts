@@ -255,7 +255,7 @@ export function computeHomePolicyCompliance(
   // 1. Policy currency rate (±5)
   if (meets(currencyRate, 90)) score += 5;
   else if (meets(currencyRate, 75)) score += 2;
-  else score -= 3;
+  else if (below(currencyRate, 75)) score -= 3;
 
   // 2. Overdue count (±4)
   if (overdueCount === 0) score += 4;
@@ -271,7 +271,7 @@ export function computeHomePolicyCompliance(
   const fullyAckRate = rate(fullyAck, active.length);
   if (meets(fullyAckRate, 90)) score += 3;
   else if (meets(fullyAckRate, 75)) score += 1;
-  else score -= 1;
+  else if (below(fullyAckRate, 75)) score -= 1;
 
   // 5. Regulatory coverage (±3)
   if (coveredRequired >= 7) score += 3;
@@ -282,12 +282,12 @@ export function computeHomePolicyCompliance(
   // 6. Statutory basis documented (±3)
   if (meets(statutoryRate, 100)) score += 3;
   else if (meets(statutoryRate, 80)) score += 1;
-  else score -= 1;
+  else if (below(statutoryRate, 80)) score -= 1;
 
   // 7. Key points documented (±3)
   if (meets(keyPointsRate, 100)) score += 3;
   else if (meets(keyPointsRate, 80)) score += 1;
-  else score -= 1;
+  else if (below(keyPointsRate, 80)) score -= 1;
 
   // 8. Safeguarding policy current (±3)
   if (safeguardingExists && safeguardingCurrent) score += 3;

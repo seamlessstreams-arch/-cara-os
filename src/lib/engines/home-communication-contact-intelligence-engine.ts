@@ -266,7 +266,7 @@ export function computeHomeCommunicationContact(
     if (meets(commActionRate, 95)) score += 5;
     else if (meets(commActionRate, 80)) score += 3;
     else if (meets(commActionRate, 60)) score += 0;
-    else score -= 5;
+    else if (below(commActionRate, 60)) score -= 5;
   }
 
   // mod2: Contact plan coverage (±4) — every child has a contact plan
@@ -278,7 +278,7 @@ export function computeHomeCommunicationContact(
     if (meets(contactPlanCoverage, 90)) score += 4;
     else if (meets(contactPlanCoverage, 70)) score += 2;
     else if (meets(contactPlanCoverage, 50)) score += 0;
-    else score -= 4;
+    else if (below(contactPlanCoverage, 50)) score -= 4;
   }
 
   // mod3: Contact plan review timeliness (±3)
@@ -292,7 +292,7 @@ export function computeHomeCommunicationContact(
     if (meets(reviewOnTimeRate, 95)) score += 3;
     else if (meets(reviewOnTimeRate, 80)) score += 1;
     else if (meets(reviewOnTimeRate, 60)) score += 0;
-    else score -= 3;
+    else if (below(reviewOnTimeRate, 60)) score -= 3;
   }
 
   // mod4: Communication profile coverage (±4) — every child has a profile
@@ -304,7 +304,7 @@ export function computeHomeCommunicationContact(
     if (meets(profileCoverage, 90)) score += 4;
     else if (meets(profileCoverage, 70)) score += 2;
     else if (meets(profileCoverage, 50)) score += 0;
-    else score -= 4;
+    else if (below(profileCoverage, 50)) score -= 4;
   }
 
   // mod5: Child voice in contact & communication (±3) — wishes captured
@@ -318,7 +318,7 @@ export function computeHomeCommunicationContact(
     if (meets(voiceRate, 90)) score += 3;
     else if (meets(voiceRate, 70)) score += 1;
     else if (meets(voiceRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(voiceRate, 50)) score -= 3;
   }
 
   // mod6: Correspondence handling (±3) — overdue actions
@@ -340,7 +340,7 @@ export function computeHomeCommunicationContact(
     if (meets(activityRate, 80)) score += 3;
     else if (meets(activityRate, 50)) score += 1;
     else if (meets(activityRate, 20)) score += 0;
-    else score -= 3;
+    else if (below(activityRate, 20)) score -= 3;
   }
 
   // mod8: SALT & accessibility provision (±3) — specialist support
@@ -361,7 +361,7 @@ export function computeHomeCommunicationContact(
       if (meets(supportRate, 100)) score += 3;
       else if (meets(supportRate, 80)) score += 1;
       else if (meets(supportRate, 50)) score += 0;
-      else score -= 3;
+      else if (below(supportRate, 50)) score -= 3;
     }
   }
 

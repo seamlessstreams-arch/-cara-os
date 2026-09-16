@@ -146,7 +146,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
     if (meets(combinedOutcome, 90)) score += 4;
     else if (meets(combinedOutcome, 70)) score += 2;
     else if (meets(combinedOutcome, 50)) score += 0;
-    else score -= 4;
+    else if (below(combinedOutcome, 50)) score -= 4;
   }
 
   // Mod 6: Rejections (-3 to +1)

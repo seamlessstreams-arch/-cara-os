@@ -150,37 +150,37 @@ export function computeDigitalLiteracyOnlineSafety(
   if (meets(digitalPlanCoverageRate, 80)) score += 5;
   else if (meets(digitalPlanCoverageRate, 50)) score += 2;
   else if (meets(digitalPlanCoverageRate, 30)) score += 0;
-  else score -= 5;
+  else if (below(digitalPlanCoverageRate, 30)) score -= 5;
 
   // Mod 2: Skill competency (intermediate or advanced)
   if (meets(skillCompetencyRate, 70)) score += 6;
   else if (meets(skillCompetencyRate, 45)) score += 3;
   else if (meets(skillCompetencyRate, 25)) score += 0;
-  else score -= 5;
+  else if (below(skillCompetencyRate, 25)) score -= 5;
 
   // Mod 3: Parental controls on phones
   if (meets(parentalControlsRate, 90)) score += 5;
   else if (meets(parentalControlsRate, 70)) score += 2;
   else if (meets(parentalControlsRate, 50)) score += 0;
-  else score -= 5;
+  else if (below(parentalControlsRate, 50)) score -= 5;
 
   // Mod 4: Exploitation risk assessed
   if (meets(exploitationRiskAssessedRate, 80)) score += 5;
   else if (meets(exploitationRiskAssessedRate, 50)) score += 2;
   else if (meets(exploitationRiskAssessedRate, 30)) score += 0;
-  else score -= 4;
+  else if (below(exploitationRiskAssessedRate, 30)) score -= 4;
 
   // Mod 5: RSE digital coverage
   if (meets(rseDigitalCoverageRate, 70)) score += 4;
   else if (meets(rseDigitalCoverageRate, 40)) score += 1;
   else if (meets(rseDigitalCoverageRate, 20)) score += 0;
-  else score -= 4;
+  else if (below(rseDigitalCoverageRate, 20)) score -= 4;
 
   // Mod 6: Cyberbullying preparedness
   if (meets(cyberbullyingPreparednessRate, 80)) score += 5;
   else if (meets(cyberbullyingPreparednessRate, 50)) score += 2;
   else if (meets(cyberbullyingPreparednessRate, 30)) score += 0;
-  else score -= 5;
+  else if (below(cyberbullyingPreparednessRate, 30)) score -= 5;
 
   // Clamp 0-100
   score = Math.max(0, Math.min(100, score));

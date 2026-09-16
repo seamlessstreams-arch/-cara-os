@@ -224,18 +224,18 @@ export function computeHomeAdmission(
   // 1. Impact assessment rate (±5)
   if (meets(impactRate, 80)) score += 5;
   else if (meets(impactRate, 60)) score += 2;
-  else score -= 4;
+  else if (below(impactRate, 60)) score -= 4;
 
   // 2. Matching consideration rate (±4)
   if (meets(matchingRate, 80)) score += 4;
   else if (meets(matchingRate, 60)) score += 2;
-  else score -= 3;
+  else if (below(matchingRate, 60)) score -= 3;
 
   // 3. Decision documentation (±4)
   if (decided.length > 0) {
     if (meets(decisionDocRate, 80)) score += 4;
     else if (meets(decisionDocRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(decisionDocRate, 60)) score -= 3;
   }
 
   // 4. Decision timeliness (±3)
