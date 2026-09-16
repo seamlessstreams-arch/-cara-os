@@ -1083,7 +1083,8 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
           interviews: [],
         }),
       );
-      expect(r.recruitment_rating).not.toBe("insufficient_data");
+      // wholly-unrecorded vetting domain (staff present, zero records) = UNASSESSED, not scored
+      expect(r.recruitment_rating).toBe("insufficient_data");
       expect(r.total_candidates).toBe(0);
     });
 

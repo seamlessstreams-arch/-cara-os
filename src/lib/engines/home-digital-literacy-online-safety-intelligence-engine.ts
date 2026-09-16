@@ -91,11 +91,19 @@ export function computeDigitalLiteracyOnlineSafety(
   const { total_children, digital_skills, digital_plans, phone_records, rse_digital } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no digital-literacy
+  // records at all — a wholly-unrecorded domain is UNASSESSED, not "inadequate"
+  // (empty must not read as a measured failing).
+  const noDigitalLiteracyRecords =
+    digital_skills.length === 0 && digital_plans.length === 0 &&
+    phone_records.length === 0 && rse_digital.length === 0;
+  if (total_children === 0 || noDigitalLiteracyRecords) {
     return {
       digital_rating: "insufficient_data",
       digital_score: 0,
-      headline: "No children in placement — digital literacy and online safety cannot be assessed.",
+      headline: total_children === 0
+        ? "No children in placement — digital literacy and online safety cannot be assessed."
+        : "No digital literacy or online safety activity recorded yet — cannot be assessed.",
       children_with_digital_plans: 0,
       digital_skill_coverage_rate: null,
       parental_controls_rate: null,

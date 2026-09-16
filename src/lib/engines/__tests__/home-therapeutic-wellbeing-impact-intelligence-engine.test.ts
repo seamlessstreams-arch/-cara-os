@@ -1273,9 +1273,9 @@ describe("computeTherapeuticWellbeingImpact", () => {
         self_soothing: [],
         grief_support: [],
       });
-      // 52 - 5(coverage) + 0(no pulses) + 0(no pulses) + 0(no soothing) + 0(no soothing) + 2(no grief) = 49
-      expect(r.wellbeing_score).toBe(49);
-      expect(r.wellbeing_rating).toBe("adequate");
+      // Previously 49 → "adequate" on a wholly-unrecorded domain — a false-green.
+      // Children present but zero therapeutic records = UNASSESSED, not adequate.
+      expect(r.wellbeing_rating).toBe("insufficient_data");
     });
 
     it("no strengths emitted when all data is poor", () => {
