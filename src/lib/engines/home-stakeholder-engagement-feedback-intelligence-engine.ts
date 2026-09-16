@@ -75,11 +75,19 @@ export function computeStakeholderEngagementFeedback(
   const { total_children, stakeholder_feedback, parent_partnerships, community_feedback } = input;
 
   // ── Insufficient data guard ──────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no stakeholder
+  // engagement recorded at all — a wholly-unrecorded domain is UNASSESSED, not
+  // "adequate" (absence must never read as assurance).
+  const noStakeholderRecords =
+    stakeholder_feedback.length === 0 && parent_partnerships.length === 0 &&
+    community_feedback.length === 0;
+  if (total_children === 0 || noStakeholderRecords) {
     return {
       stakeholder_rating: "insufficient_data",
       stakeholder_score: 0,
-      headline: "No children in placement — insufficient data for stakeholder engagement analysis.",
+      headline: total_children === 0
+        ? "No children in placement — insufficient data for stakeholder engagement analysis."
+        : "No stakeholder engagement recorded yet — cannot be assessed.",
       total_feedback_items: 0,
       positive_sentiment_rate: null,
       response_rate: null,

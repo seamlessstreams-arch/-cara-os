@@ -135,11 +135,19 @@ export function computeHomeDigitalSafety(
   const { today, incidents, agreements, photo_consents, media_consents, total_children } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no digital-safety
+  // activity recorded at all — a wholly-unrecorded domain is UNASSESSED, not
+  // "adequate" (absence must never read as assurance).
+  const noDigitalSafetyRecords =
+    incidents.length === 0 && agreements.length === 0 &&
+    photo_consents.length === 0 && media_consents.length === 0;
+  if (total_children === 0 || noDigitalSafetyRecords) {
     return {
       digital_safety_rating: "insufficient_data",
       digital_safety_score: 0,
-      headline: "No children in placement — digital safety cannot be assessed.",
+      headline: total_children === 0
+        ? "No children in placement — digital safety cannot be assessed."
+        : "No digital safety activity recorded yet — cannot be assessed.",
       incidents: { total_incidents_90d: 0, open_incidents: 0, escalated_incidents: 0, high_severity_count: 0, by_category: {}, safeguarding_referral_rate: null, parent_notification_rate: null, resolution_rate: null },
       agreements: { children_with_agreements: 0, agreement_coverage_rate: null, signed_rate: null, overdue_reviews: 0, with_parental_controls: 0, avg_devices_per_child: 0 },
       consents: { children_with_photo_consent: 0, photo_consent_coverage_rate: null, overdue_photo_reviews: 0, media_consents_active: 0, expired_media_consents: 0, child_consent_rate: null },

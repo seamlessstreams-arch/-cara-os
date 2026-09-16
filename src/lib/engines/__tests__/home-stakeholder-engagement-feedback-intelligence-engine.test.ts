@@ -161,17 +161,14 @@ describe("computeStakeholderEngagementFeedback", () => {
 
   // ── Adequate rating ────────────────────────────────────────────────
   describe("adequate rating", () => {
-    it("score 45-64 is adequate", () => {
-      // 4 children, no feedback, no partnerships, no community
-      // 52 - 4 (mod1: 0 items) + 0 (mod2: no fb) + 0 (mod3: no fb) - 1 (mod4: no partnerships) + 0 (mod5) + 0 (mod6)
-      // = 47 -> adequate
+    it("returns insufficient_data when children are present but no stakeholder engagement is recorded", () => {
+      // Previously scored 47 → "adequate" on a wholly-unrecorded domain — a false-green.
+      // A domain with zero records is UNASSESSED, not adequate.
       const r = computeStakeholderEngagementFeedback({
         today: TODAY, total_children: 4,
         stakeholder_feedback: [], parent_partnerships: [], community_feedback: [],
       });
-      expect(r.stakeholder_score).toBeGreaterThanOrEqual(45);
-      expect(r.stakeholder_score).toBeLessThan(65);
-      expect(r.stakeholder_rating).toBe("adequate");
+      expect(r.stakeholder_rating).toBe("insufficient_data");
     });
   });
 
@@ -577,12 +574,13 @@ describe("computeStakeholderEngagementFeedback", () => {
       expect(r.headline).toContain("Good");
     });
 
-    it("adequate headline contains 'Adequate'", () => {
+    it("whole-empty headline states nothing recorded yet (not a scored rating)", () => {
       const r = computeStakeholderEngagementFeedback({
         today: TODAY, total_children: 4,
         stakeholder_feedback: [], parent_partnerships: [], community_feedback: [],
       });
-      expect(r.headline).toContain("Adequate");
+      expect(r.stakeholder_rating).toBe("insufficient_data");
+      expect(r.headline.toLowerCase()).toContain("recorded yet");
     });
 
     it("inadequate headline contains 'inadequate'", () => {

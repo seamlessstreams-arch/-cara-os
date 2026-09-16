@@ -744,7 +744,7 @@ describe("Home Mental Health Intelligence Engine", () => {
 
   // ── Edge Cases ────────────────────────────────────────────────────────
   describe("edge cases", () => {
-    it("handles no data at all (children exist but empty arrays)", () => {
+    it("returns insufficient_data when children are present but no mental-health activity is recorded", () => {
       const r = computeHomeMentalHealth({
         today: TODAY,
         check_ins: [],
@@ -753,7 +753,8 @@ describe("Home Mental Health Intelligence Engine", () => {
         therapeutic_referrals: [],
         total_children: 3,
       });
-      expect(r.mental_health_rating).not.toBe("insufficient_data");
+      // a wholly-unrecorded domain is UNASSESSED, not "adequate" (no false-green)
+      expect(r.mental_health_rating).toBe("insufficient_data");
       expect(r.check_ins.total_check_ins_30d).toBe(0);
     });
 
