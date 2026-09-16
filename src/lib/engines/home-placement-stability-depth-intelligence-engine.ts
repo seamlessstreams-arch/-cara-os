@@ -334,7 +334,7 @@ export function computeHomePlacementStabilityDepth(
     else if (meets(lowRiskRate, 60) && criticalRiskCount === 0) score += 3;
     else if (meets(lowRiskRate, 40)) score += 1;
     else if (criticalRiskCount >= 2) score -= 5;
-    else score -= 2;
+    else if (below(lowRiskRate, 40)) score -= 2;
   }
   // No records → no modifier (0)
 
@@ -343,7 +343,7 @@ export function computeHomePlacementStabilityDepth(
     if (meets(disruptionChildCoverage, 80) && meets(childAwareRate, 80) && meets(laSignOffRate, 80)) score += 4;
     else if (meets(disruptionChildCoverage, 60) && meets(childAwareRate, 60)) score += 2;
     else if (meets(disruptionChildCoverage, 40)) score += 0;
-    else score -= 4;
+    else if (below(disruptionChildCoverage, 40)) score -= 4;
   }
   // No plans → no modifier (0)
 
@@ -361,7 +361,7 @@ export function computeHomePlacementStabilityDepth(
     if (meets(plannedRate, 80) && (avgOutcomeRating ?? 0) >= 4) score += 4;
     else if (meets(plannedRate, 60) && (avgOutcomeRating ?? 0) >= 3) score += 2;
     else if (meets(plannedRate, 40)) score += 0;
-    else score -= 4;
+    else if (below(plannedRate, 40)) score -= 4;
   }
   // No ends → no modifier (0)
 
@@ -392,7 +392,7 @@ export function computeHomePlacementStabilityDepth(
     if (meets(improvingRate, 60)) score += 3;
     else if (meets(improvingRate, 40) && decliningRate! <= 20) score += 1;
     else if (meets(decliningRate, 50)) score -= 3;
-    else score -= 1;
+    else if (improvingRate !== null) score -= 1;
   }
   // No records → no modifier (0)
 

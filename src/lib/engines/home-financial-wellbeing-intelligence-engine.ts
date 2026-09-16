@@ -263,7 +263,7 @@ export function computeHomeFinancial(
     if (meets(savingsParticipation, 60)) score += 4;
     else if (meets(savingsParticipation, 30)) score += 2;
     else if (savingsDeposits.length > 0) score += 1;
-    else score -= 2;
+    else if (below(savingsParticipation, 30)) score -= 2;
   }
 
   // 5. Spending diversity (±3)

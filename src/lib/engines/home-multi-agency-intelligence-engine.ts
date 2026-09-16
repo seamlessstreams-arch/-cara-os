@@ -292,7 +292,7 @@ export function computeHomeMultiAgency(
     if (meets(responseComplianceRate, 100) && overdueIRO === 0) score += 4;
     else if (meets(responseComplianceRate, 80)) score += 2;
     else if (meets(responseComplianceRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(responseComplianceRate, 50)) score -= 4;
   }
 
   // mod4: Report submission (±3) — professional accountability
@@ -312,7 +312,7 @@ export function computeHomeMultiAgency(
     if (meets(protocolRate, 100) && meets(concordatRate, 80)) score += 4;
     else if (meets(protocolRate, 80)) score += 2;
     else if (meets(protocolRate, 60)) score += 0;
-    else score -= 4;
+    else if (below(protocolRate, 60)) score -= 4;
   }
 
   // mod6: Partnership breadth (±3) — diverse agencies engaged

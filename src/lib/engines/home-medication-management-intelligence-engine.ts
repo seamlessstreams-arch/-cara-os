@@ -293,7 +293,7 @@ export function computeHomeMedicationManagement(
   else if (meets(stockCheckRate, 70)) score += 1;
   else if (meets(stockCheckRate, 50)) score += 0;
   else if (meets(stockCheckRate, 30)) score -= 1;
-  else score -= 3;
+  else if (below(stockCheckRate, 30)) score -= 3;
 
   // mod6: Refusal management (±3)
   if (refusalRate === 0) score += 3;

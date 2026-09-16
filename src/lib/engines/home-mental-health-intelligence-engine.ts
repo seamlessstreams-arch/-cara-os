@@ -282,7 +282,7 @@ export function computeHomeMentalHealth(
     if (meets(attendanceRate, 90) && (avgMoodImprovement ?? 0) > 0) score += 4;
     else if (meets(attendanceRate, 75)) score += 2;
     else if (meets(attendanceRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(attendanceRate, 50)) score -= 4;
   }
 
   // mod4: Safety plan governance (±3) — for homes with active plans

@@ -249,7 +249,7 @@ export function computeHomeDigitalSafety(
     if (meets(actionRate, 100) && meets(parentNotificationRate, 80)) score += 4;
     else if (meets(actionRate, 80)) score += 2;
     else if (meets(actionRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(actionRate, 50)) score -= 4;
   }
 
   // mod4: Agreement signing (±3) — child participation in digital safety
