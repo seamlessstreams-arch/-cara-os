@@ -139,11 +139,19 @@ export function computeHomeMentalHealth(
   const { today, check_ins, therapy_sessions, safety_plans, therapeutic_referrals, total_children } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no mental-health
+  // activity recorded at all. A wholly-unrecorded domain is UNASSESSED, not
+  // "adequate" — absence must never read as assurance.
+  const noMentalHealthRecords =
+    check_ins.length === 0 && therapy_sessions.length === 0 &&
+    safety_plans.length === 0 && therapeutic_referrals.length === 0;
+  if (total_children === 0 || noMentalHealthRecords) {
     return {
       mental_health_rating: "insufficient_data",
       mental_health_score: 0,
-      headline: "No children in placement — mental health monitoring cannot be assessed.",
+      headline: total_children === 0
+        ? "No children in placement — mental health monitoring cannot be assessed."
+        : "No mental health activity recorded yet — monitoring cannot be assessed.",
       check_ins: { total_check_ins_30d: 0, children_with_check_ins: 0, check_in_coverage_rate: null, avg_mood_rating: 0, low_mood_count: 0, high_mood_count: 0, flagged_check_ins: 0, follow_up_rate: null },
       therapy: { total_sessions_90d: 0, attendance_rate: null, avg_mood_improvement: 0, sessions_with_escalation: 0, children_in_therapy: 0 },
       safety_plans: { active_plans: 0, recent_incident_plans: 0, child_signed_rate: null, overdue_reviews: 0, co_production_rate: null },

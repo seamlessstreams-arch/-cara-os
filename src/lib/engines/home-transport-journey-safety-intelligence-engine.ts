@@ -103,11 +103,18 @@ export function computeTransportJourneySafety(
   const { logs, risk_assessments, vehicle_checks, total_children } = input;
 
   // Insufficient data guard
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no transport
+  // activity recorded at all — a wholly-unrecorded domain is UNASSESSED, not
+  // "adequate" (absence must never read as assurance).
+  const noTransportRecords =
+    logs.length === 0 && risk_assessments.length === 0 && vehicle_checks.length === 0;
+  if (total_children === 0 || noTransportRecords) {
     return {
       transport_rating: "insufficient_data",
       transport_score: 0,
-      headline: "No data available for transport safety analysis",
+      headline: total_children === 0
+        ? "No data available for transport safety analysis"
+        : "No transport activity recorded yet — cannot be assessed.",
       total_journeys: 0,
       driver_compliance_rate: null,
       vehicle_check_rate: null,

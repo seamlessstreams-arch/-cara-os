@@ -774,8 +774,9 @@ describe("Home Digital Safety Intelligence Engine", () => {
         media_consents: [],
         total_children: 3,
       });
-      expect(r.digital_safety_rating).not.toBe("insufficient_data");
-      expect(r.agreements.agreement_coverage_rate).toBe(0);
+      // a wholly-unrecorded domain is UNASSESSED, not "adequate" (no false-green)
+      expect(r.digital_safety_rating).toBe("insufficient_data");
+      expect(r.agreements.agreement_coverage_rate).toBeNull();
     });
 
     it("handles single child with full coverage", () => {

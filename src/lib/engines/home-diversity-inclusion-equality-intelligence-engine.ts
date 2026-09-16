@@ -105,11 +105,19 @@ export function computeDiversityInclusionEquality(
   } = input;
 
   // ── Insufficient data guard ──────────────────────────────────────────
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no diversity &
+  // inclusion activity recorded at all — a wholly-unrecorded domain is UNASSESSED,
+  // not "adequate" (absence must never read as assurance).
+  const noDiversityRecords =
+    lgbtq_records.length === 0 && diversity_events.length === 0 &&
+    hate_incidents.length === 0 && cultural_plans.length === 0;
+  if (total_children === 0 || noDiversityRecords) {
     return {
       diversity_rating: "insufficient_data",
       diversity_score: 0,
-      headline: "No children in placement — diversity and inclusion analysis unavailable.",
+      headline: total_children === 0
+        ? "No children in placement — diversity and inclusion analysis unavailable."
+        : "No diversity and inclusion activity recorded yet — cannot be assessed.",
       children_with_cultural_plans: 0,
       identity_affirmation_rate: null,
       diversity_events_completed: 0,
