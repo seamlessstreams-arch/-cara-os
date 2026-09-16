@@ -97,14 +97,22 @@ function deriveStatus(
   kwAssigned: boolean,
   freq: KeyWorkFrequency,
   trustedAdultCount: number,
+  isNewPlacement: boolean,
 ): { status: RelationalStatus; reason: string } {
   if (kwAssigned && freq === "regular" && trustedAdultCount >= 1) {
     return { status: "secure", reason: "Key worker assigned, sessions regular, and child has documented trusted adult" };
   }
-  if (!kwAssigned && freq === "absent" && trustedAdultCount === 0) {
+  const noRelationalSupports = freq === "absent" && trustedAdultCount === 0;
+  // A recent admission with none of the supports yet is "still being set up",
+  // not fragile-red — absence only becomes fragile once the child is established
+  // (avoids a false-red on a day-1 placement; the 28-day window is in the caller).
+  if (noRelationalSupports && isNewPlacement) {
+    return { status: "developing", reason: "New placement — a key worker, key-work sessions and a documented trusted adult are still being established; prioritise setting them up." };
+  }
+  if (!kwAssigned && noRelationalSupports) {
     return { status: "fragile", reason: "No key worker assigned, no recent key work sessions, and no trusted adults documented in PACE profile" };
   }
-  if (freq === "absent" && trustedAdultCount === 0) {
+  if (noRelationalSupports) {
     return { status: "fragile", reason: "Key work sessions have not occurred recently and no trusted adults are documented in the child's PACE profile" };
   }
   return { status: "developing", reason: "Some relational safety elements are in place but not all three: key worker assignment, regular sessions, and documented trusted adults" };
@@ -149,7 +157,7 @@ export function buildRelationalSafetyMap(store: Pick<ReturnType<typeof getStore>
   const youngPeople = (store.youngPeople ?? []) as Array<{
     id: string; first_name: string; last_name: string;
     key_worker_id: string | null; secondary_worker_id: string | null;
-    status: string;
+    status: string; placement_start?: string;
   }>;
 
   const staffMembers = (store.staff ?? []) as Array<{
@@ -223,7 +231,14 @@ export function buildRelationalSafetyMap(store: Pick<ReturnType<typeof getStore>
 
     const kwAssigned = !!yp.key_worker_id;
     const freq = deriveFrequency(kw.last30d, kw.last90d);
-    const { status, reason } = deriveStatus(kwAssigned, freq, trusted.length);
+    // A recent admission has not had time to set up a key worker, key-work
+    // sessions, or a documented trusted adult — their absence is "still being
+    // set up", not fragile. After a 28-day settling window, absence is a real
+    // concern. (daysBetween returns 9999 for a missing/invalid date → treated as
+    // established, so an unknown admission date still flags rather than hides.)
+    const daysSinceAdmission = yp.placement_start ? daysBetween(yp.placement_start, now) : 9999;
+    const isNewPlacement = daysSinceAdmission >= 0 && daysSinceAdmission <= 28;
+    const { status, reason } = deriveStatus(kwAssigned, freq, trusted.length, isNewPlacement);
 
     const childName = `${yp.first_name} ${yp.last_name}`;
 
