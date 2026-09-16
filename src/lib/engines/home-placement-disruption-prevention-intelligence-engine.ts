@@ -213,7 +213,7 @@ export function computePlacementDisruptionPrevention(
   if (meets(childInvolvementPct, 90)) score += 5;
   else if (meets(childInvolvementPct, 60)) score += 2;
   else if (meets(childInvolvementPct, 30)) score += 0;
-  else score -= 4;
+  else if (below(childInvolvementPct, 30)) score -= 4;
 
   // 4. Stability factor strength (+5/-5)
   if (stability_factors.length === 0) {
@@ -232,13 +232,13 @@ export function computePlacementDisruptionPrevention(
   if (meets(professionalEngagementPct, 80)) score += 4;
   else if (meets(professionalEngagementPct, 60)) score += 1;
   else if (meets(professionalEngagementPct, 30)) score += 0;
-  else score -= 4;
+  else if (below(professionalEngagementPct, 30)) score -= 4;
 
   // 6. Review compliance (+5/-5)
   if (meets(reviewCompliancePct, 90)) score += 5;
   else if (meets(reviewCompliancePct, 70)) score += 2;
   else if (meets(reviewCompliancePct, 40)) score += 0;
-  else score -= 5;
+  else if (below(reviewCompliancePct, 40)) score -= 5;
 
   // Clamp
   score = clamp(score, 0, 100);

@@ -197,7 +197,7 @@ export function computeWhistleblowingTransparency(
     score += 2;
   } else if (meets(staffConfidenceRate, 40)) {
     score += 0;
-  } else {
+  } else if (below(staffConfidenceRate, 40)) {
     score -= 4;
   }
 
@@ -208,7 +208,7 @@ export function computeWhistleblowingTransparency(
     score += 2;
   } else if (meets(policyAwarenessRate, 50)) {
     score += 0;
-  } else {
+  } else if (below(policyAwarenessRate, 50)) {
     score -= 5;
   }
 
@@ -232,7 +232,7 @@ export function computeWhistleblowingTransparency(
     score += 2;
   } else if (meets(reportingKnowledgeRate, 50)) {
     score += 0;
-  } else {
+  } else if (below(reportingKnowledgeRate, 50)) {
     score -= 5;
   }
 

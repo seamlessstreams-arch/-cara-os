@@ -144,6 +144,23 @@ describe("Insufficient data", () => {
     });
     expect(r.headline).toContain("No staff data");
   });
+
+  it("does not penalise the score when staff exist but no whistleblowing culture survey is recorded", () => {
+    // The false-red this guards: staffConfidence / policyAwareness / reportingKnowledge
+    // all divide by culture.length. With staff but no survey those rates are null
+    // (unmeasured) and must NOT be scored as failures.
+    const r = computeWhistleblowingTransparency({
+      today: TODAY,
+      total_staff: 8,
+      records: [],
+      culture: [],
+    });
+    expect(r.staff_confidence_rate).toBeNull(); // the exposed survey rate; policy/reporting are internal
+    // Mod1/2/5 credit zero concerns (+3/+3/+2); Mod3/4/6 unmeasured → neutral.
+    // 52 + 3 + 3 + 2 = 60 (was 46 before the fix — the three survey rates wrongly cost -14).
+    expect(r.whistleblowing_score).toBe(60);
+    expect(r.whistleblowing_rating).not.toBe("inadequate");
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
