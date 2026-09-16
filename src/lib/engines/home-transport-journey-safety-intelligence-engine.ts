@@ -148,7 +148,7 @@ export function computeTransportJourneySafety(
   } else {
     if (meets(driverComplianceRate, 95)) score += 5;
     else if (meets(driverComplianceRate, 80)) score += 2;
-    else score -= 5;
+    else if (below(driverComplianceRate, 80)) score -= 5;
   }
 
   // Modifier 2: Vehicle pre-check compliance

@@ -167,7 +167,7 @@ export function computeTherapeuticWellbeingImpact(
   if (meets(therapeuticCoverageRate, 80)) score += 5;
   else if (meets(therapeuticCoverageRate, 50)) score += 2;
   else if (meets(therapeuticCoverageRate, 30)) score += 0;
-  else score -= 5;
+  else if (below(therapeuticCoverageRate, 30)) score -= 5;
 
   // -- Mod 2: Wellbeing scores -----------------------------------------------
   const avgWellbeing =

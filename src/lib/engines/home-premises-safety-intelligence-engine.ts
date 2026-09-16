@@ -5,7 +5,7 @@
 // CHR 2015 Reg 25. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -264,7 +264,7 @@ export function computeHomePremisesSafety(
   if (completedChecks.length > 0) {
     if (meets(passRate, 80)) score += 3;
     else if (meets(passRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(passRate, 60)) score -= 2;
   }
 
   // 4. Vehicle compliance (±4)
@@ -299,7 +299,7 @@ export function computeHomePremisesSafety(
   if (dueItems.length > 0) {
     if (meets(completionRate, 80)) score += 3;
     else if (meets(completionRate, 50)) score += 1;
-    else score -= 1;
+    else if (below(completionRate, 50)) score -= 1;
   } else if (maintenance.length > 0) {
     score += 1; // all future items, none overdue
   }

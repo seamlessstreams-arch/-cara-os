@@ -195,7 +195,7 @@ export function computeSaferRecruitmentVetting(
     if (meets(dbsClearanceRate, 95)) score += 6;
     else if (meets(dbsClearanceRate, 80)) score += 3;
     else if (meets(dbsClearanceRate, 60)) score += 0;
-    else score -= 6;
+    else if (below(dbsClearanceRate, 60)) score -= 6;
   }
 
   // Mod 2: Reference completion
@@ -203,7 +203,7 @@ export function computeSaferRecruitmentVetting(
     if (meets(referenceCompletionRate, 90)) score += 5;
     else if (meets(referenceCompletionRate, 70)) score += 2;
     else if (meets(referenceCompletionRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(referenceCompletionRate, 50)) score -= 5;
   }
 
   // Mod 3: History verification
@@ -211,7 +211,7 @@ export function computeSaferRecruitmentVetting(
     if (meets(historyVerificationRate, 90)) score += 5;
     else if (meets(historyVerificationRate, 70)) score += 2;
     else if (meets(historyVerificationRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(historyVerificationRate, 50)) score -= 5;
   } else {
     // No histories to verify — treat as neutral but flag concern
     score += 0;
@@ -222,7 +222,7 @@ export function computeSaferRecruitmentVetting(
     if (meets(interviewComplianceRate, 90)) score += 5;
     else if (meets(interviewComplianceRate, 70)) score += 2;
     else if (meets(interviewComplianceRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(interviewComplianceRate, 50)) score -= 5;
   } else {
     score += 0;
   }
@@ -235,7 +235,7 @@ export function computeSaferRecruitmentVetting(
     if (meets(gapExplanationRate, 95)) score += 4;
     else if (meets(gapExplanationRate, 80)) score += 1;
     else if (meets(gapExplanationRate, 60)) score += 0;
-    else score -= 4;
+    else if (below(gapExplanationRate, 60)) score -= 4;
   }
 
   // Mod 6: Checklist completion

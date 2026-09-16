@@ -205,7 +205,7 @@ export function computeHomeQA(
   if (allActions.length > 0) {
     if (meets(completionRate, 80)) score += 4;
     else if (meets(completionRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(completionRate, 60)) score -= 3;
   } else {
     score += 1; // no actions needed
   }

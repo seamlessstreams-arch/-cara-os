@@ -401,7 +401,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(childCoverage, 80)) score += 5;
     else if (meets(childCoverage, 60)) score += 3;
     else if (meets(childCoverage, 40)) score += 0;
-    else score -= 5;
+    else if (below(childCoverage, 40)) score -= 5;
   }
 
   // mod2: Review timeliness (±4) — plans reviewed on time
@@ -411,7 +411,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(onTimeRate, 95)) score += 4;
     else if (meets(onTimeRate, 80)) score += 2;
     else if (meets(onTimeRate, 60)) score += 0;
-    else score -= 4;
+    else if (below(onTimeRate, 60)) score -= 4;
   }
 
   // mod3: Safety-critical plan preparedness (±4) — allergy + epilepsy staff training & school plans
@@ -429,7 +429,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(readyRate, 100)) score += 4;
     else if (meets(readyRate, 80)) score += 2;
     else if (meets(readyRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(readyRate, 50)) score -= 4;
   }
 
   // mod4: Child voice across plans (±3)
@@ -471,7 +471,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(schoolRate, 100)) score += 3;
     else if (meets(schoolRate, 80)) score += 1;
     else if (meets(schoolRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(schoolRate, 50)) score -= 3;
   }
 
   // mod7: Therapy engagement (±3) — physio/OT + OT records
@@ -485,7 +485,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(engagementRate, 90)) score += 3;
     else if (meets(engagementRate, 70)) score += 1;
     else if (meets(engagementRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(engagementRate, 50)) score -= 3;
   }
 
   // mod8: Emergency preparedness (±3) — allergy emergency protocols + epilepsy rescue meds
@@ -501,7 +501,7 @@ export function computeHomeSpecializedHealthPlans(
     if (meets(emergencyRate, 100)) score += 3;
     else if (meets(emergencyRate, 80)) score += 1;
     else if (meets(emergencyRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(emergencyRate, 50)) score -= 3;
   }
 
   // Clamp score

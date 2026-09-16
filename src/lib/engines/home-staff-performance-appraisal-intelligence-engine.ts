@@ -667,7 +667,7 @@ export function computeStaffPerformanceAppraisal(
     if (meets(overduePct, 40)) score -= 8;
     else if (meets(overduePct, 25)) score -= 5;
     else if (meets(overduePct, 10)) score -= 3;
-    else score -= 1;
+    else if (below(overduePct, 10)) score -= 1;
   }
 
   // ── Penalty 2: At-risk/not-met targets (guarded by length>0) ─────────
@@ -694,7 +694,7 @@ export function computeStaffPerformanceAppraisal(
     if (meets(overdueGoalPct, 40)) score -= 6;
     else if (meets(overdueGoalPct, 25)) score -= 4;
     else if (meets(overdueGoalPct, 10)) score -= 2;
-    else score -= 1;
+    else if (below(overdueGoalPct, 10)) score -= 1;
   }
 
   // ── Staff without any appraisal penalty ──────────────────────────────
