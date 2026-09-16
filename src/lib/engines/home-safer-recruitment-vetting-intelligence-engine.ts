@@ -112,12 +112,19 @@ export function computeSaferRecruitmentVetting(
   } = input;
 
   // ── Insufficient data: no staff ──────────────────────────────────
-  if (total_staff === 0) {
+  // Insufficient either way: no staff, OR staff present but no vetting records at
+  // all — a wholly-unrecorded domain is UNASSESSED, not "adequate" (absence must
+  // never read as assurance).
+  const noVettingRecords =
+    recruitment_records.length === 0 && employment_histories.length === 0 &&
+    gap_explanations.length === 0 && interviews.length === 0;
+  if (total_staff === 0 || noVettingRecords) {
     return {
       recruitment_rating: "insufficient_data",
       recruitment_score: 0,
-      headline:
-        "No staff recorded — safer recruitment vetting cannot be assessed.",
+      headline: total_staff === 0
+        ? "No staff recorded — safer recruitment vetting cannot be assessed."
+        : "No safer-recruitment vetting records yet — cannot be assessed.",
       total_candidates: 0,
       dbs_clearance_rate: null,
       reference_completion_rate: null,

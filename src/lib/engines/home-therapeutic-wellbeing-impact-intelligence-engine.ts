@@ -115,12 +115,19 @@ export function computeTherapeuticWellbeingImpact(
   } = input;
 
   // Insufficient data guard
-  if (total_children === 0) {
+  // Insufficient either way: no children, OR children present but no therapeutic
+  // wellbeing activity recorded at all — a wholly-unrecorded domain is UNASSESSED,
+  // not "adequate" (absence must never read as assurance).
+  const noTherapeuticRecords =
+    therapeutic_impacts.length === 0 && wellbeing_pulses.length === 0 &&
+    self_soothing.length === 0 && grief_support.length === 0;
+  if (total_children === 0 || noTherapeuticRecords) {
     return {
       wellbeing_rating: "insufficient_data",
       wellbeing_score: 0,
-      headline:
-        "No children in the home -- therapeutic wellbeing impact cannot be assessed.",
+      headline: total_children === 0
+        ? "No children in the home -- therapeutic wellbeing impact cannot be assessed."
+        : "No therapeutic wellbeing activity recorded yet -- cannot be assessed.",
       children_with_therapeutic_plans: 0,
       average_wellbeing_score: 0,
       improving_trend_rate: null,

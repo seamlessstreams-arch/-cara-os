@@ -80,11 +80,18 @@ export function computeLessonsLearnedImprovement(
   const { total_staff, lessons, objectives, audits } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
-  if (total_staff === 0) {
+  // Insufficient either way: no staff, OR staff present but no lessons/audit/
+  // improvement activity recorded at all — a wholly-unrecorded proactive-QA domain
+  // is UNASSESSED, not "adequate" (absence must never read as assurance).
+  const noLessonsRecords =
+    lessons.length === 0 && objectives.length === 0 && audits.length === 0;
+  if (total_staff === 0 || noLessonsRecords) {
     return {
       lessons_rating: "insufficient_data",
       lessons_score: 0,
-      headline: "No staff recorded — lessons learned analysis cannot be performed.",
+      headline: total_staff === 0
+        ? "No staff recorded — lessons learned analysis cannot be performed."
+        : "No lessons-learned or improvement activity recorded yet — cannot be assessed.",
       total_lessons: lessons.length,
       embedded_rate: null,
       staff_briefing_rate: null,

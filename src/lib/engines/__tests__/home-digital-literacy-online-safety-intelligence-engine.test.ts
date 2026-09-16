@@ -1069,11 +1069,12 @@ describe("Home Digital Literacy & Online Safety Intelligence Engine", () => {
         phone_records: [],
         rse_digital: [],
       });
-      expect(r.digital_rating).not.toBe("insufficient_data");
+      // wholly-unrecorded domain (children present, zero records) = UNASSESSED, not "inadequate"
+      expect(r.digital_rating).toBe("insufficient_data");
       expect(r.children_with_digital_plans).toBe(0);
-      expect(r.digital_skill_coverage_rate).toBe(0);
+      expect(r.digital_skill_coverage_rate).toBeNull();
       expect(r.parental_controls_rate).toBeNull();
-      expect(r.rse_digital_coverage_rate).toBe(0);
+      expect(r.rse_digital_coverage_rate).toBeNull();
     });
 
     it("handles single child with perfect data", () => {
