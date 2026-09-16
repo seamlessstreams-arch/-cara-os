@@ -258,7 +258,7 @@ export function computeHomeBehaviour(
   if (logs90d.length > 0) {
     if (meets(positiveRatio, 60)) score += 5;
     else if (meets(positiveRatio, 40)) score += 2;
-    else score -= 4;
+    else if (below(positiveRatio, 40)) score -= 4;
   }
 
   // High/critical incidents (±3)
@@ -270,14 +270,14 @@ export function computeHomeBehaviour(
   if (logs90d.length > 0) {
     if (meets(abcRate, 80)) score += 3;
     else if (meets(abcRate, 60)) score += 1;
-    else score -= 3;
+    else if (below(abcRate, 60)) score -= 3;
   }
 
   // Reward ratio (±5)
   if (sr90d.length > 0) {
     if (meets(rewardRatio, 60)) score += 5;
     else if (meets(rewardRatio, 40)) score += 2;
-    else score -= 4;
+    else if (below(rewardRatio, 40)) score -= 4;
   }
 
   // Proportionality (±3)
@@ -290,27 +290,27 @@ export function computeHomeBehaviour(
   // Child response (±2)
   if (sr90d.length > 0) {
     if (meets(childResponseRate, 80)) score += 2;
-    else score -= 1;
+    else if (below(childResponseRate, 80)) score -= 1;
   }
 
   // Child voice in consequences (±3)
   if (cons90d.length > 0) {
     if (meets(childVoiceRate, 80)) score += 3;
     else if (meets(childVoiceRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(childVoiceRate, 60)) score -= 2;
   }
 
   // Relationship repair (±3)
   if (cons90d.length > 0) {
     if (meets(repairRate, 80)) score += 3;
     else if (meets(repairRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(repairRate, 60)) score -= 2;
   }
 
   // BSP linkage (±2)
   if (cons90d.length > 0) {
     if (meets(bspLinkedRate, 60)) score += 2;
-    else score -= 1;
+    else if (below(bspLinkedRate, 60)) score -= 1;
   }
 
   // Repeat concern children (±2)
@@ -320,7 +320,7 @@ export function computeHomeBehaviour(
   // Strategy use (±2)
   if (logs90d.length > 0) {
     if (meets(strategyRate, 80)) score += 2;
-    else score -= 2;
+    else if (below(strategyRate, 80)) score -= 2;
   }
 
   score = clamp(score, 0, 100);

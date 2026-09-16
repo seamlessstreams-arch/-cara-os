@@ -269,14 +269,14 @@ export function computeHomeFamilyEngagement(
   if (sessions90d.length > 0) {
     if (meets(voiceRate, 80)) score += 4;
     else if (meets(voiceRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(voiceRate, 60)) score -= 3;
   }
 
   // 4. SW notification (±3)
   if (sessions90d.length > 0) {
     if (meets(swRate, 80)) score += 3;
     else if (meets(swRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(swRate, 60)) score -= 2;
   }
 
   // 5. Assessment coverage (±5)
@@ -309,14 +309,14 @@ export function computeHomeFamilyEngagement(
   // 9. Child wishes in relationships (±2)
   if (latestRelationships.length > 0) {
     if (meets(wishesRate, 80)) score += 2;
-    else score -= 1;
+    else if (below(wishesRate, 80)) score -= 1;
   }
 
   // 10. Positive observations (±2)
   if (sessions90d.length > 0) {
     if (meets(positiveRate, 80)) score += 2;
     else if (meets(positiveRate, 50)) score += 1;
-    else score -= 1;
+    else if (below(positiveRate, 50)) score -= 1;
   }
 
   score = clamp(score, 0, 100);

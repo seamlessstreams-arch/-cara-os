@@ -277,7 +277,7 @@ export function computeHomeSupervision(
   // Action completion (±3)
   if (meets(actionCompletionRate, 80)) score += 3;
   else if (meets(actionCompletionRate, 60)) score += 1;
-  else score -= 3;
+  else if (below(actionCompletionRate, 60)) score -= 3;
 
   // Observation coverage (±4)
   if (meets(obsCoverage, 60)) score += 4;
@@ -287,7 +287,7 @@ export function computeHomeSupervision(
   // Observation quality (±4)
   if (meets(positiveOutcomeRate, 80)) score += 4;
   else if (meets(positiveOutcomeRate, 60)) score += 2;
-  else score -= 3;
+  else if (below(positiveOutcomeRate, 60)) score -= 3;
 
   // Observation sign-off (±2)
   if (obs90d.length > 0 && obsSignOffRate === 100) score += 2;

@@ -272,7 +272,7 @@ export function computeHomeMultiAgency(
     if (meets(actionCompletionRate, 90)) score += 5;
     else if (meets(actionCompletionRate, 70)) score += 3;
     else if (meets(actionCompletionRate, 50)) score += 0;
-    else score -= 5;
+    else if (below(actionCompletionRate, 50)) score -= 5;
   }
 
   // mod2: Child participation (±4) — child's voice in multi-agency
@@ -282,7 +282,7 @@ export function computeHomeMultiAgency(
     if (meets(childParticipationRate, 80)) score += 4;
     else if (meets(childParticipationRate, 60)) score += 2;
     else if (meets(childParticipationRate, 40)) score += 0;
-    else score -= 4;
+    else if (below(childParticipationRate, 40)) score -= 4;
   }
 
   // mod3: IRO response compliance (±4) — statutory correspondence
@@ -302,7 +302,7 @@ export function computeHomeMultiAgency(
     if (meets(reportSubmissionRate, 90)) score += 3;
     else if (meets(reportSubmissionRate, 70)) score += 1;
     else if (meets(reportSubmissionRate, 50)) score += 0;
-    else score -= 3;
+    else if (below(reportSubmissionRate, 50)) score -= 3;
   }
 
   // mod5: Police protocol compliance (±4) — safeguarding in police contacts

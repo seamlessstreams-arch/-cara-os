@@ -254,7 +254,7 @@ export function computeHomeExpenseGovernance(
     if (meets(receiptRate, 90)) score += 5;
     else if (meets(receiptRate, 75)) score += 3;
     else if (meets(receiptRate, 50)) score += 0;
-    else score -= 4;
+    else if (below(receiptRate, 50)) score -= 4;
   }
   // No non-draft = neutral (0)
 
@@ -276,7 +276,7 @@ export function computeHomeExpenseGovernance(
   if (meets(childLinkedRate, 40)) score += 4;
   else if (meets(childLinkedRate, 25)) score += 2;
   else if (meets(childLinkedRate, 10)) score += 0;
-  else score -= 3;
+  else if (below(childLinkedRate, 10)) score -= 3;
 
   // Modifier 6: Payment method governance (±3)
   // Good governance = mix of house card + petty cash (controlled) not all personal
@@ -284,7 +284,7 @@ export function computeHomeExpenseGovernance(
   if (meets(controlledRate, 50)) score += 3;
   else if (meets(controlledRate, 30)) score += 1;
   else if (meets(controlledRate, 15)) score += 0;
-  else score -= 2;
+  else if (below(controlledRate, 15)) score -= 2;
 
   // Modifier 7: Draft discipline (±3)
   const draftRate = rate(drafts.length, expenses.length);

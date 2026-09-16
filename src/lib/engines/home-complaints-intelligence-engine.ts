@@ -214,14 +214,14 @@ export function computeHomeComplaints(
   if (responseTimes.length > 0) {
     if (meets(within10Rate, 80)) score += 5;
     else if (meets(within10Rate, 60)) score += 2;
-    else score -= 3;
+    else if (below(within10Rate, 60)) score -= 3;
   }
 
   // 2. Satisfaction rate (±4)
   if (withSatisfaction.length > 0) {
     if (meets(satisfactionRate, 80)) score += 4;
     else if (meets(satisfactionRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(satisfactionRate, 60)) score -= 3;
   } else {
     score += 1; // no satisfaction data available
   }
@@ -230,21 +230,21 @@ export function computeHomeComplaints(
   if (resolved.length > 0) {
     if (meets(findingsRate, 80)) score += 4;
     else if (meets(findingsRate, 60)) score += 2;
-    else score -= 3;
+    else if (below(findingsRate, 60)) score -= 3;
   }
 
   // 4. Lessons learned (±3)
   if (resolved.length > 0) {
     if (meets(lessonsRate, 80)) score += 3;
     else if (meets(lessonsRate, 60)) score += 1;
-    else score -= 2;
+    else if (below(lessonsRate, 60)) score -= 2;
   }
 
   // 5. Practice changes (±3)
   if (resolved.length > 0) {
     if (meets(practiceChangeRate, 60)) score += 3;
     else if (meets(practiceChangeRate, 40)) score += 1;
-    else score -= 2;
+    else if (below(practiceChangeRate, 40)) score -= 2;
   }
 
   // 6. Child complaints present (±3) — positive indicator of empowerment

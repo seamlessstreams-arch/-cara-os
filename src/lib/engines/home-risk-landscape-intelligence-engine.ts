@@ -313,13 +313,13 @@ export function computeHomeRiskLandscape(
   if (meets(childVoiceRate, 90)) score += 4;
   else if (meets(childVoiceRate, 70)) score += 2;
   else if (meets(childVoiceRate, 50)) score += 0;
-  else score -= 3;
+  else if (below(childVoiceRate, 50)) score -= 3;
 
   // 5. Contingency plans (±3)
   if (meets(contingencyRate, 90)) score += 3;
   else if (meets(contingencyRate, 70)) score += 1;
   else if (meets(contingencyRate, 50)) score += 0;
-  else score -= 2;
+  else if (below(contingencyRate, 50)) score -= 2;
 
   // 6. Child coverage (±3)
   if (meets(childCoverageRate, 100)) score += 3;

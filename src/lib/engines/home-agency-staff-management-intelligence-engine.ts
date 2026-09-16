@@ -165,7 +165,7 @@ export function computeAgencyStaffManagement(
   // Modifier 1: Vetting compliance
   if (meets(vettingRate, 95)) score += 5;
   else if (meets(vettingRate, 80)) score += 2;
-  else score -= 5;
+  else if (below(vettingRate, 80)) score -= 5;
 
   // Modifier 2: Induction topic coverage
   if (inductions.length === 0) {

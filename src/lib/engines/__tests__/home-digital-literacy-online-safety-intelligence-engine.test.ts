@@ -1161,33 +1161,33 @@ describe("Home Digital Literacy & Online Safety Intelligence Engine", () => {
       expect(r.concerns).toHaveLength(0);
     });
 
-    it("empty phone_records means mod 3 uses 0/0 → 0% → -5", () => {
+    it("empty phone_records leaves mod 3 (parental controls) unmeasured → neutral, not -5", () => {
       const r = computeDigitalLiteracyOnlineSafety(baseInput({
         phone_records: [],
       }));
-      // parental controls: 0/0=0% → <50% → -5
-      // Score: 52+5+6-5+5+4+5 = 72
-      expect(r.digital_score).toBe(72);
+      // parentalControlsRate = rate(_, 0) = null → unmeasured → NEUTRAL (was wrongly -5)
+      // Score: 52+5+6+0+5+4+5 = 77
+      expect(r.digital_score).toBe(77);
     });
 
-    it("empty digital_plans means mod 4 uses 0/0 → -4 and mod 6 uses 0/0 → -5", () => {
+    it("empty digital_plans leaves mods 4 & 6 unmeasured → neutral; mod 1 stays a measured -5", () => {
       const r = computeDigitalLiteracyOnlineSafety(baseInput({
         digital_plans: [],
       }));
-      // Mod 1: 0/4=0% → <30% → -5
-      // Mod 4: 0/0=0% → <30% → -4
-      // Mod 6: 0/0=0% → <30% → -5
-      // Score: 52-5+6+5-4+4-5 = 53
-      expect(r.digital_score).toBe(53);
+      // Mod 1: digitalPlanCoverageRate = 0/4 = 0% (MEASURED — children exist, no plans) → -5
+      // Mod 4: exploitationRiskAssessedRate = rate(_,0) = null → NEUTRAL (was wrongly -4)
+      // Mod 6: cyberbullyingPreparednessRate = rate(_,0) = null → NEUTRAL (was wrongly -5)
+      // Score: 52-5+6+5+0+4+0 = 62
+      expect(r.digital_score).toBe(62);
     });
 
-    it("empty digital_skills means mod 2 uses 0/0 → 0% → -5", () => {
+    it("empty digital_skills leaves mod 2 (skill competency) unmeasured → neutral, not -5", () => {
       const r = computeDigitalLiteracyOnlineSafety(baseInput({
         digital_skills: [],
       }));
-      // Mod 2: 0/0=0% → <25% → -5
-      // Score: 52+5-5+5+5+4+5 = 71
-      expect(r.digital_score).toBe(71);
+      // skillCompetencyRate = rate(_, 0) = null → unmeasured → NEUTRAL (was wrongly -5)
+      // Score: 52+5+0+5+5+4+5 = 76
+      expect(r.digital_score).toBe(76);
     });
   });
 

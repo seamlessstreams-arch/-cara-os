@@ -265,21 +265,21 @@ export function computeHomeMedicationManagement(
   else if (meets(complianceRate, 85)) score += 2;
   else if (meets(complianceRate, 70)) score += 0;
   else if (meets(complianceRate, 50)) score -= 3;
-  else score -= 5;
+  else if (below(complianceRate, 50)) score -= 5;
 
   // mod2: On-time rate (±4)
   if (meets(onTimeRate, 90)) score += 4;
   else if (meets(onTimeRate, 75)) score += 2;
   else if (meets(onTimeRate, 60)) score += 0;
   else if (meets(onTimeRate, 40)) score -= 2;
-  else score -= 4;
+  else if (below(onTimeRate, 40)) score -= 4;
 
   // mod3: Witnessing rate (±4)
   if (meets(witnessingRate, 95)) score += 4;
   else if (meets(witnessingRate, 80)) score += 2;
   else if (meets(witnessingRate, 60)) score += 0;
   else if (meets(witnessingRate, 40)) score -= 2;
-  else score -= 4;
+  else if (below(witnessingRate, 40)) score -= 4;
 
   // mod4: Error rate (±4)
   if (errors90d.length === 0) score += 4;
