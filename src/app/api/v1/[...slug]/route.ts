@@ -579,7 +579,13 @@ function resolveAccessor(slug: string): AsyncCollection | null {
   const dalCol = (DAL_MAP[collectionName]);
   if (dalCol) {
     return {
-      findAll: async () => asList(await dalCol.findAll()),
+      // Guarded like every sibling below: a dal accessor need not expose findAll
+      // (dal.notifications has only findForUser/create). Unguarded, adding such an
+      // accessor to DAL_MAP threw `dalCol.findAll is not a function` on every GET
+      // — a 500 the client surfaced as "Failed to fetch notifications".
+      findAll:
+        typeof dalCol.findAll === "function" ? async () => asList(await dalCol.findAll())
+        : async () => asList(typeof mem.findAll === "function" ? mem.findAll() : typeof mem.getAll === "function" ? mem.getAll() : []),
       findByChild:
         typeof dalCol.findByChild === "function" ? async (id: string) => asList(await dalCol.findByChild(id))
         : typeof mem.findByChild === "function" ? async (id: string) => asList(mem.findByChild!(id))
