@@ -237,8 +237,9 @@ export class MistralProvider extends BaseCaraProvider {
     }
   }
 
-  private handleAPIError(data: any, status: number): never {
+  private handleAPIError(data: unknown, status: number): never {
     if (status === 429) throw new CaraRateLimitError("mistral");
-    throw new CaraProviderError(`Mistral API error: ${data?.message ?? "Unknown"}`, "mistral", status >= 500);
+    const message = (data as { message?: unknown } | null | undefined)?.message;
+    throw new CaraProviderError(`Mistral API error: ${message != null ? String(message) : "Unknown"}`, "mistral", status >= 500);
   }
 }

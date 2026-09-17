@@ -218,8 +218,9 @@ export class PerplexityProvider extends BaseCaraProvider {
     }
   }
 
-  private handleAPIError(data: any, status: number): never {
+  private handleAPIError(data: unknown, status: number): never {
     if (status === 429) throw new CaraRateLimitError("perplexity");
-    throw new CaraProviderError(`Perplexity API error: ${data?.message ?? "Unknown"}`, "perplexity", status >= 500);
+    const message = (data as { message?: unknown } | null | undefined)?.message;
+    throw new CaraProviderError(`Perplexity API error: ${message != null ? String(message) : "Unknown"}`, "perplexity", status >= 500);
   }
 }

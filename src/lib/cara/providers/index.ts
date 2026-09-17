@@ -134,13 +134,13 @@ class UnavailableProvider extends BaseCaraProvider {
   getAvailableModels(): string[] { return []; }
   estimateCost(): number { return 0; }
 
-  async generateText(): Promise<any> {
+  async generateText(): Promise<never> {
     throw new Error(`Provider ${this.name} not available`);
   }
-  async generateStructured(): Promise<any> {
+  async generateStructured(): Promise<never> {
     throw new Error(`Provider ${this.name} not available`);
   }
-  async *streamText(): AsyncGenerator<any> {
+  async *streamText(): AsyncGenerator<never> {
     throw new Error(`Provider ${this.name} not available`);
   }
 }
