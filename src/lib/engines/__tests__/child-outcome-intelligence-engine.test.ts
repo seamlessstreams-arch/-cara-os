@@ -186,6 +186,19 @@ describe("Child Outcome Intelligence Engine", () => {
     expect(r.progress_summary.avg_progress).toBe(1.5);
   });
 
+  it("reports avg_progress as null (not a fabricated 0) when there are no active targets", () => {
+    // Targets exist but none are active — there is nothing to average, so average
+    // progress is UNMEASURED, not a real 0 that would read as "flat, no progress".
+    const r = computeChildOutcome(baseInput({
+      targets: [
+        makeTarget({ status: "achieved" }),
+        makeTarget({ status: "achieved" }),
+      ],
+    }));
+    expect(r.progress_summary.active_targets).toBe(0);
+    expect(r.progress_summary.avg_progress).toBeNull();
+  });
+
   // ── Domain Profiles ───────────────────────────────────────────────────
 
   it("builds domain profiles for each domain with targets", () => {

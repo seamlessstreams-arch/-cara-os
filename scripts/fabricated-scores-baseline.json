@@ -17,7 +17,6 @@
   "src/lib/engines/actions-register-engine.ts:classified:0",
   "src/lib/engines/child-daily-life-intelligence-engine.ts:nums:0",
   "src/lib/engines/child-keyworking-intelligence-engine.ts:nums:0",
-  "src/lib/engines/child-outcome-intelligence-engine.ts:nums:0",
   "src/lib/engines/complaints-clock-engine.ts:acknowledged:0",
   "src/lib/engines/complaints-clock-engine.ts:responded:0",
   "src/lib/engines/health-wellbeing-engine.ts:total:0",
