@@ -1,19 +1,20 @@
 name: Deploy to Northflank
 
-# Triggers a Northflank build + deploy on every push to `main` (and on manual
-# dispatch), replacing Vercel's git auto-deploy. It calls the Northflank API to
-# start a build of the pushed commit on the git-linked service; the service's
-# pipeline then builds the Dockerfile and rolls out the new image.
+# OPTIONAL explicit deploy trigger. In practice Northflank's native git
+# integration ("Build on push") is what deploys main — so this workflow is only
+# an ADD-ON API trigger, and when its secrets are unset it SKIPS (exits 0 with a
+# notice) rather than failing. That keeps main's checks honest: a red here means
+# a *configured* trigger genuinely failed, not merely that this repo relies on
+# the native integration. (Live deploy health is verified via /api/v1/health-check
+# `data.build.commit`, not this check.)
 #
-# ── Required repo secrets (Settings → Secrets and variables → Actions) ──
+# ── To make THIS workflow the trigger instead of native Build-on-push ──
+# Set these repo secrets (Settings → Secrets and variables → Actions) AND turn
+# OFF the service's native "Build on push" in Northflank (otherwise every push
+# builds twice — once via the webhook, once via this API call):
 #   NORTHFLANK_API_TOKEN   — a Northflank API token with build/deploy scope
 #   NORTHFLANK_PROJECT_ID  — the project id (Northflank → project → Settings)
 #   NORTHFLANK_SERVICE_ID  — the combined/build service id
-#
-# ── One-time setup note ──
-# If you use THIS workflow to deploy, turn OFF the service's native
-# "Build on push" in Northflank, or each push builds twice (once via the
-# webhook, once via this API call).
 
 on:
   push:
@@ -39,8 +40,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${NF_TOKEN}" ] || [ -z "${NF_PROJECT}" ] || [ -z "${NF_SERVICE}" ]; then
-            echo "::error::Set NORTHFLANK_API_TOKEN, NORTHFLANK_PROJECT_ID and NORTHFLANK_SERVICE_ID as repo secrets."
-            exit 1
+            echo "::notice::NORTHFLANK_* secrets are not set — skipping the API build trigger."
+            echo "Deploys are handled by Northflank's native git integration (Build on push);"
+            echo "this workflow only ADDS an explicit API trigger. Set NORTHFLANK_API_TOKEN,"
+            echo "NORTHFLANK_PROJECT_ID and NORTHFLANK_SERVICE_ID (and turn OFF Build on push)"
+            echo "only if you want this workflow to be the trigger instead. Skipping, not failing."
+            exit 0
           fi
           echo "Triggering Northflank build of ${GITHUB_SHA} on main…"
           code=$(curl --silent --show-error --output /tmp/nf-response.json --write-out '%{http_code}' \
