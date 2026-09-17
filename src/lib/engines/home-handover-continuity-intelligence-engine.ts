@@ -238,15 +238,15 @@ export function computeHomeHandoverContinuity(
   else if (below(signOffRate, 30)) score -= 3;
 
   // 3. Staff sign-off coverage (±3)
-  if ((avgStaffSignOffRate ?? 0) >= 80) score += 3;
-  else if ((avgStaffSignOffRate ?? 0) >= 50) score += 1;
-  else score -= 2;
+  if (meets(avgStaffSignOffRate, 80)) score += 3;
+  else if (meets(avgStaffSignOffRate, 50)) score += 1;
+  else if (below(avgStaffSignOffRate, 50)) score -= 2;
 
   // 4. Child coverage (±4)
-  if ((avgChildCoverage ?? 0) >= 90) score += 4;
-  else if ((avgChildCoverage ?? 0) >= 70) score += 2;
-  else if ((avgChildCoverage ?? 0) >= 50) score -= 1;
-  else score -= 3;
+  if (meets(avgChildCoverage, 90)) score += 4;
+  else if (meets(avgChildCoverage, 70)) score += 2;
+  else if (meets(avgChildCoverage, 50)) score -= 1;
+  else if (below(avgChildCoverage, 50)) score -= 3;
 
   // 5. Mood recording (±3)
   if (totalChildUpdates > 0) {

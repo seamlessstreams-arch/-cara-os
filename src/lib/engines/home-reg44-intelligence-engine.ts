@@ -302,8 +302,8 @@ export function computeHomeReg44(
 
   // 7. Child voice capture (±3)
   if (childVoiceEvery) score += 3;
-  else if ((avgChildSpoken ?? 0) >= 80) score += 1;
-  else score -= 2;
+  else if (meets(avgChildSpoken, 80)) score += 1;
+  else if (below(avgChildSpoken, 80)) score -= 2;
 
   // 8. Visit quality — duration (±2)
   if ((avgDuration ?? 0) >= 3) score += 2;
