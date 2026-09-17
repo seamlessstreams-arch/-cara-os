@@ -102,7 +102,7 @@ export interface ProgressSummary {
   improving_count: number;
   stable_count: number;
   declining_count: number;
-  avg_progress: number;           // avg (current - baseline) across active targets
+  avg_progress: number | null;    // avg (current - baseline) across active targets; null when none
   targets_with_yp_voice: number;
   yp_voice_rate: number | null;          // % of targets with child's voice captured
 }
@@ -161,8 +161,11 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+// avg of an empty set is UNMEASURED, not 0 — return null so callers surface an
+// honest "—" rather than fabricating a real average (esp. avg_progress with no
+// active targets). Guaranteed-non-empty callers assert non-null with `!`.
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
@@ -217,11 +220,12 @@ export function computeChildOutcome(
         domain,
         domain_label: DOMAIN_LABELS[domain],
         target_count: domainTargets.length,
-        avg_current_rating: avg(currentRatings),
-        avg_baseline_rating: avg(baselineRatings),
-        avg_target_rating: avg(targetRatings),
-        progress_gap: avg(domainTargets.map((t) => t.current_rating - t.baseline_rating)),
-        remaining_gap: avg(domainTargets.map((t) => t.target_rating - t.current_rating)),
+        // domainTargets is non-empty here (empty domains return null above), so avg is non-null
+        avg_current_rating: avg(currentRatings)!,
+        avg_baseline_rating: avg(baselineRatings)!,
+        avg_target_rating: avg(targetRatings)!,
+        progress_gap: avg(domainTargets.map((t) => t.current_rating - t.baseline_rating))!,
+        remaining_gap: avg(domainTargets.map((t) => t.target_rating - t.current_rating))!,
         improving_count: activeInDomain.filter((t) => t.direction === "improving").length,
         stable_count: activeInDomain.filter((t) => t.direction === "stable").length,
         declining_count: activeInDomain.filter((t) => t.direction === "declining").length,
@@ -260,7 +264,7 @@ export function computeChildOutcome(
     yp_participation_rate: rate(reviewsWithYP.length, reviews.length),
     reviews_with_barriers: reviewsWithBarriers.length,
     overdue_reviews: overdueTargets.length,
-    avg_days_between_reviews: targetReviewGaps.length > 0 ? Math.round(avg(targetReviewGaps)) : null,
+    avg_days_between_reviews: targetReviewGaps.length > 0 ? Math.round(avg(targetReviewGaps)!) : null,
   };
 
   // ── Score ─────────────────────────────────────────────────────────────
@@ -278,10 +282,12 @@ export function computeChildOutcome(
     if ((decliningRate ?? 0) > 30) score -= 15;
     else if ((decliningRate ?? 0) > 0) score -= 5;
 
-    // Average progress
-    if (avgProgress >= 1.5) score += 10;
-    else if (avgProgress >= 0.5) score += 5;
-    else if (avgProgress < 0) score -= 10;
+    // Average progress (null when there are no active targets to measure — no adjustment)
+    if (avgProgress !== null) {
+      if (avgProgress >= 1.5) score += 10;
+      else if (avgProgress >= 0.5) score += 5;
+      else if (avgProgress < 0) score -= 10;
+    }
 
     // Achievement
     if (achievedTargets.length > 0) score += achievedTargets.length * 3;
@@ -384,7 +390,7 @@ export function computeChildOutcome(
     concerns.push(`${child_name} participated in only ${review_compliance.yp_participation_rate}% of reviews. Low participation may indicate disengagement or that reviews are not being conducted in a child-friendly way.`);
   }
 
-  if (activeTargets.length > 0 && avgProgress < 0) {
+  if (avgProgress !== null && avgProgress < 0) {
     concerns.push(`Average progress is negative (${avgProgress}). On aggregate, ${child_name}'s outcomes are moving backwards. This requires immediate attention from the key worker and social worker.`);
   }
 

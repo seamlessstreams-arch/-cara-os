@@ -222,7 +222,7 @@ export function ChildOutcomeIntelligenceCard({ childId }: { childId: string }) {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Progress Summary</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Avg progress: <span className={cn("font-medium", d.progress_summary.avg_progress > 0 ? "text-green-600" : d.progress_summary.avg_progress < 0 ? "text-red-600" : "text-slate-600")}>{d.progress_summary.avg_progress > 0 ? "+" : ""}{d.progress_summary.avg_progress}</span></p>
+                <p>Avg progress: <span className={cn("font-medium", (d.progress_summary.avg_progress ?? 0) > 0 ? "text-green-600" : (d.progress_summary.avg_progress ?? 0) < 0 ? "text-red-600" : "text-slate-600")}>{d.progress_summary.avg_progress === null ? "—" : `${d.progress_summary.avg_progress > 0 ? "+" : ""}${d.progress_summary.avg_progress}`}</span></p>
                 <p>Active: <span className="font-medium text-slate-600">{d.progress_summary.active_targets}</span> / On hold: <span className="font-medium text-slate-600">{d.progress_summary.on_hold_targets}</span></p>
                 {d.review_compliance.reviews_with_barriers > 0 && (
                   <p>Barriers identified: <span className="font-medium text-amber-600">{d.review_compliance.reviews_with_barriers}</span></p>
