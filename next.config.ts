@@ -1,5 +1,19 @@
 import type { NextConfig } from "next";
 
+// Origins Supabase needs in connect-src: the REST/auth origin and the same host
+// over wss for Realtime. Module scope — evaluated once at build time. Empty when
+// Supabase isn't configured (demo), so the demo's policy stays exactly 'self'.
+const supabaseConnectSrc: string[] = (() => {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim().replace(/\/+$/, "");
+  if (!raw || raw.includes("placeholder")) return [];
+  try {
+    const { origin } = new URL(raw);
+    return [origin, origin.replace(/^https:/, "wss:")];
+  } catch {
+    return [];
+  }
+})();
+
 const nextConfig: NextConfig = {
   // Emit a self-contained server bundle (.next/standalone/server.js) for the
   // Northflank container image — only the traced deps ship, not all of
@@ -86,7 +100,11 @@ const nextConfig: NextConfig = {
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "connect-src 'self'",
+      // Supabase is a first-party dependency of every authenticated page: PostgREST
+      // over https and Realtime over wss. Listed so that enforcing this policy
+      // later doesn't sever the live record feed — the report-only sink already
+      // logs the websocket on every dashboard load.
+      ["connect-src 'self'", ...supabaseConnectSrc].join(" "),
       "report-uri /api/v1/security/csp-report",
     ].join("; ");
     return [
