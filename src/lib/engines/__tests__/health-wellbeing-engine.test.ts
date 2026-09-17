@@ -224,8 +224,8 @@ describe("Health & Wellbeing Engine — Helper Functions", () => {
   });
 
   describe("computeDnaRate", () => {
-    it("returns 0 when no appointments", () => {
-      expect(computeDnaRate(0, 0)).toBe(0);
+    it("returns null when no appointments (unmeasured, not 0% which reads as perfect attendance)", () => {
+      expect(computeDnaRate(0, 0)).toBeNull();
     });
 
     it("returns 0 when all attended", () => {
@@ -257,7 +257,7 @@ describe("Health & Wellbeing Engine — Empty Input", () => {
     expect(result.compliance.total_children).toBe(0);
     expect(result.compliance.overall_compliance_rate).toBe(100);
     expect(result.appointments.total_appointments_90d).toBe(0);
-    expect(result.appointments.dna_rate).toBe(0);
+    expect(result.appointments.dna_rate).toBeNull(); // no appointments → unmeasured, not fabricated 0%
     expect(result.wellbeing_trends).toHaveLength(0);
     expect(result.child_profiles).toHaveLength(0);
     expect(result.camhs.active_referrals).toBe(0);

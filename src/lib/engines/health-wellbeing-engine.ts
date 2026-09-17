@@ -215,9 +215,9 @@ export function classifySdqBand(total: number): "normal" | "borderline" | "abnor
 }
 
 /** Calculate DNA rate as percentage */
-export function computeDnaRate(attended: number, missed: number): number {
+export function computeDnaRate(attended: number, missed: number): number | null {
   const total = attended + missed;
-  if (total === 0) return 0;
+  if (total === 0) return null; // no appointments → DNA rate is UNMEASURED, not 0% (which reads as perfect attendance)
   return Math.round((missed / total) * 1000) / 10; // one decimal place
 }
 
@@ -566,7 +566,7 @@ export function computeHealthWellbeing(
     const total = profile.appointments_attended_90d + profile.appointments_missed_90d;
     if (total >= 3 && profile.appointments_missed_90d >= 2) {
       const childDna = computeDnaRate(profile.appointments_attended_90d, profile.appointments_missed_90d);
-      if (childDna >= 30) {
+      if (childDna !== null && childDna >= 30) {
         alerts.push({
           severity: "medium",
           type: "high_dna_rate",
