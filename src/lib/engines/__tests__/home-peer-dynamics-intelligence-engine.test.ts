@@ -95,6 +95,17 @@ describe("insufficient data", () => {
     expect(r.peer_rating).not.toBe("insufficient_data");
   });
 
+  it("reports avg_days_since_review as null (not fabricated 0) when there are no peer-review records", () => {
+    // Group assessments exist (so this is NOT insufficient_data) but there are no
+    // peer-review records — a fabricated 0 would read as "reviewed 0 days ago".
+    const r = computeHomePeerDynamics(baseInput({
+      peer_dynamics: [],
+      group_assessments: [makeGroup()],
+    }));
+    expect(r.review_profile.total_reviews_due).toBe(0);
+    expect(r.review_profile.avg_days_since_review).toBeNull();
+  });
+
   it("populates all profiles with zeros on insufficient data", () => {
     const r = computeHomePeerDynamics(baseInput({
       peer_dynamics: [],
