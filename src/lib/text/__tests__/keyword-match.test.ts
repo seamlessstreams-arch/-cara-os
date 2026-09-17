@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { mentionsAny, mentions } from "../keyword-match";
+import {
+  mentionsAny,
+  mentions,
+  mentionsAnyStemUnnegated,
+  mentionsAnyUnnegated,
+} from "../keyword-match";
 
 describe("mentionsAny / mentions — word-boundary keyword matching", () => {
   it("matches whole words and their plurals, NOT substrings", () => {
@@ -33,5 +38,51 @@ describe("mentionsAny / mentions — word-boundary keyword matching", () => {
     expect(mentionsAny("a real concern was raised", ["risk", "harm", "concern"])).toBe(true);
     expect(mentionsAny("", ["x"])).toBe(false);
     expect(mentionsAny(null, ["x"])).toBe(false);
+  });
+});
+
+describe("mentionsAnyStemUnnegated — stem match + clause-negation", () => {
+  it("keeps stem matching intact (one keyword catches its variants)", () => {
+    // the whole point of a stem: "exploit" must catch exploitation/exploited/exploiting
+    expect(mentionsAnyStemUnnegated("exploitation was suspected", ["exploit"])).toBe(true);
+    expect(mentionsAnyStemUnnegated("the child was exploited online", ["exploit"])).toBe(true);
+    expect(mentionsAnyStemUnnegated("clear signs of grooming", ["groom"])).toBe(true);
+    expect(mentionsAnyStemUnnegated("he was being groomed", ["groom"])).toBe(true);
+  });
+
+  it("does NOT raise a flag inside a negated clause", () => {
+    expect(mentionsAnyStemUnnegated("no exploitation concerns at all", ["exploit"])).toBe(false);
+    expect(mentionsAnyStemUnnegated("no signs of exploitation", ["exploit"])).toBe(false);
+    expect(mentionsAnyStemUnnegated("denied being groomed by anyone", ["groom"])).toBe(false);
+    expect(mentionsAnyStemUnnegated("no drugs or alcohol involved", ["drug", "alcohol"])).toBe(false);
+    expect(mentionsAnyStemUnnegated("staff have no concerns about grooming", ["groom"])).toBe(false);
+  });
+
+  it("negation is clause-local — an earlier clause's denial does not suppress a later hit", () => {
+    // "no" belongs to the first clause; exploitation in the second must still raise
+    expect(
+      mentionsAnyStemUnnegated("no concerns raised; exploitation later suspected", ["exploit"]),
+    ).toBe(true);
+  });
+
+  it("false on empty / no match", () => {
+    expect(mentionsAnyStemUnnegated("", ["exploit"])).toBe(false);
+    expect(mentionsAnyStemUnnegated(null, ["exploit"])).toBe(false);
+    expect(mentionsAnyStemUnnegated("a calm afternoon walk", ["exploit", "groom"])).toBe(false);
+  });
+});
+
+describe("mentionsAnyUnnegated — whole-word match + clause-negation", () => {
+  it("keeps whole-word discipline (no substring false-positives)", () => {
+    expect(mentionsAnyUnnegated("an older male was seen", ["older"])).toBe(true);
+    expect(mentionsAnyUnnegated("found in a folder", ["older"])).toBe(false);
+    expect(mentionsAnyUnnegated("hanging out with mates", ["mate"])).toBe(true); // plural
+    expect(mentionsAnyUnnegated("a warm climate", ["mate"])).toBe(false);
+  });
+
+  it("does NOT raise a flag inside a negated clause", () => {
+    expect(mentionsAnyUnnegated("no older males around", ["older"])).toBe(false);
+    expect(mentionsAnyUnnegated("denies any unknown adult contact", ["unknown adult"])).toBe(false);
+    expect(mentionsAnyUnnegated("an unknown adult was present", ["unknown adult"])).toBe(true);
   });
 });

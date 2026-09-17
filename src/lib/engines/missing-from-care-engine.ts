@@ -15,7 +15,7 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-import { mentionsAny } from "@/lib/text/keyword-match";
+import { mentionsAnyStemUnnegated, mentionsAnyUnnegated } from "@/lib/text/keyword-match";
 import { todayStr } from "@/lib/utils";
 
 export interface MissingEpisodeInput {
@@ -136,57 +136,62 @@ export function extractFactors(episode: MissingEpisodeInput): {
   const risk: string[] = [];
   const notes = ((episode.pattern_notes ?? "") + " " + (episode.return_interview_notes ?? "")).toLowerCase();
 
-  // Pull factors (external attractions drawing the child away)
-  if (mentionsAny(notes, ["peer", "mate", "friend"])) {
+  // Pull factors (external attractions drawing the child away).
+  // Negation-aware throughout: "no peer influence", "denies drug use", "no family
+  // contact" must NOT raise the factor. Whole-word matchers where a substring
+  // would misfire ("mate"→"climate"); stem matchers where suffixes matter.
+  if (mentionsAnyUnnegated(notes, ["peer", "mate", "friend"])) {
     pull.push("peer_influence");
   }
-  if (notes.includes("online") || notes.includes("social media") || notes.includes("internet")) {
+  if (mentionsAnyStemUnnegated(notes, ["online", "social media", "internet"])) {
     pull.push("online_contact");
   }
-  if (notes.includes("romantic") || notes.includes("partner") || notes.includes("boyfriend") || notes.includes("girlfriend")) {
+  if (mentionsAnyStemUnnegated(notes, ["romantic", "partner", "boyfriend", "girlfriend"])) {
     pull.push("romantic_relationship");
   }
-  if (notes.includes("drugs") || notes.includes("alcohol") || notes.includes("substance")) {
+  if (mentionsAnyStemUnnegated(notes, ["drug", "alcohol", "substance"])) {
     pull.push("substance_use");
   }
-  if (mentionsAny(notes, ["community", "park", "town"])) {
+  if (mentionsAnyUnnegated(notes, ["community", "park", "town"])) {
     pull.push("community_attraction");
   }
-  if (notes.includes("family") || notes.includes("birth parent") || notes.includes("mum") || notes.includes("dad")) {
+  if (mentionsAnyStemUnnegated(notes, ["family", "birth parent", "mum", "dad"])) {
     pull.push("family_contact");
   }
 
   // Push factors (things at the home driving the child away)
-  if (notes.includes("conflict") || notes.includes("argument") || notes.includes("disagreement")) {
+  if (mentionsAnyStemUnnegated(notes, ["conflict", "argument", "disagreement"])) {
     push.push("conflict_with_staff");
   }
-  if (notes.includes("boredom") || notes.includes("nothing to do") || notes.includes("boring")) {
+  if (mentionsAnyStemUnnegated(notes, ["boredom", "nothing to do", "boring"])) {
     push.push("boredom");
   }
-  if (notes.includes("upset") || notes.includes("distress") || notes.includes("angry") || notes.includes("frustrated")) {
+  if (mentionsAnyStemUnnegated(notes, ["upset", "distress", "angry", "frustrated"])) {
     push.push("emotional_distress");
   }
-  if (notes.includes("bullying") || notes.includes("bullied")) {
+  if (mentionsAnyStemUnnegated(notes, ["bullying", "bullied"])) {
     push.push("peer_bullying");
   }
-  if (notes.includes("restricted") || notes.includes("grounded") || notes.includes("consequence")) {
+  if (mentionsAnyStemUnnegated(notes, ["restricted", "grounded", "consequence"])) {
     push.push("restrictions_perceived");
   }
 
-  // Risk factors (exploitation indicators)
-  if (mentionsAny(notes, ["older", "unknown male", "unknown adult"])) {
+  // Risk factors (exploitation indicators). Stems so one keyword catches variants
+  // ("exploit"→exploitation/exploited/exploiting), but a denial in the same clause
+  // ("no exploitation", "denied being groomed") must NOT raise the flag.
+  if (mentionsAnyUnnegated(notes, ["older", "unknown male", "unknown adult"])) {
     risk.push("unknown_adults");
   }
-  if (notes.includes("exploit") || notes.includes("groom") || notes.includes("trafficking")) {
+  if (mentionsAnyStemUnnegated(notes, ["exploit", "groom", "trafficking"])) {
     risk.push("exploitation_indicators");
   }
-  if (notes.includes("phone") || notes.includes("new device") || notes.includes("mobile")) {
+  if (mentionsAnyStemUnnegated(notes, ["phone", "new device", "mobile"])) {
     risk.push("new_device_observed");
   }
-  if (notes.includes("money") || notes.includes("cash") || notes.includes("brand new")) {
+  if (mentionsAnyStemUnnegated(notes, ["money", "cash", "brand new"])) {
     risk.push("unexplained_gifts_money");
   }
-  if (notes.includes("evasive") || notes.includes("secretive") || notes.includes("wouldn't")) {
+  if (mentionsAnyStemUnnegated(notes, ["evasive", "secretive", "wouldn't"])) {
     risk.push("secretive_behaviour");
   }
   if (episode.contextual_safeguarding_risk) {
