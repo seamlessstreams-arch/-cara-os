@@ -19,6 +19,7 @@ import type {
   CaraDataSensitivity,
   CaraApprovalStatus,
   CaraTokenUsage,
+  CaraRedactionEntry,
 } from "../core/types";
 import {
   TASK_DEFAULT_RISK,
@@ -134,7 +135,7 @@ export class CaraModelRouter {
 
     // Apply redaction if needed
     let processedPrompt = input.prompt;
-    let redactionMap: any[] = [];
+    let redactionMap: CaraRedactionEntry[] = [];
     let redactionApplied = false;
 
     if (decision.requiresRedaction) {
