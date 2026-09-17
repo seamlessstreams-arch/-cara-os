@@ -27,6 +27,17 @@ updates:
       - dependency-name: "@anthropic-ai/sdk"
         update-types: ["version-update:semver-major"]
 
+      # eslint 10 is held, not deferred: it crashes eslint-config-next's
+      # bundled eslint-plugin-react (removed context.getFilename), and
+      # scripts/check-lint-baseline.js fails the build on it — see held PR
+      # #949. It reached main once anyway, on 2026-09-15, by riding in on an
+      # unrelated PR whose branch had been rebased onto a base carrying it
+      # (#1067 via #1085), and had to be reverted in #1089. Remove this entry
+      # only once the upstream fix ships AND the lint baseline guard passes
+      # under it.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
