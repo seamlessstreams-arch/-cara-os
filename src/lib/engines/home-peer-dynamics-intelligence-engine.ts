@@ -93,7 +93,7 @@ export interface ReviewProfile {
   total_reviews_due: number;
   overdue_reviews: number;
   upcoming_reviews: number;
-  avg_days_since_review: number;
+  avg_days_since_review: number | null; // null when there are no peer-review records
 }
 
 export interface GroupProfile {
@@ -149,8 +149,11 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+// avg of an empty set is UNMEASURED, not 0. For avg_days_since_review, a
+// fabricated 0 reads as "reviewed 0 days ago" (freshly reviewed) when there are
+// no reviews at all — a false-green — so return null and surface "—".
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round(nums.reduce((s, n) => s + n, 0) / nums.length);
 }
 
@@ -191,7 +194,7 @@ export function computeHomePeerDynamics(
       },
       review_profile: {
         total_reviews_due: 0, overdue_reviews: 0, upcoming_reviews: 0,
-        avg_days_since_review: 0,
+        avg_days_since_review: null,
       },
       group_profile: {
         total_assessments: 0, latest_atmosphere: "unknown",
