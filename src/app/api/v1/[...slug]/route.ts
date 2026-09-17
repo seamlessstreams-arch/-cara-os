@@ -61,7 +61,9 @@ const SLUG_MAP: Record<string, string> = {
   "camhs-referrals": "camhsReferrals",
   "card-records": "cardRecords",
   "care-anniversary-records": "careAnniversaryRecords",
-  "care-event-audit": "careEvents",
+  // "care-event-audit": "careEvents",  // ← dedicated route: /api/v1/care-event-audit/route.ts
+  // (the audit LOG, not the events — this mapping returned the wrong collection in
+  // the wrong shape, so the Audit Trail page rendered empty in both modes)
   // Base care-events CRUD is served by the dedicated route at
   // src/app/api/v1/care-events/route.ts (which classifies on create). This map
   // entry is a defensive fallback only — it must resolve to the careEvents
