@@ -67,7 +67,7 @@ export async function GET() {
     yp.map((c) => [String(c.id), c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id)]),
   );
   const childIds = new Set(childName.keys());
-  const nameOf = (id: any) => (id ? childName.get(String(id)) ?? null : null);
+  const nameOf = (id: unknown) => (id ? childName.get(String(id)) ?? null : null);
 
   // ── On duty (today's shifts) ───────────────────────────────────────────────
   const on_duty: OnDutyInput[] = (((allShifts)))

@@ -87,7 +87,7 @@ export async function PATCH(req: Request) {
   try { body = __parsed.data; } catch { body = {}; }
 
   const cur = (((await dal.staffingPolicy.get()) ?? {}));
-  const intOr = (v: any, fallback: number) => {
+  const intOr = (v: unknown, fallback: number) => {
     const n = Math.round(Number(v));
     return Number.isFinite(n) ? Math.min(20, Math.max(0, n)) : fallback;
   };
