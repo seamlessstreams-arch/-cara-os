@@ -1098,10 +1098,23 @@ export const dal = {
 
   // ── Notifications ─────────────────────────────────────────────────────────
   notifications: {
-    async findForUser(userId: string) {
+    /** Recipient-scoped read. `unreadOnly` defaults to true (inbox badge); the
+     *  notifications page passes false for the full list. */
+    async findForUser(userId: string, opts?: { unreadOnly?: boolean }) {
       const c = sb();
-      if (c) return asApp<AppNotification[]>(await sq.getNotifications(c, homeId(), userId));
-      return db.notifications.findForUser(userId);
+      if (c) return asApp<AppNotification[]>(await sq.getNotifications(c, homeId(), userId, opts));
+      const unread = db.notifications.findForUser(userId);
+      if (opts?.unreadOnly !== false) return unread;
+      return db.notifications.findAll().filter((n) => n.recipient_id === userId);
+    },
+    /** Read-receipt write, scoped to the recipient so a guessed id can't clear
+     *  someone else's notification. Returns null when it isn't theirs. */
+    async markRead(id: string, userId: string, read: boolean, readAt: string | null) {
+      const c = sb();
+      if (c) return asApp<AppNotification | null>(await sq.markNotificationRead(c, id, userId, read, readAt));
+      const existing = db.notifications.findAll().find((n) => n.id === id);
+      if (!existing || existing.recipient_id !== userId) return null;
+      return db.notifications.patch(id, { read, read_at: readAt });
     },
     async create(data: Parameters<typeof db.notifications.create>[0]) {
       const c = sb();

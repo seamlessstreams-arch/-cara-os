@@ -719,13 +719,46 @@ export async function updateCandidateReference(sb: SB, id: string, data: Databas
 // NOTIFICATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function getNotifications(sb: SB, homeId: string, recipientId: string) {
+// Recipient-scoped by construction: home_id AND recipient_id are always applied,
+// so a caller cannot widen this to another staff member's notifications. Reads go
+// through the service-role client (RLS is bypassed), which is why the scoping has
+// to live here rather than in a policy.
+// unreadOnly defaults to true — the inbox badge's original behaviour; the full
+// notifications page passes false to get read ones too.
+export async function getNotifications(
+  sb: SB,
+  homeId: string,
+  recipientId: string,
+  opts?: { unreadOnly?: boolean },
+) {
+  let q = sb.from("notifications").select("*")
+    .eq("home_id", homeId)
+    .eq("recipient_id", recipientId);
+  if (opts?.unreadOnly !== false) q = q.eq("read", false);
+  return unwrap(await q.order("created_at", { ascending: false }));
+}
+
+/** Single notification by id — used to verify ownership before a read-receipt write. */
+export async function getNotificationById(sb: SB, id: string) {
+  return unwrap(await sb.from("notifications").select("*").eq("id", id).maybeSingle());
+}
+
+/** Read-receipt write. Scoped to the recipient so one staff member cannot clear
+ *  another's notification, even with a guessed id. */
+export async function markNotificationRead(
+  sb: SB,
+  id: string,
+  recipientId: string,
+  read: boolean,
+  readAt: string | null,
+) {
   return unwrap(
-    await sb.from("notifications").select("*")
-      .eq("home_id", homeId)
+    await sb.from("notifications")
+      .update({ read, read_at: readAt })
+      .eq("id", id)
       .eq("recipient_id", recipientId)
-      .eq("read", false)
-      .order("created_at", { ascending: false })
+      .select()
+      .maybeSingle()
   );
 }
 
