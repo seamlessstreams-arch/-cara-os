@@ -20,7 +20,8 @@ import {
   computeCommandRegistryStats,
 } from "@/lib/cara/cara-health";
 import { CARA_COMMANDS } from "@/lib/cara/cara-service";
-import { caraCan, type CaraRole } from "@/lib/cara/cara-permissions";
+import { caraCan, appRoleToCaraRole, type CaraRole } from "@/lib/cara/cara-permissions";
+import { getRequestIdentity } from "@/lib/auth-guard";
 
 // Roles that may access Cara health diagnostics
 const ALLOWED_ROLES: CaraRole[] = [
@@ -33,14 +34,28 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   // ── Auth ─────────────────────────────────────────────────────────────────
-  // We rely on the actor role passed in the Authorization header as a bearer
-  // claim, matching the pattern used by the rest of the Cara API layer.
-  // In production, replace this with a real session/JWT check.
+  // The role comes from the validated session, never from the request.
+  //
+  // This route previously read x-cara-role / x-cara-user-id straight off the
+  // request ("In production, replace this with a real session/JWT check" — that
+  // replacement is this). Two problems, both live:
+  //   • Forgeable. Any signed-in user could send x-cara-role:
+  //     responsible_individual and read the diagnostics.
+  //   • Wrong in the other direction too. The browser populates those headers
+  //     from the CLIENT auth context, which is still the demo identity
+  //     (AuthProvider's staff_darren, steered by the sidebar role switcher) —
+  //     unrelated to who is actually signed in. A real registered manager was
+  //     denied because the switcher happened to hold a non-manager role.
+  //
+  // getRequestIdentity resolves auth.uid() → staff_members in activated mode and
+  // falls back to the X-User-Id convention in demo, so both modes keep working.
+  // The headers are no longer read at all: a fallback would restore the hole.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
-  const actorRole = req.headers.get("x-cara-role") as CaraRole | null;
-  const actorUserId = req.headers.get("x-cara-user-id");
+  const actorRole: CaraRole = appRoleToCaraRole(identity.role);
 
-  if (!actorUserId || !actorRole || !ALLOWED_ROLES.includes(actorRole)) {
+  if (!ALLOWED_ROLES.includes(actorRole)) {
     return NextResponse.json(
       {
         error: "Access denied. Cara health diagnostics require registered_manager, responsible_individual, or deputy_manager role.",
