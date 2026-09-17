@@ -233,9 +233,9 @@ export function computeHomeEmergencyPreparedness(
 
   // 2. Staff acknowledgement rate (±4)
   if (policies.length > 0) {
-    if ((avgAckRate ?? 0) >= 90) score += 4;
-    else if ((avgAckRate ?? 0) >= 70) score += 2;
-    else score -= 3;
+    if (meets(avgAckRate, 90)) score += 4;
+    else if (meets(avgAckRate, 70)) score += 2;
+    else if (below(avgAckRate, 70)) score -= 3;
   }
 
   // 3. Drill frequency — at least 4 drills per year (±4)

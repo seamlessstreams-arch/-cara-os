@@ -5,7 +5,7 @@
 // CHR 2015 Reg 45 (Review of Quality of Care). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -249,10 +249,10 @@ export function computeHomeMeetingGovernance(
   else score -= 4;
 
   // 2. Child attendance (±4)
-  if ((avgAttendance ?? 0) >= 90) score += 4;
-  else if ((avgAttendance ?? 0) >= 70) score += 2;
-  else if ((avgAttendance ?? 0) >= 50) score -= 1;
-  else score -= 3;
+  if (meets(avgAttendance, 90)) score += 4;
+  else if (meets(avgAttendance, 70)) score += 2;
+  else if (meets(avgAttendance, 50)) score -= 1;
+  else if (below(avgAttendance, 50)) score -= 3;
 
   // 3. Action completion (±3)
   if (allPrevActions.length > 0) {
