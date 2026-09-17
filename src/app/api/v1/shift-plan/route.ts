@@ -41,7 +41,7 @@ export async function GET(req: Request) {
   ]);
 
   const yp = (allYoungPeople).filter((c) => c.status === "current");
-  const ypName = (id: any) => {
+  const ypName = (id: unknown) => {
     const c = yp.find((x) => String(x.id) === String(id));
     return c ? c.preferred_name || c.first_name || "Unknown" : null;
   };

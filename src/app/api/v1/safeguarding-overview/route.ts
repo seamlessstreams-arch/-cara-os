@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const forChild = (cid: any) => !childId || String(cid) === childId;
-  const ladoForChild = (ids: any) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
+  const forChild = (cid: unknown) => !childId || String(cid) === childId;
+  const ladoForChild = (ids: unknown) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
 
   const ypById = new Map<string, string>(
     (youngPeopleList ?? []).map((y) => [String(y.id), y.preferred_name || y.first_name || "Unknown"]),

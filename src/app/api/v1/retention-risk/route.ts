@@ -22,7 +22,7 @@ const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_
 function staffName(s: StaffMember): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
-function iso(d: any): string | null {
+function iso(d: unknown): string | null {
   if (!d) return null;
   const s = String(d).trim();
   return s ? s.slice(0, 10) : null;
@@ -32,7 +32,7 @@ function dayDiff(a: string, b: string): number {
   const [by, bm, bd] = b.split("-").map(Number);
   return Math.round((Date.UTC(ay, (am || 1) - 1, ad || 1) - Date.UTC(by, (bm || 1) - 1, bd || 1)) / 86_400_000);
 }
-function withinDays(dateStr: any, n: number, today: string): boolean {
+function withinDays(dateStr: unknown, n: number, today: string): boolean {
   const d = iso(dateStr);
   if (!d) return false;
   const diff = dayDiff(today, d); // days ago
