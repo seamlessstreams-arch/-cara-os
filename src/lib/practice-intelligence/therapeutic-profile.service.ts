@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type { Database } from "@/lib/supabase/types";
 
 // Zero code-vs-DDL drift (promotion census): the domain shape IS the column
@@ -35,7 +36,7 @@ export async function getTherapeuticProfile(
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return getDemoProfile(childId, hid);
+  if (!sb) return isLiveTenant() ? null : getDemoProfile(childId, hid);
 
   const { data, error } = await sb.from("therapeutic_profiles")
     .select("*")
@@ -62,7 +63,7 @@ export async function listTherapeuticProfiles(
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return getDemoProfiles(hid);
+  if (!sb) return isLiveTenant() ? [] : getDemoProfiles(hid);
 
   const { data, error } = await sb.from("therapeutic_profiles")
     .select("*")
@@ -222,7 +223,7 @@ export async function buildProfileFromEvidence(
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return extractDemoEvidence(childId);
+  if (!sb) return isLiveTenant() ? {} : extractDemoEvidence(childId);
 
   // Gather evidence from multiple tables
   const [incidents, dailyLogs, keywork, riskAssessments] = await Promise.all([

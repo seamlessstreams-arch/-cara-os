@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type { Database } from "@/lib/supabase/types";
 
 // Zero code-vs-DDL drift (promotion census): the domain shape IS the column
@@ -41,7 +42,14 @@ export async function runPracticeIntelligenceScan(
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return getDemoScan(hid, scanType);
+  // A LIVE tenant never receives the demo fixture. getDemoScan names demo
+  // children ("Jayden", "Amara"); handing that to a real home would put
+  // invented children on a manager's screen. Without a database there is
+  // nothing honest to scan, so say so rather than fabricate.
+  if (!sb) {
+    if (isLiveTenant()) throw new Error("A practice scan needs the database, which is not configured for this tenant.");
+    return getDemoScan(hid, scanType);
+  }
 
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -125,6 +133,9 @@ export async function runPracticeIntelligenceScan(
 
   if (error) {
     console.error("[practice-intelligence/scanner] Persist error:", error);
+    // A failed write is not a scan. On live, fail loudly; never substitute the
+    // demo fixture for a real home's result.
+    if (isLiveTenant()) throw new Error("The scan could not be saved.");
     return getDemoScan(hid, scanType);
   }
 
@@ -137,7 +148,7 @@ export async function getLatestScan(hId?: string): Promise<PracticeIntelligenceS
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return getDemoScan(hid, "daily");
+  if (!sb) return isLiveTenant() ? null : getDemoScan(hid, "daily");
 
   const { data, error } = await sb.from("practice_intelligence_scans")
     .select("*")
@@ -156,7 +167,7 @@ export async function listScans(hId?: string, limit: number = 10): Promise<Pract
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return [getDemoScan(hid, "daily")];
+  if (!sb) return isLiveTenant() ? [] : [getDemoScan(hid, "daily")];
 
   const { data, error } = await sb.from("practice_intelligence_scans")
     .select("*")

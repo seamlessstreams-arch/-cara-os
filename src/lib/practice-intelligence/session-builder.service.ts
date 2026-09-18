@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type { Database, Json } from "@/lib/supabase/types";
 
 // Zero code-vs-DDL drift (promotion census): the domain shape IS the column
@@ -233,7 +234,7 @@ export async function listGeneratedSessions(opts?: {
   const sb = createServerClient();
   const hid = opts?.homeId ?? homeId();
 
-  if (!sb) return getDemoSessions(hid);
+  if (!sb) return isLiveTenant() ? [] : getDemoSessions(hid);
 
   let query = sb.from("generated_sessions")
     .select("*")
@@ -246,7 +247,7 @@ export async function listGeneratedSessions(opts?: {
   if (opts?.status) query = query.eq("status", opts.status);
 
   const { data, error } = await query;
-  if (error) return getDemoSessions(hid);
+  if (error) return isLiveTenant() ? [] : getDemoSessions(hid);
   return (data ?? []).map(mapDbToSession);
 }
 
