@@ -22,69 +22,20 @@
 // the x-user-id header — a client cannot read or write another home's report
 // by changing a parameter. Demo keeps the header/param convention.
 //
-// EVIDENCE. The auto-assembled draft is built by generateReg44Pack, which still
-// reads the in-memory store. On a live tenant that store is empty, so a new
-// report starts with its sections marked needs_visitor_input rather than
-// pre-filled from records. That is honest (no fabricated evidence) but thin;
-// moving the pack onto the dal is its own piece of work.
+// EVIDENCE. The draft is assembled by assembleReg44DraftForHome (shared with
+// the visit tracker's "Add Visit"); see the caveat there about live evidence.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { readJsonBody } from "@/lib/http/read-json";
-import { dal, reg44ReportsDb, isSupabaseEnabled } from "@/lib/db";
-import { generateId, localMonthKey, todayStr } from "@/lib/utils";
-import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
-import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
-import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
-import { buildReg44BuildingSafety } from "@/lib/reg44-report-intelligence/building-safety";
+import { reg44ReportsDb, isSupabaseEnabled } from "@/lib/db";
+import { generateId } from "@/lib/utils";
+import { assembleReg44DraftForHome, reg44MonthWindow } from "@/lib/reg44-report-intelligence/assemble-for-home";
 import { createReg44Report, signReg44Report, addReg44Addendum, editReg44Report, editReg44Sections } from "@/lib/reg44-report-intelligence/report-lifecycle";
 import { REG44_REPORT_INTEL_VERSION } from "@/lib/reg44-report-intelligence/types";
-import type { Reg44AssessmentInput } from "@/lib/reg44-report-intelligence/types";
 
 export const dynamic = "force-dynamic";
-
-const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
-function monthWindow(month: string): { start: string; end: string; month: string } {
-  const m = /^(\d{4})-(\d{2})$/.exec(month || "");
-  const ym = m ? `${m[1]}-${m[2]}` : localMonthKey();
-  return { start: `${ym}-01`, end: `${ym}-31`, month: ym };
-}
-
-/** Build the assembled draft (draftForGate) for a home + month from live evidence. */
-async function buildDraftForGate(homeId: string, month: string) {
-  const [ypFeedbackList, buildingChecksList, home] = await Promise.all([
-    dal.ypFeedback.findAll(),
-    dal.buildingChecks.findAll(),
-    dal.home.get().catch(() => null),
-  ]);
-  const homeName = (home as { name?: string } | null)?.name || "This home";
-  const asOf = todayStr();
-  const win = monthWindow(month);
-  const pack = generateReg44Pack(homeId, { window: { start: win.start, end: win.end } });
-  const inMonth = (d: string) => d >= win.start && d <= win.end;
-
-  const input: Reg44AssessmentInput = {
-    homeId, month: win.month, asOf,
-    headline: pack.headline,
-    restraints: (pack.restraints ?? []).map((r) => ({ id: String(r.id), childDebriefed: !!r.child_debriefed, hasDebriefRecord: false, date: day(r.date ?? r.created_at) })),
-    missingEpisodes: (pack.missing_episodes ?? []).map((m) => ({ id: String(m.id), hasReturnInterview: !!m.return_interview_completed, date: day(m.date_missing) })),
-    keywork: (pack.keywork_sessions ?? []).map((k) => ({ id: String(k.id), childVoice: String(k.child_voice ?? ""), date: day(k.date) })),
-    childVoice: (ypFeedbackList ?? []).filter((f) => inMonth(day(f.date))).map((f) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) })),
-    complaints: (pack.complaints ?? []).map((c) => ({ id: String(c.id), resolved: !!c.date_resolved, date: day(c.complaint_date) })),
-    educationRecords: 0, healthRecords: 0, achievementRecords: 0, carePlanRecords: 0,
-    childrenSpokenTo: 0,
-  };
-  const assessment = assessReg44QualityStandards(input);
-  const buildingChecks = ((buildingChecksList ?? []) as unknown as Array<Record<string, unknown>>).filter((c) => c.home_id === homeId || !c.home_id).map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
-  const bs = buildReg44BuildingSafety(buildingChecks, asOf);
-  const assembly = assembleReg44ReportDraft({
-    homeId, homeName, month: win.month, asOf, qs: assessment, headline: pack.headline,
-    childVoiceEntries: [], previousRecommendations: [], reg45EvidenceCount: pack.headline.verified_reg45_evidence ?? 0,
-    buildingSafety: { sectionContent: bs.sectionContent, summary: bs.summary },
-  });
-  return { draft: assembly.draftForGate, sections: assembly.sections, month: win.month };
-}
 
 /**
  * The home and actor this request may act for. Activated mode: from the
@@ -104,7 +55,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const { homeId, live } = scope(identity, searchParams.get("home_id"), null);
     if (live && !homeId) return NextResponse.json({ error: "Your staff record has no home assigned." }, { status: 403 });
-    const month = monthWindow(searchParams.get("month") || "").month;
+    const month = reg44MonthWindow(searchParams.get("month") || "").month;
     return NextResponse.json({ data: await reg44ReportsDb.findByHomeMonth(homeId, month) });
   } catch (error: unknown) {
     console.error("[api] reg44-report GET error:", error);
@@ -125,7 +76,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
 
     if (action === "create") {
-      const { draft, sections, month } = await buildDraftForGate(homeId, String(body.month ?? ""));
+      const { draft, sections, month } = await assembleReg44DraftForHome(homeId, String(body.month ?? ""));
       const existing = await reg44ReportsDb.findByHomeMonth(homeId, month);
       if (existing) return NextResponse.json({ data: existing });
       const report = createReg44Report({ id: generateId("r44rep"), homeId, month, draft, sections, engineVersion: REG44_REPORT_INTEL_VERSION, createdBy: actor, at: now });

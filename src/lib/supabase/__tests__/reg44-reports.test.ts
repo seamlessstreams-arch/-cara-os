@@ -43,6 +43,8 @@ export const REPORT_COLUMNS_WRITTEN = [
   "status", "locked", "visit_date", "visitor_name", "announced",
   "draft", "sections", "signed_snapshot", "signed_sections", "addenda",
   "signed_at", "signed_by", "updated_at",
+  "manager_response", "manager_responded_at", "manager_responded_by",
+  "ri_response", "ri_responded_at", "ri_responded_by",
 ].sort();
 export const AUDIT_COLUMNS_WRITTEN = ["report_id", "home_id", "at", "actor", "action", "detail"].sort();
 

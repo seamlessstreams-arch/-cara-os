@@ -26,7 +26,7 @@ export type Reg44ReportStatus = "draft" | "signed" | "amended";
 export interface Reg44AuditEntry {
   at: string;
   actor: string;
-  action: "created" | "edited" | "validated" | "signed" | "addendum" | "edit_refused";
+  action: "created" | "edited" | "validated" | "signed" | "addendum" | "edit_refused" | "responded";
   detail: string;
 }
 
@@ -36,6 +36,14 @@ export interface Reg44Addendum {
   author: string;
   text: string;
 }
+
+export interface Reg44Response {
+  text: string;
+  at: string;
+  by: string;
+}
+
+export type Reg44ResponseRole = "manager" | "ri";
 
 export interface PersistedReg44Report {
   id: string;
@@ -59,6 +67,14 @@ export interface PersistedReg44Report {
   addenda: Reg44Addendum[];
   /** Engine version that assembled the draft, for provenance. */
   engineVersion?: string;
+  /**
+   * Reg 44(7): the report goes to the registered person, and the response is
+   * how the home evidences what it did with it. A response is NOT an edit to
+   * the visitor's report — it is permitted after signing and never touches the
+   * signed snapshot. Absent on reports that pre-date the visit-tracker fold.
+   */
+  managerResponse?: Reg44Response | null;
+  riResponse?: Reg44Response | null;
   auditTrail: Reg44AuditEntry[];
   createdAt: string;
   updatedAt: string;
@@ -206,3 +222,26 @@ export function addReg44Addendum(report: PersistedReg44Report, input: { id: stri
 }
 
 export { REG44_LIFECYCLE_VERSION as _lv };
+
+/**
+ * Record the registered person's (manager) or responsible individual's response
+ * to the report. Allowed whether or not the report is signed: the response is
+ * the home's, not the visitor's, and lives beside the report rather than in it.
+ * An empty response is refused — a blank save is not a response.
+ */
+export function recordReg44Response(
+  report: PersistedReg44Report,
+  input: { role: Reg44ResponseRole; text: string; by: string; at: string },
+): LifecycleOutcome {
+  const text = input.text.trim();
+  if (!text) return { ok: false, refusedReason: "A response needs some text.", report };
+  const response: Reg44Response = { text, at: input.at, by: input.by };
+  const label = input.role === "manager" ? "Registered person's response" : "Responsible individual's response";
+  const next: PersistedReg44Report = {
+    ...report,
+    ...(input.role === "manager" ? { managerResponse: response } : { riResponse: response }),
+    auditTrail: audit(report, { at: input.at, actor: input.by, action: "responded", detail: `${label} recorded (${text.length} chars)` }),
+    updatedAt: input.at,
+  };
+  return { ok: true, report: next };
+}

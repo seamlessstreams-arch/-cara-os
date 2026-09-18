@@ -10,6 +10,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { PersistedReg44Report } from "@/lib/reg44-report-intelligence/report-lifecycle";
+import { reportFromLegacyVisit } from "@/lib/reg44-report-intelligence/visit-projection";
+import { reg44Visits as legacyReg44Visits } from "@/lib/intelligence/fallback-store";
 import type { HealEvent as IntegrityHealEvent } from "@/lib/self-healing/types";
 import { isLiveTenant } from "./live-mode";
 import {
@@ -3172,7 +3174,10 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
-  reg44Reports: [] as PersistedReg44Report[], // persisted A–Q reports (sign-off/lock/audit)
+  // Persisted A–Q reports (sign-off/lock/audit). The demo's worked examples come
+  // from the legacy visit-tracker seeds so quality/reg-44 keeps its history;
+  // emptied on a live tenant like everything else here.
+  reg44Reports: legacyReg44Visits.map(reportFromLegacyVisit) as PersistedReg44Report[],
   integrityHealEvents: [] as IntegrityHealEvent[], // §25 self-healing: append-only log of applied safe repairs
   externalAiDeclarations: [] as import("@/lib/ask-cara/external-ai-declaration").ExternalAiDeclaration[], // §20 external-AI declarations
   askCaraAuditEvents: [] as import("@/lib/ask-cara/audit-logger").AskCaraAuditEvent[], // §21 Ask CARA audit trail

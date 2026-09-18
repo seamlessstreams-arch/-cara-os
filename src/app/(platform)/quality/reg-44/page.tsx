@@ -42,12 +42,15 @@ import {
 import { cn, localMonthKey, todayStr, londonDisplay } from "@/lib/utils";
 import { getStaffById } from "@/lib/seed-data";
 import type {
-  Reg44Visit,
+  Reg44Visit as Reg44VisitBase,
   Reg44Action,
   Reg44ReportStatus,
   Reg44ActionStatus,
   Reg44ActionPriority,
 } from "@/types/intelligence.layer";
+
+/** A visit IS its A–Q report since the tracker fold; `month` names that report. */
+type Reg44Visit = Reg44VisitBase & { month: string; locked: boolean };
 
 /* ── inlined intelligence layer hooks ──────────────────────────────────────── */
 
@@ -232,11 +235,10 @@ const PRIORITY_CLR: Record<Reg44ActionPriority, string> = {
   urgent: "bg-red-100 text-red-800",
 };
 
-/* ── demo data ─────────────────────────────────────────────────────────────── */
-/* Seed data lives in the intelligence-layer fallback store and is served by the
- * /api/intelligence/reg44 + /api/intelligence/reg44-actions routes when Supabase
- * is disabled (and from real Supabase tables when enabled). The page consumes
- * both via the `useReg44Visits` and `useReg44Actions` hooks below. */
+/* ── data ───────────────────────────────────────────────────────────────────── */
+/* A "visit" is a projection of the persisted A–Q report (reg44_reports) served
+ * by /api/intelligence/reg44; actions come from /api/intelligence/reg44-actions
+ * and hang off the report. In demo the store seeds a few worked examples. */
 
 /* ── monthly visit timeline ────────────────────────────────────────────────── */
 
@@ -280,7 +282,6 @@ function AddActionDialog({
   const save = () =>
     create.mutate(
       {
-        homeId: visits.find((v) => v.id === visitId)?.homeId ?? "oak-house",
         visitId,
         title: title.trim(),
         description: description.trim(),
@@ -363,6 +364,67 @@ function AddActionDialog({
   );
 }
 
+/* ── add-visit dialog ──────────────────────────────────────────────────────── */
+
+/** Starting a visit starts the month's A–Q report — one record, which the
+ *  independent visitor completes and signs on the Reg 44 Visitor Reports page.
+ *  The visitor's name is required because it is required on the report. */
+function AddVisitDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const uid = useId();
+  const create = useCreateReg44Visit();
+  const [visitDate, setVisitDate] = useState(todayStr());
+  const [visitorName, setVisitorName] = useState("");
+  const [announced, setAnnounced] = useState<"unannounced" | "announced">("unannounced");
+
+  const save = () =>
+    create.mutate(
+      { visitDate, visitorName: visitorName.trim(), announced: announced === "announced" },
+      { onSuccess: () => { setVisitorName(""); onOpenChange(false); } },
+    );
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) create.reset(); onOpenChange(v); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Record a Regulation 44 visit</DialogTitle></DialogHeader>
+        <p className="-mt-2 text-xs text-[var(--cs-text-muted)]">
+          This starts the month&apos;s independent visitor report. The visitor completes and signs it on the Reg 44 Visitor Reports page.
+        </p>
+        <div className="space-y-4 py-2">
+          <div>
+            <label htmlFor={`${uid}-date`} className="mb-1 block text-sm font-medium">Visit date *</label>
+            <Input id={`${uid}-date`} type="date" value={visitDate} onChange={(e) => setVisitDate(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor={`${uid}-visitor`} className="mb-1 block text-sm font-medium">Independent visitor *</label>
+            <Input id={`${uid}-visitor`} value={visitorName} onChange={(e) => setVisitorName(e.target.value)} placeholder="Name" />
+          </div>
+          <div>
+            <label htmlFor={`${uid}-announced`} className="mb-1 block text-sm font-medium">Visit type</label>
+            <Select value={announced} onValueChange={(v) => setAnnounced(v as "unannounced" | "announced")}>
+              <SelectTrigger id={`${uid}-announced`}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unannounced">Unannounced</SelectItem>
+                <SelectItem value="announced">Announced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        {create.isError && (
+          <p className="text-sm text-red-600">
+            Nothing was saved — {create.error instanceof Error && create.error.message ? create.error.message : "the request failed"}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={save} disabled={!visitDate || !visitorName.trim() || create.isPending}>
+            {create.isPending ? "Saving…" : "Start the report"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg44Page() {
@@ -375,10 +437,10 @@ export default function Reg44Page() {
   // asserted without a successful read, on a statutory screen.
   const { data: apiData, isError: visitsFailed, refetch: refetchVisits } = useReg44Visits();
   const { data: actionsData, isError: actionsFailed, refetch: refetchActions } = useReg44Actions();
-  const createVisit = useCreateReg44Visit();
   const respondToAction = useRespondToReg44Action();
   const respondToVisit = useRespondToReg44Visit();
   const [addActionOpen, setAddActionOpen] = useState(false);
+  const [addVisitOpen, setAddVisitOpen] = useState(false);
 
   /* One mutation serves every visit's two response editors, so "saving" and
    * "not saved" have to be pinned to the row that is actually in flight —
@@ -397,8 +459,10 @@ export default function Reg44Page() {
         homeId: row.home_id as string,
         visitDate: row.visit_date as string,
         visitorName: row.visitor_name as string,
+        month: (row.month as string) ?? ((row.visit_date as string) ?? "").slice(0, 7),
+        locked: !!row.locked,
         reportStatus: row.status as Reg44ReportStatus,
-        summary: ((row.summary as string) ?? (row.findings as string)) ?? undefined,
+        summary: (row.summary as string) ?? undefined,
         strengths: (row.strengths as string) ?? undefined,
         concerns: (row.concerns as string) ?? undefined,
         childrenViewsSummary: (row.children_views_summary as string) ?? undefined,
@@ -468,19 +532,9 @@ export default function Reg44Page() {
             <Plus className="h-3.5 w-3.5" />
             Add Action
           </Button>
-          <Button
-            size="sm"
-            className="gap-1.5"
-            disabled={createVisit.isPending}
-            onClick={() => createVisit.mutate({
-              homeId: "oak-house",
-              visitDate: todayStr(),
-              visitorName: "Independent Visitor",
-              visitType: "announced",
-            })}
-          >
+          <Button size="sm" className="gap-1.5" onClick={() => setAddVisitOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
-            {createVisit.isPending ? "Creating..." : "Add Visit"}
+            Add Visit
           </Button>
           <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
@@ -582,7 +636,7 @@ export default function Reg44Page() {
               icon={FileText}
               title="No visits recorded"
               description="Record the first Regulation 44 independent visit for this home."
-              actions={[{ label: "Add Visit", icon: Plus }]}
+              actions={[{ label: "Add Visit", icon: Plus, onClick: () => setAddVisitOpen(true) }]}
             />
           ) : (
             <div className="space-y-4">
@@ -607,9 +661,18 @@ export default function Reg44Page() {
                               </Badge>
                             )}
                           </CardTitle>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
                             <User className="h-3.5 w-3.5" />
                             {visit.visitorName}
+                            <span aria-hidden="true">·</span>
+                            <a
+                              href={`/api/v1/reg44-report/export?month=${visit.month}&format=html`}
+                              target="_blank"
+                              rel="noopener"
+                              className="text-xs underline-offset-2 hover:underline text-[var(--cs-text-secondary)]"
+                            >
+                              {visit.locked ? "Signed A–Q report" : "Draft A–Q report"}
+                            </a>
                           </p>
                         </div>
                         <Button
@@ -914,6 +977,7 @@ export default function Reg44Page() {
       />
 
       <AddActionDialog open={addActionOpen} onOpenChange={setAddActionOpen} visits={visits} />
+      <AddVisitDialog open={addVisitOpen} onOpenChange={setAddVisitOpen} />
     </PageShell>
   );
 }
