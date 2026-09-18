@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest) {
   const gapId = body.id as string;
   if (!gapId) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.create_tasks",
     homeId: HOME_ID,
     intent: `update gap ${gapId}`,

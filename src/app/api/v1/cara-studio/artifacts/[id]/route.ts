@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ? "edit"
         : "patch";
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: permissionForAction(resolvedAction),
     homeId: artifact.home_id,
     childId: artifact.child_id,
@@ -210,7 +210,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Committed artifacts cannot be deleted" }, { status: 422 });
   }
 
-  const guard = requireCaraStudioPermission(req, null, {
+  const guard = await requireCaraStudioPermission(req, null, {
     permission: "cara.commit_to_records",
     homeId: artifact.home_id,
     childId: artifact.child_id,

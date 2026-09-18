@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "artifact_type, title and created_by are required" }, { status: 400 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId: (body.home_id as string) ?? HOME_ID,
     childId: (body.child_id as string) ?? null,

@@ -5,15 +5,18 @@
 // touching the store. UI hiding is not enough — server is the source of
 // truth for who can generate, approve and commit.
 //
-// Actor resolution (in priority order):
+// Actor resolution:
+//   ACTIVATED MODE (Supabase on): the validated session, full stop —
+//   auth.uid() → staff_members → { id, role, home }. No session → 401. A
+//   client-supplied actor_role / x-cara-actor-* is never read.
+//   DEMO MODE, in priority order:
 //   1. body.actor_role / body.actor_id           (POST/PATCH bodies)
 //   2. body.requested_by                          (legacy generate field)
 //   3. header  x-cara-actor-role / x-cara-actor-id
 //   4. env     CARA_FALLBACK_ROLE  (default: "registered_manager")
 //
-// The fallback exists to keep dev/fallback mode working without auth
-// wiring. Production should set CARA_FALLBACK_ROLE=none to refuse
-// any unauthenticated mutation.
+// The demo fallback exists to keep the demo working without auth wiring.
+// The guard is async because session resolution is; every call site awaits.
 //
 // Failed checks emit an audit event so denied attempts are recorded.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -21,6 +24,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import {
   checkCaraAccess,
   appRoleToCaraRole,
@@ -50,17 +54,23 @@ export interface CaraStudioGuardDenied {
 }
 
 /**
- * Resolve the acting user from body / header / env fallback.
+ * Resolve the acting user: the session in activated mode, body / header / env
+ * fallback in demo.
  */
-function resolveActor(req: NextRequest, body: Record<string, unknown> | null): CaraActor {
-  // SECURITY (activated mode): the acting role/id must come from a validated
-  // session — a client-supplied actor_role / x-cara-actor-role header is
-  // forgeable and must NOT be trusted. Until this guard is migrated to full
-  // async session resolution (its own PR — 138 call sites), fail CLOSED: refuse
-  // the mutation (role "none" → 401) rather than trust a forgeable role. This is
-  // a no-op in demo mode (Supabase off), where the header/body convention stands.
+async function resolveActor(req: NextRequest, body: Record<string, unknown> | null): Promise<CaraActor> {
+  // SECURITY (activated mode): the acting role/id come from the validated
+  // session only. A client-supplied actor_role / x-cara-actor-role is forgeable
+  // and is not read. No session → role "none" → 401 (fail closed, as before —
+  // the difference is that a real session now gets through).
   if (isSupabaseEnabled()) {
-    return { userId: "actor_unknown", role: "none" };
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return { userId: "actor_unknown", role: "none" };
+    return {
+      userId: identity.userId,
+      role: appRoleToCaraRole(identity.role),
+      homeId: identity.homeId ?? undefined,
+      staffSelfId: identity.userId,
+    };
   }
 
   const headerRole = req.headers.get("x-cara-actor-role");
@@ -106,12 +116,12 @@ function isCaraRole(value: string): value is CaraRole {
  * Server-side guard. Returns `{ ok: true, actor }` on success or
  * `{ ok: false, response }` (a 401/403 NextResponse) on denial.
  */
-export function requireCaraStudioPermission(
+export async function requireCaraStudioPermission(
   req: NextRequest,
   body: Record<string, unknown> | null,
   ctx: CaraStudioGuardContext,
-): CaraStudioGuardResult | CaraStudioGuardDenied {
-  const actor = resolveActor(req, body);
+): Promise<CaraStudioGuardResult | CaraStudioGuardDenied> {
+  const actor = await resolveActor(req, body);
 
   if (actor.role === "none") {
     return denied(actor, ctx, 401, "No actor role provided");

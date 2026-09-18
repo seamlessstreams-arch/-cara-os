@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const periodStart = typeof body.period_start === "string" ? body.period_start : undefined;
   const periodEnd = typeof body.period_end === "string" ? body.period_end : undefined;
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: "run reg45_evidence_build",

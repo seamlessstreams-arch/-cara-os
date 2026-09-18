@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   const homeId = existing.home_id ?? DEFAULT_HOME_ID;
   const sensitive = isSafeguardingSensitiveRecordType(existing.record_type);
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.commit_to_records",
     homeId,
     childId: existing.child_id,

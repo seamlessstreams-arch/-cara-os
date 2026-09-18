@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const lookbackDays =
     typeof body.lookback_days === "number" ? body.lookback_days : undefined;
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: "rebuild care_graph",

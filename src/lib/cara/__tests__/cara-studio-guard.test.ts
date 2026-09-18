@@ -48,9 +48,9 @@ afterEach(() => {
 });
 
 describe("Cara Studio guard — denial behaviour", () => {
-  it("requireCaraStudioPermission returns 401 when no actor role is provided", () => {
+  it("requireCaraStudioPermission returns 401 when no actor role is provided", async () => {
     const req = makeReq("http://test/x", { method: "POST" });
-    const result = requireCaraStudioPermission(req, null, {
+    const result = await requireCaraStudioPermission(req, null, {
       permission: "cara.generate_drafts",
       homeId: "home_oak",
       intent: "test",
@@ -61,9 +61,9 @@ describe("Cara Studio guard — denial behaviour", () => {
     }
   });
 
-  it("requireCaraStudioPermission returns 403 when role lacks the permission", () => {
+  it("requireCaraStudioPermission returns 403 when role lacks the permission", async () => {
     const req = makeReq("http://test/x", { method: "POST" });
-    const result = requireCaraStudioPermission(
+    const result = await requireCaraStudioPermission(
       req,
       { actor_role: "viewer", actor_id: "u1" },
       { permission: "cara.commit_to_records", homeId: "home_oak", intent: "test" },
@@ -74,9 +74,9 @@ describe("Cara Studio guard — denial behaviour", () => {
     }
   });
 
-  it("requireCaraStudioPermission accepts an authorised role", () => {
+  it("requireCaraStudioPermission accepts an authorised role", async () => {
     const req = makeReq("http://test/x", { method: "POST" });
-    const result = requireCaraStudioPermission(
+    const result = await requireCaraStudioPermission(
       req,
       { actor_role: "registered_manager", actor_id: "mgr_1" },
       { permission: "cara.commit_to_records", homeId: "home_oak", intent: "test" },
@@ -334,7 +334,7 @@ describe("Cara Studio guard — denial behaviour", () => {
     expect(res.status).toBe(403);
   });
 
-  it("respects header-based actor when body has none", () => {
+  it("respects header-based actor when body has none", async () => {
     const req = makeReq("http://test/x", {
       method: "POST",
       headers: {
@@ -342,7 +342,7 @@ describe("Cara Studio guard — denial behaviour", () => {
         "x-cara-actor-id": "mgr_h",
       },
     });
-    const result = requireCaraStudioPermission(req, null, {
+    const result = await requireCaraStudioPermission(req, null, {
       permission: "cara.commit_to_records",
       homeId: "home_oak",
       intent: "test",
@@ -353,9 +353,9 @@ describe("Cara Studio guard — denial behaviour", () => {
     }
   });
 
-  it("denies cross-home mutation", () => {
+  it("denies cross-home mutation", async () => {
     const req = makeReq("http://test/x", { method: "POST" });
-    const result = requireCaraStudioPermission(
+    const result = await requireCaraStudioPermission(
       req,
       { actor_role: "deputy_manager", actor_id: "d1" },
       { permission: "cara.approve_outputs", homeId: "home_oak", intent: "test" },
@@ -398,8 +398,8 @@ describe("Cara Studio guard — activated-mode fails closed", () => {
     else process.env.SUPABASE_SERVICE_ROLE_KEY = ORIG_KEY;
   });
 
-  it("refuses a forged body actor_role (registered_manager) → 401", () => {
-    const result = requireCaraStudioPermission(
+  it("refuses a forged body actor_role (registered_manager) → 401", async () => {
+    const result = await requireCaraStudioPermission(
       makeReq("http://test/x", { method: "POST" }),
       { actor_role: "registered_manager", actor_id: "attacker" },
       { permission: "cara.generate_drafts", homeId: "home_oak", intent: "test" },
@@ -408,8 +408,8 @@ describe("Cara Studio guard — activated-mode fails closed", () => {
     if (!result.ok) expect(result.response.status).toBe(401);
   });
 
-  it("ignores a forged x-cara-actor-role header too → 401", () => {
-    const result = requireCaraStudioPermission(
+  it("ignores a forged x-cara-actor-role header too → 401", async () => {
+    const result = await requireCaraStudioPermission(
       makeReq("http://test/x", { method: "POST", headers: { "x-cara-actor-role": "registered_manager" } }),
       null,
       { permission: "cara.commit_to_records", homeId: "home_oak", intent: "test" },
