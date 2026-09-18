@@ -1,154 +1,146 @@
-import { readJsonBody } from "@/lib/http/read-json";
-import { NextRequest, NextResponse } from "next/server";
-import { storageFailure } from "@/lib/http/storage-error";
-import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
-import { reg44Visits, nextFallbackId } from "@/lib/intelligence/fallback-store";
+// ══════════════════════════════════════════════════════════════════════════════
+// CARA — REGULATION 44 VISIT TRACKER (a projection of the persisted report)
+//
+// GET   ?homeId=&status=            → { ok, visits: Reg44VisitRow[], persisted }
+// POST  { visitDate, visitorName, announced? }   → creates the month's A–Q report
+// PATCH { id, manager_response? | ri_response? } → records the home's response
+//
+// There used to be two Regulation 44 records for one visit: the A–Q report and
+// a separate reg44_visits row this route wrote. Since the fold a visit IS its
+// report — this route reads and writes reg44_reports through reg44ReportsDb
+// and serves the tracker's row shape via projectReg44Visit. Consumers:
+// quality/reg-44 (page), manager-control-centre and provider-oversight
+// (visit_date only).
+//
+// IDENTITY. Activated mode: the home is the SESSION's home and the actor the
+// session's staff id — ?homeId= and any actorUserId in the body are ignored.
+// Demo keeps the query/body convention.
+//
+// RESPONSES. Only manager_response / ri_response are writable here (allow-
+// listed, not spread). The report belongs to the visitor; the response is the
+// home's and is recorded beside it — never as an edit, even on a signed
+// report, and always with an audit entry.
+// ══════════════════════════════════════════════════════════════════════════════
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
+import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
+import { readJsonBody } from "@/lib/http/read-json";
+import { storageFailure, type StorageQueryError } from "@/lib/http/storage-error";
+import { reg44ReportsDb, isSupabaseEnabled } from "@/lib/db";
+import { generateId } from "@/lib/utils";
+import { assembleReg44DraftForHome } from "@/lib/reg44-report-intelligence/assemble-for-home";
+import { createReg44Report, recordReg44Response, type Reg44ResponseRole } from "@/lib/reg44-report-intelligence/report-lifecycle";
+import { projectReg44Visit } from "@/lib/reg44-report-intelligence/visit-projection";
+import { REG44_REPORT_INTEL_VERSION } from "@/lib/reg44-report-intelligence/types";
+import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+
+export const dynamic = "force-dynamic";
+
+function scope(identity: { userId: string; homeId: string | null; role: string }, requested: string | null | undefined, bodyActor: string | null) {
+  if (isSupabaseEnabled()) return { homeId: identity.homeId ?? "", actor: identity.userId, role: identity.role, live: true };
+  return { homeId: requested ? String(requested) : "", actor: bodyActor || identity.userId || "staff_unknown", role: identity.role, live: false };
+}
+
+const noHome = () => NextResponse.json({ error: "Your staff record has no home assigned." }, { status: 403 });
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
-  const status = searchParams.get("status");
+  try {
+    const identity = await getRequestIdentity(request);
+    if (identity instanceof NextResponse) return identity;
+    const { searchParams } = new URL(request.url);
+    const { homeId, live } = scope(identity, searchParams.get("homeId"), null);
+    if (live && !homeId) return noHome();
+    const status = searchParams.get("status");
 
-  if (!isSupabaseEnabled()) {
-    let rows = [...reg44Visits];
-    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
-    if (status) rows = rows.filter((r) => r.status === status);
-    rows.sort((a, b) => b.visit_date.localeCompare(a.visit_date));
-    return NextResponse.json({ ok: true, visits: rows, persisted: true });
+    const reports = await reg44ReportsDb.findAll(homeId || undefined);
+    let visits = reports.map(projectReg44Visit);
+    if (status) visits = visits.filter((v) => v.status === status);
+    visits.sort((a, b) => b.visit_date.localeCompare(a.visit_date));
+    return NextResponse.json({ ok: true, visits, persisted: true });
+  } catch (err) {
+    console.error("[api/intelligence/reg44] GET error:", err);
+    return storageFailure("Regulation 44 reports", err as StorageQueryError);
   }
-
-  const supabase = createServerClient() as unknown as LooseSupabase;
-  let query = supabase.from("reg44_visits").select("*").order("visit_date", { ascending: false });
-
-  if (homeId) query = query.eq("home_id", homeId);
-  if (status) query = query.eq("status", status);
-
-  const { data, error } = await query.limit(50);
-  if (error) return storageFailure("Regulation 44 visits", error);
-
-  return NextResponse.json({ ok: true, visits: data ?? [], persisted: true });
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { homeId, visitDate, visitorName, visitType, findings, recommendations, actorUserId, actorRole } = body;
+    const identity = await getRequestIdentity(request);
+    if (identity instanceof NextResponse) return identity;
+    const jb = await readJsonBody(request); if (!jb.ok) return jb.response;
+    const body = jb.data as Record<string, unknown>;
+    const { homeId, actor, role, live } = scope(identity, body.homeId ? String(body.homeId) : null, body.actorUserId ? String(body.actorUserId) : null);
+    if (live && !homeId) return noHome();
+    if (!homeId) return NextResponse.json({ error: "homeId is required" }, { status: 400 });
 
-    if (!homeId || !visitDate || !visitorName) {
-      return NextResponse.json({ error: "homeId, visitDate, and visitorName are required" }, { status: 400 });
+    const visitDate = typeof body.visitDate === "string" ? body.visitDate.slice(0, 10) : "";
+    const visitorName = typeof body.visitorName === "string" ? body.visitorName.trim() : "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(visitDate) || !visitorName) {
+      return NextResponse.json({ error: "visitDate (YYYY-MM-DD) and visitorName are required" }, { status: 400 });
     }
+    const announced = typeof body.announced === "boolean" ? body.announced : body.visitType === "announced" ? true : body.visitType === "unannounced" ? false : undefined;
+    const month = visitDate.slice(0, 7);
 
-    if (!isSupabaseEnabled()) {
-      const now = new Date().toISOString();
-      const row = {
-        id: nextFallbackId("v"),
-        home_id: homeId as string,
-        visit_date: visitDate as string,
-        visitor_name: visitorName as string,
-        status: "scheduled",
-        summary: (findings as string) ?? null,
-        strengths: null,
-        concerns: null,
-        children_views_summary: null,
-        staff_views_summary: null,
-        manager_response: null,
-        ri_response: null,
-        created_by: (actorUserId as string) ?? null,
-        created_at: now,
-        updated_at: now,
-      };
-      reg44Visits.unshift(row);
-      return NextResponse.json({ ok: true, visit: row, persisted: true });
-    }
-
-    const supabase = createServerClient() as unknown as LooseSupabase;
-    const { data, error } = await supabase.from("reg44_visits").insert({
-      home_id: homeId,
-      visit_date: visitDate,
-      visitor_name: visitorName,
-      visit_type: visitType ?? "scheduled",
-      findings: findings ?? null,
-      recommendations: recommendations ?? null,
-      status: "draft",
-      created_by: actorUserId ?? null,
-    }).select().single();
-
-    if (error) return storageFailure("Regulation 44 visits", error);
-
-    await writeIntelligenceAudit({
-      homeId,
-      entityType: "reg44_visit",
-      entityId: data?.id,
-      action: "record_created",
-      actorUserId,
-      actorRole,
-    });
-
-    return NextResponse.json({ ok: true, visit: data, persisted: true });
-  } catch (err) {
-    console.error("[api/intelligence/reg44] POST error:", err);
-    return NextResponse.json({ error: "Failed to create Reg 44 visit" }, { status: 500 });
-  }
-}
-
-// The registered person's reply to an independent visitor's report, and the
-// responsible individual's. Reg 44(7) requires the report to go to the
-// registered person; the response is how the home shows it did something with
-// it. There was no way to record either until now — the UI offered "Add
-// Manager Response" and there was no endpoint behind it.
-//
-// Only the two response fields are writable here. A PATCH cannot be allowed to
-// rewrite the visitor's own findings: the report belongs to the visitor, and an
-// unrestricted spread would let the home edit what was said about it.
-const RESPONSE_FIELDS = ["manager_response", "ri_response"] as const;
-
-export async function PATCH(request: NextRequest) {
-  try {
-    const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
-    const { id, actorUserId, actorRole } = body as { id?: string; actorUserId?: string; actorRole?: string };
-    if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-
-    const updates: Record<string, string> = {};
-    for (const field of RESPONSE_FIELDS) {
-      const value = (body as Record<string, unknown>)[field];
-      if (typeof value === "string" && value.trim()) updates[field] = value.trim();
-    }
-    if (Object.keys(updates).length === 0) {
+    const existing = await reg44ReportsDb.findByHomeMonth(homeId, month);
+    if (existing) {
       return NextResponse.json(
-        { error: `Provide at least one of: ${RESPONSE_FIELDS.join(", ")}` },
-        { status: 400 },
+        { error: `A Regulation 44 report for ${month} already exists for this home. Open it rather than starting another.`, visit: projectReg44Visit(existing) },
+        { status: 409 },
       );
     }
 
-    if (!isSupabaseEnabled()) {
-      const idx = reg44Visits.findIndex((r) => r.id === id);
-      if (idx === -1) return NextResponse.json({ error: "not found" }, { status: 404 });
-      reg44Visits[idx] = { ...reg44Visits[idx], ...updates, updated_at: new Date().toISOString() };
-      return NextResponse.json({ ok: true, visit: reg44Visits[idx], persisted: true });
+    const { draft, sections } = await assembleReg44DraftForHome(homeId, month);
+    draft.meta = { ...draft.meta, visitDate, visitorName, visitorIndependent: true, ...(announced === undefined ? {} : { announced }) };
+    const now = new Date().toISOString();
+    const report = createReg44Report({ id: generateId("r44rep"), homeId, month, draft, sections, engineVersion: REG44_REPORT_INTEL_VERSION, createdBy: actor, at: now });
+    await reg44ReportsDb.create(report);
+
+    await writeIntelligenceAudit({ homeId, entityType: "reg44_report", entityId: report.id, action: "record_created", actorUserId: actor, actorRole: role });
+    return NextResponse.json({ ok: true, visit: projectReg44Visit(report), persisted: true }, { status: 201 });
+  } catch (err) {
+    console.error("[api/intelligence/reg44] POST error:", err);
+    return storageFailure("Regulation 44 reports", err as StorageQueryError);
+  }
+}
+
+const RESPONSE_FIELDS: Array<{ field: "manager_response" | "ri_response"; role: Reg44ResponseRole }> = [
+  { field: "manager_response", role: "manager" },
+  { field: "ri_response", role: "ri" },
+];
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const identity = await getRequestIdentity(request);
+    if (identity instanceof NextResponse) return identity;
+    const jb = await readJsonBody(request); if (!jb.ok) return jb.response;
+    const body = jb.data as Record<string, unknown>;
+    const id = typeof body.id === "string" ? body.id : "";
+    if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+    const { homeId, actor, role, live } = scope(identity, null, body.actorUserId ? String(body.actorUserId) : null);
+    if (live && !homeId) return noHome();
+
+    const responses = RESPONSE_FIELDS
+      .map((r) => ({ ...r, text: typeof body[r.field] === "string" ? (body[r.field] as string).trim() : "" }))
+      .filter((r) => r.text.length > 0);
+    if (!responses.length) {
+      return NextResponse.json({ error: `Provide at least one of: ${RESPONSE_FIELDS.map((r) => r.field).join(", ")}` }, { status: 400 });
     }
 
-    const supabase = createServerClient() as unknown as LooseSupabase;
-    const { data, error } = await supabase.from("reg44_visits").update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    }).eq("id", id).select().single();
-    if (error) return storageFailure("Regulation 44 visits", error);
+    let report = await reg44ReportsDb.findById(id);
+    if (!report || (live && report.homeId !== homeId)) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-    await writeIntelligenceAudit({
-      homeId: data?.home_id,
-      entityType: "reg44_visit",
-      entityId: id,
-      action: "record_updated",
-      actorUserId,
-      actorRole,
-    });
+    const now = new Date().toISOString();
+    for (const r of responses) {
+      const out = recordReg44Response(report, { role: r.role, text: r.text, by: actor, at: now });
+      if (!out.ok || !out.report) return NextResponse.json({ error: out.refusedReason }, { status: 422 });
+      report = out.report;
+    }
+    await reg44ReportsDb.update(id, report);
 
-    return NextResponse.json({ ok: true, visit: data, persisted: true });
+    await writeIntelligenceAudit({ homeId: report.homeId, entityType: "reg44_report", entityId: id, action: "record_updated", actorUserId: actor, actorRole: role });
+    return NextResponse.json({ ok: true, visit: projectReg44Visit(report), persisted: true });
   } catch (err) {
     console.error("[api/intelligence/reg44] PATCH error:", err);
-    return NextResponse.json({ error: "Failed to record the response" }, { status: 500 });
+    return storageFailure("Regulation 44 reports", err as StorageQueryError);
   }
 }

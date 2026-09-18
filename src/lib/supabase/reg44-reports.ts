@@ -17,7 +17,7 @@
 
 import { createServerClient } from "./server";
 import type { SB } from "./loose-client";
-import type { PersistedReg44Report, Reg44AuditEntry } from "@/lib/reg44-report-intelligence/report-lifecycle";
+import type { PersistedReg44Report, Reg44AuditEntry, Reg44Response } from "@/lib/reg44-report-intelligence/report-lifecycle";
 
 // These two tables are newer than the generated Database type; the loose
 // client is the codebase's one declared escape hatch for exactly that.
@@ -42,6 +42,12 @@ type ReportRow = {
   signed_sections: NonNullable<PersistedReg44Report["sections"]> | null;
   addenda: PersistedReg44Report["addenda"];
   engine_version: string | null;
+  manager_response: string | null;
+  manager_responded_at: string | null;
+  manager_responded_by: string | null;
+  ri_response: string | null;
+  ri_responded_at: string | null;
+  ri_responded_by: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -50,6 +56,11 @@ type ReportRow = {
 };
 
 type AuditRow = { seq: number; report_id: string; at: string; actor: string; action: Reg44AuditEntry["action"]; detail: string };
+
+function responseFrom(text: string | null, at: string | null, by: string | null): Reg44Response | null {
+  if (!text) return null;
+  return { text, at: at ?? "", by: by ?? "" };
+}
 
 function toReport(row: ReportRow, audit: AuditRow[]): PersistedReg44Report {
   return {
@@ -64,6 +75,8 @@ function toReport(row: ReportRow, audit: AuditRow[]): PersistedReg44Report {
     signedSections: row.signed_sections ?? null,
     addenda: row.addenda ?? [],
     engineVersion: row.engine_version ?? undefined,
+    managerResponse: responseFrom(row.manager_response, row.manager_responded_at, row.manager_responded_by),
+    riResponse: responseFrom(row.ri_response, row.ri_responded_at, row.ri_responded_by),
     auditTrail: audit.map((a) => ({ at: a.at, actor: a.actor, action: a.action, detail: a.detail })),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -86,6 +99,12 @@ function promoted(r: PersistedReg44Report) {
     addenda: r.addenda ?? [],
     signed_at: r.draft?.signOff?.signedAt ?? null,
     signed_by: r.draft?.signOff?.signedBy ?? null,
+    manager_response: r.managerResponse?.text ?? null,
+    manager_responded_at: r.managerResponse?.at || null,
+    manager_responded_by: r.managerResponse?.by || null,
+    ri_response: r.riResponse?.text ?? null,
+    ri_responded_at: r.riResponse?.at || null,
+    ri_responded_by: r.riResponse?.by || null,
     updated_at: r.updatedAt,
   };
 }
