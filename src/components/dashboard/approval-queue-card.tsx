@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { formatRate } from "@/lib/metrics/rate";
 import React, { useEffect, useState } from "react";
 import {
@@ -151,10 +153,10 @@ export function ApprovalQueueCard({ homeId }: { homeId?: string }) {
               <PendingRow key={item.id} item={item} />
             ))}
             {data.pendingApprovalCount > 4 && (
-              <button className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+              <Link href="/manager-inbox" className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
                 View all {data.pendingApprovalCount} items
                 <ArrowRight className="h-3 w-3" />
-              </button>
+              </Link>
             )}
           </div>
         </div>

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -106,10 +107,10 @@ export default function LearningStudioPage() {
                 Generate training, quizzes, flashcards, role-play scenarios, reference cards, and 15+ other resource types — all built from practice evidence and shaped by therapeutic frameworks.
               </p>
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors">
+            <Link href="/cara-studio?type=staff_training" className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors">
               <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
               Generate New
-            </button>
+            </Link>
           </div>
         </div>
 

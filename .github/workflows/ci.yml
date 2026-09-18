@@ -162,6 +162,8 @@ jobs:
 
       - name: DAL-adoption guard (routes read/write via dal; 8 structural exclusions pinned)
         run: node scripts/check-dal-adoption.js
+      - name: UI-wiring guard (every internal link has a page; every client API call has a route + method)
+        run: node scripts/check-ui-wiring.js
 
       - name: use-client/server guard (no "use client" file imports server-only Supabase code)
         run: node scripts/check-use-client-server.js

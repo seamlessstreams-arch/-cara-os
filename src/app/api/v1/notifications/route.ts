@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// API: GET/PATCH /api/v1/notifications
+// API: GET/POST/PATCH /api/v1/notifications
 //
 // Dedicated route, taking precedence over the generic catch-all
 // (`/api/v1/[...slug]`), which could not serve this collection correctly:
@@ -75,6 +75,47 @@ export async function PATCH(req: NextRequest) {
     if (!record) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     return NextResponse.json({ data: record });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// ── POST /api/v1/notifications ───────────────────────────────────────────────
+// Body: { recipient_id, title, body?, type?, priority?, entity_type?, entity_id? }
+// Creates one notification for one recipient. The rota's "offer to bank staff"
+// posts here (one per bank member). When this dedicated route replaced the
+// catch-all for GET/PATCH it did not carry POST, so that button 405'd — the
+// API-contract audit caught it. Session-authenticated.
+export async function POST(req: NextRequest) {
+  try {
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+
+    const jb = await readJsonBody(req);
+    if (!jb.ok) return jb.response;
+    const b = jb.data as Record<string, unknown>;
+    const recipientId = typeof b.recipient_id === "string" ? b.recipient_id : "";
+    const title = typeof b.title === "string" ? b.title.trim() : "";
+    if (!recipientId || !title) {
+      return NextResponse.json({ error: "recipient_id and title are required" }, { status: 400 });
+    }
+    const str = (k: string, d: string | null = null) => (typeof b[k] === "string" ? (b[k] as string) : d);
+
+    const created = await dal.notifications.create({
+      recipient_id: recipientId,
+      title,
+      body: str("body", "") ?? "",
+      type: str("type", "system") ?? "system",
+      priority: str("priority", "normal") ?? "normal",
+      entity_type: str("entity_type"),
+      entity_id: str("entity_id"),
+      action_url: str("action_url"),
+      read: false,
+      read_at: null,
+    } as Parameters<typeof dal.notifications.create>[0]);
+
+    return NextResponse.json({ data: created }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });

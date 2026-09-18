@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,15 @@ import { seedDay } from "@/lib/seed-date";
 // ── Session type groups ────────────────────────────────────────────────────
 
 interface SessionTypeGroup { group: string; icon: React.ElementType; types: { type: string; label: string }[] }
+
+/** Session types that are Cara Studio artefact types open as themselves; every
+ *  other session is a key-work session on that theme. Either way the button
+ *  lands in the real generator (AI gateway) rather than doing nothing. */
+const STUDIO_TYPES = new Set(["keywork_session", "direct_work_session", "child_friendly_worksheet", "child_friendly_explanation", "reflective_practice_prompt", "scenario_simulation"]);
+function studioHref(type: string, label: string): string {
+  const t = STUDIO_TYPES.has(type) ? type : "keywork_session";
+  return `/cara-studio?type=${encodeURIComponent(t)}&context=${encodeURIComponent(`Session type: ${label}`)}`;
+}
 
 const SESSION_GROUPS: SessionTypeGroup[] = [
   { group: "Therapeutic Work", icon: Heart, types: [
@@ -179,13 +189,13 @@ export default function SessionBuilderPage() {
                     <div className="px-4 pb-3 border-t border-[var(--cs-border)]">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
                         {group.types.map((t) => (
-                          <button key={t.type} className="rounded-lg border border-[var(--cs-border)] p-3 text-left hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)] transition-all group">
+                          <Link key={t.type} href={studioHref(t.type, t.label)} className="block rounded-lg border border-[var(--cs-border)] p-3 text-left hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)] transition-all group">
                             <span className="text-xs font-medium text-[var(--cs-navy)] group-hover:text-[var(--cs-navy)]">{t.label}</span>
                             <div className="flex items-center gap-1 mt-1">
                               <Sparkles className="h-3 w-3 text-[var(--cs-cara-gold)]" />
                               <span className="text-[10px] text-[var(--cs-text-muted)]">Generate</span>
                             </div>
-                          </button>
+                          </Link>
                         ))}
                       </div>
                     </div>

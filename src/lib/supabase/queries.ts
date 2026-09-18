@@ -1058,6 +1058,21 @@ export async function createLeaveRequest(sb: SB, data: Record<string, unknown>) 
   return unwrap(await sb.from("leave_requests").insert(pickColumns<Ins<"leave_requests">>(data, LEAVE_REQUEST_COLS)).select().single());
 }
 
+const LEAVE_REQUEST_UPDATE_COLS = [
+  "status", "approved_by", "approved_at", "return_to_work_required", "return_to_work_completed",
+  "return_to_work_date", "return_to_work_by", "return_to_work_notes", "reason", "start_date", "end_date", "total_days",
+] as const;
+
+/** Approve / decline / record the return-to-work interview. home_id and staff_id are not writable here. */
+export async function updateLeaveRequest(sb: SB, homeId: string, id: string, data: Record<string, unknown>) {
+  return unwrap(
+    await sb.from("leave_requests")
+      .update(pickColumns<Upd<"leave_requests">>(data, LEAVE_REQUEST_UPDATE_COLS))
+      .eq("id", id).eq("home_id", homeId)
+      .select().single(),
+  );
+}
+
 const BUILDING_COLS = [
   "home_id", "name", "type", "address", "areas", "gas_cert_expiry", "electrical_cert_expiry",
   "fire_risk_assessment_date", "epc_rating", "last_full_inspection", "next_inspection_due", "status",
