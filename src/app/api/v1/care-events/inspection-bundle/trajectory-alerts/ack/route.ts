@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "note is required" }, { status: 400 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId,
     intent: "acknowledge trajectory alert",

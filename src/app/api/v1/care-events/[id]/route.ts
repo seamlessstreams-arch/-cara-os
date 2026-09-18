@@ -5,7 +5,7 @@ import { processCareEvent, retryFailedRoutes, persistProcessorState } from "@/li
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
 import { proposeRecordsFromCareEvent } from "@/lib/cara/cara-care-event-bridge";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
-import { getUserIdFromRequest, requirePermissionAsync } from "@/lib/auth-guard";
+import { getRequestIdentity, requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type {
   SubmitCareEventPayload,
@@ -119,7 +119,9 @@ export async function PATCH(
     return NextResponse.json({ error: "action is required" }, { status: 400 });
   }
 
-  const actorId = getUserIdFromRequest(req);
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const actorId = identity.userId;
 
   // Manager-only actions require APPROVE_FORMS permission
   if (["verify", "return", "lock"].includes(action)) {

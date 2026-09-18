@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "list inspection bundles",
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   try { body = __parsed.data; } catch { /* empty allowed */ }
   const homeId = body.home_id ?? DEFAULT_HOME_ID;
 
-  const guard = requireCaraStudioPermission(
+  const guard = await requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {

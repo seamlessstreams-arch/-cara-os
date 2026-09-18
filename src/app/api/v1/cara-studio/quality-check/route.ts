@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId: artifact.home_id,
     childId: artifact.child_id,

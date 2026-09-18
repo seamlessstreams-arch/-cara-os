@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   const periodEnd = typeof body.period_end === "string" ? body.period_end : undefined;
   const title = typeof body.title === "string" ? body.title : undefined;
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: "build reg45_report_draft",
@@ -91,7 +91,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
     const sensitive = body.status === "approved" || body.status === "locked";
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: sensitive ? "cara.approve_outputs" : "cara.rewrite",
       homeId: existing.home_id,
       intent: `set reg45_report status ${body.status}`,
@@ -109,7 +109,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   // Text edit path
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.rewrite",
     homeId: existing.home_id,
     intent: "edit reg45_report",

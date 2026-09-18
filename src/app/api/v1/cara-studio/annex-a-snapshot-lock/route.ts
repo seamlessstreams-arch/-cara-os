@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Snapshot already locked" }, { status: 409 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: "lock annex_a_snapshot",

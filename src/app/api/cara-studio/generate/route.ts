@@ -9,7 +9,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { generate } from "@/lib/cara-studio/generator";
 import { generateRequestSchema } from "@/lib/cara-studio/schemas";
-import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
 import { TONES, GENERATION_TYPES } from "@/lib/cara-studio/types";
@@ -70,11 +70,16 @@ function resolveGenerationType(raw: unknown): string {
 export async function POST(req: NextRequest) {
   try {
     const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const rawBody = __jb0.data;
-    const userId = getUserIdFromRequest(req);
-    const role = getUserRoleFromRequest(req);
+    // Identity from the validated session in activated mode (401 without one);
+    // the x-user-id header is honoured only in demo. A forged header must not
+    // be able to approve, commit or generate under someone else's name.
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const { userId, role } = identity;
     void role;
     const organisationId = process.env.SUPABASE_ORG_ID ?? "org_default";
-    const homeId = process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
+    // The session's home in activated mode; the demo default otherwise.
+    const homeId = identity.homeId ?? process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 
     // ── Normalise the Studio page's field names into the schema shape ─────────
     // The page sends artifact_type / child_id / additional_context and omits

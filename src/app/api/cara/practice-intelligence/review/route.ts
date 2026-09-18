@@ -8,16 +8,16 @@
 // Role-gated via cara.approve_outputs (RM / RI / deputy). Rationale is mandatory.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
-import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import { validateReview, buildFlagResolution, buildAssessmentDecision, buildThresholdDecision, type ReviewInput } from "@/lib/cara-practice/cara-review";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
   let body: ReviewInput;
   try {
     const __parsed = await readJsonBody(req);
@@ -28,8 +28,10 @@ export async function PATCH(req: Request) {
   }
 
   // Role gate — only managers/RI/deputy may approve/close Cara output.
-  const appRole = getUserRoleFromRequest(req);
-  const userId = getUserIdFromRequest(req);
+  // Session identity in activated mode (401 without one); header only in demo.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { userId, role: appRole } = identity;
   const caraRole = appRoleToCaraRole(appRole);
   const access = checkCaraAccess({ userId, role: caraRole, staffSelfId: userId }, { permission: "cara.approve_outputs" });
   if (!access.allowed) {

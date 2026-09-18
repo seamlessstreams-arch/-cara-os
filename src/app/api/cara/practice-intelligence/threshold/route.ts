@@ -6,16 +6,16 @@
 // Role-gated via cara.analyse_risk. Persists a consultation record (audit trail).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { analyzePractice } from "@/lib/cara-practice/cara-practice-engine";
 import { db } from "@/lib/db/store";
-import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: { childId?: string; concern?: string; context?: Record<string, unknown>; homeId?: string; tenantId?: string; persist?: boolean };
   try {
     const __parsed = await readJsonBody(req);
@@ -28,8 +28,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "`concern` is required" }, { status: 400 });
   }
 
-  const appRole = getUserRoleFromRequest(req);
-  const userId = getUserIdFromRequest(req);
+  // Session identity in activated mode (401 without one); header only in demo.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { userId, role: appRole } = identity;
+  // Activated mode: the home is the session's, whatever the body says.
+  if (identity.homeId) body.homeId = identity.homeId;
   const caraRole = appRoleToCaraRole(appRole);
   const decision = checkCaraAccess(
     { userId, role: caraRole, homeId: body.homeId, staffSelfId: userId },

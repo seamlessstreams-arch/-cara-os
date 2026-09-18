@@ -27,7 +27,7 @@ export async function POST(
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { /* allow empty body */ }
 
-  const guard = requireCaraStudioPermission(
+  const guard = await requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {

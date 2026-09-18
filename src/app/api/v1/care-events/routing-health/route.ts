@@ -25,7 +25,7 @@ const DEFAULT_HOME_ID = "home_oak";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "view routing health",
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const ev = db.careEvents.findById(careEventId);
     if (!ev) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.commit_to_records",
       homeId: ev.home_id,
       childId: ev.child_id,
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.commit_to_records",
       homeId: job.home_id,
       intent: `retry job:${job.job_type}`,
