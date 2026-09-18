@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type {
   FrameworkMapping,
   RegulatoryReference,
@@ -252,7 +253,7 @@ export async function listFrameworkMappings(opts?: {
   const sb = createServerClient();
   const hid = opts?.homeId ?? homeId();
 
-  if (!sb) return getDemoMappings(hid);
+  if (!sb) return isLiveTenant() ? [] : getDemoMappings(hid);
 
   let query = sb.from("framework_mappings")
     .select("*")
@@ -265,7 +266,7 @@ export async function listFrameworkMappings(opts?: {
   if (opts?.artifactType) query = query.eq("artifact_type", opts.artifactType);
 
   const { data, error } = await query;
-  if (error) return getDemoMappings(hid);
+  if (error) return isLiveTenant() ? [] : getDemoMappings(hid);
   return (data ?? []) as FrameworkMapping[];
 }
 
@@ -284,7 +285,7 @@ export async function getRegulationCoverage(hId?: string): Promise<RegulationCov
   const sb = createServerClient();
   const hid = hId ?? homeId();
 
-  if (!sb) return getDemoCoverage();
+  if (!sb) return isLiveTenant() ? [] : getDemoCoverage();
 
   const { data: mappings } = await sb.from("framework_mappings")
     .select("regulation, sccif_theme, created_at")

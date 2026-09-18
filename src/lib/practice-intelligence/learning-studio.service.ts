@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type { Database } from "@/lib/supabase/types";
 
 // Zero code-vs-DDL drift (promotion census): the domain shape IS the column
@@ -235,7 +236,7 @@ export async function listLearningResources(opts?: {
   const sb = createServerClient();
   const hid = opts?.homeId ?? homeId();
 
-  if (!sb) return getDemoResources(hid);
+  if (!sb) return isLiveTenant() ? [] : getDemoResources(hid);
 
   let query = sb.from("learning_resources")
     .select("*")
@@ -248,7 +249,7 @@ export async function listLearningResources(opts?: {
   if (opts?.status) query = query.eq("status", opts.status);
 
   const { data, error } = await query;
-  if (error) return getDemoResources(hid);
+  if (error) return isLiveTenant() ? [] : getDemoResources(hid);
   return (data ?? []).map(mapDbToResource);
 }
 
