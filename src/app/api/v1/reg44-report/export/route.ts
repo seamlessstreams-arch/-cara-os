@@ -8,12 +8,16 @@
 //
 // Assembles the A–Q report from live evidence (reusing the pipeline) and merges
 // any persisted sign-off / addenda, then renders the requested format.
+//
+// PERSISTENCE + IDENTITY: the persisted report comes from reg44ReportsDb
+// (Supabase in activated mode), and in activated mode the home is the
+// session's home, never ?home_id= — same rules as the sibling route. A signed
+// report exports its frozen sections, not a fresh assembly.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { db } from "@/lib/db/store";
-import { dal } from "@/lib/db";
+import { dal, reg44ReportsDb, isSupabaseEnabled } from "@/lib/db";
 import { localMonthKey, todayStr } from "@/lib/utils";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
@@ -37,12 +41,16 @@ export async function GET(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const [buildingChecksList, ypFeedbackList] = await Promise.all([
+    const [buildingChecksList, ypFeedbackList, home] = await Promise.all([
       dal.buildingChecks.findAll(),
       dal.ypFeedback.findAll(),
+      dal.home.get().catch(() => null),
     ]);
     const { searchParams } = new URL(req.url);
-    const homeId = searchParams.get("home_id") || "home_oak";
+    const live = isSupabaseEnabled();
+    const homeId = live ? (identity.homeId ?? "") : (searchParams.get("home_id") || "home_oak");
+    if (live && !homeId) return NextResponse.json({ error: "Your staff record has no home assigned." }, { status: 403 });
+    const homeName = (home as { name?: string } | null)?.name || "This home";
     const format = (searchParams.get("format") || "html").toLowerCase();
     const win = monthWindow(searchParams.get("month") || "");
     const asOf = todayStr();
@@ -76,13 +84,13 @@ export async function GET(req: NextRequest) {
       .map((k) => ({ ref: childName.get(String(k.child_id)) || "Child", summary: String(k.child_voice).trim().slice(0, 160) }));
 
     const assembly = assembleReg44ReportDraft({
-      homeId, homeName: "Oak House", month: win.month, asOf, qs: assessment, headline: pack.headline,
+      homeId, homeName, month: win.month, asOf, qs: assessment, headline: pack.headline,
       childVoiceEntries, previousRecommendations: [], reg45EvidenceCount: pack.headline.verified_reg45_evidence ?? 0,
       buildingSafety: { sectionContent: bs.sectionContent, summary: bs.summary },
     });
 
-    const persisted = db.reg44Reports.findByHomeMonth(homeId, win.month);
-    const model = buildReg44ExportModel(assembly, { homeName: "Oak House", ofstedUrn: "", generatedAt: new Date().toISOString(), persisted });
+    const persisted = await reg44ReportsDb.findByHomeMonth(homeId, win.month);
+    const model = buildReg44ExportModel(assembly, { homeName, ofstedUrn: "", generatedAt: new Date().toISOString(), persisted });
 
     const base = `reg44-report-${homeId}-${win.month}`;
     if (format === "docx") {

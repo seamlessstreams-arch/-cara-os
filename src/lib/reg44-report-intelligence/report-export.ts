@@ -27,7 +27,13 @@ export function buildReg44ExportModel(
   opts: { homeName: string; ofstedUrn?: string; generatedAt: string; visitorName?: string; visitDate?: string; persisted?: PersistedReg44Report | null },
 ): Reg44ExportModel {
   const p = opts.persisted ?? null;
-  const reg45Section = assembly.sections.find((s) => s.key === "N");
+  // The words that persist win over the words we could regenerate. A signed
+  // report exports exactly the sections frozen at sign-off; an unsigned one
+  // exports its stored (possibly visitor-edited) sections. Only a report with
+  // nothing stored — pre-dating persistence — falls back to live assembly.
+  const stored = p?.locked ? (p.signedSections ?? p.sections) : p?.sections;
+  const sections = stored && stored.length ? stored : assembly.sections;
+  const reg45Section = sections.find((s) => s.key === "N");
   return {
     header: {
       homeName: opts.homeName,
@@ -37,7 +43,7 @@ export function buildReg44ExportModel(
       visitorName: opts.visitorName ?? p?.draft.meta.visitorName ?? "",
       visitDate: opts.visitDate ?? p?.draft.meta.visitDate ?? "",
     },
-    sections: assembly.sections.map((s) => ({ key: s.key, label: s.label, content: s.content })),
+    sections: sections.map((s) => ({ key: s.key, label: s.label, content: s.content })),
     signOff: {
       signed: !!p && p.status !== "draft" && p.locked,
       signedBy: p?.draft.signOff.signedBy ?? null,
