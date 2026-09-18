@@ -729,6 +729,14 @@ export const dal = {
       if (c) return sq.createLeaveRequest(c, { ...data, home_id: homeId() });
       return db.leave.create(data);
     },
+    // Approve / decline / return-to-work. Until this existed the catch-all
+    // answered 405 to every leave PATCH on live, and the page faked approval
+    // with a local override that vanished on refresh.
+    async update(id: string, data: Partial<LeaveRequest>) {
+      const c = sb();
+      if (c) return asApp<LeaveRequest>(await sq.updateLeaveRequest(c, homeId(), id, data as Record<string, unknown>));
+      return db.leave.update(id, data);
+    },
   },
 
   // ── Training ──────────────────────────────────────────────────────────────

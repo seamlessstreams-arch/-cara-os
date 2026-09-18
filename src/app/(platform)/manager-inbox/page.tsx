@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — MANAGER ACTION INBOX (detail page)
 // One prioritised command centre for managers, deputies, team leaders and the RI.
@@ -135,8 +137,11 @@ export default function ManagerInboxPage() {
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 pt-1">
+                      {/* Each action is taken on the care event itself (verify / return /
+                          lock live on that page), so the chip opens the record with the
+                          intended action pre-selected rather than doing nothing here. */}
                       {it.available_actions.map((a, i) => (
-                        <button key={i} className={cn("text-[10px] rounded-md px-2 py-1 border capitalize", i === 0 ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]" : "text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:bg-[var(--cs-bg)]")}>{a.replace(/_/g, " ")}</button>
+                        <Link key={i} href={`/care-events/${encodeURIComponent(it.event_id)}?action=${encodeURIComponent(a)}`} className={cn("text-[10px] rounded-md px-2 py-1 border capitalize", i === 0 ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]" : "text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:bg-[var(--cs-bg)]")}>{a.replace(/_/g, " ")}</Link>
                       ))}
                     </div>
                   </CardContent>

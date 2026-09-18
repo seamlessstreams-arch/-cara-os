@@ -12537,6 +12537,12 @@ export const db = {
       store.leaveRequests.push(req);
       return req;
     },
+    update: (id: string, data: Partial<LeaveRequest>): LeaveRequest | null => {
+      const idx = store.leaveRequests.findIndex((l) => l.id === id);
+      if (idx < 0) return null;
+      store.leaveRequests[idx] = { ...store.leaveRequests[idx], ...data, id };
+      return store.leaveRequests[idx];
+    },
   },
 
   // ── Shifts ────────────────────────────────────────────────────────────────

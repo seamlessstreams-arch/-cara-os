@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
 interface HomeProfile {
@@ -919,10 +921,10 @@ function CertificatesTab({ data }: { data: BuildingsData }) {
                       size="sm"
                       variant="outline"
                       className="h-7 text-xs shrink-0"
-                      disabled
+                      asChild
                       title="Certificate uploads are managed in the Documents section."
                     >
-                      <Upload className="h-3 w-3 mr-1" />Upload Certificate
+                      <Link href="/documents"><Upload className="h-3 w-3 mr-1" />Upload Certificate</Link>
                     </Button>
                   </div>
                 </div>
