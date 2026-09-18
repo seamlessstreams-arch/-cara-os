@@ -31,6 +31,7 @@ import {
   sbChildDailySummaries,
   sbNotifications,
 } from "@/lib/supabase/care-events";
+import { sbReg44Reports } from "@/lib/supabase/reg44-reports";
 import { db as memDb } from "./store";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 export { isSupabaseEnabled };
@@ -170,3 +171,21 @@ export function getHomeId(): string {
 export function getSupabaseHomeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
+
+/**
+ * Persisted Regulation 44 reports — switches between Supabase
+ * (reg44_reports + append-only reg44_report_audit) and the in-memory store.
+ *
+ * The in-memory store is emptied on a live tenant and the container restarts
+ * on every deploy, so before this existed a signed, locked Reg 44 report
+ * survived until the next merge to main. All methods are async.
+ */
+export const reg44ReportsDb = isSupabaseEnabled()
+  ? sbReg44Reports
+  : {
+      findAll: async (homeId?: string) => memDb.reg44Reports.findAll(homeId),
+      findById: async (id: string) => memDb.reg44Reports.findById(id),
+      findByHomeMonth: async (homeId: string, month: string) => memDb.reg44Reports.findByHomeMonth(homeId, month),
+      create: async (r: Parameters<typeof memDb.reg44Reports.create>[0]) => memDb.reg44Reports.create(r),
+      update: async (id: string, r: Parameters<typeof memDb.reg44Reports.update>[1]) => memDb.reg44Reports.update(id, r),
+    };
