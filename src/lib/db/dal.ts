@@ -19,6 +19,8 @@ import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import * as sq from "@/lib/supabase/queries";
+import * as sqCalendar from "@/lib/supabase/calendar-persist";
+import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
@@ -1247,6 +1249,32 @@ export const dal = {
   // lands for one of these, wire the query in queries.ts and swap the
   // `if (sb())` branch here — routes stay unchanged.
   // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Calendar events ───────────────────────────────────────────────────────
+  // Events have written through to Supabase since migration 416, but there was
+  // no read accessor at all — every calendar surface read the in-memory store,
+  // which is emptied on a live tenant, so a real home's events were invisible.
+  calendarEvents: {
+    async findAll(): Promise<CalendarEvent[]> {
+      if (sb()) return sqCalendar.getCalendarEvents();
+      return db.calendarEvents.findAll();
+    },
+    async findById(id: string): Promise<CalendarEvent | null> {
+      if (sb()) return (await sqCalendar.getCalendarEvents()).find((e) => e.id === id) ?? null;
+      return db.calendarEvents.findById(id) ?? null;
+    },
+    /** Patch + write through. The store copy is kept in step for demo parity. */
+    async update(id: string, patch: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
+      if (sb()) {
+        const current = (await sqCalendar.getCalendarEvents()).find((e) => e.id === id);
+        if (!current) return null;
+        const next = { ...current, ...patch, updated_at: new Date().toISOString() };
+        await sqCalendar.persistCalendarEvent(next);
+        return next;
+      }
+      return db.calendarEvents.update(id, patch) ?? null;
+    },
+  },
 
   keyWorkingSessions: {
     async findAll(filters?: { child_id?: string; staff_id?: string }): Promise<KeyWorkingSession[]> {
