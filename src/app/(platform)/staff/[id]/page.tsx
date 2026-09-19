@@ -49,6 +49,7 @@ function useStaffMember(id: string) {
   });
 }
 import { StaffComplianceCard } from "@/components/staff/staff-compliance-card";
+import { AccountAccessCard } from "@/components/staff/account-access-card";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -396,6 +397,17 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
         {/* ── Overview tab ────────────────────────────────────────────────── */}
         {tab === "overview" && (
           <div className="grid gap-4 sm:grid-cols-2">
+            {/* Can this person actually sign in? Until the login-provisioning
+                endpoint existed there was no way to tell from the app, and no
+                way to change it without hand-written SQL. */}
+            <AccountAccessCard
+              staffId={id}
+              staffName={staff.full_name}
+              authUserId={(staff as { auth_user_id?: string | null }).auth_user_id ?? null}
+              email={staff.email ?? null}
+              onLinked={() => query.refetch()}
+            />
+
             {/* Employment details */}
             <Card>
               <CardHeader className="pb-2">

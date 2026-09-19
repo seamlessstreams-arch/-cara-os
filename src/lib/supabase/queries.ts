@@ -1028,6 +1028,29 @@ const STAFF_MEMBER_COLS = [
   // creates the auth user in the first place, never carried in from a form.
 ] as const;
 
+/**
+ * Bind a staff record to a Supabase auth user — the ONLY place auth_user_id is
+ * written. It is deliberately absent from STAFF_MEMBER_COLS so that no request
+ * body can reach it; a login is granted by the server that just created the
+ * auth user, never by a form. Also records the email the login uses, so the
+ * staff record and the auth account agree about who this is.
+ */
+export async function linkStaffAuthUser(
+  sb: SB,
+  staffId: string,
+  authUserId: string,
+  email: string,
+) {
+  return unwrap(
+    await sb
+      .from("staff_members")
+      .update({ auth_user_id: authUserId, email } as never)
+      .eq("id", staffId)
+      .select()
+      .single(),
+  );
+}
+
 export async function createStaffMember(sb: SB, data: Record<string, unknown>) {
   const row = pickColumns<Ins<"staff_members">>(data, STAFF_MEMBER_COLS);
   // NOT NULL columns get working defaults so a minimal form can create a seat.
