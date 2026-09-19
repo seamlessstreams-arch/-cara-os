@@ -6,7 +6,7 @@
 // In production, replace the localStorage stub with NextAuth / Clerk session.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useClientValue } from "@/hooks/use-client-value";
@@ -43,20 +43,27 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import { toAppRole, type AppRole } from "@/lib/permissions";
 import type { StaffMember } from "@/types";
-import { DEMO_DEFAULT_USER_ID } from "@/lib/auth/current-user";
+import { DEMO_DEFAULT_USER_ID, setSessionUserId as publishSessionUserId } from "@/lib/auth/current-user";
+import { isLiveTenant } from "@/lib/db/live-mode";
 
 const SESSION_KEY = "cs_user_id";
 const DEFAULT_USER_ID = DEMO_DEFAULT_USER_ID;
 
 export interface AuthContextValue {
-  /** The currently logged-in staff member. Null only during initial hydration. */
+  /** The signed-in staff member. Null during hydration, and on a live tenant
+   *  whenever the session cannot be resolved to a staff_members row — see
+   *  `identityUnresolved`. NEVER a stand-in for someone else. */
   currentUser: StaffMember | null;
-  /** Derived AppRole from currentUser.role. Defaults to 'residential_care_worker' if user not found. */
+  /** Derived AppRole from currentUser.role. Falls back to the LEAST privileged
+   *  role, never to whichever staff member happened to load first. */
   currentRole: AppRole;
-  /** False only for the brief window before localStorage is read on the client. */
+  /** False only for the brief window before the client has read its identity. */
   isLoaded: boolean;
-  /** Switch the active user by ID (demo / dev mode only). */
+  /** Switch the active user by ID (demo / dev mode only — a no-op on live). */
   setCurrentUserId: (id: string) => void;
+  /** Live tenant only: loaded, but the session names no staff record. The app
+   *  must not guess who this is; surfaces should say so rather than render. */
+  identityUnresolved: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -64,35 +71,79 @@ const AuthContext = createContext<AuthContextValue>({
   currentRole: "residential_care_worker",
   isLoaded: false,
   setCurrentUserId: () => {},
+  identityUnresolved: false,
 });
 
+/** The session identity, from the one endpoint that can read it. Demo returns
+ *  the header identity, so this is safe to call in both modes. */
+function useSessionIdentity() {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: () => api.get<{ data: { userId: string; role: string; homeId: string | null; source: string } }>("/me"),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const live = isLiveTenant();
+
   // The persisted user is an external store (localStorage), not React state:
   // "" on the server and during hydration, the stored id after. In-session
-  // switches land in sessionUserId, so the derivation below prefers them.
+  // switches land in switchedUserId, so the derivation below prefers them.
+  // DEMO ONLY — on a live tenant the session decides and this is ignored.
   const storedUserId = useClientValue(
     () => {
       try { return localStorage.getItem(SESSION_KEY) ?? ""; } catch { return ""; }
     },
     "",
   );
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
-  const userId = sessionUserId ?? (storedUserId || DEFAULT_USER_ID);
-  const isLoaded = useMounted();
+  const [switchedUserId, setSwitchedUserId] = useState<string | null>(null);
+
+  const meQuery = useSessionIdentity();
+  const sessionUserId = meQuery.data?.data?.userId ?? null;
+
+  // Live: the session, full stop. Demo: the switcher, then the default.
+  const userId = live
+    ? sessionUserId
+    : (switchedUserId ?? (storedUserId || DEFAULT_USER_ID));
+
+  // Publish it to the synchronous helper the ~30 non-React call sites use, so
+  // their `x-user-id` headers carry the real actor instead of the demo id.
+  useEffect(() => {
+    publishSessionUserId(live ? sessionUserId : null);
+  }, [live, sessionUserId]);
+
+  const mounted = useMounted();
+  const isLoaded = live ? mounted && !meQuery.isPending : mounted;
 
   const staffQuery = useStaff();
   const allStaff = staffQuery.data?.data ?? [];
+
+  // No allStaff[0] fallback. It existed so the demo always had somebody to
+  // show, but on a live tenant it silently presented EVERY signed-in user as
+  // the first staff member by surname — and derived their permissions from
+  // that record. An identity we cannot resolve is null, and says so.
   const currentUser: StaffMember | null =
-    allStaff.find((s) => s.id === userId) ?? allStaff[0] ?? null;
+    (userId ? allStaff.find((s) => s.id === userId) : undefined)
+    ?? (live ? null : allStaff[0] ?? null);
+
+  // Least privilege when unresolved, rather than inheriting a stranger's role.
   const currentRole: AppRole = toAppRole(currentUser?.role ?? "residential_care_worker");
 
+  const identityUnresolved =
+    live && isLoaded && !staffQuery.isPending && currentUser === null;
+
   function setCurrentUserId(id: string) {
-    setSessionUserId(id);
+    // Demo affordance only. On a live tenant identity comes from the session;
+    // letting the client pick would be the very thing this fix removes.
+    if (live) return;
+    setSwitchedUserId(id);
     try { localStorage.setItem(SESSION_KEY, id); } catch { /* ignore */ }
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, currentRole, isLoaded, setCurrentUserId }}>
+    <AuthContext.Provider value={{ currentUser, currentRole, isLoaded, setCurrentUserId, identityUnresolved }}>
       {children}
     </AuthContext.Provider>
   );
