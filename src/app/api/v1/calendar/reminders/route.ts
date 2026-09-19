@@ -9,6 +9,6 @@ import { runDueReminders } from "@/lib/calendar/calendar-service";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  const result = runDueReminders(new Date().toISOString());
+  const result = await runDueReminders(new Date().toISOString());
   return NextResponse.json({ data: result });
 }

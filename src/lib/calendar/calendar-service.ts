@@ -66,10 +66,37 @@ export async function getCalendarFeed(opts: {
   to?: string;
   sources?: CalendarSource[];
 }) {
-  // Keywork consolidation: sessions come through the dal projection (live =
-  // cs_key_work_sessions; demo = the seeded store) — the one collection this
-  // feed no longer reads straight off the store.
-  return buildFeed(opts, await dal.keyWorkingSessions.findAll());
+  // Sources that have a real table come through the dal (live = Supabase;
+  // demo = the seeded store). Events were the sharp one: they have written
+  // through since migration 416 but nothing read them back, so a live tenant's
+  // calendar was blank while its rows sat in the table. The remaining sources
+  // (appointments, LAC reviews, family time, interviews, training, shifts,
+  // circles) have no live table yet and stay store-fed — honestly empty on a
+  // live tenant rather than wrong.
+  const [keyWorking, events, tasks, supervisions] = await Promise.all([
+    dal.keyWorkingSessions.findAll(),
+    dal.calendarEvents.findAll(),
+    dal.tasks.findAll(),
+    dal.supervisions.findAll(),
+  ]);
+  return buildFeed(opts, keyWorking, {
+    events,
+    tasks: tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      due_date: t.due_date ?? null,
+      status: t.status,
+      linked_child_id: t.linked_child_id ?? null,
+      assigned_to: t.assigned_to ?? null,
+    })),
+    supervisions: supervisions.map((s) => ({
+      id: s.id,
+      staff_id: s.staff_id,
+      scheduled_date: s.scheduled_date,
+      type: s.type,
+      status: s.status,
+    })),
+  });
 }
 
 /** Store-only variant for the documented full-store boundary (ask-cara's
@@ -82,18 +109,25 @@ export function getCalendarFeedFromStore(opts: {
   return buildFeed(opts, getStore().keyWorkingSessions ?? []);
 }
 
+/** The dal-fed sources; omitted by the store-only path, which uses the store. */
+interface FeedOverrides {
+  events?: CalendarEvent[];
+  tasks?: { id: string; title: string; due_date: string | null; status: string; linked_child_id: string | null; assigned_to: string | null }[];
+  supervisions?: { id: string; staff_id: string; scheduled_date: string; type: string; status: string }[];
+}
+
 function buildFeed(opts: {
   from?: string;
   to?: string;
   sources?: CalendarSource[];
-}, kwSessions: KeyWorkingSession[]) {
+}, kwSessions: KeyWorkingSession[], over: FeedOverrides = {}) {
   const store = getStore();
   const resolvers = makeResolvers();
   const range = opts.from && opts.to ? { from: opts.from, to: opts.to } : undefined;
 
   return buildCalendarFeed({
-    events: store.calendarEvents,
-    tasks: store.tasks.map((t) => ({
+    events: over.events ?? store.calendarEvents,
+    tasks: over.tasks ?? store.tasks.map((t) => ({
       id: t.id,
       title: t.title,
       due_date: t.due_date,
@@ -111,7 +145,7 @@ function buildFeed(opts: {
       location: a.location,
       status: a.status,
     })),
-    supervisions: store.supervisions.map((s) => ({
+    supervisions: over.supervisions ?? store.supervisions.map((s) => ({
       id: s.id,
       staff_id: s.staff_id,
       scheduled_date: s.scheduled_date,
@@ -240,11 +274,14 @@ export const UpdateEventSchema = z.object({
 
 // ── Notifications (existing system) ────────────────────────────────────────────
 
-function notifyStaff(event: CalendarEvent, title: string, body: string): number {
+async function notifyStaff(event: CalendarEvent, title: string, body: string): Promise<number> {
   const ids = notifiableStaffIds(event);
   for (const recipientId of ids) {
-    db.notifications.create({
-      home_id: HOME_ID,
+    // Through the dal: on a live tenant these must land in the notifications
+    // TABLE, not the in-memory store (which is emptied at start-up and lost on
+    // every deploy). home_id likewise comes from the event, not a constant.
+    await dal.notifications.create({
+      home_id: event.home_id || HOME_ID,
       recipient_id: recipientId,
       title,
       body,
@@ -255,7 +292,7 @@ function notifyStaff(event: CalendarEvent, title: string, body: string): number 
       read_at: null,
       entity_type: "calendar_event",
       entity_id: event.id,
-    });
+    } as Parameters<typeof dal.notifications.create>[0]);
   }
   return ids.length;
 }
@@ -315,7 +352,7 @@ export function createCalendarEvent(input: CreateEventInput): CalendarEvent {
   });
 
   void persistCalendarEvent(event);
-  notifyStaff(event, "Added to a meeting", `${event.title} — ${event.start.replace("T", " ").slice(0, 16)}`);
+  void notifyStaff(event, "Added to a meeting", `${event.title} — ${event.start.replace("T", " ").slice(0, 16)}`);
   return event;
 }
 
@@ -327,10 +364,10 @@ export function updateCalendarEvent(id: string, patch: z.infer<typeof UpdateEven
   void persistCalendarEvent(updated);
   // Reschedule/cancel are worth telling attendees about.
   if (patch.start && patch.start !== before.start) {
-    notifyStaff(updated, "Meeting rescheduled", `${updated.title} → ${updated.start.replace("T", " ").slice(0, 16)}`);
+    void notifyStaff(updated, "Meeting rescheduled", `${updated.title} → ${updated.start.replace("T", " ").slice(0, 16)}`);
   }
   if (patch.status === "cancelled" && before.status !== "cancelled") {
-    notifyStaff(updated, "Meeting cancelled", updated.title);
+    void notifyStaff(updated, "Meeting cancelled", updated.title);
   }
   return updated;
 }
@@ -355,22 +392,27 @@ export function markInviteSent(id: string): { event: CalendarEvent; notified: nu
   const updated = db.calendarEvents.update(id, { invite_sent: true });
   if (!updated) return null;
   void persistCalendarEvent(updated);
-  const notified = notifyStaff(updated, "Meeting invite", `Invite sent for: ${updated.title}`);
+  // The recipient count is the same list notifyStaff walks; take it here so
+  // this stays synchronous while the writes go out best-effort.
+  const notified = notifiableStaffIds(updated).length;
+  void notifyStaff(updated, "Meeting invite", `Invite sent for: ${updated.title}`);
   return { event: updated, notified };
 }
 
 /** Idempotent: fire in-app reminders for events inside their window. */
-export function runDueReminders(now: string): { fired: number } {
-  const store = getStore();
-  const due = dueReminders(store.calendarEvents, now);
+export async function runDueReminders(now: string): Promise<{ fired: number }> {
+  // Reads through the dal. This used to read getStore().calendarEvents, which
+  // is emptied on a live tenant — so the sweep could never fire a reminder for
+  // a real home's events, however many were in the table.
+  const events = await dal.calendarEvents.findAll();
+  const due = dueReminders(events, now);
   for (const { event, occurrence, occurrence_day } of due) {
-    notifyStaff(event, "Meeting reminder", `${event.title} starts at ${occurrence.replace("T", " ").slice(0, 16)}`);
+    await notifyStaff(event, "Meeting reminder", `${event.title} starts at ${occurrence.replace("T", " ").slice(0, 16)}`);
     // Recurring events dedupe per occurrence; one-offs flip reminder_sent.
     const patch = event.recurrence
       ? { last_reminded_occurrence: occurrence_day }
       : { reminder_sent: true };
-    const updated = db.calendarEvents.update(event.id, patch);
-    if (updated) void persistCalendarEvent(updated);
+    await dal.calendarEvents.update(event.id, patch);
   }
   return { fired: due.length };
 }

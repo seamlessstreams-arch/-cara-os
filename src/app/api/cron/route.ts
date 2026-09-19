@@ -37,8 +37,11 @@ interface JobResult {
   error?: string;
 }
 
-/** Registered scheduled jobs. Each must be idempotent (safe to run repeatedly). */
-const JOBS: { name: string; run: (now: string) => Record<string, unknown> }[] = [
+/** Registered scheduled jobs. Each must be idempotent (safe to run repeatedly).
+ *  Async since both now read and write through the dal — they used to work off
+ *  the in-memory store, which is emptied on a live tenant, so the sweep saw
+ *  nothing and wrote nowhere durable. */
+const JOBS: { name: string; run: (now: string) => Promise<Record<string, unknown>> }[] = [
   { name: "due_reminders", run: (now) => runDueReminders(now) },
   // Flag-gated internally (recurring_checks): off → {enabled:false, created:0}.
   { name: "recurring_checks", run: (now) => materialiseRecurringChecks(now) },
@@ -71,7 +74,7 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   const jobs: JobResult[] = [];
   for (const job of JOBS) {
     try {
-      jobs.push({ name: job.name, ok: true, detail: job.run(now) });
+      jobs.push({ name: job.name, ok: true, detail: await job.run(now) });
     } catch (e) {
       // One failing job must not abort the others.
       jobs.push({ name: job.name, ok: false, error: e instanceof Error ? e.message : String(e) });

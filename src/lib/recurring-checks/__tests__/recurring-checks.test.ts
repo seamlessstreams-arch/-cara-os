@@ -67,22 +67,22 @@ describe("computeMissingChecks / statuses", () => {
 });
 
 describe("materialiser (flag-gated, idempotent)", () => {
-  it("flag OFF (default): creates nothing", () => {
+  it("flag OFF (default): creates nothing", async () => {
     const before = getStore().tasks.length;
-    const r = materialiseRecurringChecks(NOW);
+    const r = await materialiseRecurringChecks(NOW);
     expect(r.enabled).toBe(false);
     expect(r.created).toBe(0);
     expect(getStore().tasks.length).toBe(before);
   });
 
-  it("flag ON: creates one task per active template, and a re-run creates zero", () => {
+  it("flag ON: creates one task per active template, and a re-run creates zero", async () => {
     process.env[FLAG] = "true";
     const before = getStore().tasks.length;
-    const first = materialiseRecurringChecks(NOW);
+    const first = await materialiseRecurringChecks(NOW);
     expect(first.enabled).toBe(true);
     expect(first.created).toBe(first.considered);
     expect(getStore().tasks.length).toBe(before + first.created);
-    const second = materialiseRecurringChecks(NOW);
+    const second = await materialiseRecurringChecks(NOW);
     expect(second.created).toBe(0); // idempotent — markers already present
   });
 });
