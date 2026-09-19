@@ -2,8 +2,10 @@
 #
 # Replaces the dead Vercel cron (vercel.json `crons` → /api/cron). Vercel is
 # historical; Northflank is the live host and does not run vercel.json crons, so
-# the daily reminder sweep is driven from here instead: this workflow calls the
-# live /api/cron endpoint on a schedule, exactly as Vercel used to.
+# the reminder sweep is driven from here instead: this workflow calls the
+# live /api/cron endpoint on a schedule. It runs HOURLY rather than daily — see
+# the note on the schedule below; a daily sweep cannot catch a 60-minute
+# reminder window.
 #
 # /api/cron runs the idempotent registered jobs (runDueReminders +
 # materialiseRecurringChecks). It is fail-closed and gated three ways, so this
@@ -28,7 +30,13 @@ name: Reminder cron
 
 on:
   schedule:
-    - cron: "0 7 * * *" # daily 07:00 UTC — matches the retired Vercel cron
+    # HOURLY, not daily. dueReminders fires only inside
+    # [start - reminder_minutes_before, start]; with the default 60-minute
+    # lead time a once-a-day sweep is awake for one of those windows in
+    # twenty-four, so a 14:00 meeting could never be reminded. The jobs are
+    # idempotent (one-offs flip reminder_sent, recurring dedupe per
+    # occurrence), so running them 24x more often is safe.
+    - cron: "0 * * * *" # hourly on the hour, UTC
   workflow_dispatch: {}
 
 permissions: {}
