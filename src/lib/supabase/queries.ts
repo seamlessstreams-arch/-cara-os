@@ -1021,7 +1021,11 @@ const STAFF_MEMBER_COLS = [
   "contracted_hours", "hourly_rate", "annual_salary", "payroll_id", "dbs_number",
   "dbs_issue_date", "dbs_update_service", "emergency_contact_name", "emergency_contact_phone",
   "next_supervision_due", "next_appraisal_due", "avatar_url", "is_active",
-  "created_by", "updated_by", "auth_user_id",
+  "created_by", "updated_by",
+  // auth_user_id is deliberately NOT here. It binds a staff record to a login,
+  // so accepting it from a request body lets the caller grant themselves — or
+  // anyone — an identity. It is set only by the server-side invite path that
+  // creates the auth user in the first place, never carried in from a form.
 ] as const;
 
 export async function createStaffMember(sb: SB, data: Record<string, unknown>) {
