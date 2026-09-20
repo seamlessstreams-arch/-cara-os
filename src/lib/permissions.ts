@@ -777,6 +777,70 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 
 // ── Permission utility functions ──────────────────────────────────────────────
 
+// ── Role seniority ────────────────────────────────────────────────────────────
+//
+// A rank order over AppRole, so one role can be compared against another.
+//
+// WHY HERE AND NOT ROLE_HIERARCHY. There are three role vocabularies in this
+// codebase and only one of them governs a staff record:
+//
+//   • AppRole (this file) — what getRequestIdentity/requirePermissionAsync
+//     return, and what staff_members.role holds.
+//   • Role (lib/permissions/types.ts) with ROLE_HIERARCHY — a parallel model
+//     used by the ABAC engine, spelling the same jobs differently ("rsw",
+//     "provider_owner"). It never governs staff_members.role.
+//   • system_role — the Postgres enum that actually constrains the column:
+//     registered_manager, responsible_individual, deputy_manager, team_leader,
+//     residential_care_worker, bank_staff, admin, super_admin. Eight values,
+//     every one an AppRole, none of them Role-only.
+//
+// So a seniority comparison about staff records is AppRole against AppRole.
+// Mapping across to ROLE_HIERARCHY would invent a correspondence the data does
+// not have, and be wrong in precisely the cases that matter.
+//
+// Record<AppRole, number> is deliberate: adding a role without ranking it is a
+// compile error, not a silent zero.
+
+export const APP_ROLE_RANK: Record<AppRole, number> = {
+  super_admin: 100,
+  organisation_director: 95,
+  responsible_individual: 90, // Reg 45 — above the manager in the statutory chain
+  registered_manager: 80,
+  admin: 80, // legacy alias, treated as registered_manager throughout
+  deputy_manager: 70,
+  hr_recruitment: 65, // onboards staff, but does not appoint managers
+  team_leader: 60,
+  therapist: 50, // professional, not in a line-management chain
+  finance_operations: 50,
+  residential_care_worker: 40,
+  bank_staff: 30,
+  external_partner: 20,
+  auditor: 20,
+  candidate: 0, // applicant, self-service portal only
+};
+
+/** Seniority of a role string, or null when it is not a role we recognise. */
+export function appRoleRank(role: string): number | null {
+  return Object.prototype.hasOwnProperty.call(APP_ROLE_RANK, role)
+    ? APP_ROLE_RANK[role as AppRole]
+    : null;
+}
+
+/**
+ * May `actor` assign `requested` to somebody?
+ *
+ * At or below their own standing, never above it: otherwise a deputy manager
+ * could mint a super_admin and then sign in as one. Fails CLOSED — an actor or
+ * a target we cannot rank is refused, because an unrecognised role is exactly
+ * when a guess is most expensive.
+ */
+export function canAssignRole(actor: string, requested: string): boolean {
+  const actorRank = appRoleRank(actor);
+  const requestedRank = appRoleRank(requested);
+  if (actorRank === null || requestedRank === null) return false;
+  return requestedRank <= actorRank;
+}
+
 /** Normalise any SystemRole string into an AppRole */
 export function toAppRole(role: string): AppRole {
   if (APP_ROLES.includes(role as AppRole)) return role as AppRole;
