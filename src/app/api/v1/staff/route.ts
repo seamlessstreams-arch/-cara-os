@@ -13,7 +13,7 @@ import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requireFields } from "@/lib/http/require-fields";
 import { requirePermissionAsync } from "@/lib/auth-guard";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS, canAssignRole } from "@/lib/permissions";
 import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -142,6 +142,24 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const __missing = requireFields(parsed.data, ["full_name"]);
   if (__missing) return __missing;
+
+  // Nobody may appoint above themselves. MANAGE_STAFF says you can create a
+  // staff member; it does not say which. Without this a deputy manager could
+  // create a super_admin and — once that record has a login — sign in as one.
+  // An absent role is fine: createStaffMember defaults it to the least
+  // privileged. An unrecognised role on either side is refused, not guessed.
+  const requestedRole = (parsed.data as { role?: unknown }).role;
+  if (requestedRole !== undefined && requestedRole !== null) {
+    if (typeof requestedRole !== "string" || !canAssignRole(auth.role, requestedRole)) {
+      return NextResponse.json(
+        {
+          error: "Forbidden",
+          detail: `Role '${auth.role}' cannot create a staff member with role '${String(requestedRole)}'.`,
+        },
+        { status: 403 },
+      );
+    }
+  }
 
   // Strip the login binding at the boundary, not just in the column allowlist.
   // The allowlist governs the SUPABASE writer only; the in-memory store used in
