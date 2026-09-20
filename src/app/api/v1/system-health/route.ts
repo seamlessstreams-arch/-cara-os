@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { runSystemHealthCheck } from "@/lib/system-health/health-check-engine";
+import { childDisplayName } from "@/lib/people/child-display-name";
 import type { SystemHealthInput } from "@/lib/system-health/types";
 import { todayStr } from "@/lib/utils";
 
@@ -71,7 +72,11 @@ export async function GET(req: NextRequest) {
       asOf,
       children: (youngPeopleList ?? [])
         .filter((c) => (c.status ?? "current") === "current") // real union: current|planned|ended|emergency — "former"/"discharged" never existed
-        .map((c) => ({ id: String(c.id), name: String(c.preferred_name ?? c.id) })),
+        // childDisplayName, not `preferred_name ?? c.id`: that fell through to the
+        // database id, so a child with no preferred name was named to staff as
+        // "44aeb910-4a20-4e90-bc66-2233080fc56e" on a safeguarding alert, while
+        // their first and last name sat unread on the same record.
+        .map((c) => ({ id: String(c.id), name: childDisplayName(c) })),
       tasks: (tasksList ?? []).map((t) => ({ id: String(t.id), title: String(t.title ?? "Action"), due_date: day(t.due_date), status: String(t.status ?? ""), child_id: t.linked_child_id ? String(t.linked_child_id) : undefined })),
       incidents: (incidentsList ?? []).map((i) => ({ id: String(i.id), type: String(i.type ?? "other"), date: day(i.date), requires_oversight: !!i.requires_oversight, has_oversight: !!(i.oversight_note || i.oversight_by || i.oversight_at), child_id: i.child_id ? String(i.child_id) : undefined, status: String(i.status ?? "open") })),
       restraints: (restraintsList ?? []).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), child_debriefed: !!r.child_debriefed, has_debrief: hasDebrief(r as { id?: string; linked_incident_id?: string; child_id?: string }), child_id: r.child_id ? String(r.child_id) : undefined })),

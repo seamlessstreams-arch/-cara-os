@@ -176,7 +176,21 @@ export function CommandCentreHero({ stats, people = [] }: { stats: CommandCentre
       {/* Stat tiles */}
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Tile icon={Users} chip="bg-teal-300/15 text-teal-200" value={stats.youngPeople} label="Young people" foot="in your care" />
-        <Tile icon={HeartHandshake} chip="bg-teal-300/15 text-teal-200" value={stats.onShift} label="Staff on shift now" foot="ratio met" footClass="text-emerald-300/90" />
+        <Tile
+          icon={HeartHandshake}
+          chip={stats.onShift > 0 ? "bg-teal-300/15 text-teal-200" : "bg-amber-300/15 text-amber-200"}
+          value={stats.onShift}
+          label="Staff on shift now"
+          /* This read "ratio met" as a hard-coded string — not computed from
+             anything, shown whatever the number was, including zero. Beside a
+             tile that promises "nothing invented", on the figure an inspector
+             asks about first. It now states what is recorded and claims no
+             compliance: whether the ratio is actually MET depends on the home's
+             minimum for the current period, which lives in safe-staffing.ts and
+             reads the in-memory store, so it cannot answer for a live home yet. */
+          foot={stats.onShift > 0 ? "recorded on today's rota" : "no shifts recorded today"}
+          footClass={stats.onShift > 0 ? undefined : "text-amber-300/90"}
+        />
         <Tile icon={ShieldAlert} chip={stats.openIncidents > 0 ? "bg-rose-400/15 text-rose-300" : "bg-teal-300/15 text-teal-200"} value={stats.openIncidents} label="Open incidents" foot={stats.openIncidents > 0 ? "needs attention" : "all closed"} footClass={stats.openIncidents > 0 ? "text-rose-300/90" : undefined} />
         <Tile icon={CalendarDays} chip={stats.tasksDue > 0 ? "bg-amber-300/15 text-amber-200" : "bg-teal-300/15 text-teal-200"} value={stats.tasksDue} label="Actions due today" foot={stats.tasksDue > 0 ? "on your plan" : "all on track"} />
       </div>

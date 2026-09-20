@@ -173,7 +173,12 @@ export async function GET(req: NextRequest) {
         high_risk_yp: [],
       },
       staffing: {
-        on_shift: onShift.length || 4,
+        // FALSE-GREEN FIX: this was `onShift.length || 4`. Zero is not a missing
+        // value here — it is the one answer that matters, and `||` replaced it
+        // with a demo constant. A live home with an empty rota was told four
+        // staff were on shift. Same shape as the `training.length || 1` removed
+        // from health-check, which made an empty training register read 100%.
+        on_shift: onShift.length,
         open_shifts: openShifts.length,
         on_leave: onLeave.length,
         pending_leave_requests: leaveRecords.filter((l) => l.status === "pending").length,
@@ -183,7 +188,9 @@ export async function GET(req: NextRequest) {
       medication: {
         exceptions_this_week: errorsThisWeek.length,
         missed_today: missedToday.length,
-        scheduled_today: scheduledToday || 6,
+        // FALSE-GREEN FIX: was `scheduledToday || 6` — six medication rounds
+        // reported on a day when none are recorded.
+        scheduled_today: scheduledToday,
         stock_alerts: 0,
         oversight_needed: 0,
       },
