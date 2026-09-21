@@ -537,6 +537,7 @@ const DAL_MAP: Record<string, any> = {
   expenses: dal.expenses,
   handovers: dal.handovers,
   keyWorkingSessions: dal.keyWorkingSessions,
+  keyworkerSessions: dal.keyworkerSessions,
   leave: dal.leave,
   maintenance: dal.maintenance,
   missingEpisodes: dal.missingEpisodes,

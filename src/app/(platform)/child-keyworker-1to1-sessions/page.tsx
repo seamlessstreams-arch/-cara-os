@@ -17,40 +17,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Search, Heart, CheckCircle, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn, todayStr } from "@/lib/utils";
-// Types from use-keywork-sessions
-export interface KeyworkSession {
-  id: string;
-  child_id: string;
-  staff_id: string;
-  session_date: string;
-  duration_minutes: number;
-  format: string;
-  child_chose_format: boolean;
-  themes_covered: string[];
-  child_went_in_with: string;
-  child_walked_out_with: string;
-  what_child_brought_up: string;
-  what_staff_brought_up: string;
-  agreed_actions_staff: string[];
-  agreed_actions_child: string[];
-  child_satisfaction: number;
-  follow_up_date: string;
-  flags_raised: string[];
-  notes?: string;
-  home_id?: string;
-  created_at?: string;
-}
+// The record shape lives in @/types/extended, beside the projection that reads
+// it out of cs_key_work_sessions. It used to be duplicated here, which is why
+// this page kept compiling while the fields underneath it changed meaning.
+export type KeyworkSession = KeyworkerSessionRecord;
 
 type ListResponse = { data: KeyworkSession[]; meta: { total: number; this_month: number } };
 type SingleResponse = { data: KeyworkSession };
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
-import { type KeyworkerSessionFormat, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
+import { type KeyworkerSessionFormat, type KeyworkerSessionRecord, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
+import { useAuthContext } from "@/contexts/auth-context";
+import { childDisplayName } from "@/lib/people/child-display-name";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { getYPName, getStaffName } from "@/lib/seed-data";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -93,6 +75,39 @@ export default function ChildKeyworker1to1SessionsPage() {
   });
 
   const items = useMemo(() => queryData?.data ?? [], [queryData]);
+
+  // Who is recording. staff_id used to be the literal "staff_anna", a demo seed
+  // id, so every session on a live tenant was attributed to someone who is not
+  // on the staff list.
+  const { currentUser, identityUnresolved } = useAuthContext();
+
+  // The children and staff of this home, from the API. The child dropdown used
+  // to be built from the children already appearing in saved sessions, so on a
+  // home with no sessions yet it was empty and a first 1:1 could not be
+  // recorded at all. Names came from the demo seed and read "Unknown" on live.
+  const { data: ypData } = useQuery({
+    queryKey: ["young-people"],
+    queryFn: () => api.get<{ data: { id: string; preferred_name?: string | null; first_name?: string | null; last_name?: string | null; full_name?: string | null; status?: string }[] }>("/young-people"),
+    staleTime: 5 * 60_000,
+  });
+  const { data: staffData } = useQuery({
+    queryKey: ["staff"],
+    queryFn: () => api.get<{ data: { id: string; full_name?: string | null; first_name?: string | null; last_name?: string | null }[] }>("/staff"),
+    staleTime: 5 * 60_000,
+  });
+  const youngPeople = useMemo(() => ypData?.data ?? [], [ypData]);
+  const ypName = useMemo(() => {
+    const byId = new Map(youngPeople.map((c) => [c.id, c]));
+    return (id: string) => childDisplayName(byId.get(id));
+  }, [youngPeople]);
+  const staffName = useMemo(() => {
+    const byId = new Map((staffData?.data ?? []).map((m) => [m.id, m]));
+    return (id: string) => {
+      const m = byId.get(id);
+      if (!m) return "Unknown staff member";
+      return m.full_name?.trim() || [m.first_name, m.last_name].filter(Boolean).join(" ").trim() || "Unnamed staff member";
+    };
+  }, [staffData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [formatFilter, setFormatFilter] = useState("all");
@@ -104,6 +119,21 @@ export default function ChildKeyworker1to1SessionsPage() {
   const [nThemes, setNThemes] = useState("");
   const [nChildBroughtUp, setNChildBroughtUp] = useState("");
   const [nStaffBroughtUp, setNStaffBroughtUp] = useState("");
+  // Everything below used to be sent as a constant the form never asked for:
+  // 45 minutes, "the child chose this", a satisfaction of 4, a follow-up seven
+  // days out, and empty action lists. A key-work session is evidence, so the
+  // form asks and an unanswered field stays unanswered.
+  const [nDuration, setNDuration] = useState("");
+  const [nChoseFormat, setNChoseFormat] = useState("");
+  const [nMoodIn, setNMoodIn] = useState("");
+  const [nMoodOut, setNMoodOut] = useState("");
+  const [nActionsStaff, setNActionsStaff] = useState("");
+  const [nActionsChild, setNActionsChild] = useState("");
+  const [nSatisfaction, setNSatisfaction] = useState("");
+  const [nFollowUp, setNFollowUp] = useState("");
+  const [nFlags, setNFlags] = useState("");
+  const [nNotes, setNNotes] = useState("");
+  const RATINGS = ["1", "2", "3", "4", "5"];
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const childIds = [...new Set(items.map(r => r.child_id))];
@@ -113,8 +143,8 @@ export default function ChildKeyworker1to1SessionsPage() {
     if (search) {
       const s = search.toLowerCase();
       out = out.filter(r =>
-        getYPName(r.child_id).toLowerCase().includes(s) ||
-        getStaffName(r.staff_id).toLowerCase().includes(s) ||
+        ypName(r.child_id).toLowerCase().includes(s) ||
+        staffName(r.staff_id).toLowerCase().includes(s) ||
         r.themes_covered.some(t => t.toLowerCase().includes(s)) ||
         r.what_child_brought_up.toLowerCase().includes(s)
       );
@@ -123,39 +153,46 @@ export default function ChildKeyworker1to1SessionsPage() {
     if (formatFilter !== "all") out = out.filter(r => r.format === formatFilter);
     out.sort((a, b) => sortBy === "oldest" ? a.session_date.localeCompare(b.session_date) : b.session_date.localeCompare(a.session_date));
     return out;
-  }, [items, search, childFilter, formatFilter, sortBy]);
+  }, [items, search, childFilter, formatFilter, sortBy, ypName, staffName]);
 
   const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
   const sessionsThisMonth = items.filter(r => r.session_date >= thirtyDaysAgoStr).length;
-  const avgSatisfaction = items.length
-    ? (items.reduce((sum, r) => sum + r.child_satisfaction, 0) / items.length).toFixed(1)
+  // Averaged over the sessions where the child was actually asked. Sessions
+  // that did not ask are not zeros, and counting them as such would drag a
+  // number presented as the child's voice toward a figure nobody gave.
+  const rated = items.filter(r => r.child_satisfaction != null);
+  const avgSatisfaction = rated.length
+    ? (rated.reduce((sum, r) => sum + (r.child_satisfaction ?? 0), 0) / rated.length).toFixed(1)
     : "—";
-  const childChosePct = items.length
-    ? Math.round((items.filter(r => r.child_chose_format).length / items.length) * 100)
+  // Same for "did the child choose the format" - asked, and answered no, is
+  // not the same as never asked.
+  const choseAnswered = items.filter(r => r.child_chose_format != null);
+  const childChosePct = choseAnswered.length
+    ? Math.round((choseAnswered.filter(r => r.child_chose_format).length / choseAnswered.length) * 100)
     : 0;
   const flagsThisMonth = items.filter(r => r.session_date >= thirtyDaysAgoStr && r.flags_raised.length > 0).length;
 
   const exportCols: ExportColumn<KeyworkSession>[] = useMemo(() => [
     { header: "Date", accessor: (r: KeyworkSession) => r.session_date },
-    { header: "Young Person", accessor: (r: KeyworkSession) => getYPName(r.child_id) },
-    { header: "Key Worker", accessor: (r: KeyworkSession) => getStaffName(r.staff_id) },
-    { header: "Format", accessor: (r: KeyworkSession) => KEYWORKER_SESSION_FORMAT_LABEL[r.format as KeyworkerSessionFormat] ?? r.format },
+    { header: "Young Person", accessor: (r: KeyworkSession) => ypName(r.child_id) },
+    { header: "Key Worker", accessor: (r: KeyworkSession) => staffName(r.staff_id) },
+    { header: "Format", accessor: (r: KeyworkSession) => r.format ? KEYWORKER_SESSION_FORMAT_LABEL[r.format] : "Not recorded" },
     { header: "Duration (min)", accessor: (r: KeyworkSession) => r.duration_minutes },
-    { header: "Child Chose Format", accessor: (r: KeyworkSession) => r.child_chose_format ? "Yes" : "No" },
+    { header: "Child Chose Format", accessor: (r: KeyworkSession) => r.child_chose_format == null ? "Not asked" : r.child_chose_format ? "Yes" : "No" },
     { header: "Themes", accessor: (r: KeyworkSession) => r.themes_covered.join("; ") },
     { header: "Child Brought Up", accessor: (r: KeyworkSession) => r.what_child_brought_up },
     { header: "Staff Brought Up", accessor: (r: KeyworkSession) => r.what_staff_brought_up },
-    { header: "Walked In With", accessor: (r: KeyworkSession) => r.child_went_in_with },
-    { header: "Walked Out With", accessor: (r: KeyworkSession) => r.child_walked_out_with },
+    { header: "Walked In With (1-5)", accessor: (r: KeyworkSession) => r.child_went_in_with ?? "Not recorded" },
+    { header: "Walked Out With (1-5)", accessor: (r: KeyworkSession) => r.child_walked_out_with ?? "Not recorded" },
     { header: "Actions for Staff", accessor: (r: KeyworkSession) => r.agreed_actions_staff.join("; ") },
     { header: "Actions for Child", accessor: (r: KeyworkSession) => r.agreed_actions_child.join("; ") },
-    { header: "Child Satisfaction (1–5)", accessor: (r: KeyworkSession) => r.child_satisfaction },
-    { header: "Follow-up Date", accessor: (r: KeyworkSession) => r.follow_up_date },
+    { header: "Child Satisfaction (1–5)", accessor: (r: KeyworkSession) => r.child_satisfaction ?? "Not asked" },
+    { header: "Follow-up Date", accessor: (r: KeyworkSession) => r.follow_up_date ?? "None set" },
     { header: "Flags Raised", accessor: (r: KeyworkSession) => r.flags_raised.join("; ") || "—" },
     { header: "Notes", accessor: (r: KeyworkSession) => r.notes ?? "" },
-  ], []);
+  ], [ypName, staffName]);
 
-  const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+  const stars = (n: number | null) => n == null ? "Not asked" : "★".repeat(n) + "☆".repeat(5 - n);
 
   if (isLoading) {
     return (
@@ -176,7 +213,13 @@ export default function ChildKeyworker1to1SessionsPage() {
         <PrintButton key="p" title="1:1 Keyworker Sessions" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="keyworker-1to1-sessions" />,
         <CaraStudioQuickActionButton key="a" context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />,
-        <Button key="n" size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Session</Button>,
+        <Button
+          key="n"
+          size="sm"
+          disabled={identityUnresolved || !currentUser}
+          title={identityUnresolved ? "Your sign-in is not linked to a staff record, so a session cannot be attributed to you." : undefined}
+          onClick={() => setShowNew(true)}
+        ><Plus className="h-4 w-4 mr-1" /> New Session</Button>,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -185,7 +228,7 @@ export default function ChildKeyworker1to1SessionsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Sessions This Month", value: sessionsThisMonth, icon: Users, colour: "text-rose-600" },
-            { label: "Average Satisfaction", value: avgSatisfaction, icon: Heart, colour: "text-pink-600" },
+            { label: `Average Satisfaction (asked in ${rated.length} of ${items.length})`, value: avgSatisfaction, icon: Heart, colour: "text-pink-600" },
             { label: "Child Chose Format", value: `${childChosePct}%`, icon: CheckCircle, colour: "text-sky-600" },
             { label: "Flags Raised (Month)", value: flagsThisMonth, icon: MessageCircle, colour: "text-amber-600" },
           ].map(s => (
@@ -218,7 +261,7 @@ export default function ChildKeyworker1to1SessionsPage() {
                   <SelectTrigger id="56b9-child"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Children</SelectItem>
-                    {childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}
+                    {childIds.map(id => <SelectItem key={id} value={id}>{ypName(id)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -252,12 +295,12 @@ export default function ChildKeyworker1to1SessionsPage() {
             const open = expanded === r.id;
             return (
               <Card key={r.id} className="border-rose-100">
-                <button className="w-full text-left" onClick={() => toggle(r.id)} aria-expanded={open} aria-label={`Expand session details for ${getYPName(r.child_id)}`}>
+                <button className="w-full text-left" onClick={() => toggle(r.id)} aria-expanded={open} aria-label={`Expand session details for ${ypName(r.child_id)}`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getYPName(r.child_id)} with {getStaffName(r.staff_id)}</CardTitle>
-                        <Badge className={cn("text-xs", FORMAT_CLR[r.format])}>{KEYWORKER_SESSION_FORMAT_LABEL[r.format as KeyworkerSessionFormat] ?? r.format}</Badge>
+                        <CardTitle className="text-base">{ypName(r.child_id)} with {staffName(r.staff_id)}</CardTitle>
+                        <Badge className={cn("text-xs", r.format ? FORMAT_CLR[r.format] : undefined)}>{r.format ? KEYWORKER_SESSION_FORMAT_LABEL[r.format] : "Format not recorded"}</Badge>
                         <Badge variant="outline" className="text-xs"><Clock className="h-3 w-3 mr-1" />{r.duration_minutes} min</Badge>
                         <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">{stars(r.child_satisfaction)}</Badge>
                         {r.child_chose_format && <Badge className="text-xs bg-sky-100 text-sky-800">Child chose</Badge>}
@@ -282,11 +325,11 @@ export default function ChildKeyworker1to1SessionsPage() {
                     <div className="grid md:grid-cols-2 gap-3">
                       <div className="rounded-lg bg-rose-50 border border-rose-200 p-3">
                         <p className="text-xs font-semibold text-rose-800 mb-1">What child went in with</p>
-                        <p className="text-sm text-rose-900">{r.child_went_in_with}</p>
+                        <p className="text-sm text-rose-900">{r.child_went_in_with == null ? "Not recorded" : stars(r.child_went_in_with)}</p>
                       </div>
                       <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
                         <p className="text-xs font-semibold text-sky-800 mb-1">What child walked out with</p>
-                        <p className="text-sm text-sky-900">{r.child_walked_out_with}</p>
+                        <p className="text-sm text-sky-900">{r.child_walked_out_with == null ? "Not recorded" : stars(r.child_walked_out_with)}</p>
                       </div>
                     </div>
 
@@ -321,7 +364,7 @@ export default function ChildKeyworker1to1SessionsPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                      <span>Follow-up: <span className="font-medium text-foreground">{r.follow_up_date}</span></span>
+                      <span>Follow-up: <span className="font-medium text-foreground">{r.follow_up_date ?? "none set"}</span></span>
                       {r.flags_raised.length > 0 && (
                         <span className="flex items-center gap-1">
                           Flags:
@@ -362,13 +405,15 @@ export default function ChildKeyworker1to1SessionsPage() {
               <Select value={nChild} onValueChange={setNChild}>
                 <SelectTrigger id="session-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
-                  {[...new Set(items.map(r => r.child_id))].map(id => (
-                    <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
-                  ))}
+                  {youngPeople
+                    .filter(c => c.status === undefined || c.status === "current")
+                    .map(c => (
+                      <SelectItem key={c.id} value={c.id}>{childDisplayName(c)}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
-            {nChild && <InlinePracticeReasoning childId={nChild} childName={getYPName(nChild)} />}
+            {nChild && <InlinePracticeReasoning childId={nChild} childName={ypName(nChild)} />}
             <div>
               <Label htmlFor="session-format">Format</Label>
               <Select value={nFormat} onValueChange={setNFormat}>
@@ -391,29 +436,101 @@ export default function ChildKeyworker1to1SessionsPage() {
               <Label htmlFor="session-staff-brought-up">What staff brought up</Label>
               <Textarea id="session-staff-brought-up" placeholder="Record what staff raised..." value={nStaffBroughtUp} onChange={e => setNStaffBroughtUp(e.target.value)} rows={3} />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="session-duration">Duration (minutes)</Label>
+                <Input id="session-duration" type="number" min={1} placeholder="e.g. 45" value={nDuration} onChange={e => setNDuration(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="session-chose-format">Did the child choose the format?</Label>
+                <Select value={nChoseFormat} onValueChange={setNChoseFormat}>
+                  <SelectTrigger id="session-chose-format"><SelectValue placeholder="Not asked" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="session-mood-in">Walked in with (1–5)</Label>
+                <Select value={nMoodIn} onValueChange={setNMoodIn}>
+                  <SelectTrigger id="session-mood-in"><SelectValue placeholder="Not recorded" /></SelectTrigger>
+                  <SelectContent>{RATINGS.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="session-mood-out">Walked out with (1–5)</Label>
+                <Select value={nMoodOut} onValueChange={setNMoodOut}>
+                  <SelectTrigger id="session-mood-out"><SelectValue placeholder="Not recorded" /></SelectTrigger>
+                  <SelectContent>{RATINGS.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="session-actions-staff">Actions agreed — staff</Label>
+              <Textarea id="session-actions-staff" placeholder="One action per line" value={nActionsStaff} onChange={e => setNActionsStaff(e.target.value)} rows={2} />
+            </div>
+            <div>
+              <Label htmlFor="session-actions-child">Actions agreed — child</Label>
+              <Textarea id="session-actions-child" placeholder="One action per line" value={nActionsChild} onChange={e => setNActionsChild(e.target.value)} rows={2} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="session-satisfaction">How the child rated the session (1–5)</Label>
+                <Select value={nSatisfaction} onValueChange={setNSatisfaction}>
+                  <SelectTrigger id="session-satisfaction"><SelectValue placeholder="Not asked" /></SelectTrigger>
+                  <SelectContent>{RATINGS.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+                <p className="mt-1 text-xs text-muted-foreground">Leave blank if you did not ask. It is recorded as the child&apos;s own rating.</p>
+              </div>
+              <div>
+                <Label htmlFor="session-follow-up">Follow-up date</Label>
+                <Input id="session-follow-up" type="date" value={nFollowUp} onChange={e => setNFollowUp(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="session-flags">Flags raised</Label>
+              <Input id="session-flags" placeholder="Comma-separated — anything needing follow-up elsewhere" value={nFlags} onChange={e => setNFlags(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="session-notes">Notes</Label>
+              <Textarea id="session-notes" placeholder="Anything else worth recording..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={!nChild || !nFormat} onClick={() => {
-              const followUp = new Date(); followUp.setDate(followUp.getDate() + 7);
+            <Button disabled={!nChild || !nFormat || !currentUser} onClick={() => {
+              const lines = (v: string) => v.split("\n").map(t => t.trim()).filter(Boolean);
+              const list = (v: string) => v.split(",").map(t => t.trim()).filter(Boolean);
+              const rating = (v: string) => v ? (Number(v) as 1 | 2 | 3 | 4 | 5) : null;
               createSession.mutate({
                 child_id: nChild,
-                staff_id: "staff_anna",
+                // The signed-in key worker, not a seeded id.
+                staff_id: currentUser!.id,
                 session_date: todayStr(),
-                duration_minutes: 45,
-                format: nFormat,
-                child_chose_format: true,
-                themes_covered: nThemes.split(",").map(t => t.trim()).filter(Boolean),
+                duration_minutes: nDuration ? Number(nDuration) : 0,
+                format: nFormat as KeyworkerSessionFormat,
+                child_chose_format: nChoseFormat ? nChoseFormat === "yes" : null,
+                themes_covered: list(nThemes),
+                child_went_in_with: rating(nMoodIn),
+                child_walked_out_with: rating(nMoodOut),
                 what_child_brought_up: nChildBroughtUp,
                 what_staff_brought_up: nStaffBroughtUp,
-                agreed_actions_staff: [],
-                agreed_actions_child: [],
-                child_satisfaction: 4,
-                follow_up_date: followUp.toISOString().slice(0, 10),
-                flags_raised: [],
+                agreed_actions_staff: lines(nActionsStaff),
+                agreed_actions_child: lines(nActionsChild),
+                // Null when the child was not asked. Never a stand-in number.
+                child_satisfaction: rating(nSatisfaction),
+                follow_up_date: nFollowUp || null,
+                flags_raised: list(nFlags),
+                notes: nNotes || undefined,
               }, { onSuccess: () => toast.success("Session saved"), onError: () => toast.error("Failed to save session") });
               setShowNew(false);
               setNChild(""); setNFormat(""); setNThemes(""); setNChildBroughtUp(""); setNStaffBroughtUp("");
+              setNDuration(""); setNChoseFormat(""); setNMoodIn(""); setNMoodOut("");
+              setNActionsStaff(""); setNActionsChild(""); setNSatisfaction("");
+              setNFollowUp(""); setNFlags(""); setNNotes("");
             }}>{createSession.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Session"}</Button>
           </DialogFooter>
         </DialogContent>
