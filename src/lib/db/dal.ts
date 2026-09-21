@@ -18,6 +18,7 @@ import { db, getStore, type EarlyAccessRequest } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
+import { rowTo1to1, oneToOneToRow } from "./keywork-1to1-projection";
 import * as sq from "@/lib/supabase/queries";
 import * as sqCalendar from "@/lib/supabase/calendar-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
@@ -35,6 +36,7 @@ import type {
 import type {
   BehaviourEntry,
   KeyWorkingSession,
+  KeyworkerSessionRecord,
   MissingEpisode,
   RiskAssessment,
   LACReview,
@@ -2500,8 +2502,70 @@ export const dal = {
   improvementObjectives: {
     async findAll() { return getStore().improvementObjectives ?? []; },
   },
+  // The 1:1 Sessions page's view of cs_key_work_sessions - the same rows
+  // dal.keyWorkingSessions reads, in the richer shape that page records.
+  //
+  // This used to return getStore().keyworkerSessions, which on a live tenant is
+  // gated empty at module load, while the page's writes went to generic_records
+  // under record_type 'keyworkerSessions'. So a recorded 1:1 was invisible to
+  // the Reg 45 evidence pack, the handover generator, the regulatory pulse and
+  // Cara's today-briefing, all of which read cs_key_work_sessions.
+  //
+  // A failed durable write throws rather than falling back to the store, for
+  // the same reason as the KeyWorkingSession writer: with Supabase configured
+  // the store is not a place a record survives.
   keyworkerSessions: {
-    async findAll() { return getStore().keyworkerSessions ?? []; },
+    async findAll(filters?: { child_id?: string }): Promise<KeyworkerSessionRecord[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_key_work_sessions").select("*").order("planned_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(rowTo1to1);
+      }
+      const list = getStore().keyworkerSessions ?? [];
+      return filters?.child_id ? list.filter((s) => s.child_id === filters.child_id) : list;
+    },
+    async findById(id: string): Promise<KeyworkerSessionRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("id", id).single();
+        if (!error && data) return rowTo1to1(data);
+      }
+      return (getStore().keyworkerSessions ?? []).find((s) => s.id === id) ?? null;
+    },
+    async findByChild(childId: string): Promise<KeyworkerSessionRecord[]> {
+      return this.findAll({ child_id: childId });
+    },
+    async create(data: Partial<KeyworkerSessionRecord>) {
+      const c = sb();
+      if (c) {
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .insert({ ...oneToOneToRow(data), home_id: homeId() } as never)
+          .select("*").single();
+        if (error || !row) throw error ?? new Error("1:1 session insert returned no row");
+        return rowTo1to1(row);
+      }
+      const rec = { ...data, id: data.id ?? `kws_${Date.now()}` } as KeyworkerSessionRecord;
+      (getStore().keyworkerSessions ?? []).push(rec);
+      return rec;
+    },
+    async update(id: string, data: Partial<KeyworkerSessionRecord>) {
+      const c = sb();
+      if (c) {
+        // home_id is never patched: a session does not move between homes.
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .update({ ...oneToOneToRow(data), updated_at: new Date().toISOString() } as never)
+          .eq("id", id).select("*").single();
+        if (error || !row) throw error ?? new Error("1:1 session update matched no row");
+        return rowTo1to1(row);
+      }
+      const list = getStore().keyworkerSessions ?? [];
+      const i = list.findIndex((s) => s.id === id);
+      if (i < 0) return null;
+      list[i] = { ...list[i], ...data } as KeyworkerSessionRecord;
+      return list[i];
+    },
   },
   matchingReferrals: {
     async findAll() { return getStore().matchingReferrals ?? []; },

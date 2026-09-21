@@ -3,6 +3,7 @@
 
 import type { AdvocacyRecordInput } from "@/lib/engines/home-advocacy-independent-voice-intelligence-engine";
 import { errorMessage } from "@/lib/http/error-message";
+import { dal } from "@/lib/db";
 import type { AnnualHealthAssessmentRecordInput } from "@/lib/engines/home-annual-health-assessment-intelligence-engine";
 import type { AttachmentProfileRecordInput } from "@/lib/engines/home-attachment-profile-intelligence-engine";
 import type { BehaviourSupportPlanRecordInput } from "@/lib/engines/home-behaviour-support-plan-intelligence-engine";
@@ -13165,19 +13166,12 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
 
     // Helper restored from pre-consolidation source (d2188c87^) — dropped during
     // route consolidation, which made this UI-consumed card 500. Pure & deterministic.
-    const parseMood = (value: unknown): number => {
-      if (typeof value === "number") return value;
-      if (typeof value === "string") {
-        const n = parseInt(value, 10);
-        return isNaN(n) ? 0 : n;
-      }
-      return 0;
-    };
-
     const store = getStore();
     const today = todayStr();
   
-    const sessions: KeyworkerSessionInput[] = (((store.keyworkerSessions ?? [])))
+    // Was store.keyworkerSessions, empty on a live tenant. Now the same rows
+    // the evidence pack reads.
+    const sessions: KeyworkerSessionInput[] = (await dal.keyworkerSessions.findAll())
       .map((s) => ({
         id: s.id ?? "",
         child_id: s.child_id ?? "",
@@ -13185,12 +13179,16 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         duration_minutes: typeof s.duration_minutes === "number" ? s.duration_minutes : 0,
         child_chose_format: !!(s.child_chose_format),
         themes_count: Array.isArray(s.themes_covered) ? s.themes_covered.length : 0,
-        mood_before: parseMood(s.child_went_in_with),
-        mood_after: parseMood(s.child_walked_out_with),
+        // These are 1-5 ratings now. The old parseMood ran parseInt over what
+        // the page rendered as prose, so every real session scored 0 -> 0 and
+        // the improvement average was structurally meaningless.
+        mood_before: s.child_went_in_with ?? 0,
+        mood_after: s.child_walked_out_with ?? 0,
         child_brought_up: !!(s.what_child_brought_up),
         agreed_actions_child_count: Array.isArray(s.agreed_actions_child) ? s.agreed_actions_child.length : 0,
-        child_satisfaction: typeof s.child_satisfaction === "number" ? s.child_satisfaction : 0,
-        follow_up_date: (s.follow_up_date ?? "").toString().slice(0, 10),
+        // Null means the child was not asked, which is not a score of 0.
+        child_satisfaction: s.child_satisfaction ?? 0,
+        follow_up_date: (s.follow_up_date ?? "").slice(0, 10),
         flags_raised_count: Array.isArray(s.flags_raised) ? s.flags_raised.length : 0,
       }));
   

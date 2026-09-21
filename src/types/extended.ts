@@ -5378,25 +5378,43 @@ export const KEYWORKER_SESSION_FORMAT_LABEL: Record<KeyworkerSessionFormat, stri
   crisis_check_in: "Crisis check-in",
 };
 
+/** A 1:1 key-work session, as the 1:1 Sessions page records it.
+ *
+ *  Backed by cs_key_work_sessions, the same table /key-working writes to, so a
+ *  session recorded on either page reaches the Reg 45 evidence pack, the
+ *  handover generator, the regulatory pulse and Cara's today-briefing.
+ *
+ *  The nullable fields are nullable because the recorder may genuinely not
+ *  have them, and a stand-in would be worse than an absence:
+ *  - `format` and `child_chose_format` are null for a session recorded through
+ *    /key-working, which does not ask how the session happened.
+ *  - `child_satisfaction` is the CHILD'S own rating. Null means they were not
+ *    asked. It was previously hardcoded to 4 on every save and averaged into a
+ *    tile presented as the child's voice.
+ *  - the mood pair is a 1-5 rating, not prose: it feeds the key-working
+ *    improvement average, which read free text through parseInt and therefore
+ *    scored every real session 0 -> 0.
+ */
 export interface KeyworkerSessionRecord {
   id: string;
   child_id: string;
   staff_id: string;
   session_date: string;
   duration_minutes: number;
-  format: KeyworkerSessionFormat;
-  child_chose_format: boolean;
+  format: KeyworkerSessionFormat | null;
+  child_chose_format: boolean | null;
   themes_covered: string[];
-  child_went_in_with: string;
-  child_walked_out_with: string;
+  child_went_in_with: 1 | 2 | 3 | 4 | 5 | null;
+  child_walked_out_with: 1 | 2 | 3 | 4 | 5 | null;
   what_child_brought_up: string;
   what_staff_brought_up: string;
   agreed_actions_staff: string[];
   agreed_actions_child: string[];
-  child_satisfaction: number;
-  follow_up_date: string;
+  child_satisfaction: 1 | 2 | 3 | 4 | 5 | null;
+  follow_up_date: string | null;
   flags_raised: string[];
   notes?: string;
+  home_id?: string;
   created_at: string;
 }
 

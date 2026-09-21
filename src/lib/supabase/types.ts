@@ -2333,6 +2333,14 @@ export interface Database {
           positive_observations: Json;
           attachments_count: number | null;
           signed_off_by: string | null;
+          session_format: string | null;
+          child_chose_format: boolean | null;
+          staff_agenda: string | null;
+          child_actions: Json;
+          child_satisfaction: number | null;
+          follow_up_date: string | null;
+          flags_raised: Json;
+          notes: string | null;
           created_at: string;
           updated_at: string;
         };
