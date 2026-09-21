@@ -154,7 +154,7 @@ export default function PettyCashPage() {
           <PrintButton title="Petty Cash" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="petty-cash" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Entry</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

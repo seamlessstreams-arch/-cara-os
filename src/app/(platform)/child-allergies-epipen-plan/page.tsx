@@ -296,7 +296,7 @@ export default function ChildAllergiesEpipenPlanPage() {
             columns={exportColumns}
             filename="child-allergies-epipen-plans"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

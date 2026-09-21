@@ -103,7 +103,7 @@ export default function HairdressingRecordsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="hairdressing-records" />
           <PrintButton title="Hairdressing Records" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

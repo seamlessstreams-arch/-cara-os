@@ -158,7 +158,7 @@ export default function SensoryEquipmentInventoryPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="sensory-equipment-inventory" />
           <PrintButton title="Sensory Equipment Inventory" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Add Item</Button>
         </div>
       }>

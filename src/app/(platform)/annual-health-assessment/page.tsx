@@ -117,7 +117,7 @@ export default function AnnualHealthAssessmentPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Health Assessment" />
           <ExportButton data={data} columns={exportCols} filename="annual-health-assessment" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

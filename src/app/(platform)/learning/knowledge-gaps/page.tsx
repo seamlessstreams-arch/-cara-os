@@ -217,7 +217,7 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
         evidence_notes: evidenceNotes || undefined,
         staff_role: staffRole || undefined,
         status: "open",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => {
@@ -376,7 +376,7 @@ export default function KnowledgeGapsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Gap
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

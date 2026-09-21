@@ -161,7 +161,7 @@ export default function IncidentTrendAnalysisPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Incident Trend Analysis" />
           <ExportButton data={allData} columns={exportCols} filename="incident-trend-analysis" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

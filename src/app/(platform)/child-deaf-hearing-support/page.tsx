@@ -144,7 +144,7 @@ export default function ChildDeafHearingSupportPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-deaf-hearing-support" />
           <PrintButton title="Deaf & Hearing Support" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

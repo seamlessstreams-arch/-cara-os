@@ -171,7 +171,7 @@ export default function CommunicationBookPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="communication-book" />
           <PrintButton title="Communication Book" />
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Entry
           </button>

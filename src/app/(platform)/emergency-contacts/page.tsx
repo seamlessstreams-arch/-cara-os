@@ -353,7 +353,7 @@ export default function EmergencyContactsPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Contacts Board" targetId="emergency-board" />
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
       showQuickCreate={false}

@@ -963,7 +963,7 @@ export default function CareEventsPage() {
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4 mr-2" /> New event
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

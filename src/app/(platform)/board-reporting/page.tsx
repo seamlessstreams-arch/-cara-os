@@ -188,7 +188,7 @@ export default function BoardReportingPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={reports} columns={exportCols} filename="board-reporting" />
           <PrintButton title="Board Reporting" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

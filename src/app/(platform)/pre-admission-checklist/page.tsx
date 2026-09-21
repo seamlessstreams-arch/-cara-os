@@ -116,7 +116,7 @@ export default function PreAdmissionChecklistPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="pre-admission-checklists" />
           <PrintButton title="Pre-Admission Checklists" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

@@ -150,7 +150,7 @@ export default function MandatoryTrainingMatrixPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Mandatory Training Matrix" />
           <ExportButton data={data} columns={exportCols} filename="mandatory-training-matrix" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

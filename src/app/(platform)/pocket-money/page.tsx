@@ -210,7 +210,7 @@ function NewTransactionDialog({
       description: description.trim(),
       category,
       receipt_held: receiptHeld,
-      approved_by: currentUser?.id ?? "staff_darren",
+      approved_by: currentUser?.id ?? "",
       notes: notes.trim() || null,
     };
     onSubmit(tx);
@@ -383,7 +383,7 @@ export default function PocketMoneyPage() {
             <Plus className="h-3.5 w-3.5" />
             Record Transaction
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

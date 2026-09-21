@@ -138,7 +138,7 @@ export default function QAAuditPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="QA Audit Records" />
           <ExportButton data={filtered} columns={exportCols} filename="qa-audit" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

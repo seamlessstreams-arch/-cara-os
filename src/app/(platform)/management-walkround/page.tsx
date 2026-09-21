@@ -96,7 +96,7 @@ export default function ManagementWalkroundPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="management-walkrounds" />
           <PrintButton title="Management Walkround" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

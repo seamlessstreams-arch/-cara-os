@@ -180,7 +180,7 @@ function NewVisitorDialog({
       sign_in_time: time,
       sign_out_time: null,
       status: "signed_in",
-      host_staff_id: currentUser?.id ?? "staff_darren",
+      host_staff_id: currentUser?.id ?? "",
       children_seen: [],
       notes: notes.trim() || null,
       created_at: now.toISOString(),
@@ -330,7 +330,7 @@ export default function VisitorLogPage() {
             <Plus className="h-3.5 w-3.5" />
             Sign In Visitor
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

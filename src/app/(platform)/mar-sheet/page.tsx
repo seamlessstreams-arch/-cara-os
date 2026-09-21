@@ -154,7 +154,7 @@ export default function MarSheetPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Administration Record" />
           <ExportButton<MarEntry> data={filtered} columns={exportColumns} filename="mar-sheet" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

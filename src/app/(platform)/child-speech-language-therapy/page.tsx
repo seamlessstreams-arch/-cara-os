@@ -141,7 +141,7 @@ export default function ChildSpeechLanguageTherapyPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-speech-language-therapy" />
           <PrintButton title="Speech & Language Therapy" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

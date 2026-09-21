@@ -137,7 +137,7 @@ export default function ChildFriendlyPoliciesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-friendly-policies" />
           <PrintButton title="Child-Friendly Policies" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

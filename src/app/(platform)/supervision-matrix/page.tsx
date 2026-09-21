@@ -126,7 +126,7 @@ export default function SupervisionMatrixPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Matrix" />
           <ExportButton data={records} columns={exportCols} filename="supervision-matrix" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

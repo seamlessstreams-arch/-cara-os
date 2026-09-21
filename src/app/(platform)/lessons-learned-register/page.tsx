@@ -144,7 +144,7 @@ export default function LessonsLearnedRegisterPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Lessons Learned Register" />
           <ExportButton data={data} columns={exportCols} filename="lessons-learned-register" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

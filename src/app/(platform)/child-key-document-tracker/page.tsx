@@ -217,7 +217,7 @@ export default function ChildKeyDocumentTrackerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Child Key Document Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="child-key-document-tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

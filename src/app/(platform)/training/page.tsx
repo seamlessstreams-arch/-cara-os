@@ -537,7 +537,7 @@ export default function TrainingPage() {
         priority,
         status: "identified",
         cara_evidence: `Training record status: ${record.status}. Auto-generated from Training & Compliance matrix.`,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => setNeedCreated((prev) => new Set(prev).add(record.id)),
@@ -564,7 +564,7 @@ export default function TrainingPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Record
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

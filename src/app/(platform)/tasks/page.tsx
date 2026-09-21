@@ -228,7 +228,7 @@ export default function TasksPage() {
           <ExportButton data={filtered} columns={TASK_EXPORT_COLS} filename="tasks" />
           <PrintButton title="Tasks" subtitle="Task Management" targetId="tasks-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Tasks — supporting document upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

@@ -166,7 +166,7 @@ export default function SaferRecruitmentTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="safer-recruitment-tracker" />
           <PrintButton title="Safer Recruitment Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

@@ -183,7 +183,7 @@ export default function ChildrenMissingEducationPage() {
           <PrintButton title="Children Missing Education" />
           <ExportButton data={filtered} columns={exportCols} filename="children-missing-education" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Entry</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

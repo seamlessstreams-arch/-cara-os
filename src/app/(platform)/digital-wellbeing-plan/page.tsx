@@ -110,7 +110,7 @@ export default function DigitalWellbeingPlanPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="digital-wellbeing-plans" />
           <PrintButton title="Digital Wellbeing Plans" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

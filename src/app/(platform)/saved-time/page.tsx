@@ -142,7 +142,7 @@ export default function SavedTimePage() {
       title="Saved-Time Dashboard"
       subtitle="Time saved through automated routing from Care Events — duplication eliminated"
       caraContext={{ pageTitle: "Saved-Time Dashboard", sourceType: "general" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />}
     >
       {/* Hero stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

@@ -147,7 +147,7 @@ export default function StaffPage() {
           <Button size="sm" onClick={() => router.push("/staff/new")}>
             <Plus className="h-3.5 w-3.5" /> Add Staff Member
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

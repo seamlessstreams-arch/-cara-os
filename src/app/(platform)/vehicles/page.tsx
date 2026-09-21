@@ -949,7 +949,7 @@ export default function VehiclesPage() {
           <Button size="sm" onClick={() => setShowCheckForm(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Log Check
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

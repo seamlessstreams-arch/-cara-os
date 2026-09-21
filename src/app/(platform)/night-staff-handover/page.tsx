@@ -208,7 +208,7 @@ export default function NightStaffHandoverPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Night Handover
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover" }} />
         </div>
       }
     >

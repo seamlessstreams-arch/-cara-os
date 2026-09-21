@@ -104,7 +104,7 @@ export default function CleaningRotaPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="cleaning-rota" />
           <PrintButton title="Cleaning Rota" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

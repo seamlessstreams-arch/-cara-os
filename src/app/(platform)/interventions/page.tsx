@@ -707,7 +707,7 @@ export default function InterventionsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Intervention
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

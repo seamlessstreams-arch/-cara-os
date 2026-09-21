@@ -51,7 +51,7 @@ export default function HealthPassportsPage() {
       title="Health Passports"
       subtitle="Portable Health Summary · Key Health Information · Emergency Protocols"
       caraContext={{ pageTitle: "Health Passports", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Health Passports" /><CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} /></div>}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Health Passports" /><CaraStudioQuickActionButton context={{ record_type: "health" }} /></div>}
     >
       <div id="print-area">
         {/* summary */}

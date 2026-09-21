@@ -150,7 +150,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="mobility-physical-disability-plans" />
           <PrintButton title="Mobility & Physical Disability Plans" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

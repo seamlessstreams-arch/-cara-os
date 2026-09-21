@@ -265,7 +265,7 @@ export default function OccupationalTherapyRecordsPage() {
             columns={EXPORT_COLS}
             filename="occupational-therapy-records"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

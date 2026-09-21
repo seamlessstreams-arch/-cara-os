@@ -578,7 +578,7 @@ function SetupForm({ onStart, onClose }: {
         safeguarding_flags: [],
         follow_up_actions: [],
         status: "active",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       onStart((res as { data: InteractiveSession }).data);
     } catch {

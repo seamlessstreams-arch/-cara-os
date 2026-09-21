@@ -156,7 +156,7 @@ export default function ChildParticipationLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="child-participation-log" />
           <PrintButton title="Child Participation Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

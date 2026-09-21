@@ -685,7 +685,7 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
             <Plus className="h-3.5 w-3.5" />
             Log Complaint
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "complaint" }} />
         </div>
       }
     >

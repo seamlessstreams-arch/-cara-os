@@ -215,7 +215,7 @@ export default function NightChecksPage() {
           <ExportButton data={filtered} columns={CHECK_EXPORT_COLS} filename={`night-checks-${dateFilter}`} />
           <PrintButton title="Night Checks" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Record Check</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

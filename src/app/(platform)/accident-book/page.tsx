@@ -199,7 +199,7 @@ export default function AccidentBookPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Accident Book" />
           <ExportButton data={filtered} columns={exportCols} filename="accident-book" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Accident</Button>
         </div>
       }

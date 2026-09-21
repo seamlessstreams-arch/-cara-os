@@ -1636,7 +1636,7 @@ export default function SafeguardingPage() {
           <ExportButton data={openSafeguarding} columns={SAFEGUARDING_EXPORT_COLS} filename="safeguarding-concerns" />
           <PrintButton title="Safeguarding Records" subtitle="Safeguarding & Child Protection" targetId="safeguarding-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Safeguarding — evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
           <Button size="sm" className="bg-rose-600 hover:bg-rose-700" onClick={() => setLogConcernOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Log Concern

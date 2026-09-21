@@ -114,7 +114,7 @@ export default function PolicyImpactAnalysisPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="policy-impact-analysis" />
           <PrintButton title="Policy Impact Analysis" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

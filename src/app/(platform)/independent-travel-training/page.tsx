@@ -165,7 +165,7 @@ export default function IndependentTravelTrainingPage() {
             filename="independent-travel-training"
           />
           <PrintButton title="Independent Travel Training" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

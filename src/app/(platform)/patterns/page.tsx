@@ -408,7 +408,7 @@ export default function PatternAlertsPage() {
       await ackMutation.mutateAsync({
         id,
         status: "acknowledged",
-        acknowledged_by: currentUser?.id ?? "staff_darren",
+        acknowledged_by: currentUser?.id ?? "",
       });
     } finally {
       setBusyId(null);
@@ -421,7 +421,7 @@ export default function PatternAlertsPage() {
       await ackMutation.mutateAsync({
         id,
         status: "resolved",
-        resolved_by: currentUser?.id ?? "staff_darren",
+        resolved_by: currentUser?.id ?? "",
       });
     } finally {
       setBusyId(null);
@@ -434,7 +434,7 @@ export default function PatternAlertsPage() {
       await ackMutation.mutateAsync({
         id,
         status: "dismissed",
-        resolved_by: currentUser?.id ?? "staff_darren",
+        resolved_by: currentUser?.id ?? "",
       });
     } finally {
       setBusyId(null);
@@ -478,7 +478,7 @@ export default function PatternAlertsPage() {
           </Button>
           <ExportButton data={filtered} columns={PATTERN_EXPORT_COLS} filename="pattern-alerts" />
           <PrintButton title="Pattern Alerts" subtitle="Cara Pattern Detection" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

@@ -220,7 +220,7 @@ export default function IncidentLearningReviewPage() {
       title="Incident Learning Review"
       subtitle="Review incidents, identify patterns, and capture organisational learning"
       caraContext={{ pageTitle: "Incident Learning Review", sourceType: "incident" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "incident" }} />}
     >
       <div className="space-y-6">
         {/* Filters */}

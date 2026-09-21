@@ -154,7 +154,7 @@ export default function ChosenFamilyTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="chosen-family-tracker" />
           <PrintButton title="Chosen Family" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

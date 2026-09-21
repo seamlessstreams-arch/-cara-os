@@ -338,7 +338,7 @@ export default function Reg45Page() {
               {updateReview.isPending ? "Publishing..." : "Publish"}
             </Button>
           )}
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

@@ -115,7 +115,7 @@ export default function AfterSchoolClubTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="after-school-clubs" />
           <PrintButton title="After-School Club Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

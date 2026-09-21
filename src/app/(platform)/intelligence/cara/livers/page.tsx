@@ -833,7 +833,7 @@ function SessionCard({ session, canRecordOutcome }: { session: InterventionSessi
                     sustainability_change: outcomeForm.sustainability_change as LiversOutcomeRecord["sustainability_change"],
                     further_action_required: outcomeForm.further_action_required,
                     further_action_notes: outcomeForm.further_action_notes,
-                    created_by: currentUser?.id ?? "staff_darren",
+                    created_by: currentUser?.id ?? "",
                     user_role: currentRole,
                   });
                   setShowOutcomeForm(false);
@@ -907,7 +907,7 @@ function LiversGeneratorForm({
           escalation_actions: parsed.escalation_actions as string[],
           management_oversight: parsed.management_oversight as string,
           status: "draft",
-          created_by: currentUser?.id ?? "staff_darren",
+          created_by: currentUser?.id ?? "",
           user_role: currentRole,
         },
         {
@@ -1027,7 +1027,7 @@ export default function LiversPage() {
         follow_up_actions: (parsed.follow_up_actions ?? []) as string[],
         management_oversight_note: parsed.management_oversight_note as string,
         status: "draft",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
         user_role: currentRole,
       });
     } finally {

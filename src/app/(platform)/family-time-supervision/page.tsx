@@ -154,7 +154,7 @@ export default function FamilyTimeSupervisionPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Family Time Supervision Records" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="family-time-supervision" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

@@ -124,7 +124,7 @@ export default function ExternalVisitorLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="external-visitor-log" />
           <PrintButton title="External Visitor Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

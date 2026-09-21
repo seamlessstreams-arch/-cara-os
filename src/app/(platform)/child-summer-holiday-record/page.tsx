@@ -116,7 +116,7 @@ export default function ChildSummerHolidayRecordPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-summer-holiday-record" />
           <PrintButton title="Holiday Records" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

@@ -124,7 +124,7 @@ export default function PlacementMeetingMinutesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-meeting-minutes" />
           <PrintButton title="Placement Meeting Minutes" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

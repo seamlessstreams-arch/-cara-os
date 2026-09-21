@@ -90,7 +90,7 @@ export default function OnCallRotaPage() {
       actions={[
         <PrintButton key="p" title="On-Call Rota" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="on-call-rota" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "rota" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

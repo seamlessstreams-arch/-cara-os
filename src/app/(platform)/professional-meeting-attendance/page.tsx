@@ -175,7 +175,7 @@ export default function ProfessionalMeetingAttendancePage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="professional-meeting-attendance" />
           <PrintButton title="Professional Meeting Attendance" />
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

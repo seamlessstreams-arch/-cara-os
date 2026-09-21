@@ -142,7 +142,7 @@ export default function WarmWelcomePacksPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={packs} columns={exportCols} filename="welcome-packs" />
           <PrintButton title="Warm Welcome Packs" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

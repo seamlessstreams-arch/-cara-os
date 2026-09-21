@@ -150,7 +150,7 @@ export default function Reg35NotificationsPage() {
           <PrintButton title="Reg 35 Notifications" />
           <ExportButton data={records} columns={exportCols} filename="reg35-notifications" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Notification</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

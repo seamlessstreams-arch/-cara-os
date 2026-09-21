@@ -237,7 +237,7 @@ export default function HandoverQualityAuditPage() {
             filename="handover-quality-audits"
           />
           <PrintButton title="Handover Quality Audits" />
-          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover" }} />
         </div>
       }
     >

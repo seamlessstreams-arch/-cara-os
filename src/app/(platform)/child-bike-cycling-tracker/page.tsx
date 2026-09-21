@@ -152,7 +152,7 @@ export default function ChildBikeCyclingTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="cycling-bike-safety" />
           <PrintButton title="Cycling & Bike Safety" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

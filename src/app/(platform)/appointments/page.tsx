@@ -258,7 +258,7 @@ export default function AppointmentsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Appointments" subtitle="Health & Welfare" />
           <ExportButton data={filtered} columns={exportCols} filename="appointments" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Appointment
           </Button>

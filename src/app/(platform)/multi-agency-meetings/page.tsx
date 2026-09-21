@@ -196,7 +196,7 @@ export default function MultiAgencyMeetingsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="multi-agency-meetings" />
           <PrintButton title="Multi-Agency Meetings" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
           <Button size="sm" onClick={() => setShowDialog(true)}><Plus className="h-4 w-4 mr-1" /> New Meeting</Button>
         </div>
       }

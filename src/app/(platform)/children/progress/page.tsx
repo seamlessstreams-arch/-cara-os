@@ -262,7 +262,7 @@ export default function ChildProgressPage() {
       title="Progress & Outcomes"
       subtitle="Track goals, milestones, and outcome scores over time"
       caraContext={{ pageTitle: "Progress & Outcomes", sourceType: "care_plan" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />}
     >
       <div className="space-y-6">
         {/* Child Selector & Actions */}

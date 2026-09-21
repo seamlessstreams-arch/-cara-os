@@ -521,7 +521,7 @@ export default function OversightGeneratorPage() {
         ai_draft: draftText,
         edited_version: editedText !== draftText ? editedText : undefined,
         approval_status: "draft",
-        manager_id: currentUser?.id ?? "staff_darren",
+        manager_id: currentUser?.id ?? "",
       });
       setSavedId((res as { data: { id: string } }).data?.id ?? null);
     } finally {
@@ -541,7 +541,7 @@ export default function OversightGeneratorPage() {
         approval_status: "approved",
         final_version: editedText,
         approved_at: new Date().toISOString(),
-        manager_id: currentUser?.id ?? "staff_darren",
+        manager_id: currentUser?.id ?? "",
       });
       setStatus("approved");
     } finally {

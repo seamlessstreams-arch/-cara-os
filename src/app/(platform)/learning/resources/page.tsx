@@ -179,7 +179,7 @@ function ResourceCard({ resource }: { resource: GeneratedResource }) {
             is_approved: true,
             is_pinned: false,
             usage_count: 0,
-            created_by: currentUser?.id ?? "staff_darren",
+            created_by: currentUser?.id ?? "",
           });
         },
       }
@@ -298,7 +298,7 @@ export default function ResourceGeneratorPage() {
         content: result,
         status: "draft",
         cara_generated: true,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
         tags: [pathway, readingLevel],
       });
       setSaved(true);
@@ -366,7 +366,7 @@ export default function ResourceGeneratorPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Resource Generator" subtitle="Learning Resources" targetId="resources-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Generator upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

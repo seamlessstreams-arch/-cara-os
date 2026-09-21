@@ -175,7 +175,7 @@ export default function FriendshipMappingPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Friendship Mapping" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="friendship-mapping" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

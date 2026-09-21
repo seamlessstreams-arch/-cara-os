@@ -547,7 +547,7 @@ export default function Regulation44Page() {
           <Button className="bg-slate-900 hover:bg-slate-800 h-9 text-sm" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4 mr-1.5" />Record Visit
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

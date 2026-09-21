@@ -387,7 +387,7 @@ export default function DocumentsPage() {
           <Button size="sm" onClick={() => setTab("upload")}>
             <Upload className="h-3.5 w-3.5 mr-1" />Upload Document
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document" }} />
         </div>
       }
     >

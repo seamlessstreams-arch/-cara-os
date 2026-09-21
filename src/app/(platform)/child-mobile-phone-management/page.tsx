@@ -152,7 +152,7 @@ export default function ChildMobilePhoneManagementPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-mobile-phone-management" />
           <PrintButton title="Mobile Phone Management" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

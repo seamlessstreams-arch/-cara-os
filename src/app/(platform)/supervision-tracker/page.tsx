@@ -178,7 +178,7 @@ export default function SupervisionTrackerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Tracker" />
           <ExportButton data={records} columns={exportCols} filename="supervision-tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" /> Log Session
           </Button>

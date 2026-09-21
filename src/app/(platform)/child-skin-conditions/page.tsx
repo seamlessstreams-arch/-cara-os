@@ -272,7 +272,7 @@ export default function ChildSkinConditionsPage() {
             columns={exportColumns}
             filename="child-skin-conditions"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

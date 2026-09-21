@@ -218,7 +218,7 @@ export default function PreventDutyPage() {
             <Plus className="h-4 w-4 mr-1" />
             New Entry
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

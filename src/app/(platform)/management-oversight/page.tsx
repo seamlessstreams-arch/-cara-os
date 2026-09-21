@@ -278,7 +278,7 @@ function CompleteDialog({
     completeMutation.mutate(
       {
         task_id: task.id,
-        completed_by: currentUser?.id ?? "staff_darren",
+        completed_by: currentUser?.id ?? "",
         evidence_note: note || undefined,
       },
       {
@@ -368,7 +368,7 @@ export default function ManagementOversightPage() {
       subtitle="Care events and tasks requiring manager review, verification or sign-off"
       caraContext={{ pageTitle: "Management Oversight Queue", sourceType: "general" }}
       actions={
-        <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+        <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
       }
     >
       <CaraPanel

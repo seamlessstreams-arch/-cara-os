@@ -134,7 +134,7 @@ export default function ChildWorkExperienceTrackerPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-work-experience-tracker" />
           <PrintButton title="Work Experience & Career Exposure" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

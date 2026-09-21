@@ -186,7 +186,7 @@ export default function DataBreachLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Data Breach Log" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="data-breach-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

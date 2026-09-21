@@ -536,7 +536,7 @@ export default function Reg44Page() {
             <Plus className="h-3.5 w-3.5" />
             Add Visit
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

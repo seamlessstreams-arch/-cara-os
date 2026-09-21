@@ -147,7 +147,7 @@ export default function ProfessionalCuriosityLogPage() {
       actions={[
         <PrintButton key="p" title="Professional Curiosity Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-curiosity-log" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "management_oversight" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

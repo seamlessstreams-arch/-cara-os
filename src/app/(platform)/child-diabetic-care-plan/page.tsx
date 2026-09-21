@@ -146,7 +146,7 @@ export default function ChildDiabeticCarePlanPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Diabetic Care Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-diabetic-care-plan" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

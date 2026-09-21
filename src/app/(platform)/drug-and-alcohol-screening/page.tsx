@@ -205,7 +205,7 @@ export default function DrugAndAlcoholScreeningPage() {
             columns={exportCols}
             filename="drug-and-alcohol-screening"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

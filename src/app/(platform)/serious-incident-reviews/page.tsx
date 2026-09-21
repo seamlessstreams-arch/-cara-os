@@ -135,7 +135,7 @@ export default function SeriousIncidentReviewsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Serious Incident Reviews" />
           <ExportButton data={filtered} columns={exportCols} filename="serious-incident-reviews" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
           <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />New Review</Button>
         </div>
       }

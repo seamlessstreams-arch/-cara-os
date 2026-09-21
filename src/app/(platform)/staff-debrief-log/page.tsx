@@ -131,7 +131,7 @@ export default function StaffDebriefLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Debrief Log" />
           <ExportButton data={exportData} columns={exportCols} filename="staff-debrief-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

@@ -126,7 +126,7 @@ export default function ChildCookingBakingSkillsPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-cooking-baking-skills" />
           <PrintButton title="Cooking & Baking Skills" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

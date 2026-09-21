@@ -280,7 +280,7 @@ export function QuickCreateModal({
         requires_sign_off: taskForm.requires_sign_off,
         status: "not_started",
         home_id: "home_oak",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => {
@@ -306,7 +306,7 @@ export function QuickCreateModal({
         linked_staff_id: careForm.linked_staff_id || undefined,
         linked_incident_id: careForm.linked_incident_id || undefined,
         home_id: "home_oak",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
         status: "draft",
       },
       {

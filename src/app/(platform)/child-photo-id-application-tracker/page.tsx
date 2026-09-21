@@ -168,7 +168,7 @@ export default function ChildPhotoIdApplicationTrackerPage() {
       actions={[
         <PrintButton key="p" title="Photo ID Applications" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-photo-id-application-tracker" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "care_plan" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

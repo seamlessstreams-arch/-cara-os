@@ -131,7 +131,7 @@ export default function MedicationTrainingPage() {
   return (
     <PageShell title="Medication Training & Competency" subtitle="Reg 23 · NICE · Safe Medicines Management" 
       caraContext={{ pageTitle: "Medication Training & Competency", sourceType: "medication" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><CaraStudioQuickActionButton context={{ record_type: "medication" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

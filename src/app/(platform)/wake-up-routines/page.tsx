@@ -101,7 +101,7 @@ export default function WakeUpRoutinesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="wake-up-routines" />
           <PrintButton title="Wake-Up Routines" />
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

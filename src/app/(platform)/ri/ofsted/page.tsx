@@ -171,7 +171,7 @@ export default function OfstedReadinessPage() {
             targetId="ofsted-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Ofsted readiness — inspection evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

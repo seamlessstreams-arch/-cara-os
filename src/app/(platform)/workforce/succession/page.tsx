@@ -294,7 +294,7 @@ export default function SuccessionBoardPage() {
           <Link href="/workforce">
             <Button variant="outline" size="sm">Workforce Hub</Button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

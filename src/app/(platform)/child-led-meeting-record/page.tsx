@@ -102,7 +102,7 @@ export default function ChildLedMeetingRecordPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-led-meetings" />
           <PrintButton title="Child-Led Meeting Record" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

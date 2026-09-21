@@ -734,7 +734,7 @@ export default function TemplatesPage() {
             <Sparkles className="h-3.5 w-3.5 mr-1" />
             {showCara ? "Hide Cara" : "Ask Cara"}
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

@@ -669,7 +669,7 @@ function GenerateForm({
         cara_generated_at: new Date().toISOString(),
         status: "in_progress",
         submitted_to_ofsted: false,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => { setResult(null); setPeriod(""); setPeriodStart(""); setPeriodEnd(""); setEvidenceNotes(""); } }
     );
@@ -785,7 +785,7 @@ export default function Reg45Page() {
             targetId="reg45-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI — Regulation 45 evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

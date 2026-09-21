@@ -105,7 +105,7 @@ export default function NightLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Night Log" />
           <ExportButton data={exportData} columns={exportCols} filename="night-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

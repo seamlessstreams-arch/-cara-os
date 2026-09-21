@@ -96,7 +96,7 @@ export default function BusinessContinuityPage() {
       title="Business Continuity Plan"
       subtitle="Emergency Preparedness · Operational Resilience · Civil Contingencies"
       caraContext={{ pageTitle: "Business Continuity Plan", sourceType: "document" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Business Continuity Plan" /><CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Business Continuity Plan" /><CaraStudioQuickActionButton context={{ record_type: "policy" }} /></div>}
     >
       <div id="print-area">
         {/* ── Review Status Banner ── */}

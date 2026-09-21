@@ -87,7 +87,7 @@ export default function UtilityMonitoringPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Utility Monitoring" />
           <ExportButton data={records} columns={exportCols} filename="utility-monitoring" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

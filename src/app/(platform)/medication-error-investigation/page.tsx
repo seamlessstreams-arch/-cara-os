@@ -151,7 +151,7 @@ export default function MedicationErrorInvestigationPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-error-investigation" />
           <PrintButton title="Medication Error Investigation" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Error</Button>
         </div>
       }>

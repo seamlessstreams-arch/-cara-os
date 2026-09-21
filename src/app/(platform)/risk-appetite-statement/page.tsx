@@ -165,7 +165,7 @@ export default function RiskAppetiteStatementPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="risk-appetite-statement" />
           <PrintButton title="Risk Appetite Statement" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

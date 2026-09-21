@@ -452,7 +452,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
             priority: (first.priority as "urgent" | "high" | "medium" | "low") ?? "medium",
             status: "identified",
             cara_evidence: `Extracted from supervision with ${staff?.full_name ?? "staff"} on ${formatDate(sup.scheduled_date)}.`,
-            created_by: currentUser?.id ?? "staff_darren",
+            created_by: currentUser?.id ?? "",
           },
           { onSuccess: () => setNeedCreated(true) }
         );
@@ -603,7 +603,7 @@ function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { 
 
   const [form, setForm] = useState({
     staff_id: prefill?.staff_id ?? "",
-    supervisor_id: currentUser?.id ?? "staff_darren",
+    supervisor_id: currentUser?.id ?? "",
     type: (prefill?.type ?? "formal") as Supervision["type"],
     scheduled_date: daysFromNow(7),
   });
@@ -618,8 +618,8 @@ function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { 
         ...form,
         status: "scheduled",
         home_id: homeId,
-        created_by: currentUser?.id ?? "staff_darren",
-        updated_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
+        updated_by: currentUser?.id ?? "",
         actions_agreed: [],
         discussion_points: "",
         staff_signature: false,
@@ -854,7 +854,7 @@ export default function SupervisionPage() {
           <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="h-3.5 w-3.5" />Schedule Supervision
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

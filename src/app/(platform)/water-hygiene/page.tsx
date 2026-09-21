@@ -207,7 +207,7 @@ export default function WaterHygienePage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Water Hygiene Records" />
           <ExportButton data={filtered} columns={exportCols} filename="water-hygiene" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button>
         </div>
       }

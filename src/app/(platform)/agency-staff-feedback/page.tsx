@@ -139,7 +139,7 @@ export default function AgencyStaffFeedbackPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="agency-staff-feedback" />
           <PrintButton title="Agency Staff Feedback" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Feedback</Button>
         </div>
       }>

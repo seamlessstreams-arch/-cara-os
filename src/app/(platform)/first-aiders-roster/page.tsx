@@ -122,7 +122,7 @@ export default function FirstAidersRosterPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="First Aiders Roster" />
           <ExportButton data={filtered} columns={exportCols} filename="first-aiders-roster" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

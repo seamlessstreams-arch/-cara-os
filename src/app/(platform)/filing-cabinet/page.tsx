@@ -230,7 +230,7 @@ export default function FilingCabinetPage() {
       title="Filing Cabinet"
       subtitle="Auto-filed records from Care Events — searchable archive with source links"
       caraContext={{ pageTitle: "Filing Cabinet", sourceType: "document" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "uploaded_document" }} />}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

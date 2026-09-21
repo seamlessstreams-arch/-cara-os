@@ -180,7 +180,7 @@ export default function WhistleblowingInvestigationsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="whistleblowing-investigations" />
           <PrintButton title="Whistleblowing Investigations" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

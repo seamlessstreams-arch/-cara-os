@@ -197,7 +197,7 @@ export default function RiskManagementBoardPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={visible} columns={exportCols} filename="strategic-risk-register" />
           <PrintButton title="Strategic Risk Management Board" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

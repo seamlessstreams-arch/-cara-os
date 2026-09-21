@@ -194,7 +194,7 @@ export default function VoiceOfTheChildPage() {
       title="Voice of the Child"
       subtitle="Capturing what matters most — in their own words"
       caraContext={{ pageTitle: "Voice of the Child", sourceType: "care_plan" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />}
     >
       <div className="space-y-6">
         {/* Child Selector */}

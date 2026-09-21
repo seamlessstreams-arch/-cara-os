@@ -541,7 +541,7 @@ function PatternAlertsSection() {
     acknowledge.mutate({
       id,
       status: "resolved",
-      resolved_by: currentUser?.id ?? "staff_darren",
+      resolved_by: currentUser?.id ?? "",
       resolution_notes: resolveNotes[id] ?? "",
     } as Parameters<typeof acknowledge.mutate>[0], {
       onSuccess: () => setResolvingId(null),

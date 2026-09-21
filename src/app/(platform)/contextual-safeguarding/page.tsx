@@ -162,7 +162,7 @@ export default function ContextualSafeguardingPage() {
   ];
 
   return (
-    <PageShell title="Contextual Safeguarding" subtitle="Working Together 2023 · Community Risk Mapping · Environmental Factors" caraContext={{ pageTitle: "Contextual Safeguarding", sourceType: "child_record" }} actions={<div className="flex items-center gap-2"><PrintButton title="Contextual Safeguarding" /><ExportButton data={filtered} columns={exportCols} filename="contextual-safeguarding" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Context</Button><CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
+    <PageShell title="Contextual Safeguarding" subtitle="Working Together 2023 · Community Risk Mapping · Environmental Factors" caraContext={{ pageTitle: "Contextual Safeguarding", sourceType: "child_record" }} actions={<div className="flex items-center gap-2"><PrintButton title="Contextual Safeguarding" /><ExportButton data={filtered} columns={exportCols} filename="contextual-safeguarding" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Context</Button><CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} /></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

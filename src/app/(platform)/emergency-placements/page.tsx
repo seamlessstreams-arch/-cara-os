@@ -154,7 +154,7 @@ export default function EmergencyPlacementsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency & Out-of-Hours Placements" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="emergency-placements" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

@@ -180,7 +180,7 @@ export default function AuditTrailPage() {
       title="Audit Trail"
       subtitle="Tamper-evident log of all Care Event actions — complete chronological record"
       caraContext={{ pageTitle: "Audit Trail", sourceType: "general" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

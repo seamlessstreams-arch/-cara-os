@@ -166,7 +166,7 @@ export default function RegulatoryCorrespondenceTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="regulatory-correspondence" />
           <PrintButton title="Regulatory Correspondence Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

@@ -258,7 +258,7 @@ function TriageDialog({
       {
         task_id: task.id,
         action,
-        completed_by: currentUser?.id ?? "staff_darren",
+        completed_by: currentUser?.id ?? "",
         evidence_note: note || undefined,
       },
       {
@@ -407,7 +407,7 @@ export default function Regulation40Page() {
       title="Regulation 40 Triage Queue"
       subtitle="Events requiring triage to determine if an Ofsted notifiable event notification is required"
       caraContext={{ pageTitle: "Regulation 40 Triage Queue", sourceType: "general" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45" }} />}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">

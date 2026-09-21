@@ -494,7 +494,7 @@ function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
       affected_roles: ["residential_care_worker", "senior_residential_care_worker"],
       status: "identified",
       cara_evidence: `Detected by Cara from ${entries.length} daily log entries`,
-      created_by: currentUser?.id ?? "staff_darren",
+      created_by: currentUser?.id ?? "",
     });
     setCreated((prev) => new Set(prev).add(idx));
   }
@@ -702,7 +702,7 @@ export default function DailyLogPage() {
             <Plus className="h-3.5 w-3.5 mr-1" />
             {showForm ? "Cancel" : "New Entry"}
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
       caraContext={{ pageTitle: "Daily Log", sourceType: "general" }}

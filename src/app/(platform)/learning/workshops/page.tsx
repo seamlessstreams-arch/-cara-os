@@ -334,7 +334,7 @@ export default function WorkshopPlannerPage() {
         content: result as Record<string, unknown>,
         status: "draft",
         cara_generated: true,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       setSaved(true);
     } finally {
@@ -352,7 +352,7 @@ export default function WorkshopPlannerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Workshop Planner" subtitle="Learning Workshops" targetId="workshops-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Workshop Planner upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

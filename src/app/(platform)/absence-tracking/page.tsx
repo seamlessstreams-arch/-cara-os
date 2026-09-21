@@ -163,7 +163,7 @@ export default function AbsenceTrackingPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Absence Tracking" />
           <ExportButton data={filtered} columns={exportCols} filename="absence-tracking" />
-          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota" }} />
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Absence
           </Button>

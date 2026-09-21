@@ -247,7 +247,7 @@ export default function PathwayPlan16PlusPage() {
         <PrintButton key="p" title="Pathway Plan (16+)" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="pathway-plan-16plus" />,
         <Button key="new" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Plan</Button>,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "placement_plan" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

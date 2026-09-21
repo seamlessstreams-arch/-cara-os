@@ -948,7 +948,7 @@ export default function YoungPeoplePage() {
           <ExportButton data={filteredYP} columns={YP_EXPORT_COLS} filename="young-people" />
           <PrintButton title="Young People" subtitle="Children in Placement" targetId="young-people-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Young people — care document upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

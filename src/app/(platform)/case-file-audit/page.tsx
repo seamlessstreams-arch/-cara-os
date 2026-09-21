@@ -158,7 +158,7 @@ export default function CaseFileAuditPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="case-file-audits" />
           <PrintButton title="Case File Audit" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

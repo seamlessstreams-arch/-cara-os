@@ -155,7 +155,7 @@ export default function MedicationNearMissLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Near-Miss Log" />
           <ExportButton<MedicationNearMiss> data={filtered} columns={exportColumns} filename="medication-near-miss-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

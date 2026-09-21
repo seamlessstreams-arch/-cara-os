@@ -146,7 +146,7 @@ export default function MultiDisciplinaryFormulationPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Multi-Disciplinary Formulation" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="multi-disciplinary-formulation" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

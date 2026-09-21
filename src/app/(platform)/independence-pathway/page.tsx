@@ -134,7 +134,7 @@ export default function IndependencePathwayPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="independence-pathway" />
           <PrintButton title="Independence Pathway" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >
