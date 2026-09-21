@@ -2323,7 +2323,9 @@ export interface Database {
           topics_covered: Json;
           child_voice: string | null;
           child_mood: number | null;
+          child_mood_before: number | null;
           child_engagement: number | null;
+          worker_observations: string | null;
           outcomes: Json;
           actions: Json;
           next_session_topics: Json;
