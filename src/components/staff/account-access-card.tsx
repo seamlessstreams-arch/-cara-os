@@ -35,8 +35,9 @@ export function AccountAccessCard({ staffId, staffName, authUserId, email, onLin
   const [address, setAddress] = useState(email ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
+  const [issued, setIssued] = useState<{ email: string | null; password: string; reset: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
   const mayManage = hasPermission(currentRole, PERMISSIONS.MANAGE_STAFF);
   const hasLogin = Boolean(authUserId) || issued !== null;
@@ -55,8 +56,33 @@ export function AccountAccessCard({ staffId, staffName, authUserId, email, onLin
         setError(json?.detail ?? json?.error ?? "Could not create the login.");
         return;
       }
-      setIssued({ email: json.data.email, password: json.data.temporary_password });
+      setIssued({ email: json.data.email, password: json.data.temporary_password, reset: false });
       onLinked?.();
+    } catch {
+      setError("Could not reach the server.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /* Restoring access, for when a colleague is locked out. Their old password
+     stops working the moment this runs, so it is behind a confirmation —
+     misfiring it on the wrong row locks out someone who was fine. */
+  async function resetLogin() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/staff/${staffId}/login/reset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...userIdHeaders() },
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.detail ?? json?.error ?? "Could not reset the login.");
+        return;
+      }
+      setIssued({ email: json.data.email, password: json.data.temporary_password, reset: true });
+      setConfirmingReset(false);
     } catch {
       setError("Could not reach the server.");
     } finally {
@@ -73,9 +99,35 @@ export function AccountAccessCard({ staffId, staffName, authUserId, email, onLin
       </CardHeader>
       <CardContent className="space-y-3">
         {hasLogin && !issued && (
-          <p className="flex items-center gap-2 text-sm text-emerald-700">
-            <CheckCircle2 className="h-4 w-4" /> {staffName} can sign in.
-          </p>
+          <>
+            <p className="flex items-center gap-2 text-sm text-emerald-700">
+              <CheckCircle2 className="h-4 w-4" /> {staffName} can sign in.
+            </p>
+            {mayManage && !confirmingReset && (
+              <Button variant="outline" onClick={() => setConfirmingReset(true)} className="w-full">
+                Reset access
+              </Button>
+            )}
+            {mayManage && confirmingReset && (
+              <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <p className="text-sm font-semibold text-amber-900">
+                  Reset {staffName}&rsquo;s access?
+                </p>
+                <p className="text-xs text-amber-800">
+                  Their current password stops working immediately. You will get a new
+                  one to hand over in person. Only do this if they are locked out.
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={resetLogin} disabled={busy} className="flex-1">
+                    {busy ? "Resetting…" : "Yes, reset it"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setConfirmingReset(false)} disabled={busy} className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {!hasLogin && (
@@ -113,16 +165,21 @@ export function AccountAccessCard({ staffId, staffName, authUserId, email, onLin
 
         {issued && (
           <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-            <p className="text-sm font-semibold text-emerald-900">Login created</p>
+            <p className="text-sm font-semibold text-emerald-900">{issued.reset ? "Access reset" : "Login created"}</p>
             <p className="text-xs text-emerald-800">
-              Give these to {staffName} in person. The password is shown once and cannot be
+              {issued.reset
+                ? `${staffName}'s previous password no longer works. `
+                : ""}
+              Give this to {staffName} in person. The password is shown once and cannot be
               retrieved again — they should change it after signing in.
             </p>
             <dl className="space-y-1 text-sm">
-              <div className="flex gap-2">
-                <dt className="text-emerald-700">Email</dt>
-                <dd className="font-mono">{issued.email}</dd>
-              </div>
+              {issued.email && (
+                <div className="flex gap-2">
+                  <dt className="text-emerald-700">Email</dt>
+                  <dd className="font-mono">{issued.email}</dd>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <dt className="text-emerald-700">Password</dt>
                 <dd className="font-mono break-all">{issued.password}</dd>
