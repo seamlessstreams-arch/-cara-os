@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -85,6 +86,8 @@ export default function DeprivationOfLibertyPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+  // Who authorised a restriction on a child's liberty is the record.
+  const { currentUser, identityUnresolved } = useAuthContext();
 
   const [dolForm, setDolForm] = useState({
     child_id: "",
@@ -93,7 +96,7 @@ export default function DeprivationOfLibertyPage() {
     necessary_justification: "",
     child_views: "",
     legal_basis: "care_plan" as DoLLegalBasis,
-    authorised_by_id: "staff_darren",
+    authorised_by_id: "",
     date_imposed: todayStr(),
     review_date: "",
   });
@@ -101,6 +104,7 @@ export default function DeprivationOfLibertyPage() {
 
   const handleCreateRestriction = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser || identityUnresolved) return;
     if (!dolForm.child_id || !dolForm.restriction_type || !dolForm.description.trim()) {
       toast.error("Young person, restriction type and description are required.");
       return;

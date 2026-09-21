@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import {
   ChevronDown,
   ChevronUp,
@@ -72,6 +73,7 @@ const CAMERA_LABELS: Record<CCTVCamera, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function CCTVLogPage() {
+  const { currentUser, identityUnresolved } = useAuthContext();
   const { data: ccData, isLoading } = useCCTVAccesses();
   const data = useMemo(() => ccData?.data ?? [], [ccData]);
   const createAccess = useCreateCCTVAccess();
@@ -268,6 +270,7 @@ export default function CCTVLogPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Log CCTV Access</DialogTitle></DialogHeader>
           <form onSubmit={(e) => {
+            if (!currentUser || identityUnresolved) return;
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
             createAccess.mutate({
@@ -281,9 +284,13 @@ export default function CCTVLogPage() {
               external_reference: fd.get("external_reference") as string || "",
               footage_copied: fd.get("footage_copied") === "on",
               copied_to: "",
-              witness_present: fd.get("witness_present") === "on" ? "staff_ryan" : null,
-              accessed_by: "staff_darren",
-              authorised_by: "staff_darren",
+              // Who the witness was is a fact the form does not collect; it used
+              // to be stamped with the seed id "staff_ryan".
+              witness_present: null,
+              // Who viewed the footage, and who authorised it, is the whole
+              // point of a CCTV access log.
+              accessed_by: currentUser.id,
+              authorised_by: currentUser.id,
               outcome: fd.get("outcome") as string || "",
             } as Partial<CCTVAccess>, {
               onSuccess: () => { toast.success("CCTV access logged"); setShowDialog(false); },
@@ -307,7 +314,7 @@ export default function CCTVLogPage() {
             <textarea name="outcome" placeholder="Outcome" rows={2} className="rounded border px-3 py-2 text-sm" />
             <DialogFooter>
               <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-              <button type="submit" disabled={createAccess.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">
+              <button type="submit" disabled={createAccess.isPending || identityUnresolved || !currentUser} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">
                 {createAccess.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1 inline" />Saving…</> : "Log Access"}
               </button>
             </DialogFooter>

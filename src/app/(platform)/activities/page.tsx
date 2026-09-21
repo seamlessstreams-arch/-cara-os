@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -220,7 +221,9 @@ function NewActivityDialog({
   onSave: (data: Partial<Activity>) => void;
 }) {
   const [form, setForm] = useState({
-    child_id: "yp_alex",
+    // Was "yp_alex", a seeded child. The picker below is the answer; a
+    // pre-selected default writes a record against whoever it names.
+    child_id: "",
     category: "sport" as ActivityCategory,
     title: "",
     description: "",
@@ -260,14 +263,7 @@ function NewActivityDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="4350-young-person" className="text-xs text-slate-500 font-medium mb-1 block">Young person</label>
-              <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger id="4350-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChildSelect id="4350-young-person" value={form.child_id} onChange={(v) => setForm((p) => ({ ...p, child_id: v }))} />
             </div>
             <div>
               <label htmlFor="4350-category" className="text-xs text-slate-500 font-medium mb-1 block">Category</label>
