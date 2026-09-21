@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
@@ -18,7 +19,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -448,7 +449,9 @@ function NewInterventionDialog({
 }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    child_id: "yp_alex",
+    // Was "yp_alex", a seeded child. The picker below is the answer; a
+    // pre-selected default writes a record against whoever it names.
+    child_id: "",
     title: "",
     description: "",
     rationale: "",
@@ -474,7 +477,7 @@ function NewInterventionDialog({
         created_by: "staff_darren",
       });
       onClose();
-      setForm({ child_id: "yp_alex", title: "", description: "", rationale: "", intended_outcome: "", review_date: "" });
+      setForm({ child_id: "", title: "", description: "", rationale: "", intended_outcome: "", review_date: "" });
     } finally {
       setSaving(false);
     }
@@ -493,19 +496,7 @@ function NewInterventionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person <span className="text-[--cs-risk]">*</span></label>
-              <Select
-                value={form.child_id}
-                onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChildSelect value={form.child_id} onChange={(v) => setForm((p) => ({ ...p, child_id: v }))} />
             </div>
             <div>
               <label htmlFor="4e78-review-date" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Review date</label>

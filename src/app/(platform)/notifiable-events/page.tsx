@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Bell, Plus, Search, ArrowUpDown, Filter,
@@ -64,6 +65,9 @@ function CreateNotifiableEventDialog({
   onClose: () => void;
 }) {
   const createMutation = useCreateNotifiableEvent();
+  // A Reg 40 notification is a named person's account. It used to default to
+  // the seed id "staff_darren" on every tenant.
+  const { currentUser, identityUnresolved } = useAuthContext();
   const today = todayStr();
 
   const [form, setForm] = useState({
@@ -73,7 +77,7 @@ function CreateNotifiableEventDialog({
     summary: "",
     detail: "",
     immediate_action: "",
-    reported_by: "staff_darren",
+    reported_by: "",
     follow_up: "",
     lesson_learned: "",
     ofsted_notified: false,
@@ -108,7 +112,7 @@ function CreateNotifiableEventDialog({
       summary: form.summary.trim(),
       detail: form.detail.trim(),
       immediate_action: form.immediate_action.trim(),
-      reported_by: form.reported_by,
+      reported_by: form.reported_by || currentUser?.id || "",
       ofsted_status: ofstedStatus,
       ofsted: {
         body: form.detail.trim(),
@@ -140,7 +144,7 @@ function CreateNotifiableEventDialog({
       summary: "",
       detail: "",
       immediate_action: "",
-      reported_by: "staff_darren",
+      reported_by: currentUser?.id ?? "",
       follow_up: "",
       lesson_learned: "",
       ofsted_notified: false,
@@ -398,7 +402,7 @@ function CreateNotifiableEventDialog({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending} className="bg-red-600 hover:bg-red-700">
+            <Button type="submit" disabled={createMutation.isPending || identityUnresolved || !currentUser} className="bg-red-600 hover:bg-red-700">
               {createMutation.isPending ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</>
               ) : (

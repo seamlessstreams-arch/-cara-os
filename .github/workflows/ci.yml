@@ -189,6 +189,9 @@ jobs:
       - name: Defaulted-judgement guard (an unrecorded judgement must not read as a yes)
         run: node scripts/check-defaulted-judgements.js
 
+      - name: Seeded-actor guard (a record is not written by, or about, a seeded person)
+        run: node scripts/check-seeded-actors.js
+
       - name: Retrospective-date guard (a record of a past event cannot be future-dated)
         run: node scripts/check-retrospective-dates.js
 

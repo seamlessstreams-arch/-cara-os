@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -676,7 +677,10 @@ function NewErrorDialog({
   onClose: () => void;
   onSubmit: (error: Partial<MedicationError>) => void;
 }) {
-  const [child_id, setChildId] = useState("yp_alex");
+  const { currentUser, identityUnresolved } = useAuthContext();
+  // Was "yp_alex", a seeded child. On a live tenant that attached a medication
+  // error to a record that does not exist.
+  const [child_id, setChildId] = useState("");
   const [date_occurred, setDateOccurred] = useState("");
   const [time_occurred, setTimeOccurred] = useState("");
   const [error_type, setErrorType] = useState<MedErrorType>("wrong_dose");
@@ -699,13 +703,15 @@ function NewErrorDialog({
   }
 
   function handleSubmit() {
+    if (!currentUser || identityUnresolved) return;
     if (!medication.trim() || !what_happened.trim() || !date_occurred) return;
 
     const error: Partial<MedicationError> = {
       child_id,
       date_occurred,
       time_occurred: time_occurred || "00:00",
-      reported_by: "staff_darren",
+      // Who reported a medication error is part of the error record.
+      reported_by: currentUser.id,
       reported_date: todayStr(),
       error_type,
       severity,
@@ -925,7 +931,7 @@ function NewErrorDialog({
             size="sm"
             className="text-xs"
             onClick={handleSubmit}
-            disabled={!medication.trim() || !what_happened.trim() || !date_occurred}
+            disabled={!medication.trim() || !what_happened.trim() || !date_occurred || !child_id || identityUnresolved || !currentUser}
           >
             Submit Report
           </Button>

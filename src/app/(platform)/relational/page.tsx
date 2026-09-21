@@ -8,6 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect, useChildren, useChildName } from "@/components/young-people/child-select";
+import { StaffSelect, useStaffName } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
@@ -21,26 +23,15 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
-function useRelationalRecords(childId: string, type?: string) {
-  const query = new URLSearchParams({ child_id: childId });
-  if (type) query.set("type", type);
-  return useQuery({
-    queryKey: ["intelligence", "relational", childId, type],
-    queryFn: () =>
-      api.get<ListResponse<RelationalRecord>>(`/intelligence/relational?${query}`),
-    enabled: !!childId,
-  });
-}
 
 function useCreateRelationalRecord() {
   const qc = useQueryClient();
@@ -84,21 +75,25 @@ const CONFIDENCE_CONFIG: Record<string, { label: string; cls: string }> = {
   high:   { label: "Well-evidenced",    cls: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
 };
 
-const RELATIONAL_EXPORT_COLS: ExportColumn<RelationalRecord>[] = [
-  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+// The name lookup is a hook, so the columns are built per render rather than
+// at module scope where a seed lookup used to stand in.
+const RELATIONAL_EXPORT_COLS = (ypName: (id: string) => string, staffName: (id: string) => string): ExportColumn<RelationalRecord>[] => [
+  { header: "Young Person", accessor: (r) => ypName(r.child_id) },
   { header: "Type", accessor: (r) => TYPE_CONFIG[r.record_type]?.label ?? r.record_type },
   { header: "Title", accessor: (r) => r.title },
   { header: "Description", accessor: (r) => r.description },
   { header: "Positive", accessor: (r) => r.is_positive ? "Yes" : "No" },
   { header: "Confidence", accessor: (r) => CONFIDENCE_CONFIG[r.confidence]?.label ?? r.confidence },
-  { header: "Staff", accessor: (r) => r.staff_id ? getStaffName(r.staff_id) : "" },
-  { header: "Recorded By", accessor: (r) => getStaffName(r.created_by) },
+  { header: "Staff", accessor: (r) => r.staff_id ? staffName(r.staff_id) : "" },
+  { header: "Recorded By", accessor: (r) => staffName(r.created_by) },
   { header: "Date", accessor: (r) => r.created_at.slice(0, 10) },
 ];
 
 // ── Record Card ──────────────────────────────────────────────────────────────
 
-function RecordCard({ record }: { record: RelationalRecord }) {
+// The name lookups are hooks on the page, passed down rather than resolved
+// here from the demo seed.
+function RecordCard({ record, ypName, staffName }: { record: RelationalRecord; ypName: (id: string) => string; staffName: (id: string) => string }) {
   const [expanded, setExpanded] = useState(false);
   const typeCfg = TYPE_CONFIG[record.record_type];
   const TypeIcon = typeCfg?.icon ?? Heart;
@@ -130,13 +125,13 @@ function RecordCard({ record }: { record: RelationalRecord }) {
 
           <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] flex-wrap">
             <span className="flex items-center gap-1">
-              <User className="h-3 w-3" />{getYPName(record.child_id)}
+              <User className="h-3 w-3" />{ypName(record.child_id)}
             </span>
             {record.staff_id && (
               <>
                 <span>·</span>
                 <span className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />Staff: {getStaffName(record.staff_id)}
+                  <Users className="h-3 w-3" />Staff: {staffName(record.staff_id)}
                 </span>
               </>
             )}
@@ -160,7 +155,7 @@ function RecordCard({ record }: { record: RelationalRecord }) {
           </div>
 
           <div className="flex items-center gap-4 text-[10px] text-[var(--cs-text-muted)] flex-wrap">
-            <span>Recorded by {getStaffName(record.created_by)}</span>
+            <span>Recorded by {staffName(record.created_by)}</span>
             {record.source_ref_type && (
               <span>Source: {record.source_ref_type.replace(/_/g, " ")}</span>
             )}
@@ -184,7 +179,9 @@ function NewRecordDialog({
 }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    child_id: "yp_alex",
+    // Was "yp_alex", a seeded child. The picker below is the answer; a
+    // pre-selected default writes a record against whoever it names.
+    child_id: "",
     record_type: "trust_moment" as RelationalRecordType,
     title: "",
     description: "",
@@ -230,14 +227,7 @@ function NewRecordDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="a70a-young-person" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
-              <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger id="a70a-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChildSelect id="a70a-young-person" value={form.child_id} onChange={(v) => setForm((p) => ({ ...p, child_id: v }))} />
             </div>
             <div>
               <label htmlFor="a70a-type" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Type</label>
@@ -265,14 +255,7 @@ function NewRecordDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="a70a-related-staff-member" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Related staff member</label>
-              <Select value={form.staff_id} onValueChange={(v) => setForm((p) => ({ ...p, staff_id: v }))}>
-                <SelectTrigger id="a70a-related-staff-member" className="h-8 text-xs"><SelectValue placeholder="Optional" /></SelectTrigger>
-                <SelectContent>
-                  {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <StaffSelect id="a70a-related-staff-member" value={form.staff_id} onChange={(v) => setForm((p) => ({ ...p, staff_id: v }))} placeholder="Optional" />
             </div>
             <div>
               <label htmlFor="a70a-confidence" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Confidence</label>
@@ -305,23 +288,33 @@ function NewRecordDialog({
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-const CHILD_IDS = ["yp_alex", "yp_jordan", "yp_casey"];
+
 
 export default function RelationalPracticePage() {
-  const q1 = useRelationalRecords(CHILD_IDS[0]);
-  const q2 = useRelationalRecords(CHILD_IDS[1]);
-  const q3 = useRelationalRecords(CHILD_IDS[2]);
+  // Was three fixed hooks against the demo seed's children, so on a live tenant
+  // the page fetched records for three young people who do not exist and never
+  // fetched any for the ones who do.
+  const { children } = useChildren();
+  // Names came from the demo seed and read "Unknown" for every real child.
+  const ypName = useChildName();
+  const staffName = useStaffName();
+  const childIds = useMemo(() => children.map((c) => c.id), [children]);
+  const recordQueries = useQueries({
+    queries: childIds.map((id) => ({
+      queryKey: ["intelligence", "relational", id, undefined],
+      queryFn: () => api.get<ListResponse<RelationalRecord>>(`/intelligence/relational?child_id=${id}`),
+    })),
+  });
   const createRecord = useCreateRelationalRecord();
 
-  const isLoading = q1.isPending || q2.isPending || q3.isPending;
+  const isLoading = recordQueries.some((q) => q.isPending);
 
   const allRecords: RelationalRecord[] = useMemo(() => {
-    return [
-      ...(q1.data?.data ?? []),
-      ...(q2.data?.data ?? []),
-      ...(q3.data?.data ?? []),
-    ].sort((a, b) => b.created_at.localeCompare(a.created_at));
-  }, [q1.data, q2.data, q3.data]);
+    return recordQueries
+      .flatMap((q) => q.data?.data ?? [])
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordQueries.map((q) => q.dataUpdatedAt).join(",")]);
 
   const [showNew, setShowNew] = useState(false);
   const [search, setSearch] = useState("");
@@ -361,21 +354,21 @@ export default function RelationalPracticePage() {
       list = list.filter((r) =>
         r.title.toLowerCase().includes(q) ||
         r.description.toLowerCase().includes(q) ||
-        getYPName(r.child_id).toLowerCase().includes(q) ||
+        ypName(r.child_id).toLowerCase().includes(q) ||
         (TYPE_CONFIG[r.record_type]?.label.toLowerCase().includes(q) ?? false)
       );
     }
 
     list = [...list].sort((a, b) => {
       switch (sortBy) {
-        case "child": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "child": return ypName(a.child_id).localeCompare(ypName(b.child_id));
         case "type": return (TYPE_CONFIG[a.record_type]?.label ?? "").localeCompare(TYPE_CONFIG[b.record_type]?.label ?? "");
         default: return b.created_at.localeCompare(a.created_at);
       }
     });
 
     return list;
-  }, [allRecords, childFilter, typeFilter, polarityFilter, search, sortBy]);
+  }, [allRecords, childFilter, typeFilter, polarityFilter, search, sortBy, ypName]);
 
   const handleCreate = async (data: Partial<RelationalRecord>) => {
     await createRecord.mutateAsync(data);
@@ -389,7 +382,7 @@ export default function RelationalPracticePage() {
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={filtered} columns={RELATIONAL_EXPORT_COLS} filename="relational-practice" />
+          <ExportButton data={filtered} columns={RELATIONAL_EXPORT_COLS(ypName, staffName)} filename="relational-practice" />
           <PrintButton title="Relational Practice" subtitle="Relational Records" targetId="relational-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Relational Practice — observation or evidence upload" />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-8 text-xs">
@@ -420,7 +413,7 @@ export default function RelationalPracticePage() {
 
         {/* ── Per-child breakdown ───────────────────────────────────────────── */}
         <div className="flex gap-3">
-          {CHILD_IDS.map((id) => {
+          {childIds.map((id) => {
             const count = childCounts[id] ?? 0;
             const pos = allRecords.filter((r) => r.child_id === id && r.is_positive).length;
             return (
@@ -434,7 +427,7 @@ export default function RelationalPracticePage() {
                     : "bg-white border-[var(--cs-border)] hover:border-emerald-200",
                 )}
               >
-                <p className="text-sm font-semibold text-[var(--cs-navy)]">{getYPName(id)}</p>
+                <p className="text-sm font-semibold text-[var(--cs-navy)]">{ypName(id)}</p>
                 <p className="text-xs text-[var(--cs-text-muted)] mt-0.5">
                   {count} record{count !== 1 ? "s" : ""} · {pos} positive
                 </p>
@@ -540,7 +533,7 @@ export default function RelationalPracticePage() {
         {!isLoading && filtered.length > 0 && (
           <FlatList>
             {filtered.map((record) => (
-              <RecordCard key={record.id} record={record} />
+              <RecordCard key={record.id} record={record} ypName={ypName} staffName={staffName} />
             ))}
           </FlatList>
         )}
