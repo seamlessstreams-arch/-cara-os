@@ -216,7 +216,7 @@ export default function FlashcardsPage() {
         content: result as Record<string, unknown>,
         status: "draft",
         cara_generated: true,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
         tags: [difficulty, pathway],
       });
       setSaved(true);
@@ -235,7 +235,7 @@ export default function FlashcardsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Flashcard Sets" subtitle="Learning Flashcards" targetId="flashcards-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Flashcard Sets upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

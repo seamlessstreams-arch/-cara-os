@@ -164,7 +164,7 @@ export default function QualityReviewCyclePage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 46 Quality Review Cycle" />
           <ExportButton data={filtered} columns={exportCols} filename="reg46-quality-review-cycle" />
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

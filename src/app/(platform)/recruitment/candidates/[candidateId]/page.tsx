@@ -512,7 +512,7 @@ export default function CandidateDetailPage() {
       candidateId,
       data: {
         status: "verified",
-        verified_by: currentUser?.id ?? "staff_darren",
+        verified_by: currentUser?.id ?? "",
         verified_at: new Date().toISOString(),
       },
     });

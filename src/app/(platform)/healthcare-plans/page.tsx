@@ -142,7 +142,7 @@ export default function HealthcarePlansPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={plans} columns={exportCols} filename="healthcare-plans" />
           <PrintButton title="Healthcare Plans" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

@@ -120,7 +120,7 @@ export default function FoodHygienePage() {
   return (
     <PageShell title="Food Hygiene & Safety" subtitle="Food Safety Act 1990 · HACCP · Reg 12 — Safe Environment" 
       caraContext={{ pageTitle: "Food Hygiene & Safety", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

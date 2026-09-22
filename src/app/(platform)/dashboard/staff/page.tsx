@@ -459,7 +459,7 @@ export default function StaffDashboardPage() {
             <Sparkles className="mr-1.5 h-4 w-4" />
             Cara
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

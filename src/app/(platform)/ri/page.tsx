@@ -330,7 +330,7 @@ export default function RiHubPage() {
               Full Scorecard
             </Button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

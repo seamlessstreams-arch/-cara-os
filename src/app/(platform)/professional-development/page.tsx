@@ -136,7 +136,7 @@ export default function ProfessionalDevelopmentPage() {
       actions={[
         <PrintButton key="p" title="Professional Development Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-development" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "staff_training" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

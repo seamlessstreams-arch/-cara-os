@@ -96,7 +96,7 @@ export default function MediaPublicityConsentPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="media-publicity-consent" />
           <PrintButton title="Media & Publicity Consent" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

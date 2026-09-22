@@ -160,7 +160,7 @@ export default function DisclosureLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="disclosure-log" />
           <PrintButton title="Disclosure Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

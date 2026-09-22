@@ -254,7 +254,7 @@ function ReviewDialog({
         yp_voice: ypVoice.trim() || undefined,
         barriers: barriers.trim() || undefined,
         next_steps: nextSteps.trim() || undefined,
-        reviewer_id: currentUser?.id ?? "staff_darren",
+        reviewer_id: currentUser?.id ?? "",
         reviewer_role: "Registered Manager",
       },
       {
@@ -431,7 +431,7 @@ function NewTargetDialog({
         target_rating: targetRating,
         yp_voice: ypVoice.trim() || undefined,
         notes: notes.trim() || undefined,
-        set_by: currentUser?.id ?? "staff_darren",
+        set_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => {
@@ -1037,7 +1037,7 @@ export default function OutcomesPage() {
             <Plus className="h-3.5 w-3.5" />
             New Target
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

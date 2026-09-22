@@ -188,7 +188,7 @@ export default function GrabBagPage() {
           <PrintButton title="Emergency Grab Bags" />
           <ExportButton data={exportData} columns={exportCols} filename="grab-bags" />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Bag</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

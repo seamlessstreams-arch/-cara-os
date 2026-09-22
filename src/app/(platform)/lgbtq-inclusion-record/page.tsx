@@ -129,7 +129,7 @@ export default function LGBTQInclusionRecordPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="lgbtq-inclusion-record" />
           <PrintButton title="LGBTQ+ Inclusion Record" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

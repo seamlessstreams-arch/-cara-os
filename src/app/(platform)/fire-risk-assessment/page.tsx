@@ -144,7 +144,7 @@ export default function FireRiskAssessmentPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Risk Assessment" />
           <ExportButton data={filtered} columns={exportCols} filename="fire-risk-assessment" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

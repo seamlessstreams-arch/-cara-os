@@ -118,7 +118,7 @@ export default function ChildCorrespondenceIncomingPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-correspondence-incoming" />
           <PrintButton title="Incoming Correspondence" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

@@ -105,7 +105,7 @@ export default function KPIDashboardPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="KPI Dashboard" />
           <ExportButton data={kpis} columns={exportCols} filename="kpi-dashboard" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

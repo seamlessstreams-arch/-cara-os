@@ -131,7 +131,7 @@ export default function ChildProtectionConferencesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="cp-conferences" />
           <PrintButton title="Child Protection Conferences" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

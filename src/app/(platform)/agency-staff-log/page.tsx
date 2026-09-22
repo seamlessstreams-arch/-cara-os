@@ -176,7 +176,7 @@ export default function AgencyStaffLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Agency Staff Log" />
           <ExportButton data={records} columns={exportCols} filename="agency-staff-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Agency Shift</Button>
         </div>
       }

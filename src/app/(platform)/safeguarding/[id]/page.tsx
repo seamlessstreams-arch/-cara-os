@@ -227,7 +227,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         priority: SG_SEV_PRIORITY[concern.severity] ?? "high",
         status: "identified",
         cara_evidence: `Linked to safeguarding concern ${concern.reference} (${concern.severity} severity, type: ${concern.type}).`,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => setNeedCreated(true) }
     );

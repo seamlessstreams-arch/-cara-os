@@ -157,7 +157,7 @@ export default function ChildTutoringPrivateTuitionPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-tutoring" />
           <PrintButton title="Tutoring & Private Tuition" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

@@ -166,7 +166,7 @@ export default function MenstrualHealthTrackerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Menstrual Health Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="menstrual-health-tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

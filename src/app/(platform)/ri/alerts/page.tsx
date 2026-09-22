@@ -169,7 +169,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
         priority,
         status: "identified",
         cara_evidence: `Auto-generated from RI Alert (${alert.severity} severity, type: ${alert.alert_type}).`,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => setNeedCreated(true) },
     );
@@ -557,7 +557,7 @@ export default function RiAlertsPage() {
           <ExportButton data={displayed} columns={ALERT_EXPORT_COLS} filename="ri-alerts" />
           <PrintButton title="RI Alerts Report" subtitle="Compliance" targetId="ri-alerts-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Alerts — evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

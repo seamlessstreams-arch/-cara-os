@@ -141,7 +141,7 @@ export default function StaffSaferCaringPage() {
   return (
     <PageShell title="Safer Caring Plans" subtitle="Children's Homes (England) Regulations 2015 · Schedule 1 · Safer Recruitment" 
       caraContext={{ pageTitle: "Safer Caring Plans", sourceType: "staff" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Safer Caring Plans" /><ExportButton data={filtered} columns={exportCols} filename="safer-caring-plans" /><CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Safer Caring Plans" /><ExportButton data={filtered} columns={exportCols} filename="safer-caring-plans" /><CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} /></div>}>
       <div id="print-area">
         {/* ── summary stats ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

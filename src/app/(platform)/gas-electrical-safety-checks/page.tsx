@@ -149,7 +149,7 @@ export default function GasElectricalSafetyChecksPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="gas-electrical-safety-checks" />
           <PrintButton title="Gas & Electrical Safety Checks" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

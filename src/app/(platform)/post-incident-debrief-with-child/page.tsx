@@ -132,7 +132,7 @@ export default function PostIncidentDebriefWithChildPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Post-Incident Debrief with Child" />
           <ExportButton data={records} columns={exportCols} filename="child-debriefs" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

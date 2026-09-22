@@ -64,6 +64,9 @@ export interface AuthContextValue {
   /** Live tenant only: loaded, but the session names no staff record. The app
    *  must not guess who this is; surfaces should say so rather than render. */
   identityUnresolved: boolean;
+  /** The home this session belongs to, from /me. Null until resolved. Pages
+   *  hardcoded "home_oak" for this, a seed id that is not any real home. */
+  homeId: string | null;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -72,6 +75,7 @@ const AuthContext = createContext<AuthContextValue>({
   isLoaded: false,
   setCurrentUserId: () => {},
   identityUnresolved: false,
+  homeId: null,
 });
 
 /** The session identity, from the one endpoint that can read it. Demo returns
@@ -102,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const meQuery = useSessionIdentity();
   const sessionUserId = meQuery.data?.data?.userId ?? null;
+  const homeId = meQuery.data?.data?.homeId ?? null;
 
   // Live: the session, full stop. Demo: the switcher, then the default.
   const userId = live
@@ -143,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, currentRole, isLoaded, setCurrentUserId, identityUnresolved }}>
+    <AuthContext.Provider value={{ currentUser, currentRole, isLoaded, setCurrentUserId, identityUnresolved, homeId }}>
       {children}
     </AuthContext.Provider>
   );

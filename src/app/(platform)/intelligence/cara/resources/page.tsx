@@ -386,7 +386,7 @@ function CreateForm({
         tone,
         content: generatedContent,
         status: approve ? "approved" : "draft",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
         ...(approve ? { approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() } : {}),
       });
       setSavedOk(true);
@@ -615,7 +615,7 @@ export default function ChildResourcesPage() {
     updateResource.mutate({
       id,
       status: "approved",
-      approved_by: currentUser?.id ?? "staff_darren",
+      approved_by: currentUser?.id ?? "",
       approved_at: new Date().toISOString(),
     });
   }

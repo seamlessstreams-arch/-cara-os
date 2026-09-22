@@ -368,7 +368,7 @@ export default function PoliciesPage() {
           <ExportButton data={filtered} columns={POLICY_EXPORT_COLS} filename="policies" />
           <PrintButton title="Policies & Procedures" subtitle="Policies Register" targetId="policies-content" />
           <SmartUploadButton variant="inline" label="Upload Policy" uploadContext="Policies & Procedures — policy document upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

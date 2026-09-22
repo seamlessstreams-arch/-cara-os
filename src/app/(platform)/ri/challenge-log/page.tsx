@@ -166,7 +166,7 @@ function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (lo
         priority,
         status: "identified",
         cara_evidence: `Escalated from RI Challenge Log entry dated ${formatDate(log.created_at)}. Level: ${log.escalation_level}. Area: ${log.challenge_area}.`,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => setNeedCreated(true) }
     );
@@ -328,7 +328,7 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
         action_required: actionRequired || undefined,
         status: "open",
         cara_generated: false,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => { onClose(); setTitle(""); setEvidence(""); setChallenge(""); setActionRequired(""); } }
     );
@@ -418,7 +418,7 @@ function ResponseDialog({ log, onClose }: { log: RiChallengeLog; onClose: () => 
         id: log.id,
         manager_response: response,
         manager_responded_at: new Date().toISOString(),
-        manager_responded_by: currentUser?.id ?? "staff_darren",
+        manager_responded_by: currentUser?.id ?? "",
         action_required: action || log.action_required,
         status: action ? "action_pending" : "responded",
       },
@@ -533,7 +533,7 @@ export default function ChallengeLogPage() {
             <Plus className="h-3.5 w-3.5" />
             New Challenge
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

@@ -90,7 +90,7 @@ export default function WelcomeTourChecklistPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="welcome-tour-checklist" />
           <PrintButton title="Welcome Tour Checklist" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

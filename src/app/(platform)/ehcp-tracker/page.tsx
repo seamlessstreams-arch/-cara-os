@@ -164,7 +164,7 @@ export default function EhcpTrackerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="EHCP Tracker" />
           <ExportButton data={data} columns={exportCols} filename="ehcp-tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

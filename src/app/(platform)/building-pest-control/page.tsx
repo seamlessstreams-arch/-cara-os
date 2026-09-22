@@ -151,7 +151,7 @@ export default function BuildingPestControlPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-pest-control" />
           <PrintButton title="Pest Control & Prevention" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

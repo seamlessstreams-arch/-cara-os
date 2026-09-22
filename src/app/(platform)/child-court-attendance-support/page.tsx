@@ -189,7 +189,7 @@ export default function ChildCourtAttendanceSupportPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="court-attendance-support" />
           <PrintButton title="Court Attendance Support" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

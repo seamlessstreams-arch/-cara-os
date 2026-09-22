@@ -225,7 +225,7 @@ export default function NotificationsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Notifications" />
           <ExportButton data={filtered} columns={exportCols} filename="notifications" />
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

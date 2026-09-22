@@ -167,7 +167,7 @@ export default function WorkforceSupervisionPage() {
               New Supervision
             </Button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

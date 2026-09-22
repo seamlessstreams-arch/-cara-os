@@ -283,7 +283,7 @@ export default function SupervisionDetailPage({
       priority: "medium",
       status: "identified",
       cara_evidence: `Source supervision record: ${sup.id}`,
-      created_by: currentUser?.id ?? "staff_darren",
+      created_by: currentUser?.id ?? "",
     });
     setNeedCreated(true);
   }

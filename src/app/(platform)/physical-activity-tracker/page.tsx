@@ -126,7 +126,7 @@ export default function PhysicalActivityTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="physical-activity-tracker" />
           <PrintButton title="Physical Activity Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

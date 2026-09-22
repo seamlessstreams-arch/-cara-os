@@ -219,7 +219,7 @@ export default function PlacementSuccessFactorsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="placement-success-factors" />
           <PrintButton title="Placement Success Factors" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

@@ -241,7 +241,7 @@ export default function EducationPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >      <CaraPanel mode="assist" pageContext="Education Tracker — attendance, attainment, Personal Education Plans, school engagement, exclusions, Children Act 1989" recordType="education_record" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}

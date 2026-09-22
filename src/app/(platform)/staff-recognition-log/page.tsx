@@ -125,7 +125,7 @@ export default function StaffRecognitionLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="staff-recognition-log" />
           <PrintButton title="Staff Recognition Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

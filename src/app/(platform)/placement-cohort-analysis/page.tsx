@@ -133,7 +133,7 @@ export default function PlacementCohortAnalysisPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Cohort Analysis" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="placement-cohort-analysis" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

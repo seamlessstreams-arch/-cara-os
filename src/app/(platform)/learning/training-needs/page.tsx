@@ -549,7 +549,7 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
         description,
         priority,
         status: "identified",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => { onClose(); setTitle(""); setDescription(""); } }
     );
@@ -714,7 +714,7 @@ function CaraAutoDetect({
         priority: need.priority ?? "medium",
         status: "identified",
         cara_evidence: need.cara_evidence,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       setAdded((prev) => new Set(prev).add(index));
       onAdded();
@@ -913,7 +913,7 @@ export default function TrainingNeedsPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Need
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

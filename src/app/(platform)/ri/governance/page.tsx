@@ -357,7 +357,7 @@ function NewReportDialog({
       status: "draft",
       approved_by: undefined,
       approved_at: undefined,
-      created_by: currentUser?.id ?? "staff_darren",
+      created_by: currentUser?.id ?? "",
       created_at: now,
       updated_at: now,
     };
@@ -586,7 +586,7 @@ export default function GovernanceReportsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Report
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

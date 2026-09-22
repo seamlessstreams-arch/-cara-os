@@ -206,7 +206,7 @@ export default function MedicationAuditPage() {
           <PrintButton title="Medication Audit Records" />
           <ExportButton data={filtered} columns={exportCols} filename="medication-audit" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Audit</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

@@ -153,7 +153,7 @@ export default function ChildEpilepsySeizurePlanPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="epilepsy-seizure-plans" />
           <PrintButton title="Epilepsy & Seizure Plans" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

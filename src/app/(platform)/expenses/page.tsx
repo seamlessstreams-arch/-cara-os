@@ -275,7 +275,7 @@ export default function ExpensesPage() {
 
     createExpense.mutate(
       {
-        submitted_by: currentUser?.id ?? "staff_darren",
+        submitted_by: currentUser?.id ?? "",
         category: form.category as Expense["category"],
         description: form.description.trim(),
         amount: parseFloat(form.amount),
@@ -287,8 +287,8 @@ export default function ExpensesPage() {
         linked_child_id: null,
         payment_method: form.payment_method,
         home_id: homeId,
-        created_by: currentUser?.id ?? "staff_darren",
-        updated_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
+        updated_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => {
@@ -313,7 +313,7 @@ export default function ExpensesPage() {
           <Button size="sm" onClick={() => setShowNewForm(!showNewForm)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Submit Expense
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

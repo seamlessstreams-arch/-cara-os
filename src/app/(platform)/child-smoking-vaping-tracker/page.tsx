@@ -117,7 +117,7 @@ export default function ChildSmokingVapingTrackerPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Smoking & Vaping Tracker" />
           <ExportButton data={items} columns={exportCols} filename="child-smoking-vaping-tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

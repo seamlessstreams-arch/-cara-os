@@ -670,7 +670,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" caraContext={{ pageTitle: "Settings", sourceType: "general" }} showQuickCreate={false} actions={<CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />}>
+    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" caraContext={{ pageTitle: "Settings", sourceType: "general" }} showQuickCreate={false} actions={<CaraStudioQuickActionButton context={{ record_type: "uploaded_document" }} />}>
       <div className="flex gap-6">
         <aside className="w-52 shrink-0">
           <nav className="space-y-0.5">

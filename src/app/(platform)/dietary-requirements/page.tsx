@@ -113,7 +113,7 @@ export default function DietaryRequirementsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="dietary-requirements" />
           <PrintButton title="Dietary Requirements" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

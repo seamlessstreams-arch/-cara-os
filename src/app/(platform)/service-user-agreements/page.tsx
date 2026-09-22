@@ -135,7 +135,7 @@ export default function ServiceUserAgreementsPage() {
   return (
     <PageShell title="Young Person Agreements" subtitle="Reg 7 — Children's Wishes & Feelings · Co-Produced Expectations" 
       caraContext={{ pageTitle: "Young Person Agreements", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><CaraStudioQuickActionButton context={{ record_type: "care_plan" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

@@ -119,7 +119,7 @@ export default function CriticalIncidentDebriefPage() {
           <PrintButton title="Critical Incident Debriefs" />
           <ExportButton data={records} columns={exportCols} filename="critical-incident-debriefs" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Schedule Debrief</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

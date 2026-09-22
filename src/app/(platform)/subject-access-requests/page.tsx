@@ -175,7 +175,7 @@ export default function SubjectAccessRequestsPage() {
           <PrintButton title="Subject Access Requests" />
           <ExportButton data={records} columns={exportCols} filename="subject-access-requests" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Request</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document" }} />
         </div>
       }
     >

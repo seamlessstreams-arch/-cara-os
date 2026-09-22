@@ -116,7 +116,7 @@ export default function ChildAsthmaActionPlanPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Asthma Action Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-asthma-action-plan" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

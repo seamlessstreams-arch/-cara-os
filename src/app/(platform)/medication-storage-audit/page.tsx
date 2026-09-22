@@ -123,7 +123,7 @@ export default function MedicationStorageAuditPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-storage-audit" />
           <PrintButton title="Medication Storage Audits" />
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

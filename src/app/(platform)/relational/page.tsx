@@ -388,7 +388,7 @@ export default function RelationalPracticePage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Record Observation
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

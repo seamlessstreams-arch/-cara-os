@@ -223,7 +223,7 @@ export default function Reg40StaffingPlanPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="reg40-staffing-plan" />
           <PrintButton title="Regulation 40 — Staffing Plan" />
-          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota" }} />
         </div>
       }
     >

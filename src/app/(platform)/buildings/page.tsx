@@ -282,7 +282,7 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
     check_type: "daily_walkround",
     area: "main_building",
     check_date: todayStr(),
-    responsible_person: currentUser?.id ?? "staff_darren",
+    responsible_person: currentUser?.id ?? "",
     status: "completed",
     result: "pass",
     risk_level: "",
@@ -1133,7 +1133,7 @@ export default function BuildingsPage() {
           <Button size="sm" onClick={() => setShowAddCheck(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Record Check
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

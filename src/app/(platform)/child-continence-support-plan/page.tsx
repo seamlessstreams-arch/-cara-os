@@ -110,7 +110,7 @@ export default function ChildContinenceSupportPlanPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Continence Support Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-continence-support-plan" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

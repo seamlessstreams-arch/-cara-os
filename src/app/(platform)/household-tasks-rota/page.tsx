@@ -162,7 +162,7 @@ export default function HouseholdTasksRotaPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="household-tasks-rota" />
           <PrintButton title="Household Tasks Rota" />
-          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota" }} />
         </div>
       }
     >

@@ -240,7 +240,7 @@ export default function BehaviourLogPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Behaviour
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >      <CaraPanel mode="assist" pageContext="Behaviour Log — ABC observations, antecedent-behaviour-consequence, intensity tracking, positive behaviour support" recordType="behaviour_log" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}

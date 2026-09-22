@@ -478,7 +478,7 @@ function ReportMissingDialog({
         reported_to_la: reportedToLA,
         la_notified_at: reportedToLA ? new Date().toISOString() : null,
         home_id: homeId,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       onClose();
     } finally {
@@ -717,7 +717,7 @@ function RhiDialog({
       await updateMutation.mutateAsync({
         id: episode.id,
         return_interview_completed: true,
-        return_interview_by: currentUser?.id ?? "staff_darren",
+        return_interview_by: currentUser?.id ?? "",
         return_interview_date: todayStr(),
         return_interview_notes: interviewNotes,
         contextual_safeguarding_risk:
@@ -997,7 +997,7 @@ export default function MissingFromCarePage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Missing from Care Log" subtitle="Missing Episodes & Return Interviews" targetId="mfc-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Missing From Care — return interview or episode upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "missing_from_care" }} />
         </div>
       }
     >

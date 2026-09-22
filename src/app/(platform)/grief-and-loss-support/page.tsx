@@ -132,7 +132,7 @@ export default function GriefAndLossSupportPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Grief & Loss Support" />
           <ExportButton data={data} columns={EXPORT_COLS} filename="grief-and-loss-support" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

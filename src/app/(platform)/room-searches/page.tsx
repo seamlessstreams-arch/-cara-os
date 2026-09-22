@@ -236,7 +236,7 @@ export default function RoomSearchesPage() {
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" /> New Search
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

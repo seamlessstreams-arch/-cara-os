@@ -99,7 +99,7 @@ export default function NightStaffGuidancePage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Night Staff Guidance" />
-          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover" }} />
         </div>
       }>
       <div id="print-area">

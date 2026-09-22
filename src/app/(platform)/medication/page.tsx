@@ -241,7 +241,7 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
   const [formData, setFormData] = useState({
     status: "given" as "given" | "refused" | "missed",
     actual_time: new Date().toTimeString().slice(0, 5),
-    administered_by: currentUser?.id ?? "staff_darren",
+    administered_by: currentUser?.id ?? "",
     witnessed_by: "",
     dose_given: medication.dosage,
     notes: "",
@@ -812,8 +812,8 @@ function TodayScheduleTab({
                                   home_id: homeId,
                                   created_at: new Date().toISOString(),
                                   updated_at: new Date().toISOString(),
-                                  created_by: currentUser?.id ?? "staff_darren",
-                                  updated_by: currentUser?.id ?? "staff_darren",
+                                  created_by: currentUser?.id ?? "",
+                                  updated_by: currentUser?.id ?? "",
                                 }}
                                 medication={med}
                                 onClose={() => toggleForm(formKey)}
@@ -1597,7 +1597,7 @@ export default function MedicationPage() {
           >
             <Plus className="h-3.5 w-3.5" />Add Medication
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication" }} />
         </div>
       }
     >

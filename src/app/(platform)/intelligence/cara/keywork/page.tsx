@@ -241,7 +241,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
         session_plan: plan,
         resources: [],
         status: "planned",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       setSavedOk(true);
       setTimeout(onClose, 1500);

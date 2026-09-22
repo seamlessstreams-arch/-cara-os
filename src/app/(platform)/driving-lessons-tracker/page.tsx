@@ -154,7 +154,7 @@ export default function DrivingLessonsTrackerPage() {
       actions={[
         <PrintButton key="p" title="Driving Lessons Tracker" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="driving-lessons-tracker" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "education" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

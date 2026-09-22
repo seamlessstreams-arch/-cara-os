@@ -212,7 +212,7 @@ export default function ChildKeyworker1to1SessionsPage() {
       actions={[
         <PrintButton key="p" title="1:1 Keyworker Sessions" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="keyworker-1to1-sessions" />,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "keywork" }} />,
         <Button
           key="n"
           size="sm"

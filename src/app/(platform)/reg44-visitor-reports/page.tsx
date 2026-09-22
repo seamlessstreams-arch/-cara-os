@@ -510,7 +510,7 @@ export default function Reg44VisitorReportsPage() {
           <NewVisitDialog />
           <PrintButton title="Reg 44 Visitor Reports" />
           <ExportButton data={filtered} columns={exportCols} filename="reg44-visitor-reports" />
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

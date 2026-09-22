@@ -466,7 +466,7 @@ export default function ActivitiesPage() {
           <ExportButton data={filtered} columns={ACTIVITY_EXPORT_COLS} filename="activities" />
           <PrintButton title="Activities & Enrichment" subtitle="Activity Log" targetId="activities-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Activities — activity photos or evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Log Activity
           </Button>

@@ -150,7 +150,7 @@ export default function PlacementImpactAssessmentPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-impact-assessments" />
           <PrintButton title="Placement Impact Assessments" />
-          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan" }} />
         </div>
       }
     >

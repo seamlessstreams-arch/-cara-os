@@ -126,7 +126,7 @@ export default function ChildMoneyManagementBudgetingPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-money-management-budgeting" />
           <PrintButton title="Money Management & Budgeting" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

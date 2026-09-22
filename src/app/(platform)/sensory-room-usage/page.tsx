@@ -116,7 +116,7 @@ export default function SensoryRoomUsagePage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="sensory-room-usage" />
           <PrintButton title="Sensory Room Usage" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

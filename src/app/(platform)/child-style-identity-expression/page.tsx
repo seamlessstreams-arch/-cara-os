@@ -142,7 +142,7 @@ export default function ChildStyleIdentityExpressionPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="style-identity-expression" />
           <PrintButton title="Style & Identity Expression" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

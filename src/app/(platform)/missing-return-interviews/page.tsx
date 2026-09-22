@@ -112,7 +112,7 @@ export default function MissingReturnInterviewsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={interviews} columns={exportCols} filename="return-interviews" />
           <PrintButton title="Missing — Return Home Interviews" />
-          <CaraStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "missing_from_care" }} />
         </div>
       }
     >

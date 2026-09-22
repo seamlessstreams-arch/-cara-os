@@ -1149,7 +1149,10 @@ export interface CaraGenerationResult {
 
 export interface CaraQuickActionContext {
   record_type: CaraSourceType;
-  record_id: string;
+  /** The record this action is about. Omitted when the action is about the
+   *  home itself rather than one record — the button then uses the session's
+   *  home. Call sites used to pass the seed id "home_oak" for both. */
+  record_id?: string;
   child_id?: string;
   home_id?: string;
   title?: string;

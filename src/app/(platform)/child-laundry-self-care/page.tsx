@@ -154,7 +154,7 @@ export default function ChildLaundrySelfCarePage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="laundry-self-care" />
           <PrintButton title="Laundry Self-Care" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

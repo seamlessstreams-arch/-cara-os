@@ -1064,7 +1064,7 @@ export default function RecruitmentPage() {
           <Button size="sm" onClick={() => setShowAddCandidate(true)}>
             <UserPlus className="h-3.5 w-3.5 mr-1" />Add Candidate
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

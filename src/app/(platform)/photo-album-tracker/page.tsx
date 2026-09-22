@@ -103,7 +103,7 @@ export default function PhotoAlbumTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="photo-album-tracker" />
           <PrintButton title="Photo Album Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

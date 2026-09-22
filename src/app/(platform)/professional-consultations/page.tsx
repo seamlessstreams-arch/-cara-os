@@ -167,7 +167,7 @@ export default function ProfessionalConsultationsPage() {
           <PrintButton title="Professional Consultations" />
           <ExportButton data={filtered} columns={exportCols} filename="professional-consultations" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Log Consultation</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task" }} />
         </div>
       }
     >

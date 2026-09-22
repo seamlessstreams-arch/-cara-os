@@ -183,7 +183,7 @@ export default function ChildExtracurricularClubsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="extracurricular-clubs" />
           <PrintButton title="Extracurricular Clubs & Societies" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

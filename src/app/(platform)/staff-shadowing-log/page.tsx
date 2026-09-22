@@ -119,7 +119,7 @@ export default function StaffShadowingLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="staff-shadowing-log" />
           <PrintButton title="Staff Shadowing Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
         </div>
       }
     >

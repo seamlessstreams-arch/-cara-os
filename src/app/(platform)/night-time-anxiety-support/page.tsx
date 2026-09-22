@@ -194,7 +194,7 @@ export default function NightTimeAnxietySupportPage() {
             filename="night-time-anxiety-support"
           />
           <PrintButton title="Night-time Anxiety Support" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

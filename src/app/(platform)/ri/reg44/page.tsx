@@ -507,7 +507,7 @@ export default function Reg44Page() {
         data: {
           manager_response: responseText.trim(),
           manager_response_date: new Date().toISOString(),
-          manager_response_by: currentUser?.id ?? "staff_darren",
+          manager_response_by: currentUser?.id ?? "",
           status: "manager_response_submitted",
         },
       });
@@ -579,7 +579,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               RI Hub
             </button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

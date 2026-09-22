@@ -185,7 +185,7 @@ export default function StaffSicknessPage() {
           <PrintButton title="Staff Sickness Record" />
           <ExportButton data={records} columns={exportCols} filename="staff-sickness" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Absence</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

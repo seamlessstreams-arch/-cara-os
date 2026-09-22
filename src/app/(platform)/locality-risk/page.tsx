@@ -119,7 +119,7 @@ export default function LocalityRiskPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Locality Risk Assessment" />
           <ExportButton data={filtered} columns={exportCols} filename="locality-risk" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

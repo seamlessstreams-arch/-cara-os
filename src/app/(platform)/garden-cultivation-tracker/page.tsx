@@ -136,7 +136,7 @@ export default function GardenCultivationTrackerPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="garden-cultivation" />
           <PrintButton title="Garden Cultivation Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

@@ -154,7 +154,7 @@ export default function MenuPlanningPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Menu Planning" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="menu-planning" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Meal</Button>
         </div>
       }

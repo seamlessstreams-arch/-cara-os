@@ -117,7 +117,7 @@ export default function RegistrationChangesLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="registration-changes-log" />
           <PrintButton title="Registration Changes Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

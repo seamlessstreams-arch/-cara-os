@@ -1054,7 +1054,7 @@ function LogIncidentTab() {
         ...form,
         type: form.type as Incident["type"],
         severity: form.severity as Incident["severity"],
-        reported_by: currentUser?.id ?? "staff_darren",
+        reported_by: currentUser?.id ?? "",
         witnesses: [],
         notifications: form.notifications.map((n) => ({
           ...n,
@@ -1439,7 +1439,7 @@ export default function IncidentsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Incident Report" subtitle="Incident Records" targetId="incidents-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Incidents — evidence upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700"

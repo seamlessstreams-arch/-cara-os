@@ -287,7 +287,7 @@ export default function ReflectivePracticePage() {
         confidence_level: "high",
         ai_generated_text: rawText,
         status: "draft",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       setSavedOk(true);
     } finally {

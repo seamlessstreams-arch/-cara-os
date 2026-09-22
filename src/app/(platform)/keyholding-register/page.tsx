@@ -137,7 +137,7 @@ export default function KeyholdingRegisterPage() {
         <PrintButton key="p" title="Keyholding Register" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="keyholding-register" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Key</Button>,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "policy" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

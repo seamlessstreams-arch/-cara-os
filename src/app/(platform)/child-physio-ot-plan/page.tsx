@@ -254,7 +254,7 @@ export default function ChildPhysioOtPlanPage() {
             columns={EXPORT_COLS}
             filename="child-physio-ot-plans"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

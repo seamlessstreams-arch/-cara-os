@@ -219,7 +219,7 @@ export default function StaffCompetencePassportPage() {
       title="Staff Competence Passport"
       subtitle="Competencies, compliance, warnings, and restrictions"
       caraContext={{ pageTitle: "Staff Competence Passport", sourceType: "staff" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />}
     >
       <div className="space-y-6">
         {/* Staff Selector */}

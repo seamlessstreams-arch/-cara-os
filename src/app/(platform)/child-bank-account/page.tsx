@@ -172,7 +172,7 @@ export default function ChildBankAccountPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-bank-accounts" />
           <PrintButton title="Child Bank Account & Money Management" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

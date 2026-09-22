@@ -167,7 +167,7 @@ function GuidanceCard({ resource }: { resource: { id: string; title: string; sta
             is_approved: true,
             is_pinned: false,
             usage_count: 0,
-            created_by: currentUser?.id ?? "staff_darren",
+            created_by: currentUser?.id ?? "",
           });
         },
       }
@@ -268,7 +268,7 @@ export default function GuidanceNotesPage() {
         raw_text: result.main_content,
         status: "draft",
         cara_generated: true,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => setResult(null) }
     );
@@ -284,7 +284,7 @@ export default function GuidanceNotesPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Guidance Notes" subtitle="Practice Guidance" targetId="guidance-content" />
           <SmartUploadButton variant="inline" label="Upload Guidance" uploadContext="Learning — Guidance Notes upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

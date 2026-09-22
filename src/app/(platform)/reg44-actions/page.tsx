@@ -201,7 +201,7 @@ export default function Reg44ActionsPage() {
   return (
     <PageShell title="Reg 44 Action Tracker" subtitle="Children's Homes Regulations 2015, Reg 44 — Independent Person's Report" 
       caraContext={{ pageTitle: "Reg 44 Action Tracker", sourceType: "reg45" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Reg 44 Actions" /><ExportButton data={filtered} columns={exportCols} filename="reg44-actions" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Action</Button><CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Reg 44 Actions" /><ExportButton data={filtered} columns={exportCols} filename="reg44-actions" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Action</Button><CaraStudioQuickActionButton context={{ record_type: "reg45" }} /></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[

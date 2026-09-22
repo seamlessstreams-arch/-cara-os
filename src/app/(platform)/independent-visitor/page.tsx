@@ -87,7 +87,7 @@ export default function IndependentVisitorPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Independent Visitor Reports" />
           <ExportButton data={filtered} columns={exportCols} filename="independent-visitor" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

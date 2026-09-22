@@ -116,7 +116,7 @@ export default function AgencyStaffInductionPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Agency Staff Induction" />
           <ExportButton data={data} columns={exportCols} filename="agency-staff-induction" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

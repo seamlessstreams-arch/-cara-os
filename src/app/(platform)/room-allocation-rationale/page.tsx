@@ -109,7 +109,7 @@ export default function RoomAllocationRationalePage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="room-allocation-rationale" />
           <PrintButton title="Room Allocation Rationale" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

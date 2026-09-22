@@ -149,7 +149,7 @@ export default function GovernanceMeetingMinutesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="governance-meeting-minutes" />
           <PrintButton title="Governance Meeting Minutes" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

@@ -115,7 +115,7 @@ export default function AnnualOutcomesReportPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Outcomes Report" />
           <ExportButton data={data} columns={exportCols} filename="annual-outcomes-report" />
-          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45" }} />
         </div>
       }
     >

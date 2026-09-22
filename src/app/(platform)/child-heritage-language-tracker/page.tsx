@@ -228,7 +228,7 @@ export default function ChildHeritageLanguageTrackerPage() {
             filename="heritage-language-tracker"
           />
           <PrintButton title="Heritage Language Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

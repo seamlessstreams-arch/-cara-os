@@ -1043,7 +1043,7 @@ export default function InspectionPage() {
           <Button size="sm" asChild title="Inspection preparation checklists live in the Audits section.">
             <Link href="/audits">Prepare for Inspection</Link>
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

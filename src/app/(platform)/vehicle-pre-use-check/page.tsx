@@ -326,7 +326,7 @@ export default function VehiclePreUseCheckPage() {
             filename="vehicle-pre-use-check"
           />
           <PrintButton title="Vehicle Pre-Use Checks" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

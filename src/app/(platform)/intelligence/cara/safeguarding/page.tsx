@@ -260,7 +260,7 @@ function FlagCard({ flag }: { flag: CaraSafeguardingFlag }) {
               onClick={() => handleUpdate({
                 status: "reviewed",
                 review_outcome: reviewOutcome,
-                reviewed_by: currentUser?.id ?? "staff_darren",
+                reviewed_by: currentUser?.id ?? "",
                 reviewed_at: new Date().toISOString(),
               })}
             >

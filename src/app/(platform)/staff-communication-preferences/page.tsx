@@ -141,7 +141,7 @@ export default function StaffCommunicationPreferencesPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Communication Preferences" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-communication-preferences" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

@@ -506,7 +506,7 @@ export default function PIDebriefsPage() {
         data: {
           status: "rm_signed_off",
           rm_sign_off_date: new Date().toISOString(),
-          rm_sign_off_by: currentUser?.id ?? "staff_darren",
+          rm_sign_off_by: currentUser?.id ?? "",
           rm_comments: rmComments.trim() || null,
         },
       });
@@ -643,7 +643,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
               Incidents
             </button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

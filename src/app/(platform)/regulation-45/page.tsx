@@ -1042,7 +1042,7 @@ export default function Regulation45EvidencePage() {
       title="Regulation 45 Evidence Bank"
       subtitle="AI-suggested evidence from Care Events — review, approve and draft your report"
       caraContext={{ pageTitle: "Regulation 45 Evidence Bank", sourceType: "reg45" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45" }} />}
     >
       <CaraPanel
         mode="assist"

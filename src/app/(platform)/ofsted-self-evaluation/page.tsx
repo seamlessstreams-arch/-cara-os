@@ -140,7 +140,7 @@ export default function OfstedSelfEvaluationPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Self-Evaluation" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-self-evaluation" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

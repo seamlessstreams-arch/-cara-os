@@ -204,7 +204,7 @@ export default function LearningHubPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Learning Hub" subtitle="Staff Learning & Development" targetId="learning-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning Studio — training resource or certificate upload" />
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

@@ -88,7 +88,7 @@ export default function SafeguardingSupervisionPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Safeguarding Supervision" />
           <ExportButton data={filtered} columns={exportCols} filename="safeguarding-supervision" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

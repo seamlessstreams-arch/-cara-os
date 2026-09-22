@@ -265,7 +265,7 @@ function ResultsPanel({
         confidence_level: result.confidence_level ?? "needs_human_review",
         ai_generated_text: result.ai_generated_text ?? sourceContent,
         status: "draft",
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       });
       setSavedOk(true);
       onSaved();

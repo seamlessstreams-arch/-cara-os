@@ -157,7 +157,7 @@ export default function ChildrenAsExpertsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="children-as-experts" />
           <PrintButton title="Children as Experts by Experience" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

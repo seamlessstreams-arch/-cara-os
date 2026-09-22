@@ -129,7 +129,7 @@ export default function OutdoorActivityRiskAssessmentsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="outdoor-activity-risk-assessments" />
           <PrintButton title="Outdoor Activity Risk Assessments" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />New RA</Button>
         </div>
       }>

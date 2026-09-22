@@ -151,7 +151,7 @@ export default function OperationalMeetingsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Operational Meetings" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="operational-meetings" />
-          <CaraStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "team_meeting" }} />
         </div>
       }
     >

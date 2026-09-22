@@ -69,7 +69,7 @@ export default function CulturalIdentityPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Cultural & Identity Plans" />
           <ExportButton data={plans} columns={exportCols} filename="cultural-identity" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

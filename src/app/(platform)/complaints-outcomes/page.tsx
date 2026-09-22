@@ -213,7 +213,7 @@ export default function ComplaintsOutcomesPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Outcome
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "complaint" }} />
         </div>
       }
     >

@@ -175,7 +175,7 @@ export default function ChildPoliceContactRecordsPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="police-contact-records" />
           <PrintButton title="Police Contact Records" />
-          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding" }} />
         </div>
       }
     >

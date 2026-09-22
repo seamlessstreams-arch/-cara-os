@@ -128,7 +128,7 @@ export default function PositiveHandlingPage() {
           <PrintButton title="Positive Handling Plans" />
           <ExportButton data={exportData} columns={exportCols} filename="positive-handling" />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Plan</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

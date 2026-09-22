@@ -271,7 +271,7 @@ export default function EndOfShiftChecklistPage() {
             filename="end-of-shift-checklist"
           />
           <PrintButton title="End-of-Shift Checklists" />
-          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover" }} />
         </div>
       }
     >

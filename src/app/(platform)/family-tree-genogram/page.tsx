@@ -116,7 +116,7 @@ export default function FamilyTreeGenogramPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="family-tree-genogram" />
           <PrintButton title="Family Tree / Genogram" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

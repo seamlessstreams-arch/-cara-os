@@ -185,7 +185,7 @@ export default function ChildInjuriesLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Child Injuries Log" />
           <ExportButton data={filtered} columns={exportCols} filename="child-injuries-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

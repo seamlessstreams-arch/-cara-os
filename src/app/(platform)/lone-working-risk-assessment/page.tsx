@@ -98,7 +98,7 @@ export default function LoneWorkingRiskAssessmentPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="lone-working-risk-assessments" />
           <PrintButton title="Lone Working Risk Assessments" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

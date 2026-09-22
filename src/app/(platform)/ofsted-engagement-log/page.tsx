@@ -201,7 +201,7 @@ export default function OfstedEngagementLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Engagement Log" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-engagement-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

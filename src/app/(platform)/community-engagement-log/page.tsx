@@ -127,7 +127,7 @@ export default function CommunityEngagementLogPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="community-engagement-log" />
           <PrintButton title="Community Engagement Log" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

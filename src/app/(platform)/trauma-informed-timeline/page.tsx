@@ -120,7 +120,7 @@ export default function TraumaInformedTimelinePage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="trauma-informed-timeline" />
           <PrintButton title="Trauma-Informed Timeline" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

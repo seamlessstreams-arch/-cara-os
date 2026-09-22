@@ -166,7 +166,7 @@ export default function BuildingAsbestosRegisterPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-asbestos-register" />
           <PrintButton title="Asbestos Register" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

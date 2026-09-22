@@ -211,7 +211,7 @@ export default function AssessmentOfNeedPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Assessment of Need" />
           <ExportButton data={filtered} columns={exportCols} filename="assessment-of-need" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

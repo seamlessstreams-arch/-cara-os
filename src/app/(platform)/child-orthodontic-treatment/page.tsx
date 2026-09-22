@@ -157,7 +157,7 @@ export default function ChildOrthodonticTreatmentPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-orthodontic-treatment" />
           <PrintButton title="Orthodontic Treatment" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

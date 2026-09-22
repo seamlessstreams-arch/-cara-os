@@ -137,7 +137,7 @@ export default function ImmunisationRecordPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Immunisation Record" />
           <ExportButton data={filtered} columns={exportCols} filename="immunisation-record" />
-          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health" }} />
         </div>
       }
     >

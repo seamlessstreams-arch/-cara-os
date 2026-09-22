@@ -436,7 +436,7 @@ export default function CareerPathwayPage() {
               Workforce Hub
             </button>
           </Link>
-          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training" }} />
         </div>
       }
     >

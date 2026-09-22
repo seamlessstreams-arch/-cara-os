@@ -186,7 +186,7 @@ export default function WellbeingPulseSurveyPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Wellbeing Pulse Survey" />
           <ExportButton data={filtered} columns={exportCols} filename="wellbeing-pulse-survey" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

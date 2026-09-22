@@ -172,7 +172,7 @@ export default function TherapeuticCareModelPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Therapeutic Care Model" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="therapeutic-care-model" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

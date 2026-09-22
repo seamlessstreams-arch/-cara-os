@@ -129,7 +129,7 @@ export default function StaffReflectionsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Reflective Logs" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-reflections" />
-          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision" }} />
           <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />New Reflection</Button>
         </div>
       }

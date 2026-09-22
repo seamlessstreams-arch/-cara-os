@@ -191,7 +191,7 @@ export default function RiskAssessmentsPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Risk Assessments" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="risk-assessments" />
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button>
         </div>
       }

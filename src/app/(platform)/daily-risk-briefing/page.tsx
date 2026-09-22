@@ -79,7 +79,7 @@ export default function DailyRiskBriefingPage() {
             </button>
           </div>
           <PrintButton title="Daily Risk Briefing" />
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

@@ -223,7 +223,7 @@ export default function ChildTraumaTherapyLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Trauma Therapy Log" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-trauma-therapy-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

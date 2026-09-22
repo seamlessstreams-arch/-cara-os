@@ -646,7 +646,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
       child_updates: childUpdates,
       general_notes: generalNotes,
       flags,
-      created_by: currentUser?.id ?? "staff_darren",
+      created_by: currentUser?.id ?? "",
     });
     onSuccess();
   }
@@ -990,7 +990,7 @@ export default function HandoverPage() {
             <Plus className="h-3.5 w-3.5 mr-1" />
             {showForm ? "Cancel" : "Write Handover"}
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover" }} />
         </div>
       }
     >

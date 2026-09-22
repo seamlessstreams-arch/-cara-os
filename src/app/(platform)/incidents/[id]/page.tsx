@@ -196,7 +196,7 @@ function OutcomePanel({ incidentId, currentOutcome, currentLessons, onSaved }: O
         status: "closed",
         outcome: outcome.trim(),
         lessons_learned: lessons.trim() || null,
-        updated_by: currentUser?.id ?? "staff_darren",
+        updated_by: currentUser?.id ?? "",
       },
       {
         onSuccess: () => onSaved(),
@@ -288,7 +288,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
         priority,
         status: "identified",
         cara_evidence: `Linked to incident ${incident.reference} (${incident.severity} severity).`,
-        created_by: currentUser?.id ?? "staff_darren",
+        created_by: currentUser?.id ?? "",
       },
       { onSuccess: () => setNeedCreated(true) }
     );
@@ -343,7 +343,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           <Button variant="outline" size="sm" onClick={() => router.push("/incidents")}>
             <ArrowLeft className="h-3.5 w-3.5 mr-1" />All Incidents
           </Button>
-          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident" }} />
         </div>
       }
     >

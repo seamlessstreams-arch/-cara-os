@@ -87,7 +87,7 @@ export default function ComplaintsTrendAnalysisPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="complaints-trend-analysis" />
           <PrintButton title="Complaints Trend Analysis" />
-          <CaraStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "complaint" }} />
         </div>
       }
     >

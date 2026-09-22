@@ -123,7 +123,7 @@ export default function LoneWorkingPage() {
   return (
     <PageShell title="Lone Working Assessments" subtitle="Health & Safety at Work Act 1974 · Management of H&S at Work Regs 1999" 
       caraContext={{ pageTitle: "Lone Working Assessments", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

@@ -141,7 +141,7 @@ export default function DevicePolicyPage() {
         <PrintButton key="p" title="Device & Phone Policy" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="device-policy" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Device</Button>,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "policy" }} />,
       ]}
     >
       {isLoading ? (

@@ -224,7 +224,7 @@ export default function EmergencyProtocolDrillsPage() {
             columns={exportColumns}
             filename="emergency-protocol-drills"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

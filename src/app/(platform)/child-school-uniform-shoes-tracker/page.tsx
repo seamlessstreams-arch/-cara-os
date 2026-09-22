@@ -144,7 +144,7 @@ export default function ChildSchoolUniformShoesTrackerPage() {
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-school-uniform-shoes-tracker" />
           <PrintButton title="School Uniform & Shoes Tracker" />
-          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education" }} />
         </div>
       }
     >

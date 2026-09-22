@@ -148,7 +148,7 @@ export default function NotificationLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Notification Log" />
           <ExportButton data={filtered} columns={exportCols} filename="notification-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

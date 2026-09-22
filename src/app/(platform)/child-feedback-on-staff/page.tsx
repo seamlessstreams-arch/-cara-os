@@ -113,7 +113,7 @@ export default function ChildFeedbackOnStaffPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-feedback-on-staff" />
           <PrintButton title="Child Feedback on Staff" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

@@ -172,7 +172,7 @@ export default function UnannouncedVisitsLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Unannounced Visits Log" />
           <ExportButton data={processed} columns={exportCols} filename="unannounced-visits-log" />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

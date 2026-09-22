@@ -122,7 +122,7 @@ export default function ConsequenceFrameworkPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="consequence-framework" />
           <PrintButton title="Consequence Framework" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

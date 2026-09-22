@@ -187,7 +187,7 @@ export default function ParentPartnershipPage() {
         <PrintButton key="p" title="Parent Partnership Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="parent-partnership-log" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>,
-        <CaraStudioQuickActionButton key="a" context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "direct_work" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

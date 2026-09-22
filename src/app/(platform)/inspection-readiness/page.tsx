@@ -251,7 +251,7 @@ export default function InspectionReadinessPage() {
       title="Inspection Readiness"
       subtitle="Live connected view of compliance status — Annex A, Regulation 45, Management Oversight, Reg 40, Filing and Saved Time"
       caraContext={{ pageTitle: "Inspection Readiness", sourceType: "document" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "annex_a", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "annex_a" }} />}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-24 text-slate-400 text-sm">Loading readiness data…</div>

@@ -204,7 +204,7 @@ export default function ChildDailySummariesPage() {
       title="Child Daily Summaries"
       subtitle="Auto-generated per-child daily summaries from Care Event routing"
       caraContext={{ pageTitle: "Child Daily Summaries", sourceType: "child_record" }}
-      actions={<CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />}
     >
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

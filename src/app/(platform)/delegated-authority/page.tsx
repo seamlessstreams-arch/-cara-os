@@ -124,7 +124,7 @@ export default function DelegatedAuthorityPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Delegated Authority" />
           <ExportButton data={exportData} columns={exportCols} filename="delegated-authority" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

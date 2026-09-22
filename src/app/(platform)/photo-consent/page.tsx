@@ -128,7 +128,7 @@ export default function PhotoConsentPage() {
   return (
     <PageShell title="Photo & Image Consent" subtitle="Data Protection Act 2018 · GDPR · Delegated Authority · Safeguarding" 
       caraContext={{ pageTitle: "Photo & Image Consent", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Photo Consent Records" /><ExportButton data={filtered} columns={exportCols} filename="photo-consent" /><CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Review Consent</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Photo Consent Records" /><ExportButton data={filtered} columns={exportCols} filename="photo-consent" /><CaraStudioQuickActionButton context={{ record_type: "care_plan" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Review Consent</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

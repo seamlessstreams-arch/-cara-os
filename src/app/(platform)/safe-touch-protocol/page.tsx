@@ -114,7 +114,7 @@ export default function SafeTouchProtocolPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="safe-touch-protocol" />
           <PrintButton title="Safe Touch Protocol" />
-          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan" }} />
         </div>
       }
     >

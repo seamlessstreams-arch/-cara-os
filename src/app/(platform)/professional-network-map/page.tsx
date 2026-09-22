@@ -161,7 +161,7 @@ export default function ProfessionalNetworkMapPage() {
         <div className="flex items-center gap-2">
           <ExportButton<ProfessionalNetworkContact> data={records} columns={exportCols} filename="professional-network-map" />
           <PrintButton title="Professional Network Map" />
-          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight" }} />
         </div>
       }
     >

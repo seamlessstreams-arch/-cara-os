@@ -129,7 +129,7 @@ export default function HouseRulesPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={rules} columns={exportCols} filename="house-rules" />
           <PrintButton title="House Rules & Boundaries" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

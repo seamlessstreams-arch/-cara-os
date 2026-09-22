@@ -237,7 +237,7 @@ export default function StaffHandbookPage() {
       title="Staff Handbook"
       subtitle={`${homeName} · Essential Information for All Staff`}
       caraContext={{ pageTitle: "Staff Handbook", sourceType: "staff" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><CaraStudioQuickActionButton context={{ record_type: "policy" }} /></div>}
     >
       <div id="print-area">
         {/* version banner */}

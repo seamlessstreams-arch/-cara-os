@@ -121,7 +121,7 @@ export default function LocationAssessmentPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={`Location Assessment — ${homeName}`} />
-          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence" }} />
         </div>
       }
     >

@@ -340,7 +340,7 @@ export default function KeyWorkingPage() {
           <PrintButton title="Key Working Sessions" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="key-working-sessions" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Session</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "keywork" }} />
         </div>
       }
     >

@@ -93,7 +93,7 @@ export default function OutcomeStarPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Outcome Star Assessments" />
           <ExportButton data={exportData} columns={exportCols} filename="outcome-star" />
-          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work" }} />
         </div>
       }
     >

@@ -254,7 +254,7 @@ export default function ActivityLogPage() {
           </Button>
           <ExportButton data={filtered} columns={FEED_EXPORT_COLS} filename="activity-log" />
           <PrintButton title="Activity Log" subtitle="Event Timeline" />
-          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log" }} />
         </div>
       }
     >

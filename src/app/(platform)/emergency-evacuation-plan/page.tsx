@@ -107,7 +107,7 @@ export default function EmergencyEvacuationPlanPage() {
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="emergency-evacuation-plan" />
           <PrintButton title="Emergency Evacuation Plan" />
-          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy" }} />
         </div>
       }
     >

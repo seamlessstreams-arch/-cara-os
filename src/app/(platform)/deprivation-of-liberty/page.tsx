@@ -194,7 +194,7 @@ export default function DeprivationOfLibertyPage() {
           <PrintButton title="Restrictions & DoL Register" />
           <ExportButton data={records} columns={exportCols} filename="deprivation-of-liberty" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Restriction</Button>
-          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment" }} />
         </div>
       }
     >

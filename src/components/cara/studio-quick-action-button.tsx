@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Wand2, FileText, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/auth-context";
 import type { CaraQuickActionContext, CaraArtifactType } from "@/types/cara-studio";
 import { CARA_ARTIFACT_TYPE_LABELS } from "@/types/cara-studio";
 
@@ -53,16 +54,24 @@ export function CaraStudioQuickActionButton({
 }: CaraStudioQuickActionButtonProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  // 480 call sites passed  — the demo
+  // seed's home id, which travelled into the studio URL on every tenant. The
+  // home belongs to the session, not to the caller.
+  const { homeId } = useAuthContext();
   const types = CONTEXT_ARTIFACT_TYPES[context.record_type] ?? DEFAULT_TYPES;
 
   const handleGenerate = (artifactType: CaraArtifactType) => {
+    const home = context.home_id ?? homeId;
     const params = new URLSearchParams({
       from: context.record_type,
-      record_id: context.record_id,
       artifact_type: artifactType,
     });
+    // An action about the home carries the home as its record; one about a
+    // record carries that record. Neither is sent when we cannot say which.
+    const recordId = context.record_id ?? home;
+    if (recordId) params.set("record_id", recordId);
     if (context.child_id) params.set("child_id", context.child_id);
-    if (context.home_id) params.set("home_id", context.home_id);
+    if (home) params.set("home_id", home);
     setOpen(false);
     router.push(`/intelligence/cara/studio?${params.toString()}`);
   };
