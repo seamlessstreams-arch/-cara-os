@@ -82,6 +82,12 @@ const SERVER_BASELINE = require("./seeded-actors-server-baseline.json");
  *  that is what they are — and seedIds() reads them to build the id set. */
 const SEED_SOURCES = new Set(["src/lib/seed-data.ts", "src/lib/db/store.ts"]);
 
+/** A test may name a seeded person freely: that is a fixture, not a record.
+ *  The walk already skips __tests__/ directories, but a *.test.ts sitting
+ *  beside its source was being scanned — one of them came into range the
+ *  moment the server pattern below widened. */
+const IS_TEST = /\.(test|spec)\.tsx?$/;
+
 /** The ids the demo seed defines. Read from source so the guard cannot drift
  *  from the seed: a new seeded person is covered the day it is added. */
 function seedIds() {
@@ -99,7 +105,28 @@ function seedIds() {
 const LITERAL = /"((?:staff|yp|home)_[a-z0-9_]+)"/g;
 const WRITES = /api\.(post|put|patch)\b|\.mutate(Async)?\(/;
 // A server file that puts rows into the database, or answers a mutating verb.
-const SERVER_WRITES = /\.(insert|upsert|update)\(|export\s+(async\s+)?function\s+(POST|PUT|PATCH)\b/;
+//
+// Two idioms, because this codebase has two. The first is the Supabase client
+// and the route handlers. The second is the typed store — db.x.create(),
+// dal.x.update(), intelligenceDb.x.create() — which the first misses entirely.
+//
+// That gap was not hypothetical. incident-service.ts writes every incident
+// audit entry through intelligenceDb.caraAuditTrail.create() and carried three
+// seeded literals, including the home stamped onto every incident session. The
+// guard shipped blind to it and the fix for that file had to be found by hand.
+//
+// linked-updates.ts was the larger one it missed: the "record once, update
+// everywhere" engine, which auto-assigns the tasks it generates and addresses
+// its push notifications. Ten sites, all naming people who do not work there.
+// Both files are at zero now and are out of the baseline entirely — widening
+// the pattern is what keeps them there.
+const SERVER_WRITES = new RegExp(
+  [
+    /\.(?:insert|upsert|update)\(/.source,
+    /export\s+(?:async\s+)?function\s+(?:POST|PUT|PATCH)\b/.source,
+    /\b(?:db|dal|\w*(?:Db|Store))\.[A-Za-z_]\w*\.(?:create|update|upsert|remove)\(/.source,
+  ].join("|"),
+);
 const EXEMPT = /\/\/\s*seed-actor-ok:/;
 
 function walk(dir, ext, out = []) {
@@ -125,7 +152,7 @@ function scan(ext, writes, skip = () => false) {
   let scanned = 0;
   for (const file of walk(SRC, ext)) {
     const rel = path.relative(ROOT, file);
-    if (skip(rel)) continue;
+    if (IS_TEST.test(rel) || skip(rel)) continue;
     const src = fs.readFileSync(file, "utf8");
     // Only files that write. One that merely renders a seeded name is
     // check-demo-seed's business, not this guard's.
