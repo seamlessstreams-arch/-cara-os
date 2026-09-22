@@ -1,5 +1,6 @@
 // CARA — /api/v1/calendar (unified feed + create planned event)
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import {
   CreateEventSchema,
   createCalendarEvent,
@@ -29,7 +30,10 @@ export async function GET(req: Request) {
   return NextResponse.json({ data: feed });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
@@ -40,6 +44,12 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const event = createCalendarEvent(parsed.data);
+  // The organiser is whoever is creating the event, taken from the session —
+  // never the schema's demo default. Clients do not send organiser_id, so every
+  // live event was stamped "staff_darren": a person who does not exist in
+  // staff_members. That put a phantom recipient on each reminder notification
+  // and assigned every linked task to nobody. In demo this resolves to the
+  // x-user-id header, which is the same value the default used to supply.
+  const event = createCalendarEvent({ ...parsed.data, organiser_id: identity.userId });
   return NextResponse.json({ data: { event } }, { status: 201 });
 }

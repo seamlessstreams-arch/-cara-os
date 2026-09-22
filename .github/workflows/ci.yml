@@ -162,6 +162,8 @@ jobs:
 
       - name: DAL-adoption guard (routes read/write via dal; 8 structural exclusions pinned)
         run: node scripts/check-dal-adoption.js
+      - name: UI-wiring guard (every internal link has a page; every client API call has a route + method)
+        run: node scripts/check-ui-wiring.js
 
       - name: use-client/server guard (no "use client" file imports server-only Supabase code)
         run: node scripts/check-use-client-server.js
@@ -186,6 +188,9 @@ jobs:
 
       - name: Defaulted-judgement guard (an unrecorded judgement must not read as a yes)
         run: node scripts/check-defaulted-judgements.js
+
+      - name: Seeded-actor guard (a record is not written by, or about, a seeded person)
+        run: node scripts/check-seeded-actors.js
 
       - name: Retrospective-date guard (a record of a past event cannot be future-dated)
         run: node scripts/check-retrospective-dates.js

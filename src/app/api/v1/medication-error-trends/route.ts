@@ -20,6 +20,7 @@ import {
   type MedErrorInput,
   type AdministrationInput,
 } from "@/lib/medication-error-trends/medication-error-trends-engine";
+import { childDisplayName } from "@/lib/people/child-display-name";
 
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
@@ -33,7 +34,9 @@ export async function GET() {
   // Resolve child display names.
   const nameById = new Map<string, string>();
   for (const yp of ((youngPeopleList ?? []))) {
-    nameById.set(yp.id, yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id);
+    // Ended `|| yp.id`, which named a child by their database id on a
+    // medication-error report.
+    nameById.set(yp.id, childDisplayName(yp));
   }
 
   const errors: MedErrorInput[] = (((medicationErrorsList ?? []))).map((e) => ({

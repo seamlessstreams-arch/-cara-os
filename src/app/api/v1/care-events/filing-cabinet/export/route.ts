@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const homeId = body.home_id ?? "home_oak";
 
-  const guard = requireCaraStudioPermission(
+  const guard = await requireCaraStudioPermission(
     req,
     body as unknown as Record<string, unknown>,
     {

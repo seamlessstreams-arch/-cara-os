@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
@@ -7,7 +8,13 @@ import { todayStr } from "@/lib/utils";
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
+  // Who is asking. On a live tenant this is the signed-in staff member
+  // (staff_members.id); in demo it is the x-user-id header, which keeps the
+  // seeded behaviour unchanged.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const today = todayStr();
 
   // Core records via the dual-mode dal — the live tenant's Postgres when
@@ -53,7 +60,11 @@ export async function GET(_req: NextRequest) {
   const overdueTasks = activeTasks.filter((t) => t.due_date && t.due_date < today && t.status !== "completed");
   const dueTodayTasks = activeTasks.filter((t) => t.due_date === today);
   const urgentTasks = activeTasks.filter((t) => t.priority === "urgent");
-  const myTasks = activeTasks.filter((t) => t.assigned_to === "staff_darren");
+  // "My tasks" is the CALLER's tasks. This compared against the demo seed id
+  // "staff_darren", so on a live tenant — where the real id is a
+  // staff_members UUID — the panel was always empty however many tasks the
+  // manager had. Silently empty, so neither CI nor the fiction crawl saw it.
+  const myTasks = activeTasks.filter((t) => t.assigned_to === identity.userId);
   const awaitingSignOff = activeTasks.filter((t) => t.requires_sign_off && !t.signed_off_by);
   const completedToday = allTasks.filter((t) => t.status === "completed" && t.updated_at?.startsWith(today));
 
@@ -162,7 +173,12 @@ export async function GET(_req: NextRequest) {
         high_risk_yp: [],
       },
       staffing: {
-        on_shift: onShift.length || 4,
+        // FALSE-GREEN FIX: this was `onShift.length || 4`. Zero is not a missing
+        // value here — it is the one answer that matters, and `||` replaced it
+        // with a demo constant. A live home with an empty rota was told four
+        // staff were on shift. Same shape as the `training.length || 1` removed
+        // from health-check, which made an empty training register read 100%.
+        on_shift: onShift.length,
         open_shifts: openShifts.length,
         on_leave: onLeave.length,
         pending_leave_requests: leaveRecords.filter((l) => l.status === "pending").length,
@@ -172,7 +188,9 @@ export async function GET(_req: NextRequest) {
       medication: {
         exceptions_this_week: errorsThisWeek.length,
         missed_today: missedToday.length,
-        scheduled_today: scheduledToday || 6,
+        // FALSE-GREEN FIX: was `scheduledToday || 6` — six medication rounds
+        // reported on a day when none are recorded.
+        scheduled_today: scheduledToday,
         stock_alerts: 0,
         oversight_needed: 0,
       },

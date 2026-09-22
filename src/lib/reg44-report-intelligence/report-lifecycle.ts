@@ -11,6 +11,7 @@
 // Deterministic; the caller stamps the time. No store access.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import type { Reg44Section } from "./report-assembly";
 import {
   validateReg44Report,
   applySignOffDecision,
@@ -25,7 +26,7 @@ export type Reg44ReportStatus = "draft" | "signed" | "amended";
 export interface Reg44AuditEntry {
   at: string;
   actor: string;
-  action: "created" | "edited" | "validated" | "signed" | "addendum" | "edit_refused";
+  action: "created" | "edited" | "validated" | "signed" | "addendum" | "edit_refused" | "responded";
   detail: string;
 }
 
@@ -36,6 +37,14 @@ export interface Reg44Addendum {
   text: string;
 }
 
+export interface Reg44Response {
+  text: string;
+  at: string;
+  by: string;
+}
+
+export type Reg44ResponseRole = "manager" | "ri";
+
 export interface PersistedReg44Report {
   id: string;
   homeId: string;
@@ -43,9 +52,29 @@ export interface PersistedReg44Report {
   status: Reg44ReportStatus;
   locked: boolean;
   draft: Reg44ReportDraft;
+  /**
+   * The assembled A–Q section text as it stood when the report was created,
+   * and — once signed — as it was signed. Stored so the words a visitor signs
+   * are the words that persist; without this the narrative was regenerated
+   * from live evidence at every export and could drift after signing.
+   * Optional for reports persisted before this field existed.
+   */
+  sections?: Reg44Section[];
   /** Frozen at sign-off — the immutable record of what was signed. */
   signedSnapshot: Reg44ReportDraft | null;
+  /** The sections frozen alongside signedSnapshot. */
+  signedSections?: Reg44Section[] | null;
   addenda: Reg44Addendum[];
+  /** Engine version that assembled the draft, for provenance. */
+  engineVersion?: string;
+  /**
+   * Reg 44(7): the report goes to the registered person, and the response is
+   * how the home evidences what it did with it. A response is NOT an edit to
+   * the visitor's report — it is permitted after signing and never touches the
+   * signed snapshot. Absent on reports that pre-date the visit-tracker fold.
+   */
+  managerResponse?: Reg44Response | null;
+  riResponse?: Reg44Response | null;
   auditTrail: Reg44AuditEntry[];
   createdAt: string;
   updatedAt: string;
@@ -59,7 +88,7 @@ export interface LifecycleOutcome {
 
 const audit = (report: PersistedReg44Report, entry: Reg44AuditEntry): Reg44AuditEntry[] => [...report.auditTrail, entry];
 
-export function createReg44Report(input: { id: string; homeId: string; month: string; draft: Reg44ReportDraft; createdBy: string; at: string }): PersistedReg44Report {
+export function createReg44Report(input: { id: string; homeId: string; month: string; draft: Reg44ReportDraft; createdBy: string; at: string; sections?: Reg44Section[]; engineVersion?: string }): PersistedReg44Report {
   return {
     id: input.id,
     homeId: input.homeId,
@@ -67,8 +96,11 @@ export function createReg44Report(input: { id: string; homeId: string; month: st
     status: "draft",
     locked: false,
     draft: input.draft,
+    sections: input.sections ?? [],
     signedSnapshot: null,
+    signedSections: null,
     addenda: [],
+    engineVersion: input.engineVersion,
     auditTrail: [{ at: input.at, actor: input.createdBy, action: "created", detail: `Draft created for ${input.month}.` }],
     createdAt: input.at,
     updatedAt: input.at,
@@ -89,6 +121,41 @@ export function editReg44Report(report: PersistedReg44Report, patch: Partial<Reg
     ...report,
     draft: { ...report.draft, ...patch },
     auditTrail: audit(report, { at: ctx.at, actor: ctx.by, action: "edited", detail: "Draft edited." }),
+    updatedAt: ctx.at,
+  };
+  return { ok: true, report: next };
+}
+
+/**
+ * Edit the narrative of one or more sections (by key) while the report is
+ * unsigned. Refused once locked, exactly like editReg44Report — a signed
+ * report's words change only by dated addendum. Unknown keys are ignored
+ * rather than creating sections the form doesn't have.
+ */
+export function editReg44Sections(
+  report: PersistedReg44Report,
+  patch: Array<{ key: string; content: string }>,
+  ctx: { by: string; at: string },
+): LifecycleOutcome {
+  if (report.locked) {
+    const refused: PersistedReg44Report = {
+      ...report,
+      auditTrail: audit(report, { at: ctx.at, actor: ctx.by, action: "edit_refused", detail: "Section edit refused — the report is signed and locked. Use an addendum." }),
+      updatedAt: ctx.at,
+    };
+    return { ok: false, refusedReason: "The report is signed and locked. Record a dated addendum instead.", report: refused };
+  }
+  const byKey = new Map(patch.map((p) => [p.key, p.content]));
+  const touched: string[] = [];
+  const sections = (report.sections ?? []).map((s) => {
+    if (!byKey.has(s.key)) return s;
+    touched.push(s.key);
+    return { ...s, content: byKey.get(s.key) ?? "", status: "drafted_from_evidence" as const, visitorMustComplete: false };
+  });
+  const next: PersistedReg44Report = {
+    ...report,
+    sections,
+    auditTrail: audit(report, { at: ctx.at, actor: ctx.by, action: "edited", detail: touched.length ? `Sections edited: ${touched.join(", ")}.` : "Section edit: no matching sections." }),
     updatedAt: ctx.at,
   };
   return { ok: true, report: next };
@@ -123,6 +190,7 @@ export function signReg44Report(report: PersistedReg44Report, input: { decision:
     status: isFinalising ? "signed" : "draft",
     locked: isFinalising,
     signedSnapshot: isFinalising ? signedDraft : report.signedSnapshot,
+    signedSections: isFinalising ? (report.sections ?? []) : (report.signedSections ?? null),
     auditTrail: audit(report, {
       at: input.at,
       actor: input.decidedBy,
@@ -154,3 +222,26 @@ export function addReg44Addendum(report: PersistedReg44Report, input: { id: stri
 }
 
 export { REG44_LIFECYCLE_VERSION as _lv };
+
+/**
+ * Record the registered person's (manager) or responsible individual's response
+ * to the report. Allowed whether or not the report is signed: the response is
+ * the home's, not the visitor's, and lives beside the report rather than in it.
+ * An empty response is refused — a blank save is not a response.
+ */
+export function recordReg44Response(
+  report: PersistedReg44Report,
+  input: { role: Reg44ResponseRole; text: string; by: string; at: string },
+): LifecycleOutcome {
+  const text = input.text.trim();
+  if (!text) return { ok: false, refusedReason: "A response needs some text.", report };
+  const response: Reg44Response = { text, at: input.at, by: input.by };
+  const label = input.role === "manager" ? "Registered person's response" : "Responsible individual's response";
+  const next: PersistedReg44Report = {
+    ...report,
+    ...(input.role === "manager" ? { managerResponse: response } : { riResponse: response }),
+    auditTrail: audit(report, { at: input.at, actor: input.by, action: "responded", detail: `${label} recorded (${text.length} chars)` }),
+    updatedAt: input.at,
+  };
+  return { ok: true, report: next };
+}

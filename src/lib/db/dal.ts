@@ -18,7 +18,10 @@ import { db, getStore, type EarlyAccessRequest } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
+import { rowTo1to1, oneToOneToRow } from "./keywork-1to1-projection";
 import * as sq from "@/lib/supabase/queries";
+import * as sqCalendar from "@/lib/supabase/calendar-persist";
+import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
@@ -33,6 +36,7 @@ import type {
 import type {
   BehaviourEntry,
   KeyWorkingSession,
+  KeyworkerSessionRecord,
   MissingEpisode,
   RiskAssessment,
   LACReview,
@@ -89,36 +93,63 @@ function asApp<T>(rows: unknown): T {
  *  null rather than defaulting to a credit. care_plan_review projects as
  *  "review".
  */
+/** The KeyWorkingSession `type` vocabulary (8 values) beside the session_type
+ *  strings cs_key_work_sessions stores. `care_plan_review` is the table's
+ *  spelling of "review"; the other seven are stored verbatim. One map, used in
+ *  both directions, so the read and the write cannot drift: the read knew only
+ *  six of the eight and silently folded wellbeing_check and goal_setting into
+ *  one_to_one, which would have started losing the recorder's own answer the
+ *  moment anything wrote to this table.
+ */
+const KEYWORK_TYPE_TO_ROW: Record<KeyWorkingSession["type"], string> = {
+  one_to_one: "one_to_one", group: "group", informal: "informal",
+  review: "care_plan_review", wellbeing_check: "wellbeing_check",
+  goal_setting: "goal_setting", life_skills: "life_skills",
+  therapeutic: "therapeutic",
+};
+const KEYWORK_TYPE_FROM_ROW: Record<string, KeyWorkingSession["type"]> =
+  Object.fromEntries(
+    (Object.entries(KEYWORK_TYPE_TO_ROW) as [KeyWorkingSession["type"], string][])
+      .map(([app, row]) => [row, app]),
+  );
+
+/** A 1-5 mood, or null. A reading outside the scale is discarded rather than
+ *  clamped: it is not evidence of a 1 or a 5.
+ */
+function keyworkMood(v: unknown): 1 | 2 | 3 | 4 | 5 | null {
+  return typeof v === "number" && Number.isFinite(v) && v >= 1 && v <= 5
+    ? (Math.round(v) as 1 | 2 | 3 | 4 | 5) : null;
+}
+
 function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessions"]["Row"]): KeyWorkingSession {
   const strings = (j: unknown): string[] => (Array.isArray(j) ? j.map(String) : []);
-  const mood = (r.child_mood != null && r.child_mood >= 1 && r.child_mood <= 5
-    ? (r.child_mood as 1 | 2 | 3 | 4 | 5) : null);
-  const typeMap: Record<string, KeyWorkingSession["type"]> = {
-    one_to_one: "one_to_one", group: "group", informal: "informal",
-    therapeutic: "therapeutic", life_skills: "life_skills", care_plan_review: "review",
-  };
   return {
     id: r.id,
     child_id: r.child_id ?? "",
     staff_id: r.key_worker_id ?? "",
     date: r.completed_date ?? r.planned_date ?? r.created_at.slice(0, 10),
-    type: typeMap[r.session_type ?? ""] ?? "one_to_one",
+    type: KEYWORK_TYPE_FROM_ROW[r.session_type ?? ""] ?? "one_to_one",
     duration: r.duration_minutes ?? 0,
     location: r.location ?? "",
     topics: strings(r.topics_covered),
     child_voice: r.child_voice ?? "",
-    worker_observations: strings(r.positive_observations).join("; "),
+    // worker_observations is the practitioner's own account; positive_observations
+    // is a list of positives only. The two were being conflated by joining the
+    // list with "; ". Prefer the column when the row has one, and keep the old
+    // join for rows key-working-service wrote before that column existed.
+    worker_observations: r.worker_observations ?? strings(r.positive_observations).join("; "),
     actions_agreed: strings(r.actions),
-    // cs_key_work_sessions records a SINGLE child_mood, not a before/after pair.
-    // Setting both would fabricate a zero-delta reading: the key-working page
-    // averages (mood_after - mood_before) as "mood improvement", so populating
-    // both equal would make that KPI structurally 0 for every live session, and
-    // show identical Mood Before/After columns for a pair never captured. Claim
-    // only the one reading we have (the session mood → mood_after); leaving
-    // mood_before null correctly excludes these from the improvement average.
-    mood_before: null,
-    mood_after: mood,
+    // The mood pair is two columns now. A row that recorded only one reading
+    // (key-working-service writes child_mood alone) still reads back with
+    // mood_before null, which is what keeps it out of the page's
+    // (mood_after - mood_before) improvement average rather than pegging that
+    // average at 0 with a fabricated zero delta.
+    mood_before: keyworkMood(r.child_mood_before),
+    mood_after: keyworkMood(r.child_mood),
     follow_up: strings(r.next_session_topics).join(", ") || null,
+    // No column for these, so nothing is claimed for them. keyworkSessionToRow
+    // drops them on write for the same reason: the round trip is honest in
+    // both directions rather than accepting a value it cannot store.
     follow_up_date: null,
     follow_up_completed: null,
     confidential: r.safeguarding_concerns != null && r.safeguarding_concerns.trim() !== "" ? true : null,
@@ -126,6 +157,40 @@ function keyworkRowToSession(r: Database["public"]["Tables"]["cs_key_work_sessio
     home_id: r.home_id ?? "",
     created_at: r.created_at,
   };
+}
+
+/** KeyWorkingSession -> a cs_key_work_sessions row: the inverse of
+ *  keyworkRowToSession for every field the /key-working form captures.
+ *
+ *  A key absent from the input is absent from the row, so a patch never blanks
+ *  a column the caller did not mention. follow_up_date, follow_up_completed,
+ *  linked_goals and confidential have no column and are dropped: the read
+ *  cannot produce them either, so neither direction pretends.
+ */
+function keyworkSessionToRow(s: Partial<KeyWorkingSession>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  const set = (k: string, v: unknown) => { if (v !== undefined) row[k] = v; };
+  set("child_id", s.child_id);
+  set("key_worker_id", s.staff_id);
+  if (s.type !== undefined) row.session_type = KEYWORK_TYPE_TO_ROW[s.type] ?? "one_to_one";
+  // One date in, two columns out. findAll orders by planned_date, so writing
+  // completed_date alone would leave every session recorded through the page
+  // with a null sort key and no reliable order. A session logged after the
+  // fact was, absent any other record, planned for the day it happened.
+  if (s.date !== undefined) { row.completed_date = s.date; row.planned_date = s.date; }
+  set("duration_minutes", s.duration);
+  set("location", s.location);
+  set("topics_covered", s.topics);
+  set("child_voice", s.child_voice);
+  set("worker_observations", s.worker_observations);
+  set("actions", s.actions_agreed);
+  if (s.mood_before !== undefined) row.child_mood_before = keyworkMood(s.mood_before);
+  if (s.mood_after !== undefined) row.child_mood = keyworkMood(s.mood_after);
+  if (s.follow_up !== undefined) {
+    row.next_session_topics = s.follow_up
+      ? s.follow_up.split(",").map((t) => t.trim()).filter(Boolean) : [];
+  }
+  return row;
 }
 
 
@@ -729,6 +794,14 @@ export const dal = {
       if (c) return sq.createLeaveRequest(c, { ...data, home_id: homeId() });
       return db.leave.create(data);
     },
+    // Approve / decline / return-to-work. Until this existed the catch-all
+    // answered 405 to every leave PATCH on live, and the page faked approval
+    // with a local override that vanished on refresh.
+    async update(id: string, data: Partial<LeaveRequest>) {
+      const c = sb();
+      if (c) return asApp<LeaveRequest>(await sq.updateLeaveRequest(c, homeId(), id, data as Record<string, unknown>));
+      return db.leave.update(id, data);
+    },
   },
 
   // ── Training ──────────────────────────────────────────────────────────────
@@ -1098,10 +1171,23 @@ export const dal = {
 
   // ── Notifications ─────────────────────────────────────────────────────────
   notifications: {
-    async findForUser(userId: string) {
+    /** Recipient-scoped read. `unreadOnly` defaults to true (inbox badge); the
+     *  notifications page passes false for the full list. */
+    async findForUser(userId: string, opts?: { unreadOnly?: boolean }) {
       const c = sb();
-      if (c) return asApp<AppNotification[]>(await sq.getNotifications(c, homeId(), userId));
-      return db.notifications.findForUser(userId);
+      if (c) return asApp<AppNotification[]>(await sq.getNotifications(c, homeId(), userId, opts));
+      const unread = db.notifications.findForUser(userId);
+      if (opts?.unreadOnly !== false) return unread;
+      return db.notifications.findAll().filter((n) => n.recipient_id === userId);
+    },
+    /** Read-receipt write, scoped to the recipient so a guessed id can't clear
+     *  someone else's notification. Returns null when it isn't theirs. */
+    async markRead(id: string, userId: string, read: boolean, readAt: string | null) {
+      const c = sb();
+      if (c) return asApp<AppNotification | null>(await sq.markNotificationRead(c, id, userId, read, readAt));
+      const existing = db.notifications.findAll().find((n) => n.id === id);
+      if (!existing || existing.recipient_id !== userId) return null;
+      return db.notifications.patch(id, { read, read_at: readAt });
     },
     async create(data: Parameters<typeof db.notifications.create>[0]) {
       const c = sb();
@@ -1227,6 +1313,32 @@ export const dal = {
   // `if (sb())` branch here — routes stay unchanged.
   // ─────────────────────────────────────────────────────────────────────────
 
+  // ── Calendar events ───────────────────────────────────────────────────────
+  // Events have written through to Supabase since migration 416, but there was
+  // no read accessor at all — every calendar surface read the in-memory store,
+  // which is emptied on a live tenant, so a real home's events were invisible.
+  calendarEvents: {
+    async findAll(): Promise<CalendarEvent[]> {
+      if (sb()) return sqCalendar.getCalendarEvents();
+      return db.calendarEvents.findAll();
+    },
+    async findById(id: string): Promise<CalendarEvent | null> {
+      if (sb()) return (await sqCalendar.getCalendarEvents()).find((e) => e.id === id) ?? null;
+      return db.calendarEvents.findById(id) ?? null;
+    },
+    /** Patch + write through. The store copy is kept in step for demo parity. */
+    async update(id: string, patch: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
+      if (sb()) {
+        const current = (await sqCalendar.getCalendarEvents()).find((e) => e.id === id);
+        if (!current) return null;
+        const next = { ...current, ...patch, updated_at: new Date().toISOString() };
+        await sqCalendar.persistCalendarEvent(next);
+        return next;
+      }
+      return db.calendarEvents.update(id, patch) ?? null;
+    },
+  },
+
   keyWorkingSessions: {
     async findAll(filters?: { child_id?: string; staff_id?: string }): Promise<KeyWorkingSession[]> {
       const c = sb();
@@ -1258,8 +1370,42 @@ export const dal = {
       }
       return db.keyWorkingSessions.findByChild(childId);
     },
-    async create(data: Parameters<typeof db.keyWorkingSessions.create>[0]) { return db.keyWorkingSessions.create(data); },
-    async update(id: string, data: Parameters<typeof db.keyWorkingSessions.update>[1]) { return db.keyWorkingSessions.update(id, data); },
+    // Before this, both of these wrote to the in-memory store. On a live tenant
+    // that store is gated empty at module load and lost on the next cold start,
+    // while every inspection-facing reader - the Reg 45 evidence pack, the
+    // handover generator, the regulatory pulse, Cara's today-briefing - reads
+    // cs_key_work_sessions. A recorded key-work session was therefore invisible
+    // to all of them, and the table had no writer at all.
+    //
+    // A failed durable write throws rather than falling back to the store: with
+    // Supabase configured, the store is not a place a record can survive, and
+    // returning a saved-looking session that is already gone is worse than a
+    // 500. Demo (no service-role key, sb() null) is unchanged.
+    async create(data: Parameters<typeof db.keyWorkingSessions.create>[0]) {
+      const c = sb();
+      if (c) {
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .insert({ ...keyworkSessionToRow(data as Partial<KeyWorkingSession>), home_id: homeId() } as never)
+          .select("*").single();
+        if (error || !row) throw error ?? new Error("key-work session insert returned no row");
+        return keyworkRowToSession(row);
+      }
+      return db.keyWorkingSessions.create(data);
+    },
+    async update(id: string, data: Parameters<typeof db.keyWorkingSessions.update>[1]) {
+      const c = sb();
+      if (c) {
+        // home_id is never patched: a session does not move between homes, and
+        // the caller's payload should not be able to walk one across.
+        const patch = keyworkSessionToRow(data as Partial<KeyWorkingSession>);
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .update({ ...patch, updated_at: new Date().toISOString() } as never)
+          .eq("id", id).select("*").single();
+        if (error || !row) throw error ?? new Error("key-work session update matched no row");
+        return keyworkRowToSession(row);
+      }
+      return db.keyWorkingSessions.update(id, data);
+    },
   },
 
   behaviourLog: {
@@ -2356,8 +2502,70 @@ export const dal = {
   improvementObjectives: {
     async findAll() { return getStore().improvementObjectives ?? []; },
   },
+  // The 1:1 Sessions page's view of cs_key_work_sessions - the same rows
+  // dal.keyWorkingSessions reads, in the richer shape that page records.
+  //
+  // This used to return getStore().keyworkerSessions, which on a live tenant is
+  // gated empty at module load, while the page's writes went to generic_records
+  // under record_type 'keyworkerSessions'. So a recorded 1:1 was invisible to
+  // the Reg 45 evidence pack, the handover generator, the regulatory pulse and
+  // Cara's today-briefing, all of which read cs_key_work_sessions.
+  //
+  // A failed durable write throws rather than falling back to the store, for
+  // the same reason as the KeyWorkingSession writer: with Supabase configured
+  // the store is not a place a record survives.
   keyworkerSessions: {
-    async findAll() { return getStore().keyworkerSessions ?? []; },
+    async findAll(filters?: { child_id?: string }): Promise<KeyworkerSessionRecord[]> {
+      const c = sb();
+      if (c) {
+        let q = c.from("cs_key_work_sessions").select("*").order("planned_date", { ascending: false });
+        if (filters?.child_id) q = q.eq("child_id", filters.child_id);
+        const { data, error } = await q;
+        if (!error && data) return data.map(rowTo1to1);
+      }
+      const list = getStore().keyworkerSessions ?? [];
+      return filters?.child_id ? list.filter((s) => s.child_id === filters.child_id) : list;
+    },
+    async findById(id: string): Promise<KeyworkerSessionRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data, error } = await c.from("cs_key_work_sessions").select("*").eq("id", id).single();
+        if (!error && data) return rowTo1to1(data);
+      }
+      return (getStore().keyworkerSessions ?? []).find((s) => s.id === id) ?? null;
+    },
+    async findByChild(childId: string): Promise<KeyworkerSessionRecord[]> {
+      return this.findAll({ child_id: childId });
+    },
+    async create(data: Partial<KeyworkerSessionRecord>) {
+      const c = sb();
+      if (c) {
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .insert({ ...oneToOneToRow(data), home_id: homeId() } as never)
+          .select("*").single();
+        if (error || !row) throw error ?? new Error("1:1 session insert returned no row");
+        return rowTo1to1(row);
+      }
+      const rec = { ...data, id: data.id ?? `kws_${Date.now()}` } as KeyworkerSessionRecord;
+      (getStore().keyworkerSessions ?? []).push(rec);
+      return rec;
+    },
+    async update(id: string, data: Partial<KeyworkerSessionRecord>) {
+      const c = sb();
+      if (c) {
+        // home_id is never patched: a session does not move between homes.
+        const { data: row, error } = await c.from("cs_key_work_sessions")
+          .update({ ...oneToOneToRow(data), updated_at: new Date().toISOString() } as never)
+          .eq("id", id).select("*").single();
+        if (error || !row) throw error ?? new Error("1:1 session update matched no row");
+        return rowTo1to1(row);
+      }
+      const list = getStore().keyworkerSessions ?? [];
+      const i = list.findIndex((s) => s.id === id);
+      if (i < 0) return null;
+      list[i] = { ...list[i], ...data } as KeyworkerSessionRecord;
+      return list[i];
+    },
   },
   matchingReferrals: {
     async findAll() { return getStore().matchingReferrals ?? []; },

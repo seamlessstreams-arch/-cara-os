@@ -61,7 +61,9 @@ const SLUG_MAP: Record<string, string> = {
   "camhs-referrals": "camhsReferrals",
   "card-records": "cardRecords",
   "care-anniversary-records": "careAnniversaryRecords",
-  "care-event-audit": "careEvents",
+  // "care-event-audit": "careEvents",  // ← dedicated route: /api/v1/care-event-audit/route.ts
+  // (the audit LOG, not the events — this mapping returned the wrong collection in
+  // the wrong shape, so the Audit Trail page rendered empty in both modes)
   // Base care-events CRUD is served by the dedicated route at
   // src/app/api/v1/care-events/route.ts (which classifies on create). This map
   // entry is a defensive fallback only — it must resolve to the careEvents
@@ -534,6 +536,8 @@ const DAL_MAP: Record<string, any> = {
   documents: dal.documents,
   expenses: dal.expenses,
   handovers: dal.handovers,
+  keyWorkingSessions: dal.keyWorkingSessions,
+  keyworkerSessions: dal.keyworkerSessions,
   leave: dal.leave,
   maintenance: dal.maintenance,
   missingEpisodes: dal.missingEpisodes,
@@ -579,7 +583,13 @@ function resolveAccessor(slug: string): AsyncCollection | null {
   const dalCol = (DAL_MAP[collectionName]);
   if (dalCol) {
     return {
-      findAll: async () => asList(await dalCol.findAll()),
+      // Guarded like every sibling below: a dal accessor need not expose findAll
+      // (dal.notifications has only findForUser/create). Unguarded, adding such an
+      // accessor to DAL_MAP threw `dalCol.findAll is not a function` on every GET
+      // — a 500 the client surfaced as "Failed to fetch notifications".
+      findAll:
+        typeof dalCol.findAll === "function" ? async () => asList(await dalCol.findAll())
+        : async () => asList(typeof mem.findAll === "function" ? mem.findAll() : typeof mem.getAll === "function" ? mem.getAll() : []),
       findByChild:
         typeof dalCol.findByChild === "function" ? async (id: string) => asList(await dalCol.findByChild(id))
         : typeof mem.findByChild === "function" ? async (id: string) => asList(mem.findByChild!(id))

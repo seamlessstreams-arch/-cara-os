@@ -6,9 +6,9 @@
 // when a provider is configured. Role-gated via cara.generate_drafts.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { generateDraft, type CaraDraftType } from "@/lib/cara-practice/cara-draft";
-import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import type { PracticeSourceType } from "@/lib/cara-practice/types";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -25,7 +25,7 @@ const DRAFT_TYPES: CaraDraftType[] = [
   "livers_analysis",
 ];
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: {
     draftType?: CaraDraftType;
     sourceType?: PracticeSourceType;
@@ -53,8 +53,12 @@ export async function POST(req: Request) {
   const sourceType: PracticeSourceType = body.sourceType ?? "daily_record";
 
   // Role gate — drafting requires cara.generate_drafts.
-  const appRole = getUserRoleFromRequest(req);
-  const userId = getUserIdFromRequest(req);
+  // Session identity in activated mode (401 without one); header only in demo.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { userId, role: appRole } = identity;
+  // Activated mode: the home is the session's, whatever the body says.
+  if (identity.homeId) body.homeId = identity.homeId;
   const caraRole = appRoleToCaraRole(appRole);
   const decision = checkCaraAccess(
     { userId, role: caraRole, homeId: body.homeId ?? undefined, staffSelfId: userId },

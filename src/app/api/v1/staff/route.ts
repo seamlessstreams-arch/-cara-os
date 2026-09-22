@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requireFields } from "@/lib/http/require-fields";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS, canAssignRole } from "@/lib/permissions";
 import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -125,12 +127,49 @@ export async function GET(req: NextRequest) {
 // createStaffMember strips the GENERATED full_name column and fills NOT NULL
 // defaults so a minimal form can create a seat.
 export async function POST(req: NextRequest) {
+  // Creating a staff member is a MANAGE_STAFF action, exactly as editing one is
+  // in the sibling [id] PATCH route. This handler had no check of any kind —
+  // not a session, not a role — while `role` and `auth_user_id` were both
+  // settable from the request body. Any signed-in user could therefore mint a
+  // staff row with role "super_admin" bound to a second auth account they
+  // controlled, sign in on it, and be an administrator. Middleware requires a
+  // session for /api/v1/*, so this was never open to the world — it was open to
+  // everyone who had a login, which is the same thing from inside.
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_STAFF);
+  if (auth instanceof NextResponse) return auth;
+
   const parsed = await readJsonBody(req);
   if (!parsed.ok) return parsed.response;
   const __missing = requireFields(parsed.data, ["full_name"]);
   if (__missing) return __missing;
+
+  // Nobody may appoint above themselves. MANAGE_STAFF says you can create a
+  // staff member; it does not say which. Without this a deputy manager could
+  // create a super_admin and — once that record has a login — sign in as one.
+  // An absent role is fine: createStaffMember defaults it to the least
+  // privileged. An unrecognised role on either side is refused, not guessed.
+  const requestedRole = (parsed.data as { role?: unknown }).role;
+  if (requestedRole !== undefined && requestedRole !== null) {
+    if (typeof requestedRole !== "string" || !canAssignRole(auth.role, requestedRole)) {
+      return NextResponse.json(
+        {
+          error: "Forbidden",
+          detail: `Role '${auth.role}' cannot create a staff member with role '${String(requestedRole)}'.`,
+        },
+        { status: 403 },
+      );
+    }
+  }
+
+  // Strip the login binding at the boundary, not just in the column allowlist.
+  // The allowlist governs the SUPABASE writer only; the in-memory store used in
+  // demo takes the body verbatim, so without this the two modes would disagree
+  // about whether a request can grant itself an identity. They must not.
+  const { auth_user_id: _ignoredAuthUserId, ...body } =
+    parsed.data as Record<string, unknown>;
+
   try {
-    const created = await dal.staff.create(parsed.data as Record<string, unknown>);
+    const created = await dal.staff.create(body);
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (err) {
     console.error("[api/staff] create failed:", err);

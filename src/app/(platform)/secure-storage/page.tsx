@@ -19,6 +19,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
+import { currentUserId } from "@/lib/auth/current-user";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -27,7 +28,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { SecureStorageRecord, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus } from "@/types/extended";
+import type { SecureStorageRecord, SecureStorageAccessLog, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus } from "@/types/extended";
 import {
   SECURE_STORAGE_CATEGORY_LABEL,
   SECURE_STORAGE_LOCATION_LABEL,
@@ -64,6 +65,31 @@ function useCreateSecureStorageRecord() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["secure-storage-records"] }),
   });
+}
+
+/** Appends to the access log / records a check. PATCH on the collection route
+ *  (catch-all → store.secureStorageRecords.update). These two buttons existed
+ *  with no handler; on a secure-storage register, an access that cannot be
+ *  logged is the one thing the register is for. */
+function usePatchSecureStorageRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<SecureStorageRecord> & { id: string }) => {
+      const res = await fetch("/api/v1/secure-storage-records", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`Could not update the record (${res.status})`);
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["secure-storage-records"] }),
+  });
+}
+
+function nowParts(): { date: string; time: string } {
+  const d = new Date();
+  return { date: d.toISOString().slice(0, 10), time: d.toTimeString().slice(0, 5) };
 }
 
 /* ── local config ─────────────────────────────────────────────────────── */
@@ -347,10 +373,7 @@ export default function SecureStoragePage() {
                 </div>
 
                 {/* actions */}
-                <div className="flex gap-2">
-                  <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">Log Access</button>
-                  <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">Mark Checked</button>
-                </div>
+                <ItemActions item={item} />
               </div>
             )}
           </div>
@@ -409,5 +432,72 @@ export default function SecureStoragePage() {
         className="mt-6"
       />
     </PageShell>
+  );
+}
+
+/* ── per-item actions: log an access, record a check ──────────────────── */
+
+function ItemActions({ item }: { item: SecureStorageRecord }) {
+  const patch = usePatchSecureStorageRecord();
+  const [logging, setLogging] = useState(false);
+  const [action, setAction] = useState<SecureStorageAccessLog["action"]>("retrieved");
+  const [reason, setReason] = useState("");
+  const [witness, setWitness] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const actor = currentUserId();
+
+  const entry = (a: SecureStorageAccessLog["action"], r: string): SecureStorageAccessLog => ({
+    id: `sal_${Date.now().toString(36)}`, ...nowParts(), accessed_by: actor, action: a, reason: r, witnessed_by: witness || null,
+  });
+
+  const save = (data: Partial<SecureStorageRecord>) => {
+    setError(null);
+    patch.mutate({ id: item.id, ...data }, {
+      onSuccess: () => { setLogging(false); setReason(""); setWitness(""); },
+      onError: (e) => setError(e instanceof Error ? e.message : "Not saved"),
+    });
+  };
+
+  const logAccess = () => save({ access_log: [...(item.access_log ?? []), entry(action, reason.trim())] });
+  const markChecked = () => {
+    const { date } = nowParts();
+    save({ last_checked: date, access_log: [...(item.access_log ?? []), entry("checked", "Routine check")] });
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <button onClick={() => setLogging((v) => !v)} className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">{logging ? "Cancel" : "Log Access"}</button>
+        <button onClick={markChecked} disabled={patch.isPending} className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-60">{patch.isPending && !logging ? "Saving…" : "Mark Checked"}</button>
+      </div>
+      {logging && (
+        <div className="rounded-md border bg-gray-50 p-3 space-y-2 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label className="text-xs">
+              <span className="block text-muted-foreground mb-1">Action</span>
+              <select value={action} onChange={(e) => setAction(e.target.value as SecureStorageAccessLog["action"])} className="w-full rounded-md border px-2 py-1.5 text-sm bg-white">
+                <option value="retrieved">Retrieved</option>
+                <option value="returned">Returned</option>
+                <option value="added">Added</option>
+                <option value="removed">Removed</option>
+              </select>
+            </label>
+            <label className="text-xs sm:col-span-2">
+              <span className="block text-muted-foreground mb-1">Witnessed by (optional)</span>
+              <select value={witness} onChange={(e) => setWitness(e.target.value)} className="w-full rounded-md border px-2 py-1.5 text-sm bg-white">
+                <option value="">No witness</option>
+                {STAFF.filter((st) => st.id !== actor).map((st) => <option key={st.id} value={st.id}>{st.full_name}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="text-xs block">
+            <span className="block text-muted-foreground mb-1">Reason *</span>
+            <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why the item was accessed" className="w-full rounded-md border px-2 py-1.5 text-sm bg-white" />
+          </label>
+          {error && <p className="text-xs text-red-600">Not saved — {error}</p>}
+          <button onClick={logAccess} disabled={!reason.trim() || patch.isPending} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90 disabled:opacity-60">{patch.isPending ? "Saving…" : "Save to access log"}</button>
+        </div>
+      )}
+    </div>
   );
 }

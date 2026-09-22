@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type { Database } from "@/lib/supabase/types";
 
 // Zero code-vs-DDL drift (promotion census): the domain shape IS the column
@@ -186,7 +187,7 @@ export async function listOversightDrafts(opts?: {
   const sb = createServerClient();
   const hid = opts?.homeId ?? homeId();
 
-  if (!sb) return getDemoDrafts(hid);
+  if (!sb) return isLiveTenant() ? [] : getDemoDrafts(hid);
 
   let query = sb.from("management_oversight_drafts")
     .select("*")
@@ -199,7 +200,7 @@ export async function listOversightDrafts(opts?: {
   if (opts?.status) query = query.eq("status", opts.status);
 
   const { data, error } = await query;
-  if (error) return getDemoDrafts(hid);
+  if (error) return isLiveTenant() ? [] : getDemoDrafts(hid);
   return (data ?? []).map(mapDbToOversight);
 }
 

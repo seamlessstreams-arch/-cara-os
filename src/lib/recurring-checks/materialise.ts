@@ -7,25 +7,29 @@
 // off = no tasks are ever created, the engine stays read-only.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { db, getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
   DEFAULT_CHECK_TEMPLATES,
   computeMissingChecks,
 } from "./recurring-checks-engine";
 
-export function materialiseRecurringChecks(nowIso: string): {
+export async function materialiseRecurringChecks(nowIso: string): Promise<{
   enabled: boolean;
   created: number;
   considered: number;
-} {
+}> {
   if (!isFeatureEnabled("recurring_checks")) {
     return { enabled: false, created: 0, considered: 0 };
   }
-  const tasks = getStore().tasks;
+  // Through the dal. Reading getStore().tasks meant that on a live tenant the
+  // existing-task check saw an EMPTY list, so every template looked missing and
+  // the sweep would re-create the whole set on each fresh container — into the
+  // in-memory store, where the Tasks page (which reads the table) never sees them.
+  const tasks = await dal.tasks.findAll();
   const missing = computeMissingChecks(DEFAULT_CHECK_TEMPLATES, tasks, nowIso);
   for (const m of missing) {
-    db.tasks.create({
+    await dal.tasks.create({
       title: m.template.name,
       description: `${m.template.description}${m.template.regulatory_ref ? ` (${m.template.regulatory_ref})` : ""} ${m.marker}`,
       category: m.template.category as never,

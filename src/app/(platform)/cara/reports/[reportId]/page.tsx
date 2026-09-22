@@ -323,6 +323,30 @@ export default function CaraReportDetailPage({
     }
   }
 
+  // ── File handler ──────────────────────────────────────────────────────
+  // Files a LOCKED report into the Cara filing cabinet (POST …/file). The
+  // button existed with no handler; the endpoint has existed all along.
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [filedPath, setFiledPath] = useState<string | null>(null);
+  async function handleFileReport() {
+    if (!report) return;
+    setStatusLoading(true);
+    setFileError(null);
+    try {
+      const res = await fetch(`/api/cara/reports/${reportId}/file`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.ok) {
+        setFiledPath(json.filingPath ?? "the filing cabinet");
+      } else {
+        setFileError(json.error ?? `Filing failed (${res.status})`);
+      }
+    } catch (err) {
+      setFileError(err instanceof Error ? err.message : "Filing failed");
+    } finally {
+      setStatusLoading(false);
+    }
+  }
+
   // ── Rewrite handler ───────────────────────────────────────────────────
 
   async function handleRewrite(sectionId: string, audience: ReportAudience) {
@@ -778,12 +802,15 @@ export default function CaraReportDetailPage({
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={statusLoading}
+                    disabled={statusLoading || !!filedPath}
+                    onClick={handleFileReport}
                     className="w-full gap-1.5"
                   >
                     <FileText className="h-3.5 w-3.5" />
-                    File Report
+                    {filedPath ? "Filed" : "File Report"}
                   </Button>
+                  {filedPath && <p className="text-[11px] text-emerald-700">Filed to {filedPath}.</p>}
+                  {fileError && <p className="text-[11px] text-red-600">Not filed — {fileError}</p>}
                 </div>
               )}
             </CardContent>

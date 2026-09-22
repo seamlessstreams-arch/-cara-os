@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "requested_by is required" }, { status: 400 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId: (body.home_id as string) ?? "home_oak",
     childId: (body.child_id as string) ?? null,

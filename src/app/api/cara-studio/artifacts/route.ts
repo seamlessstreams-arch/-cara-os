@@ -5,7 +5,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
   try {
     const sb = createServerClient();
     const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const userId = getUserIdFromRequest(req);
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const userId = identity.userId;
 
     if (!body.title || !body.artifact_type) {
       return NextResponse.json({ error: "title and artifact_type are required" }, { status: 400 });

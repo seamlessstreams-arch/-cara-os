@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
   const status = searchParams.get("status") as Reg40TriageStatus | null;
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "view reg40 triage queue",
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   // ── Action: scan ─────────────────────────────────────────────────────────
   if (action === "scan") {
     const homeId = typeof body.home_id === "string" ? body.home_id : DEFAULT_HOME_ID;
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.generate_drafts",
       homeId,
       intent: "scan reg40 candidates",
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   const existing = db.caraReg40Triages.findById(triageId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId: existing.home_id,
     childId: existing.child_id,

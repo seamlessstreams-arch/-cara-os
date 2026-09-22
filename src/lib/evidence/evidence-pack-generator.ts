@@ -40,7 +40,6 @@ import type {
   FamilyTimeSession,
   HealthAssessment,
   KeyWorkingSession,
-  KeyworkerSessionRecord,
   LACReview,
   MentalHealthCheckIn,
   MissingEpisode,
@@ -86,8 +85,12 @@ export interface EvidencePackInput {
   incidents: Incident[];
   missingEpisodes: MissingEpisode[];
   exploitationScreenings: ExploitationScreening[];
+  /** Every key-work session, from cs_key_work_sessions. Both the /key-working
+   *  page and the 1:1 Sessions page write there, so this one list is the whole
+   *  picture; it used to be joined with a second `keyworkerSessions` list that
+   *  read the same rows through a different projection, which would now count
+   *  each session twice. */
   keyWorkingSessions: KeyWorkingSession[];
-  keyworkerSessions: KeyworkerSessionRecord[];
   educationRecords: EducationRecord[];
   healthAssessments: HealthAssessment[];
   dentalRecords: DentalRecord[];
@@ -557,16 +560,10 @@ function buildDirectWorkSummary(
   input: EvidencePackInput,
   children: YoungPerson[],
 ): EvidenceSection {
-  const allSessions = [
-    ...input.keyWorkingSessions,
-    ...input.keyworkerSessions,
-  ];
-  const sessionDate = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
-    "date" in s ? s.date : s.session_date;
-  const sessionKind = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
-    "type" in s ? s.type : s.format;
-  const sessionMins = (s: KeyWorkingSession | KeyworkerSessionRecord) =>
-    "duration" in s ? s.duration : s.duration_minutes;
+  const allSessions = input.keyWorkingSessions;
+  const sessionDate = (s: KeyWorkingSession) => s.date;
+  const sessionKind = (s: KeyWorkingSession) => s.type;
+  const sessionMins = (s: KeyWorkingSession) => s.duration;
   const periodSessions = allSessions.filter((s) =>
     isInPeriod(sessionDate(s) ?? s.created_at, input.period_from, input.period_to),
   );
@@ -597,7 +594,7 @@ function buildDirectWorkSummary(
     description:
       "Key working sessions, therapeutic interventions, and direct work with children.",
     ofsted_reference: "CHR 2015 Reg 13 — The leadership and management standard",
-    data_sources: ["keyWorkingSessions", "keyworkerSessions"],
+    data_sources: ["keyWorkingSessions"],
     items,
     score,
     rating: ratingFor(score),

@@ -284,7 +284,18 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "cs_key_work_sessions",
     migration: "20260908090000_keywork_consolidation.sql",
-    columns: [],
+    columns: [
+      { name: "child_actions", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "child_chose_format", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "child_mood_before", migration: "20260921060000_keywork_write_path.sql" },
+      { name: "child_satisfaction", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "flags_raised", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "follow_up_date", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "notes", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "session_format", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "staff_agenda", migration: "20260921110000_keywork_1to1_fields.sql" },
+      { name: "worker_observations", migration: "20260921060000_keywork_write_path.sql" },
+    ],
   },
   {
     table: "cs_lac_reviews",

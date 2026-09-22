@@ -719,13 +719,46 @@ export async function updateCandidateReference(sb: SB, id: string, data: Databas
 // NOTIFICATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function getNotifications(sb: SB, homeId: string, recipientId: string) {
+// Recipient-scoped by construction: home_id AND recipient_id are always applied,
+// so a caller cannot widen this to another staff member's notifications. Reads go
+// through the service-role client (RLS is bypassed), which is why the scoping has
+// to live here rather than in a policy.
+// unreadOnly defaults to true — the inbox badge's original behaviour; the full
+// notifications page passes false to get read ones too.
+export async function getNotifications(
+  sb: SB,
+  homeId: string,
+  recipientId: string,
+  opts?: { unreadOnly?: boolean },
+) {
+  let q = sb.from("notifications").select("*")
+    .eq("home_id", homeId)
+    .eq("recipient_id", recipientId);
+  if (opts?.unreadOnly !== false) q = q.eq("read", false);
+  return unwrap(await q.order("created_at", { ascending: false }));
+}
+
+/** Single notification by id — used to verify ownership before a read-receipt write. */
+export async function getNotificationById(sb: SB, id: string) {
+  return unwrap(await sb.from("notifications").select("*").eq("id", id).maybeSingle());
+}
+
+/** Read-receipt write. Scoped to the recipient so one staff member cannot clear
+ *  another's notification, even with a guessed id. */
+export async function markNotificationRead(
+  sb: SB,
+  id: string,
+  recipientId: string,
+  read: boolean,
+  readAt: string | null,
+) {
   return unwrap(
-    await sb.from("notifications").select("*")
-      .eq("home_id", homeId)
+    await sb.from("notifications")
+      .update({ read, read_at: readAt })
+      .eq("id", id)
       .eq("recipient_id", recipientId)
-      .eq("read", false)
-      .order("created_at", { ascending: false })
+      .select()
+      .maybeSingle()
   );
 }
 
@@ -988,8 +1021,35 @@ const STAFF_MEMBER_COLS = [
   "contracted_hours", "hourly_rate", "annual_salary", "payroll_id", "dbs_number",
   "dbs_issue_date", "dbs_update_service", "emergency_contact_name", "emergency_contact_phone",
   "next_supervision_due", "next_appraisal_due", "avatar_url", "is_active",
-  "created_by", "updated_by", "auth_user_id",
+  "created_by", "updated_by",
+  // auth_user_id is deliberately NOT here. It binds a staff record to a login,
+  // so accepting it from a request body lets the caller grant themselves — or
+  // anyone — an identity. It is set only by the server-side invite path that
+  // creates the auth user in the first place, never carried in from a form.
 ] as const;
+
+/**
+ * Bind a staff record to a Supabase auth user — the ONLY place auth_user_id is
+ * written. It is deliberately absent from STAFF_MEMBER_COLS so that no request
+ * body can reach it; a login is granted by the server that just created the
+ * auth user, never by a form. Also records the email the login uses, so the
+ * staff record and the auth account agree about who this is.
+ */
+export async function linkStaffAuthUser(
+  sb: SB,
+  staffId: string,
+  authUserId: string,
+  email: string,
+) {
+  return unwrap(
+    await sb
+      .from("staff_members")
+      .update({ auth_user_id: authUserId, email } as never)
+      .eq("id", staffId)
+      .select()
+      .single(),
+  );
+}
 
 export async function createStaffMember(sb: SB, data: Record<string, unknown>) {
   const row = pickColumns<Ins<"staff_members">>(data, STAFF_MEMBER_COLS);
@@ -1023,6 +1083,21 @@ const LEAVE_REQUEST_COLS = [
 
 export async function createLeaveRequest(sb: SB, data: Record<string, unknown>) {
   return unwrap(await sb.from("leave_requests").insert(pickColumns<Ins<"leave_requests">>(data, LEAVE_REQUEST_COLS)).select().single());
+}
+
+const LEAVE_REQUEST_UPDATE_COLS = [
+  "status", "approved_by", "approved_at", "return_to_work_required", "return_to_work_completed",
+  "return_to_work_date", "return_to_work_by", "return_to_work_notes", "reason", "start_date", "end_date", "total_days",
+] as const;
+
+/** Approve / decline / record the return-to-work interview. home_id and staff_id are not writable here. */
+export async function updateLeaveRequest(sb: SB, homeId: string, id: string, data: Record<string, unknown>) {
+  return unwrap(
+    await sb.from("leave_requests")
+      .update(pickColumns<Upd<"leave_requests">>(data, LEAVE_REQUEST_UPDATE_COLS))
+      .eq("id", id).eq("home_id", homeId)
+      .select().single(),
+  );
 }
 
 const BUILDING_COLS = [

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { currentUserId, userIdHeaders, DEMO_DEFAULT_USER_ID } from "@/lib/auth/current-user";
+import { currentUserId, userIdHeaders, setSessionUserId, hasSessionUserId, DEMO_DEFAULT_USER_ID } from "@/lib/auth/current-user";
 
 // The bug this guards: on a FRESH session localStorage is empty (AuthProvider
 // keeps its default in React state and only persists on an explicit switch).
@@ -15,6 +15,7 @@ const localStorageMock = {
 };
 
 beforeEach(() => {
+  setSessionUserId(null); // module-level state — must not leak between cases
   localStorageMock.clear();
   vi.stubGlobal("window", {} as unknown as Window);
   vi.stubGlobal("localStorage", localStorageMock);
@@ -55,5 +56,42 @@ describe("userIdHeaders", () => {
   it("carries the switched user", () => {
     localStorage.setItem("cs_user_id", "staff_ryan");
     expect(userIdHeaders()["x-user-id"]).toBe("staff_ryan");
+  });
+});
+
+// ── Session identity (live tenant) ───────────────────────────────────────────
+// On a live tenant the demo id names nobody. AuthProvider resolves /api/v1/me
+// and publishes the answer here, so the ~30 synchronous callers building an
+// `x-user-id` header carry the real actor instead of "staff_darren".
+
+describe("session identity", () => {
+  it("prefers the session over the demo default", () => {
+    setSessionUserId("a9a6684f-cb0e-4a43-84c1-9cecc66d9d05");
+    expect(currentUserId()).toBe("a9a6684f-cb0e-4a43-84c1-9cecc66d9d05");
+    expect(currentUserId()).not.toBe(DEMO_DEFAULT_USER_ID);
+  });
+
+  it("prefers the session over a stale switched user in storage", () => {
+    localStorage.setItem("cs_user_id", "staff_ryan");
+    setSessionUserId("a9a6684f");
+    expect(currentUserId()).toBe("a9a6684f");
+  });
+
+  it("carries the session id in the header the audit trail reads", () => {
+    setSessionUserId("a9a6684f");
+    expect(userIdHeaders()["x-user-id"]).toBe("a9a6684f");
+  });
+
+  it("clearing it falls back to the demo behaviour — no stale actor persists", () => {
+    setSessionUserId("a9a6684f");
+    setSessionUserId(null);
+    expect(hasSessionUserId()).toBe(false);
+    expect(currentUserId()).toBe(DEMO_DEFAULT_USER_ID);
+  });
+
+  it("treats a blank id as no identity rather than an empty actor", () => {
+    setSessionUserId("   ");
+    expect(hasSessionUserId()).toBe(false);
+    expect(currentUserId()).toBe(DEMO_DEFAULT_USER_ID);
   });
 });

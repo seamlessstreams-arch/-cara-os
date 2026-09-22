@@ -1007,9 +1007,11 @@ function MARChartTab({
 function PRNLogTab({
   medications,
   mar,
+  onGoToSchedule,
 }: {
   medications: Medication[];
   mar: { medication: Medication; administrations: MedicationAdministration[] }[];
+  onGoToSchedule?: () => void;
 }) {
   const [filterYP, setFilterYP] = useState<string>("");
   const [filterMed, setFilterMed] = useState<string>("");
@@ -1109,7 +1111,7 @@ function PRNLogTab({
           <Button
             size="sm"
             variant="warning"
-            disabled
+            onClick={onGoToSchedule}
             title="PRN administrations are recorded from the Today's Schedule tab after administering."
           >
             <Plus className="h-3.5 w-3.5" />Add PRN Entry
@@ -1255,7 +1257,7 @@ function StockOversightTab({
             size="sm"
             variant="outline"
             disabled
-            title="New medications are added via the Add Medication button at the top of the page after pharmacy authorisation."
+            title="Medications are added from a prescriber authorisation, via your pharmacy system — not from the stock view."
           >
             <Package className="h-3.5 w-3.5" />Add to MAR
           </Button>
@@ -1659,7 +1661,7 @@ export default function MedicationPage() {
               />
             )}
             {activeTab === "mar" && <MARChartTab mar={mar} />}
-            {activeTab === "prn" && <PRNLogTab medications={medications} mar={mar} />}
+            {activeTab === "prn" && <PRNLogTab medications={medications} mar={mar} onGoToSchedule={() => setActiveTab("schedule")} />}
             {activeTab === "stock" && (
               <StockOversightTab medications={medications} exceptions={exceptions} mar={mar} />
             )}

@@ -8,7 +8,7 @@
 // suggested sessions, repeated triggers, and therapeutic patterns.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -177,8 +177,57 @@ const PRIORITY_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function PracticeIntelligencePage() {
-  const [scan] = useState<ScanData | null>(demoSeedOne(DEMO_SCAN));
+  // The scanner is real (/api/practice-intelligence/scanner, scanner.service):
+  // it reads the home's own sources and persists each scan. This page used to
+  // render a fixture and its "Run Scan" button did nothing; on a live tenant
+  // it was stuck on "No scan yet" with no way to run one. Now: load the latest
+  // stored scan on mount, and Run Scan runs one. The fixture is the demo's
+  // starting point only.
+  const [scan, setScan] = useState<ScanData | null>(demoSeedOne(DEMO_SCAN));
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scannedAt, setScannedAt] = useState<string | null>(null);
   const [expandedChildren, setExpandedChildren] = useState<Set<string>>(new Set<string>(["child_2"]));
+
+  const applyScan = useCallback((data: (ScanData & { scan_date?: string; created_at?: string }) | null) => {
+    if (!data || !data.home_dynamics_summary) return;
+    setScan(data);
+    setScannedAt(data.scan_date ?? data.created_at ?? null);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/practice-intelligence/scanner?mode=latest");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled && json?.ok && json.data) applyScan(json.data);
+      } catch {
+        // keep whatever is shown; the Run Scan button reports errors explicitly
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [applyScan]);
+
+  const runScan = useCallback(async () => {
+    setScanning(true);
+    setScanError(null);
+    try {
+      const res = await fetch("/api/practice-intelligence/scanner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanType: "on_demand" }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok || !json.data) throw new Error(json?.error || `Scan failed (${res.status})`);
+      applyScan(json.data);
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : "Scan failed");
+    } finally {
+      setScanning(false);
+    }
+  }, [applyScan]);
 
   const toggleChild = (id: string) => {
     setExpandedChildren((prev) => {
@@ -193,9 +242,16 @@ export default function PracticeIntelligencePage() {
   if (!scan) {
     return (
       <PageShell title="Practice Intelligence" subtitle="AI-powered home dynamics scanner">
-        <p className="text-sm text-[var(--cs-text-muted)]">
-          No scan yet. Cara builds this from your home&rsquo;s own incidents, logs and key work as they&rsquo;re recorded.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--cs-text-muted)]">
+            No scan yet. Cara builds this from your home&rsquo;s own incidents, logs and key work as they&rsquo;re recorded.
+          </p>
+          <button onClick={runScan} disabled={scanning} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors disabled:opacity-60">
+            <RefreshCw className={cn("h-3.5 w-3.5", scanning && "animate-spin")} />
+            {scanning ? "Scanning…" : "Run first scan"}
+          </button>
+          {scanError && <p className="text-xs text-red-600">Scan not run — {scanError}</p>}
+        </div>
       </PageShell>
     );
   }
@@ -219,10 +275,14 @@ export default function PracticeIntelligencePage() {
                 Cara scans incidents, daily logs, risk assessments, key work, and staffing data to surface patterns, practice drift, training needs, and suggested actions.
               </p>
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors">
-              <RefreshCw className="h-3.5 w-3.5" />
-              Run Scan
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button onClick={runScan} disabled={scanning} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors disabled:opacity-60">
+                <RefreshCw className={cn("h-3.5 w-3.5", scanning && "animate-spin")} />
+                {scanning ? "Scanning…" : "Run Scan"}
+              </button>
+              {scannedAt && !scanError && <span className="text-[10px] text-[var(--cs-text-muted)]">Last scan {new Date(scannedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>}
+              {scanError && <span className="text-[10px] text-red-600">Scan not run — {scanError}</span>}
+            </div>
           </div>
         </div>
 

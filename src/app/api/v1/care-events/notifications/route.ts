@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   const includeDismissed =
     searchParams.get("include_dismissed") === "true";
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "view notifications stream",
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "no_notification_ids" }, { status: 400 });
   }
 
-  const guard = requireCaraStudioPermission(
+  const guard = await requireCaraStudioPermission(
     req,
     body as unknown as Record<string, unknown>,
     {

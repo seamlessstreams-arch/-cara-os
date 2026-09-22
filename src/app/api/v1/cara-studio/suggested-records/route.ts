@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: `propose suggested_record:${recordType}`,
@@ -149,7 +149,7 @@ export async function PATCH(req: NextRequest) {
   const note = typeof body.note === "string" ? body.note : null;
 
   if (action === "edit") {
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.rewrite",
       homeId: existing.home_id,
       childId: existing.child_id,
@@ -182,7 +182,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (action === "reject") {
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.reject_outputs",
       homeId: existing.home_id,
       childId: existing.child_id,
@@ -204,7 +204,7 @@ export async function PATCH(req: NextRequest) {
 
   if (action === "commit") {
     const sensitive = isSafeguardingSensitiveRecordType(existing.record_type);
-    const guard = requireCaraStudioPermission(req, body, {
+    const guard = await requireCaraStudioPermission(req, body, {
       permission: "cara.commit_to_records",
       homeId: existing.home_id,
       childId: existing.child_id,

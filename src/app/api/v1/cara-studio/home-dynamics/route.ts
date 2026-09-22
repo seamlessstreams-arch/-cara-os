@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     typeof body.window_days === "number" ? body.window_days : undefined;
   const asOf = typeof body.as_of === "string" ? body.as_of : undefined;
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: "generate home_dynamics_snapshot",

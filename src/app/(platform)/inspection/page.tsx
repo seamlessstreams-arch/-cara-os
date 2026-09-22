@@ -1,4 +1,6 @@
 "use client";
+
+import Link from "next/link";
 import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
@@ -1035,20 +1037,11 @@ export default function InspectionPage() {
         <div className="flex gap-2">
           <PrintButton title="Inspection Readiness" subtitle="Ofsted Preparation Report" targetId="inspection-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Inspection — inspection evidence upload" />
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            title="Evidence packs are compiled from the Documents section. Visit Documents to prepare your pack."
-          >
-            <Download className="h-3.5 w-3.5 mr-1" />Evidence Pack
+          <Button variant="outline" size="sm" asChild title="Evidence packs are compiled from the Documents section.">
+            <Link href="/documents"><Download className="h-3.5 w-3.5 mr-1" />Evidence Pack</Link>
           </Button>
-          <Button
-            size="sm"
-            disabled
-            title="Inspection preparation checklists are available in the Audits section."
-          >
-            Prepare for Inspection
+          <Button size="sm" asChild title="Inspection preparation checklists live in the Audits section.">
+            <Link href="/audits">Prepare for Inspection</Link>
           </Button>
           <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

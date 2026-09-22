@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     typeof body.lookback_days === "number" ? body.lookback_days : undefined;
   const asOf = typeof body.as_of === "string" ? body.as_of : undefined;
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
     homeId,
     intent: "scan safeguarding_patterns",
@@ -107,7 +107,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update safeguarding_pattern ${status}`,

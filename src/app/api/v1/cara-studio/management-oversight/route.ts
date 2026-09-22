@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "view oversight queue",
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   const existing = db.caraCommittedRecords.findById(recordId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const guard = requireCaraStudioPermission(req, body, {
+  const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.approve_outputs",
     homeId: existing.home_id,
     childId: existing.child_id,

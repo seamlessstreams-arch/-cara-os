@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { currentUserId } from "@/lib/auth/current-user";
+import { toast } from "sonner";
 import { api } from "@/hooks/use-api";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -338,6 +340,25 @@ function RequestLeaveDialog({
 function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) {
   const [notes, setNotes] = useState("");
   const [signed, setSigned] = useState(false);
+  const qc = useQueryClient();
+  // The interview is recorded on the leave request itself (return_to_work_*
+  // fields). The button existed but wrote nothing, so "RTW needed" never
+  // cleared. Server-side the catch-all PATCH resolves the actor; the
+  // return_to_work_by shown here is the demo/session convention.
+  const complete = useMutation({
+    mutationFn: () =>
+      api.patch<{ data: LeaveRequest }>("/leave", {
+        id: req.id,
+        return_to_work_completed: true,
+        return_to_work_date: todayStr(),
+        return_to_work_by: currentUserId(),
+        return_to_work_notes: notes.trim(),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+      onClose();
+    },
+  });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
@@ -369,8 +390,8 @@ function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) 
         </div>
         <div className="flex items-center gap-3 pt-2">
           <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
-          <Button disabled={!signed || !notes} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-            <CheckCircle2 className="h-4 w-4 mr-1" />Complete RTW
+          <Button disabled={!signed || !notes.trim() || complete.isPending} onClick={() => complete.mutate()} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+            <CheckCircle2 className="h-4 w-4 mr-1" />{complete.isPending ? "Saving…" : "Complete RTW"}
           </Button>
         </div>
       </div>
@@ -379,6 +400,7 @@ function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) 
 }
 
 export default function LeavePage() {
+  const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -404,12 +426,30 @@ export default function LeavePage() {
     );
   }, [apiLeave, statusOverrides]);
 
-  function handleApprove(id: string) {
-    setStatusOverrides((prev) => ({ ...prev, [id]: "approved" }));
-  }
-  function handleDecline(id: string) {
-    setStatusOverrides((prev) => ({ ...prev, [id]: "declined" }));
-  }
+  // Approve / decline are written to the request (PATCH /leave). The previous
+  // version only set a local override, so the decision vanished on refresh and
+  // the rota never saw it. The optimistic override is kept for instant feedback
+  // and cleared when the server answers either way.
+  const decide = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "approved" | "declined" }) =>
+      api.patch<{ data: LeaveRequest }>("/leave", {
+        id,
+        status,
+        approved_by: currentUserId(),
+        approved_at: new Date().toISOString(),
+      }),
+    onMutate: ({ id, status }) => setStatusOverrides((prev) => ({ ...prev, [id]: status })),
+    onError: (err, { id }) => {
+      setStatusOverrides((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      toast.error(`Could not save that decision — ${err instanceof Error ? err.message : "the request failed"}.`);
+    },
+    onSuccess: (_d, { id }) => {
+      setStatusOverrides((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      qc.invalidateQueries({ queryKey: ["leave"] });
+    },
+  });
+  function handleApprove(id: string) { decide.mutate({ id, status: "approved" }); }
+  function handleDecline(id: string) { decide.mutate({ id, status: "declined" }); }
 
   const filteredRequests = useMemo(() => {
     let list = leaveRequests;

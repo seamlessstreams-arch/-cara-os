@@ -15,7 +15,7 @@ export async function GET(
   const row = getPersistedReg44Pack(id);
   if (!row) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId: row.home_id,
     intent: "view persisted Reg 44 visit evidence pack",

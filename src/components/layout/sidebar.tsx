@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { DOMAIN_NAV } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { currentUserId } from "@/lib/auth/current-user";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { APP_ROLE_LABELS, type AppRole } from "@/lib/permissions";
@@ -227,8 +228,15 @@ const PRIMARY_ICONS: Record<string, React.ElementType> = {
 // ── Role Switcher ─────────────────────────────────────────────────────────────
 
 function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
-  const { currentUser, currentRole, setCurrentUserId } = useAuthContext();
+  const { currentUser, currentRole, setCurrentUserId, identityUnresolved } = useAuthContext();
   const [open, setOpen] = useState(false);
+  // On a live tenant this is an identity DISPLAY, not a switcher: you are who
+  // the session says you are. Leaving the dropdown up would offer a list of
+  // real colleagues to "become" — inert since setCurrentUserId no-ops on live,
+  // but it reads as an invitation to act as someone else, in the one product
+  // where who did what is a regulated record.
+  const live = isLiveTenant();
+  const canSwitch = !live;
   const staffQuery = useStaff();
   const staffByRole = (staffQuery.data?.data ?? [])
     .filter((s: StaffEnriched) => s.is_active)
@@ -243,9 +251,12 @@ function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="relative border-t border-white/10">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => canSwitch && setOpen((v) => !v)}
+        aria-expanded={canSwitch ? open : undefined}
+        disabled={!canSwitch}
         className={cn(
-          "w-full flex items-center gap-3 px-4 py-3.5 text-sm hover:bg-white/5 transition-colors",
+          "w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors",
+          canSwitch ? "hover:bg-white/5" : "cursor-default",
           collapsed && "justify-center px-0 py-3",
         )}
         title={collapsed ? currentUser?.full_name : undefined}
@@ -257,21 +268,23 @@ function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
           <>
             <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-medium text-[var(--cs-navy)] truncate leading-tight">
-                {currentUser?.full_name ?? "Unknown"}
+                {currentUser?.full_name ?? (identityUnresolved ? "Not signed in" : "Unknown")}
               </p>
               <p className="text-[11px] text-[var(--cs-text-muted)] truncate">
-                {APP_ROLE_LABELS[currentRole as AppRole] ?? currentRole}
+                {identityUnresolved
+                  ? "Your login is not linked to a staff record"
+                  : (APP_ROLE_LABELS[currentRole as AppRole] ?? currentRole)}
               </p>
             </div>
-            {open
+            {canSwitch && (open
               ? <ChevronUp className="h-3.5 w-3.5 text-slate-400 shrink-0" />
               : <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            }
+            )}
           </>
         )}
       </button>
 
-      {open && !collapsed && (
+      {canSwitch && open && !collapsed && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
           <div className="cara-chrome absolute bottom-full left-0 right-0 mb-1 z-50 mx-3 rounded-2xl border border-white/10 bg-[#0e1730] shadow-2xl py-2 max-h-[55vh] overflow-y-auto">

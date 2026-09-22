@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireCaraStudioPermission(req, null, {
+  const guard = await requireCaraStudioPermission(req, null, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "read cara_audit_trail",

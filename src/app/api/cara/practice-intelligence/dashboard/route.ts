@@ -7,21 +7,24 @@
 // safeguarding culture radar. Role-gated via cara.use.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { buildPracticeDashboard } from "@/lib/cara-practice/cara-dashboard";
 import { db } from "@/lib/db/store";
-import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess, caraCan } from "@/lib/cara/cara-permissions";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? undefined;
   const childId = url.searchParams.get("childId") ?? undefined;
 
-  const appRole = getUserRoleFromRequest(req);
-  const userId = getUserIdFromRequest(req);
+  // Session identity in activated mode (401 without one); header only in demo.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { userId, role: appRole } = identity;
+  // Activated mode: the session's home, whatever the query says.
+  const homeId = identity.homeId ?? url.searchParams.get("homeId") ?? undefined;
   const caraRole = appRoleToCaraRole(appRole);
   const decision = checkCaraAccess(
     { userId, role: caraRole, homeId, staffSelfId: userId },

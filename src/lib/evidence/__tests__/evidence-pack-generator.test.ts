@@ -29,7 +29,6 @@ function emptyInput(): EvidencePackInput {
     missingEpisodes: [],
     exploitationScreenings: [],
     keyWorkingSessions: [],
-    keyworkerSessions: [],
     educationRecords: [],
     healthAssessments: [],
     dentalRecords: [],

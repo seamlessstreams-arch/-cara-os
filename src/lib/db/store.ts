@@ -10,6 +10,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { PersistedReg44Report } from "@/lib/reg44-report-intelligence/report-lifecycle";
+import { reportFromLegacyVisit } from "@/lib/reg44-report-intelligence/visit-projection";
+import { reg44Visits as legacyReg44Visits } from "@/lib/intelligence/fallback-store";
 import type { HealEvent as IntegrityHealEvent } from "@/lib/self-healing/types";
 import { isLiveTenant } from "./live-mode";
 import {
@@ -3172,7 +3174,10 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
-  reg44Reports: [] as PersistedReg44Report[], // persisted A–Q reports (sign-off/lock/audit)
+  // Persisted A–Q reports (sign-off/lock/audit). The demo's worked examples come
+  // from the legacy visit-tracker seeds so quality/reg-44 keeps its history;
+  // emptied on a live tenant like everything else here.
+  reg44Reports: legacyReg44Visits.map(reportFromLegacyVisit) as PersistedReg44Report[],
   integrityHealEvents: [] as IntegrityHealEvent[], // §25 self-healing: append-only log of applied safe repairs
   externalAiDeclarations: [] as import("@/lib/ask-cara/external-ai-declaration").ExternalAiDeclaration[], // §20 external-AI declarations
   askCaraAuditEvents: [] as import("@/lib/ask-cara/audit-logger").AskCaraAuditEvent[], // §21 Ask CARA audit trail
@@ -3562,8 +3567,8 @@ store.keyworkerSessions = [
     format: "one_to_one_at_home" as const,
     child_chose_format: true,
     themes_covered: ["identity", "education"],
-    child_went_in_with: "3",
-    child_walked_out_with: "4",
+    child_went_in_with: 3,
+    child_walked_out_with: 4,
     what_child_brought_up: "Casey shared feelings about school friendships and identity",
     what_staff_brought_up: "Upcoming education review and creative writing project",
     agreed_actions_staff: ["Arrange creative writing resources", "Follow up on school peer relationships"],
@@ -3582,8 +3587,8 @@ store.keyworkerSessions = [
     format: "one_to_one_walk" as const,
     child_chose_format: true,
     themes_covered: ["transition", "wellbeing"],
-    child_went_in_with: "2",
-    child_walked_out_with: "3",
+    child_went_in_with: 2,
+    child_walked_out_with: 3,
     what_child_brought_up: "Jordan spoke about transition planning and anxiety about leaving care",
     what_staff_brought_up: "Pathway plan review and housing options",
     agreed_actions_staff: ["Book transition planning meeting", "Arrange supported accommodation visit"],
@@ -12531,6 +12536,12 @@ export const db = {
       } as LeaveRequest;
       store.leaveRequests.push(req);
       return req;
+    },
+    update: (id: string, data: Partial<LeaveRequest>): LeaveRequest | null => {
+      const idx = store.leaveRequests.findIndex((l) => l.id === id);
+      if (idx < 0) return null;
+      store.leaveRequests[idx] = { ...store.leaveRequests[idx], ...data, id };
+      return store.leaveRequests[idx];
     },
   },
 

@@ -8,6 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect, useChildren, useChildName } from "@/components/young-people/child-select";
+import { StaffSelect, useStaffName } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,26 +22,15 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
-function useVoiceRecords(childId: string, theme?: string) {
-  const query = new URLSearchParams({ child_id: childId });
-  if (theme) query.set("theme", theme);
-  return useQuery({
-    queryKey: ["intelligence", "voice", childId, theme],
-    queryFn: () =>
-      api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?${query}`),
-    enabled: !!childId,
-  });
-}
 
 function useCreateVoiceRecord() {
   const qc = useQueryClient();
@@ -109,23 +100,27 @@ const CAPTURE_METHOD_LABELS: Record<string, string> = {
   advocate:    "Via advocate",
 };
 
-const VOICE_EXPORT_COLS: ExportColumn<VoiceRecord>[] = [
+// The name lookup is a hook, so the columns are built per render rather than
+// at module scope where a seed lookup used to stand in.
+const VOICE_EXPORT_COLS = (ypName: (id: string) => string, staffName: (id: string) => string): ExportColumn<VoiceRecord>[] => [
   { header: "Date", accessor: (r) => r.recorded_at.slice(0, 10) },
-  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Young Person", accessor: (r) => ypName(r.child_id) },
   { header: "Theme", accessor: (r) => THEME_CONFIG[r.theme]?.label ?? r.theme },
   { header: "Direct Quote", accessor: (r) => r.direct_quote ?? "" },
   { header: "Paraphrase", accessor: (r) => r.paraphrase ?? "" },
   { header: "Capture Method", accessor: (r) => CAPTURE_METHOD_LABELS[r.capture_method] ?? r.capture_method },
   { header: "Action Taken", accessor: (r) => r.action_taken ?? "" },
-  { header: "Action Owner", accessor: (r) => r.action_owner ? getStaffName(r.action_owner) : "" },
+  { header: "Action Owner", accessor: (r) => r.action_owner ? staffName(r.action_owner) : "" },
   { header: "Action Outcome", accessor: (r) => r.action_outcome ?? "" },
   { header: "Voice Heeded", accessor: (r) => r.voice_heeded === true ? "Yes" : r.voice_heeded === false ? "No" : "Pending" },
-  { header: "Recorded By", accessor: (r) => getStaffName(r.recorded_by) },
+  { header: "Recorded By", accessor: (r) => staffName(r.recorded_by) },
 ];
 
 // ── Voice Card ───────────────────────────────────────────────────────────────
 
-function VoiceCard({ record }: { record: VoiceRecord }) {
+// The name lookups are hooks on the page, passed down rather than resolved
+// here from the demo seed.
+function VoiceCard({ record, ypName, staffName }: { record: VoiceRecord; ypName: (id: string) => string; staffName: (id: string) => string }) {
   const [expanded, setExpanded] = useState(true);
   const themeCfg = THEME_CONFIG[record.theme];
   const ThemeIcon = themeCfg?.icon ?? MessageSquare;
@@ -179,14 +174,14 @@ function VoiceCard({ record }: { record: VoiceRecord }) {
 
           <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] flex-wrap">
             <span className="flex items-center gap-1">
-              <User className="h-3 w-3" />{getYPName(record.child_id)}
+              <User className="h-3 w-3" />{ypName(record.child_id)}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />{formatDate(record.recorded_at)}
             </span>
             <span>·</span>
-            <span>Recorded by {getStaffName(record.recorded_by)}</span>
+            <span>Recorded by {staffName(record.recorded_by)}</span>
           </div>
         </div>
 
@@ -214,7 +209,7 @@ function VoiceCard({ record }: { record: VoiceRecord }) {
               </div>
               <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{record.action_taken}</p>
               {record.action_owner && (
-                <p className="text-[10px] text-[var(--cs-text-muted)] mt-1">Owner: {getStaffName(record.action_owner)}</p>
+                <p className="text-[10px] text-[var(--cs-text-muted)] mt-1">Owner: {staffName(record.action_owner)}</p>
               )}
             </div>
           )}
@@ -251,7 +246,9 @@ function NewVoiceDialog({
 }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    child_id: "yp_alex",
+    // Was "yp_alex", a seeded child. The picker below is the answer; a
+    // pre-selected default writes a record against whoever it names.
+    child_id: "",
     theme: "wishes" as VoiceTheme,
     capture_method: "direct" as VoiceRecord["capture_method"],
     direct_quote: "",
@@ -300,14 +297,7 @@ function NewVoiceDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="3772-young-person" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
-              <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger id="3772-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChildSelect id="3772-young-person" value={form.child_id} onChange={(v) => setForm((p) => ({ ...p, child_id: v }))} />
             </div>
             <div>
               <label htmlFor="3772-theme" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Theme</label>
@@ -371,14 +361,7 @@ function NewVoiceDialog({
 
           <div>
             <label htmlFor="3772-action-owner" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Action owner</label>
-            <Select value={form.action_owner} onValueChange={(v) => setForm((p) => ({ ...p, action_owner: v }))}>
-              <SelectTrigger id="3772-action-owner" className="h-8 text-xs"><SelectValue placeholder="Select staff member" /></SelectTrigger>
-              <SelectContent>
-                {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
-                  <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <StaffSelect id="3772-action-owner" value={form.action_owner} onChange={(v) => setForm((p) => ({ ...p, action_owner: v }))} placeholder="Select staff member" />
           </div>
 
           <p className="text-[10px] text-[var(--cs-text-muted)]">
@@ -404,25 +387,32 @@ function NewVoiceDialog({
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-const CHILD_IDS = ["yp_alex", "yp_jordan", "yp_casey"];
 
 export default function VoiceOfTheChildPage() {
-  // Fetch voice records for each child
-  const q1 = useVoiceRecords(CHILD_IDS[0]);
-  const q2 = useVoiceRecords(CHILD_IDS[1]);
-  const q3 = useVoiceRecords(CHILD_IDS[2]);
+  // Was three fixed hooks against the demo seed's children, so on a live tenant
+  // the page fetched the voice of three young people who do not exist and never
+  // fetched any for the ones who do.
+  const { children } = useChildren();
+  // Names came from the demo seed and read "Unknown" for every real child.
+  const ypName = useChildName();
+  const staffName = useStaffName();
+  const childIds = useMemo(() => children.map((c) => c.id), [children]);
+  const recordQueries = useQueries({
+    queries: childIds.map((id) => ({
+      queryKey: ["intelligence", "voice", id, undefined],
+      queryFn: () => api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?child_id=${id}`),
+    })),
+  });
   const createVoice = useCreateVoiceRecord();
 
-  const isLoading = q1.isPending || q2.isPending || q3.isPending;
+  const isLoading = recordQueries.some((q) => q.isPending);
 
   const allRecords: VoiceRecord[] = useMemo(() => {
-    const combined = [
-      ...(q1.data?.data ?? []),
-      ...(q2.data?.data ?? []),
-      ...(q3.data?.data ?? []),
-    ];
-    return combined.sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));
-  }, [q1.data, q2.data, q3.data]);
+    return recordQueries
+      .flatMap((q) => q.data?.data ?? [])
+      .sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordQueries.map((q) => q.dataUpdatedAt).join(",")]);
 
   const [showNew, setShowNew] = useState(false);
   const [search, setSearch] = useState("");
@@ -469,21 +459,21 @@ export default function VoiceOfTheChildPage() {
         (r.direct_quote?.toLowerCase().includes(q) ?? false) ||
         (r.paraphrase?.toLowerCase().includes(q) ?? false) ||
         (r.action_taken?.toLowerCase().includes(q) ?? false) ||
-        getYPName(r.child_id).toLowerCase().includes(q) ||
+        ypName(r.child_id).toLowerCase().includes(q) ||
         (THEME_CONFIG[r.theme]?.label.toLowerCase().includes(q) ?? false)
       );
     }
 
     list = [...list].sort((a, b) => {
       switch (sortBy) {
-        case "child": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "child": return ypName(a.child_id).localeCompare(ypName(b.child_id));
         case "theme": return (THEME_CONFIG[a.theme]?.label ?? "").localeCompare(THEME_CONFIG[b.theme]?.label ?? "");
         default: return b.recorded_at.localeCompare(a.recorded_at);
       }
     });
 
     return list;
-  }, [allRecords, childFilter, themeFilter, heededFilter, search, sortBy]);
+  }, [allRecords, childFilter, themeFilter, heededFilter, search, sortBy, ypName]);
 
   const handleCreate = async (data: Partial<VoiceRecord>) => {
     await createVoice.mutateAsync(data);
@@ -497,7 +487,7 @@ export default function VoiceOfTheChildPage() {
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={filtered} columns={VOICE_EXPORT_COLS} filename="voice-of-the-child" />
+          <ExportButton data={filtered} columns={VOICE_EXPORT_COLS(ypName, staffName)} filename="voice-of-the-child" />
           <PrintButton title="Voice of the Child" subtitle="Voice Records" targetId="voice-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Voice of the Child — young person's written view or drawing" />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5 h-8 text-xs">
@@ -528,7 +518,7 @@ export default function VoiceOfTheChildPage() {
 
         {/* ── Per-child voice breakdown ─────────────────────────────────────── */}
         <div className="flex gap-3">
-          {CHILD_IDS.map((id) => {
+          {childIds.map((id) => {
             const count = childCounts[id] ?? 0;
             const heeded = allRecords.filter((r) => r.child_id === id && r.voice_heeded === true).length;
             return (
@@ -542,7 +532,7 @@ export default function VoiceOfTheChildPage() {
                     : "bg-white border-[var(--cs-border)] hover:border-teal-200",
                 )}
               >
-                <p className="text-sm font-semibold text-[var(--cs-navy)]">{getYPName(id)}</p>
+                <p className="text-sm font-semibold text-[var(--cs-navy)]">{ypName(id)}</p>
                 <p className="text-xs text-[var(--cs-text-muted)] mt-0.5">
                   {count} record{count !== 1 ? "s" : ""} · {heeded} heeded
                 </p>
@@ -652,7 +642,7 @@ export default function VoiceOfTheChildPage() {
         {!isLoading && filtered.length > 0 && (
           <div className="space-y-3">
             {filtered.map((record) => (
-              <VoiceCard key={record.id} record={record} />
+              <VoiceCard key={record.id} record={record} ypName={ypName} staffName={staffName} />
             ))}
           </div>
         )}

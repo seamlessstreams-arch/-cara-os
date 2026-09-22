@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { GET as voiceGET, POST as voicePOST } from "@/app/api/intelligence/voice/route";
 import { GET as reg44GET, POST as reg44POST } from "@/app/api/intelligence/reg44/route";
 import { NextRequest } from "next/server";
+import { db } from "@/lib/db/store";
 
 function makeReq(url: string, init?: RequestInit): NextRequest {
   return new NextRequest(new Request(url, init));
@@ -64,13 +65,19 @@ describe("voice route (fallback mode)", () => {
   });
 });
 
-describe("reg44 route (fallback mode)", () => {
-  it("GET returns visits sorted by visit_date desc", async () => {
+describe("reg44 route (fallback mode) — a visit is its A–Q report", () => {
+  it("GET returns visits projected from the persisted reports, newest first", async () => {
     const res = await reg44GET(makeReq("http://x/api/intelligence/reg44"));
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.persisted).toBe(true);
     expect(Array.isArray(body.visits)).toBe(true);
+    expect(body.visits.length).toBeGreaterThan(0);
+    for (const v of body.visits) {
+      expect(v.month).toBe(String(v.visit_date).slice(0, 7));
+      expect(["draft", "submitted", "reviewed", "closed"]).toContain(v.status);
+      expect(["draft", "signed", "amended"]).toContain(v.report_status);
+    }
     for (let i = 1; i < body.visits.length; i++) {
       expect(body.visits[i - 1].visit_date >= body.visits[i].visit_date).toBe(true);
     }
@@ -86,20 +93,39 @@ describe("reg44 route (fallback mode)", () => {
     expect(res.status).toBe(400);
   });
 
-  it("POST creates a new visit", async () => {
+  it("POST starts the month's A–Q report and returns it as a draft visit", async () => {
     const res = await reg44POST(
       makeReq("http://x/api/intelligence/reg44", {
         method: "POST",
-        body: JSON.stringify({
-          homeId: "home_oak",
-          visitDate: "2026-05-10",
-          visitorName: "Test Visitor",
-        }),
+        body: JSON.stringify({ homeId: "home_oak", visitDate: "2019-05-10", visitorName: "Test Visitor", announced: true }),
       }),
     );
+    expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.visit.visitor_name).toBe("Test Visitor");
-    expect(body.visit.status).toBe("scheduled");
+    expect(body.visit.visit_date).toBe("2019-05-10");
+    expect(body.visit.announced).toBe(true);
+    expect(body.visit.status).toBe("draft");
+    expect(body.visit.report_status).toBe("draft");
+    expect(body.visit.locked).toBe(false);
+
+    const report = db.reg44Reports.findByHomeMonth("home_oak", "2019-05");
+    expect(report).not.toBeNull();
+    expect(report!.draft.meta.visitorName).toBe("Test Visitor");
+    expect(report!.sections?.length).toBeGreaterThan(10);
+    expect(report!.auditTrail[0].action).toBe("created");
+  });
+
+  it("POST refuses a second report for the same home and month (409, pointing at the existing one)", async () => {
+    const res = await reg44POST(
+      makeReq("http://x/api/intelligence/reg44", {
+        method: "POST",
+        body: JSON.stringify({ homeId: "home_oak", visitDate: "2019-05-22", visitorName: "Another Visitor" }),
+      }),
+    );
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.visit.visitor_name).toBe("Test Visitor");
   });
 });

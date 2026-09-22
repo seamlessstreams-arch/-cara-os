@@ -8,10 +8,10 @@
 // Cara advises — the manager decides. No statutory decision is made here.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { analyzePractice, CARA_GUIDANCE_RULES } from "@/lib/cara-practice/cara-practice-engine";
 import { db } from "@/lib/db/store";
-import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import type { CaraPracticeInput, CaraFlag } from "@/lib/cara-practice/types";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -24,7 +24,7 @@ function ensureGuidanceRulesSeeded(): void {
   for (const rule of CARA_GUIDANCE_RULES) db.caraGuidanceRules.create(rule);
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: Partial<CaraPracticeInput> & { persist?: boolean; createdBy?: string };
   try {
     const __parsed = await readJsonBody(req);
@@ -43,8 +43,12 @@ export async function POST(req: Request) {
   }
 
   // ── Role gate ───────────────────────────────────────────────────────────
-  const appRole = getUserRoleFromRequest(req);
-  const userId = getUserIdFromRequest(req);
+  // Session identity in activated mode (401 without one); header only in demo.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { userId, role: appRole } = identity;
+  // Activated mode: the home is the session's, whatever the body says.
+  if (identity.homeId) body.homeId = identity.homeId;
   const caraRole = appRoleToCaraRole(appRole);
   const decision = checkCaraAccess(
     { userId, role: caraRole, homeId: body.homeId ?? undefined, staffSelfId: userId },

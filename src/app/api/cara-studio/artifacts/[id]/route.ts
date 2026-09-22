@@ -5,7 +5,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { submitForReview, approveArtifact, commitArtifact, rejectArtifact, reviewArtifact } from "@/lib/cara-studio/approval.service";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
 import type { Database } from "@/lib/supabase/types";
@@ -48,7 +48,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const userId = getUserIdFromRequest(req);
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const userId = identity.userId;
     const sb = createServerClient();
 
     // Workflow actions
@@ -115,7 +117,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const userId = getUserIdFromRequest(req);
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const userId = identity.userId;
     const sb = createServerClient();
     if (!sb) return NextResponse.json({ error: "Database not available" }, { status: 503 });
 

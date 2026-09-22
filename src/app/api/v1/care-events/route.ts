@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { careEventsDb } from "@/lib/db";
 import { classifyCareEvent } from "@/lib/care-events/routing-engine";
-import { getUserIdFromRequest } from "@/lib/auth-guard";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { todayStr } from "@/lib/utils";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -120,6 +120,9 @@ export async function GET(req: NextRequest) {
 // ── POST /api/v1/care-events ─────────────────────────────────────────────────
 // Creates a draft care event, classified so it routes correctly on submission.
 export async function POST(req: NextRequest) {
+  // The author of a care event is the session's staff member, never a header.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   let body: Record<string, unknown>;
   try {
     const __parsed = await readJsonBody(req);
@@ -155,7 +158,7 @@ export async function POST(req: NextRequest) {
   const classification = classifyCareEvent({ category, title, content, event_date, is_significant });
 
   const created: CareEvent = await careEventsDb.careEvents.create({
-    staff_id: getUserIdFromRequest(req) || undefined,
+    staff_id: identity.userId || undefined,
     title,
     content,
     category,

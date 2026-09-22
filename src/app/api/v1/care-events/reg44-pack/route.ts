@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireCaraStudioPermission(req, {}, {
+  const guard = await requireCaraStudioPermission(req, {}, {
     permission: "cara.view_audit_logs",
     homeId,
     intent: "list Reg 44 visit evidence packs",
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   const days =
     Number.isFinite(daysRaw) && daysRaw > 0 && daysRaw <= 365 ? daysRaw : 30;
 
-  const guard = requireCaraStudioPermission(
+  const guard = await requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {
