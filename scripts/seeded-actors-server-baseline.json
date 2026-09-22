@@ -125,6 +125,5 @@
   "src/lib/services/complaints-investigation-service.ts": 2,
   "src/lib/services/complaints-service.ts": 1,
   "src/lib/services/respite-short-breaks-service.ts": 2,
-  "src/lib/supabase/care-events.ts": 2,
-  "src/lib/supabase/incident-persist.ts": 7
+  "src/lib/supabase/care-events.ts": 2
 }

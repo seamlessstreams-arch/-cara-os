@@ -9,6 +9,7 @@
 
 import { getStore } from "@/lib/db/store";
 import { persistIncidentSession, persistTimelineEntry, persistIncidentAudit } from "@/lib/supabase/incident-persist";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { generateId } from "@/lib/utils";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { AuditActionType } from "@/types/extended";
@@ -18,10 +19,20 @@ import {
   type IncidentSession, type IncidentTimelineEntry, type RiskLevel,
 } from "./cara-incident-engine";
 
-export const DEFAULT_USER_ID = "staff_darren";
-
+/** Who recorded this, from the authenticated request.
+ *
+ *  This used to fall back to "staff_darren" — a seeded person — so an incident
+ *  recorded without the header was attributed to a named colleague who had
+ *  nothing to do with it. An incident is the last record that should carry a
+ *  wrong name.
+ *
+ *  It returns "" rather than refusing, and that is deliberate: a member of
+ *  staff is mid-incident when this runs. Blocking the recording to protect the
+ *  attribution would lose the account of what happened, which is worse than
+ *  recording it unattributed. An unattributed entry is visible as such and can
+ *  be corrected afterwards; an incident nobody wrote down cannot. */
 export function currentUserId(req: Request): string {
-  return req.headers.get("x-user-id")?.trim() || DEFAULT_USER_ID;
+  return req.headers.get("x-user-id")?.trim() || "";
 }
 
 export function logIncidentAudit(opts: {
@@ -34,7 +45,7 @@ export function logIncidentAudit(opts: {
 }): void {
   try {
     intelligenceDb.caraAuditTrail.create({
-      home_id: "home_oak",
+      home_id: tenantHomeId(),
       user_id: opts.user_id,
       child_id: opts.child_id,
       action_type: opts.action_type,
@@ -78,7 +89,7 @@ export function startSession(opts: { child_id: string; incident_type: string; im
   const now = new Date().toISOString();
   const session: IncidentSession = {
     id: generateId("ais"),
-    home_id: "home_oak",
+    home_id: tenantHomeId(),
     child_id: opts.child_id,
     started_by_user_id: opts.user_id,
     started_at: now,
