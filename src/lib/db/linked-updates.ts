@@ -16,6 +16,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+import { registeredManagerId, deputyOrSeniorId } from "@/lib/db/home-roles";
 import { facilityStore } from "@/lib/db/facility-store";
 import { todayStr, generateId } from "@/lib/utils";
 import { persistDailyLog, createTaskRecord } from "@/lib/supabase/care-records";
@@ -36,7 +38,8 @@ const TIME_SAVED = {
 
 // ── Incident linked updates ───────────────────────────────────────────────────
 
-export function processIncidentCreated(incident: Incident, createdBy: string): void {
+export async function processIncidentCreated(incident: Incident, createdBy: string): Promise<void> {
+  const rmId = await registeredManagerId();
   const typeLabels: Record<string, string> = {
     safeguarding_concern: "Safeguarding concern",
     missing_from_care: "Missing from care",
@@ -51,7 +54,7 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
   const label = typeLabels[incident.type] || incident.type;
 
   // 1. Chronology entry
-  db.chronology.create({
+  await dal.chronology.create({
     child_id: incident.child_id,
     date: incident.date,
     time: incident.time,
@@ -74,7 +77,7 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
       category: incident.type.includes("safeguarding") ? "safeguarding" : "compliance",
       priority: incident.severity === "critical" ? "urgent" : "high",
       status: "not_started",
-      assigned_to: "staff_darren",
+      assigned_to: rmId ?? "",
       assigned_role: "registered_manager",
       due_date: todayStr(),
       start_date: null,
@@ -129,9 +132,9 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
   }
 
   // 5. RM notification
-  db.notifications.create({
+  await dal.notifications.create({
     home_id: incident.home_id,
-    recipient_id: "staff_darren",
+    recipient_id: rmId ?? "",
     title: `${incident.severity === "critical" ? "🔴 CRITICAL: " : ""}${label} — ${incident.reference}`,
     body: `Logged by ${createdBy} at ${incident.time}. ${incident.requires_oversight ? "Your oversight is required." : ""}`,
     type: "incident",
@@ -142,8 +145,10 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
     entity_type: "incident",
     entity_id: incident.id,
   });
-  // Ping the RM's device — deliberately generic (no incident type/detail on a lock screen).
-  void sendPushToUser("staff_darren", {
+  // Ping the RM's device — deliberately generic (no incident type/detail on a
+  // lock screen). Skipped when the post is vacant: a push addressed to nobody
+  // is not a notification, it is a silent drop.
+  if (rmId) void sendPushToUser(rmId, {
     title: incident.severity === "critical" ? "🔴 Critical incident" : "Incident logged",
     body: incident.requires_oversight ? "A new incident needs your oversight." : "A new incident has been logged.",
     url: "/incidents",
@@ -159,9 +164,10 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
 
 // ── Missing episode linked updates ────────────────────────────────────────────
 
-export function processMissingEpisodeCreated(episode: MissingEpisode, createdBy: string): void {
+export async function processMissingEpisodeCreated(episode: MissingEpisode, createdBy: string): Promise<void> {
+  const rmId = await registeredManagerId();
   // 1. Chronology
-  db.chronology.create({
+  await dal.chronology.create({
     child_id: episode.child_id,
     date: episode.date_missing,
     time: episode.time_missing,
@@ -182,7 +188,7 @@ export function processMissingEpisodeCreated(episode: MissingEpisode, createdBy:
       category: "safeguarding",
       priority: "urgent",
       status: "not_started",
-      assigned_to: "staff_darren",
+      assigned_to: rmId ?? "",
       assigned_role: "registered_manager",
       due_date: episode.date_returned || todayStr(),
       start_date: null,
@@ -211,9 +217,9 @@ export function processMissingEpisodeCreated(episode: MissingEpisode, createdBy:
   }
 
   // 3. Notification
-  db.notifications.create({
+  await dal.notifications.create({
     home_id: episode.home_id,
-    recipient_id: "staff_darren",
+    recipient_id: rmId ?? "",
     title: `Missing from care — ${episode.reference}`,
     body: `${episode.risk_level.toUpperCase()} risk. ${episode.reported_to_police ? "Police informed." : "Police NOT informed."} ${episode.contextual_safeguarding_risk ? "CS risk identified." : ""}`,
     type: "safeguarding",
@@ -231,10 +237,11 @@ export function processMissingEpisodeCreated(episode: MissingEpisode, createdBy:
 
 // ── Medication administration linked updates ──────────────────────────────────
 
-export function processMedicationException(
+export async function processMedicationException(
   medId: string, childId: string, staffId: string, homeId: string,
   exceptionType: "refused" | "late" | "missed", notes: string
-): void {
+): Promise<void> {
+  const rmId = await registeredManagerId();
   // 1. Daily log
   const medExceptionLog = db.dailyLog.create({
     child_id: childId,
@@ -251,9 +258,9 @@ export function processMedicationException(
   void persistDailyLog(medExceptionLog); // best-effort Supabase write-through (no-op when off)
 
   // 2. Manager notification
-  db.notifications.create({
+  await dal.notifications.create({
     home_id: homeId,
-    recipient_id: "staff_darren",
+    recipient_id: rmId ?? "",
     title: `Medication ${exceptionType} — action required`,
     body: notes,
     type: "medication",
@@ -270,10 +277,12 @@ export function processMedicationException(
 
 // ── Building check failure linked updates ─────────────────────────────────────
 
-export function processBuildingCheckFail(
+export async function processBuildingCheckFail(
   checkId: string, checkType: string, area: string,
   riskLevel: string, actionRequired: string, staffId: string, homeId: string
-): void {
+): Promise<void> {
+  const rmId = await registeredManagerId();
+  const seniorId = await deputyOrSeniorId();
   // 1. Maintenance task
   if (riskLevel === "high" || riskLevel === "critical") {
     createTaskRecord({
@@ -282,7 +291,7 @@ export function processBuildingCheckFail(
       category: "health_and_safety",
       priority: riskLevel === "critical" ? "urgent" : "high",
       status: "not_started",
-      assigned_to: "staff_ryan",
+      assigned_to: seniorId ?? "",
       assigned_role: "deputy_manager",
       due_date: todayStr(),
       start_date: null,
@@ -311,9 +320,9 @@ export function processBuildingCheckFail(
   }
 
   // 2. Manager notification
-  db.notifications.create({
+  await dal.notifications.create({
     home_id: homeId,
-    recipient_id: "staff_darren",
+    recipient_id: rmId ?? "",
     title: `${riskLevel === "critical" ? "🔴 CRITICAL" : "⚠️"} Building check failed — ${area}`,
     body: actionRequired,
     type: "building",
@@ -335,10 +344,12 @@ export function processBuildingCheckFail(
 
 // ── Vehicle defect linked updates ─────────────────────────────────────────────
 
-export function processVehicleDefect(
+export async function processVehicleDefect(
   vehicleId: string, registration: string, defects: string,
   severity: "advisory" | "fail", staffId: string, homeId: string
-): void {
+): Promise<void> {
+  const rmId = await registeredManagerId();
+  const seniorId = await deputyOrSeniorId();
   // 1. Auto-task
   createTaskRecord({
     title: `Vehicle defect — ${registration}`,
@@ -346,7 +357,7 @@ export function processVehicleDefect(
     category: "maintenance",
     priority: severity === "fail" ? "urgent" : "high",
     status: "not_started",
-    assigned_to: "staff_ryan",
+    assigned_to: seniorId ?? "",
     assigned_role: "deputy_manager",
     due_date: todayStr(),
     start_date: null,
@@ -380,9 +391,9 @@ export function processVehicleDefect(
   }
 
   // 3. Notification
-  db.notifications.create({
+  await dal.notifications.create({
     home_id: homeId,
-    recipient_id: "staff_darren",
+    recipient_id: rmId ?? "",
     title: `Vehicle ${severity === "fail" ? "UNSAFE" : "advisory"} — ${registration}`,
     body: defects,
     type: "vehicle",
@@ -423,4 +434,32 @@ function trackTimeSaved(
     const { getStore } = require("@/lib/db/store");
     getStore().timeSaved.push(entry);
   } catch {}
+}
+
+// ── Dispatch ──────────────────────────────────────────────────────────────────
+
+/** Run the linked updates a newly created record earns, if any.
+ *
+ *  Called from the /api/v1/[...slug] create path. Incidents and missing
+ *  episodes have no bespoke route — they are created through the catch-all —
+ *  so this is the one place that sees them being made.
+ *
+ *  Never throws: the primary record is already written, and its follow-on work
+ *  failing must not turn a logged incident into a 500. It is reported instead,
+ *  because silence is how the engine came to be unwired without anyone noticing.
+ */
+export async function runLinkedUpdates(
+  slugKey: string,
+  record: unknown,
+  actorId: string,
+): Promise<void> {
+  try {
+    if (slugKey === "incidents") {
+      await processIncidentCreated(record as Incident, actorId);
+    } else if (slugKey === "missing-episodes") {
+      await processMissingEpisodeCreated(record as MissingEpisode, actorId);
+    }
+  } catch (err) {
+    console.error(`[linked-updates] follow-on work failed for ${slugKey}:`, err);
+  }
 }
