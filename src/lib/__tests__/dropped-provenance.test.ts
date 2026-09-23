@@ -64,29 +64,34 @@ describe("submitting a draft for review records who submitted it", () => {
 // What these do assert is that the handlers still complete and still perform
 // their visible work, which is the regression risk of adding calls to them.
 
+// These handlers are async now: they resolve the assignee from the dal rather
+// than naming a seeded person, and write the notification through the dal so it
+// survives a restart. With Supabase off the dal falls through to the in-memory
+// store, so the assertion below still observes the write — it just has to await
+// it first. Calling them without awaiting asserted before the promise settled.
 describe("linked-update handlers still do their visible work", () => {
-  it("a failed building check still raises a task and a notification", () => {
+  it("a failed building check still raises a task and a notification", async () => {
     const before = db.notifications.findAll().length;
 
-    expect(() =>
+    await expect(
       processBuildingCheckFail(
         "bchk_x", "fire_safety", "stairwell", "critical",
         "Clear the obstruction and re-check.", "staff_edward", "home_oak",
       ),
-    ).not.toThrow();
+    ).resolves.not.toThrow();
 
     expect(db.notifications.findAll().length).toBe(before + 1);
   });
 
-  it("a vehicle defect still raises a task and a notification", () => {
+  it("a vehicle defect still raises a task and a notification", async () => {
     const before = db.notifications.findAll().length;
 
-    expect(() =>
+    await expect(
       processVehicleDefect(
         "veh_x", "AB12 CDE", "Nearside tyre below limit.", "fail",
         "staff_edward", "home_oak",
       ),
-    ).not.toThrow();
+    ).resolves.not.toThrow();
 
     expect(db.notifications.findAll().length).toBe(before + 1);
   });

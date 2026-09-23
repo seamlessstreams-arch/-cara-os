@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import { dal } from "@/lib/db/dal";
+import { runLinkedUpdates } from "@/lib/db/linked-updates";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
 import { dispatchHomeHandler } from "@/lib/intelligence-api/home-dispatcher";
@@ -790,6 +791,27 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     }
 
     const record = await collection.create(body);
+
+    // "Record once, update everywhere" — the linked-updates engine turns a new
+    // incident or missing episode into its chronology entry, oversight task,
+    // handover flag and manager notification.
+    //
+    // It was never wired in. processIncidentCreated and
+    // processMissingEpisodeCreated had NO callers anywhere in src — the module's
+    // own header claimed "every function here is called by API route handlers",
+    // and only processMedicationException ever was. So logging an incident
+    // produced none of it.
+    //
+    // Hooked here rather than in a per-collection route because these
+    // collections have no bespoke route: they are created through this
+    // catch-all, so this is the one place the creation actually happens.
+    //
+    // Awaited, not fire-and-forget: the handlers now write through the dal, and
+    // a floating promise in a serverless handler can be killed when the
+    // response returns. A failure is logged and swallowed — the record itself
+    // is already created and must not be failed by its follow-on work.
+    await runLinkedUpdates(slugKey, record, req.headers.get("x-user-id") ?? "");
+
     const usageKind = HQ_USAGE_KINDS[slugKey];
     if (usageKind) {
       void import("@/lib/hq/hq-service")

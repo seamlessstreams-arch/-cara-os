@@ -2,6 +2,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { processMedicationException } from "@/lib/db/linked-updates";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
 export const dynamic = "force-dynamic";
@@ -26,9 +27,12 @@ async function administerMedication(req: NextRequest, { params }: { params: Prom
   // Trigger linked updates for exceptions
   if (status === "refused" || status === "late" || status === "missed") {
     const med = db.medications.findAll().find((m) => m.id === updated.medication_id);
-    processMedicationException(
+    // Awaited: the handler writes through the dal now, and a floating promise
+    // in a serverless handler can be killed when the response returns. The home
+    // was the literal "home_oak" — a seed id that is not this tenant's home.
+    await processMedicationException(
       id, updated.child_id, administered_by || "unknown",
-      "home_oak", status,
+      tenantHomeId(), status,
       `${med?.name || "Medication"} ${status}: ${reason_not_given || notes || "No notes provided"}`
     );
   }
