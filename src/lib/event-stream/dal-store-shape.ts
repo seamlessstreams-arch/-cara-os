@@ -17,7 +17,7 @@ export async function loadEventStoreShape() {
     reg44VisitReports, restraints, riskAssessments, shifts, supervisions,
     cornerstoneEvents,
   ] = await Promise.all([
-    dal.appointments.findAll(), dal.audits.findAll(), dal.behaviourSupportPlans.findAll(),
+    dal.appointments.findAll(), dal.qaAudits.findAll(), dal.behaviourSupportPlans.findAll(),
     dal.complaints.findAll(), dal.dailyLog.findAll(), dal.educationRecords.findAll(),
     dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(),
     dal.leave.findAll(), dal.maintenance.findAll(), dal.medicationErrors.findAll(),

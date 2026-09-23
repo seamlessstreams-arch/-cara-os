@@ -1036,6 +1036,22 @@ export const dal = {
   },
 
   // ── QA Audits ─────────────────────────────────────────────────────────────
+  //
+  // A third name for the same alias problem: dal.audits returned
+  // db.audits.findAll() with no Supabase path, over the very array this
+  // accessor falls back to. Four routes used it — conflict detection, the
+  // inspection evidence pack, the SOP reality check and the event-stream shape
+  // — and all four read an empty list on live while qa_audits held the rows.
+  // Collapsed onto this accessor.
+  //
+  // NOT collapsed: dal.qaAuditRecords. Despite the name it is not this record
+  // in another shape. Audit carries findings and actions as COUNTS and the
+  // qa_audits table stores them as single text columns; QAAuditRecord carries
+  // findings, strengths and areas_for_improvement as lists and actions as
+  // structured QAAuditAction objects, plus auditor, scope, overall_rating and
+  // notes, none of which qa_audits has anywhere to put. Merging the two would
+  // discard the audit's substance and keep its score. It needs columns or a
+  // table of its own, which is Tier 1 work rather than a rename.
   qaAudits: {
     async findAll(filters?: { status?: string; category?: string }) {
       const c = sb();
@@ -2163,10 +2179,6 @@ export const dal = {
       return list;
     },
     async findByChild(childId: string) { return db.activities.findByChild(childId); },
-  },
-
-  audits: {
-    async findAll() { return db.audits.findAll(); },
   },
 
   appraisals: {
