@@ -35,11 +35,11 @@ function daysBetween(a: string, b: string): number {
 
 export async function GET() {
   const [leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
-      dal.leaveRequests.findAll(),
+      dal.leave.findAll(),
       dal.reflectiveSupervisions.findAll(),
       dal.shifts.findAll(),
       dal.staff.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
   const today = todayStr();
 

@@ -20,7 +20,7 @@ function addDays(date: string, n: number): string {
 
 export async function POST(req: Request) {
   const [leaveRequestsList, shiftPatternsList, shiftsList, staffList, staffSicknessRecordsList] = await Promise.all([
-      dal.leaveRequests.findAll(),
+      dal.leave.findAll(),
       dal.shiftPatterns.findAll(),
       dal.shifts.findAll(),
       dal.staff.findAll(),

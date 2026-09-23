@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest) {
       dal.returnInterviews.findAll(),
       dal.riskAssessments.findAll(),
       dal.supervisions.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
       dal.welfareChecks.findAll(),
       dal.youngPeople.findAll(),
     ]);

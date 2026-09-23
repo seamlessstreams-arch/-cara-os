@@ -47,7 +47,7 @@ export async function GET(req: Request) {
     })(),
     dal.inductionRecords.findAll(),
     dal.reflectiveSupervisions.findAll(),
-    dal.trainingRecords.findAll(),
+    dal.training.findAll(),
     dal.tasks.findAll(),
   ]);
 

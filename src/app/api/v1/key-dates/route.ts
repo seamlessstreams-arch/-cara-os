@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest) {
   ] = await Promise.all([
     dal.youngPeople.findAll(),
     dal.staff.findAll(),
-    dal.trainingRecords.findAll(),
+    dal.training.findAll(),
     dal.supervisions.findAll(),
     dal.lacReviews.findAll(),
     dal.behaviourSupportPlans.findAll(),

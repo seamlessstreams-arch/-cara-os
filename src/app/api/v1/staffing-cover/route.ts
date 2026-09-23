@@ -23,7 +23,7 @@ const computeCover = computeStaffingCoverFromStore;
  *  Called fresh after any write so the recompute reflects the new state. */
 async function loadCoverShape() {
   const [leaveRequests, shiftCoverNotes, shiftPatterns, shifts, staff, staffSicknessRecords, staffingPolicy] = await Promise.all([
-    dal.leaveRequests.findAll(), dal.shiftCoverNotes.findAll(), dal.shiftPatterns.findAll(),
+    dal.leave.findAll(), dal.shiftCoverNotes.findAll(), dal.shiftPatterns.findAll(),
     dal.shifts.findAll(), dal.staff.findAll(), dal.staffSicknessRecords.findAll(), dal.staffingPolicy.get(),
   ]);
   return { leaveRequests, shiftCoverNotes, shiftPatterns, shifts, staff, staffSicknessRecords, staffingPolicy };

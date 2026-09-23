@@ -46,7 +46,7 @@ export async function GET() {
       dal.reg44VisitReports.findAll(),
       dal.riskAssessments.findAll(),
       dal.staff.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
       dal.youngPeople.findAll(),
     ]);
   const today = todayStr();
