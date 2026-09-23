@@ -774,6 +774,18 @@ export const dal = {
   },
 
   // ── Leave ─────────────────────────────────────────────────────────────────
+  //
+  // There was a second accessor, dal.leaveRequests, reading
+  // getStore().leaveRequests with no Supabase path at all. It was not a
+  // different collection: db.leave reads that same array, so in demo mode the
+  // two returned identical rows and the duplication was invisible. On a live
+  // tenant this one queries leave_requests and that one returned the array
+  // live-mode had already emptied at module load.
+  //
+  // Ten routes read the empty one — staffing cover, rota generation, conflict
+  // detection, retention risk, staff wellbeing, org risk and the inspection
+  // evidence pack among them. Collapsed onto this accessor. The store array
+  // stays, because it is this accessor's own demo-mode source.
   leave: {
     async findAll(filters?: { staff_id?: string; status?: string; leave_type?: string }) {
       const c = sb();
@@ -806,6 +818,13 @@ export const dal = {
   },
 
   // ── Training ──────────────────────────────────────────────────────────────
+  //
+  // Same story as leave: dal.trainingRecords was a read-only duplicate over
+  // getStore().trainingRecords, the very array db.training falls back to, and
+  // seventeen routes used it — every inspection and workforce-intelligence
+  // route, plus the Ofsted workforce evidence export and the staff compliance
+  // summary. All of them reported zero training on Oak House while
+  // training_records held the rows. Collapsed onto this accessor.
   training: {
     async findAll(filters?: { staff_id?: string; status?: string; category?: string }) {
       const c = sb();
@@ -1018,6 +1037,22 @@ export const dal = {
   },
 
   // ── QA Audits ─────────────────────────────────────────────────────────────
+  //
+  // A third name for the same alias problem: dal.audits returned
+  // db.audits.findAll() with no Supabase path, over the very array this
+  // accessor falls back to. Four routes used it — conflict detection, the
+  // inspection evidence pack, the SOP reality check and the event-stream shape
+  // — and all four read an empty list on live while qa_audits held the rows.
+  // Collapsed onto this accessor.
+  //
+  // NOT collapsed: dal.qaAuditRecords. Despite the name it is not this record
+  // in another shape. Audit carries findings and actions as COUNTS and the
+  // qa_audits table stores them as single text columns; QAAuditRecord carries
+  // findings, strengths and areas_for_improvement as lists and actions as
+  // structured QAAuditAction objects, plus auditor, scope, overall_rating and
+  // notes, none of which qa_audits has anywhere to put. Merging the two would
+  // discard the audit's substance and keep its score. It needs columns or a
+  // table of its own, which is Tier 1 work rather than a rename.
   qaAudits: {
     async findAll(filters?: { status?: string; category?: string }) {
       const c = sb();
@@ -1587,16 +1622,6 @@ export const dal = {
       return db.savedTimeMetrics.findByHome(homeId_);
     },  },
 
-  trainingRecords: {
-    async findAll(filters?: { staff_id?: string }) {
-      let list = getStore().trainingRecords;
-      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
-      return list;
-    },
-    async findById(id: string) { return getStore().trainingRecords.find((r) => r.id === id) ?? null; },
-    async findByStaff(staffId: string) { return getStore().trainingRecords.filter((r) => r.staff_id === staffId); },
-  },
-
   restraints: {
     async findAll(filters?: { child_id?: string }): Promise<RestraintRecord[]> {
       const c = sb();
@@ -1749,16 +1774,6 @@ export const dal = {
   // routes for DAL migration. Same demo-only pattern — reads always in-memory
   // until a Supabase table lands.
   // ─────────────────────────────────────────────────────────────────────────
-
-  leaveRequests: {
-    async findAll(filters?: { staff_id?: string; status?: string }) {
-      let list = getStore().leaveRequests;
-      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
-      if (filters?.status) list = list.filter((r) => r.status === filters.status);
-      return list;
-    },
-    async findById(id: string) { return getStore().leaveRequests.find((r) => r.id === id) ?? null; },
-  },
 
   ypFeedback: {
     async findAll(filters?: { child_id?: string }) {
@@ -2195,10 +2210,6 @@ export const dal = {
       return list;
     },
     async findByChild(childId: string) { return db.activities.findByChild(childId); },
-  },
-
-  audits: {
-    async findAll() { return db.audits.findAll(); },
   },
 
   appraisals: {

@@ -18,11 +18,11 @@ export async function GET() {
     const [complaintsList, incidentsList, leaveRequestsList, missingEpisodesList, staffList, supervisionsList, trainingRecordsList] = await Promise.all([
       dal.complaints.findAll(),
       dal.incidents.findAll(),
-      dal.leaveRequests.findAll(),
+      dal.leave.findAll(),
       dal.missingEpisodes.findAll(),
       dal.staff.findAll(),
       dal.supervisions.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
     const dashboard = buildOrgRiskDashboard({
       now: new Date().toISOString(),

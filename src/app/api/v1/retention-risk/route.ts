@@ -43,11 +43,11 @@ export async function GET() {
   const [incidentsList, leaveList, leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
       dal.incidents.findAll(),
       dal.leave.findAll(),
-      dal.leaveRequests.findAll(),
+      dal.leave.findAll(),
       dal.reflectiveSupervisions.findAll(),
       dal.shifts.findAll(),
       dal.staff.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
   const today = todayStr();
 

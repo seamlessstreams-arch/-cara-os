@@ -23,7 +23,7 @@ async function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): Promis
     dal.tasks.findAll(),
     dal.incidents.findAll(),
     dal.supervisions.findAll(),
-    dal.trainingRecords.findAll(),
+    dal.training.findAll(),
     dal.keyWorkingSessions.findAll(),
   ]);
   const nowDate = new Date();

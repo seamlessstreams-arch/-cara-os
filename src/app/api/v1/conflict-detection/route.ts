@@ -31,10 +31,10 @@ export async function GET() {
     reg44VisitReports, restraints, riskAssessments, shifts, supervisions,
     youngPeople, staff,
   ] = await Promise.all([
-    dal.appointments.findAll(), dal.audits.findAll(), dal.behaviourSupportPlans.findAll(),
+    dal.appointments.findAll(), dal.qaAudits.findAll(), dal.behaviourSupportPlans.findAll(),
     dal.complaints.findAll(), dal.dailyLog.findAll(), dal.educationRecords.findAll(),
     dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(),
-    dal.leaveRequests.findAll(), dal.maintenance.findAll(), dal.medicationErrors.findAll(),
+    dal.leave.findAll(), dal.maintenance.findAll(), dal.medicationErrors.findAll(),
     dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.reg44VisitReports.findAll(),
     dal.restraints.findAll(), dal.riskAssessments.findAll(), dal.shifts.findAll(),
     dal.supervisions.findAll(), dal.youngPeople.findAll(), dal.staff.findAll(),

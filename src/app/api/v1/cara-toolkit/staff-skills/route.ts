@@ -14,7 +14,7 @@ export async function GET() {
   const [reflectiveSupervisionsList, staffList, trainingRecordsList] = await Promise.all([
       dal.reflectiveSupervisions.findAll(),
       dal.staff.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
   const staff = ((staffList)) ?? [];
   const trainingRecords = ((trainingRecordsList)) ?? [];

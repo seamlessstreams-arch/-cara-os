@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       dal.welfareChecks.findAll(),
       dal.carePlans.findAll(),
       dal.supervisions.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
     const { searchParams } = new URL(req.url);
     const format = (searchParams.get("format") || "html").toLowerCase();

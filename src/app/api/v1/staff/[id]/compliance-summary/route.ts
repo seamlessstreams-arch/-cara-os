@@ -16,7 +16,7 @@ export async function GET(_req: Request, { params }: Params) {
   const [staffList, staffSicknessRecordsList, trainingRecordsList] = await Promise.all([
       dal.staff.findAll(),
       dal.staffSicknessRecords.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
     ]);
   const today = todayStr();
 

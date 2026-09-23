@@ -25,9 +25,9 @@ export async function GET() {
       dal.lacReviews.findAll(),
       dal.positiveAchievements.findAll(),
       dal.educationRecords.findAll(),
-      dal.trainingRecords.findAll(),
+      dal.training.findAll(),
       dal.supervisions.findAll(),
-      dal.audits.findAll(),
+      dal.qaAudits.findAll(),
     ]);
     const children = (((youngPeopleList ?? [])))
       .filter((yp) => yp.status === "current")

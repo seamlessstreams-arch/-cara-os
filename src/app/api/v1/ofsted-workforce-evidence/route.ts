@@ -23,7 +23,7 @@ const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 100) : null)
 
 export async function GET() {
   const [staffList, reflectiveSupervisionsList, trainingRecordsList, inductionRecordsList, candidateChecksList, candidateProfilesList, incidentsList, homeRec] = await Promise.all([
-    dal.staff.findAll(), dal.reflectiveSupervisions.findAll(), dal.trainingRecords.findAll(),
+    dal.staff.findAll(), dal.reflectiveSupervisions.findAll(), dal.training.findAll(),
     dal.inductionRecords.findAll(), dal.candidateChecks.findAll(), dal.candidateProfiles.findAll(),
     dal.incidents.findAll(), dal.home.get(),
   ]);
