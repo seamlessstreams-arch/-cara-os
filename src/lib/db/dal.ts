@@ -21,6 +21,7 @@ import type { Database } from "@/lib/supabase/types";
 import { rowTo1to1, oneToOneToRow } from "./keywork-1to1-projection";
 import * as sq from "@/lib/supabase/queries";
 import * as sqCalendar from "@/lib/supabase/calendar-persist";
+import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
@@ -1781,14 +1782,44 @@ export const dal = {
     async create(data: Parameters<typeof db.healthAssessments.create>[0]) { return db.healthAssessments.create(data); },
   },
 
+  // Regulation 40. The record IS the evidence: a home that notified Ofsted
+  // correctly could not show it, because nothing persisted. Reads project the
+  // two tables into the flat three-recipient shape these eight routes expect
+  // (see notifiable-events-persist.ts); the store leg is demo mode only.
   notifiableEvents: {
     async findAll(filters?: { child_id?: string }) {
+      if (sb()) return sqNotifiable.getNotifiableEvents(filters);
       let list = db.notifiableEvents.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.notifiableEvents.findById(id) ?? null; },
-    async create(data: Parameters<typeof db.notifiableEvents.create>[0]) { return db.notifiableEvents.create(data); },
+    async findById(id: string) {
+      if (sb()) return (await sqNotifiable.getNotifiableEvents()).find((e) => e.id === id) ?? null;
+      return db.notifiableEvents.findById(id) ?? null;
+    },
+    async create(data: Parameters<typeof db.notifiableEvents.create>[0]) {
+      const created = db.notifiableEvents.create(data);
+      if (sb()) {
+        // Write-through keeps the store copy for demo parity and puts the
+        // durable record where Reg 40 evidence has to live.
+        await sqNotifiable.persistNotifiableEvent(
+          {
+            id: created.id,
+            event_type: created.event_type,
+            event_date: created.date,
+            child_id: created.child_id,
+            summary: created.summary,
+            description: created.detail,
+            immediate_actions_taken: created.immediate_action,
+            reported_by: created.reported_by,
+            follow_up: created.follow_up,
+            lesson_learned: created.lesson_learned,
+          },
+          sqNotifiable.notificationLegs(created),
+        );
+      }
+      return created;
+    },
   },
 
   employerValuesProfiles: {
