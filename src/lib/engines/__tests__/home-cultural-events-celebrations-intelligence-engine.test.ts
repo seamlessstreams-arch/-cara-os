@@ -256,8 +256,8 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.total_heritage_days).toBe(0);
       expect(r.total_festival_inclusions).toBe(0);
       expect(r.total_child_led_activities).toBe(0);
-      expect(r.avg_celebration_quality).toBe(0);
-      expect(r.avg_festival_quality).toBe(0);
+      expect(r.avg_celebration_quality).toBeNull(); // no ratings → unmeasured, not 0
+      expect(r.avg_festival_quality).toBeNull();
       expect(r.unique_event_types).toBe(0);
       expect(r.unique_faiths_represented).toBe(0);
       expect(r.unique_heritage_types).toBe(0);
@@ -1542,9 +1542,9 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.avg_celebration_quality).toBe(4);
     });
 
-    it("returns 0 when no celebrations", () => {
+    it("returns null (unmeasured, not 0) when no celebrations", () => {
       const r = run({ diversity_celebration_records: [] });
-      expect(r.avg_celebration_quality).toBe(0);
+      expect(r.avg_celebration_quality).toBeNull();
     });
 
     it("rounds to 2 decimal places", () => {
@@ -1573,9 +1573,9 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.avg_festival_quality).toBe(4);
     });
 
-    it("returns 0 when no festivals", () => {
+    it("returns null (unmeasured, not 0) when no festivals", () => {
       const r = run({ festival_inclusion_records: [] });
-      expect(r.avg_festival_quality).toBe(0);
+      expect(r.avg_festival_quality).toBeNull();
     });
   });
 
@@ -2932,14 +2932,14 @@ describe("computeCulturalEventsCelebrations", () => {
   /* ── 27. avgRating edge cases ─────────────────────────────────────────── */
 
   describe("avgRating helper", () => {
-    it("returns 0 for empty celebration records", () => {
+    it("returns null for empty celebration records", () => {
       const r = run({ diversity_celebration_records: [] });
-      expect(r.avg_celebration_quality).toBe(0);
+      expect(r.avg_celebration_quality).toBeNull();
     });
 
-    it("returns 0 for empty festival records", () => {
+    it("returns null for empty festival records", () => {
       const r = run({ festival_inclusion_records: [] });
-      expect(r.avg_festival_quality).toBe(0);
+      expect(r.avg_festival_quality).toBeNull();
     });
 
     it("handles single element", () => {
