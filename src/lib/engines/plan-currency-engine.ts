@@ -59,7 +59,7 @@ export interface MatrixRow { child_id: string; child_name: string; cells: Matrix
 
 export interface PlanCurrencySummary {
   total: number; overdue: number; due_soon: number; current: number; no_date: number;
-  currency_rate: number; // % of dated plans that are not overdue
+  currency_rate: number | null; // % of dated plans not overdue; null when there are no dated plans
 }
 
 export interface PlanCurrencyResult {
@@ -108,7 +108,7 @@ export function computePlanCurrency(input: PlanCurrencyInput): PlanCurrencyResul
   const dated = sum.total - sum.no_date;
   const summary: PlanCurrencySummary = {
     ...sum,
-    currency_rate: dated === 0 ? 0 : Math.round(((dated - sum.overdue) / dated) * 100),
+    currency_rate: dated === 0 ? null : Math.round(((dated - sum.overdue) / dated) * 100),
   };
 
   // Per-plan-type rollup
