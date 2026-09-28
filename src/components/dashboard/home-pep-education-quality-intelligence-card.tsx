@@ -86,8 +86,8 @@ export function HomePepEducationQualityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.current_rate, 80) ? "text-[--cs-success]" : meets(d.current_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.current_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Current</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_attendance >= 95 ? "bg-green-50" : d.average_attendance >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_attendance >= 95 ? "text-[--cs-success]" : d.average_attendance >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_attendance}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.average_attendance, 95) ? "bg-green-50" : meets(d.average_attendance, 85) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.average_attendance, 95) ? "text-[--cs-success]" : meets(d.average_attendance, 85) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.average_attendance)}</p>
               <p className="text-[9px] text-muted-foreground">Attendance</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.target_progress_rate, 75) ? "bg-green-50" : meets(d.target_progress_rate, 50) ? "bg-amber-50" : "bg-red-50")}>

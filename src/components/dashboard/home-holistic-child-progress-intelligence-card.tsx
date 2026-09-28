@@ -82,8 +82,8 @@ export function HomeHolisticChildProgressIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.key_work_completion_rate === null ? "text-muted-foreground" : d.key_work_completion_rate >= 90 ? "text-[--cs-success]" : d.key_work_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_work_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Key Work</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_attendance >= 95 ? "bg-green-50" : d.average_attendance >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_attendance >= 95 ? "text-[--cs-success]" : d.average_attendance >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_attendance}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.average_attendance === null ? "bg-slate-50" : d.average_attendance >= 95 ? "bg-green-50" : d.average_attendance >= 85 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.average_attendance === null ? "text-muted-foreground" : d.average_attendance >= 95 ? "text-[--cs-success]" : d.average_attendance >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.average_attendance)}</p>
               <p className="text-[9px] text-muted-foreground">Attend</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.domain_coverage >= 5 ? "bg-green-50" : d.domain_coverage >= 3 ? "bg-amber-50" : "bg-red-50")}>
