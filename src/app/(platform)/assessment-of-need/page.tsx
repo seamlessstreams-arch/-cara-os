@@ -155,7 +155,7 @@ export default function AssessmentOfNeedPage() {
 
   const activeAssessments = data.length;
   const withinDeadlinePct = data.length === 0
-    ? 0
+    ? null
     : Math.round((data.filter((r) => r.completed_within_deadline).length / data.length) * 100);
   const complexCount = data.filter(
     (r) => r.overall_need_complexity === "complex" || r.overall_need_complexity === "highly_complex",
@@ -223,7 +223,7 @@ export default function AssessmentOfNeedPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Active Assessments", value: activeAssessments, icon: ClipboardList, clr: "text-indigo-600" },
-            { label: "Within Deadline", value: `${withinDeadlinePct}%`, icon: CheckCircle2, clr: withinDeadlinePct === 100 ? "text-green-600" : "text-amber-600" },
+            { label: "Within Deadline", value: withinDeadlinePct === null ? "—" : `${withinDeadlinePct}%`, icon: CheckCircle2, clr: withinDeadlinePct === null ? "text-gray-400" : withinDeadlinePct === 100 ? "text-green-600" : "text-amber-600" },
             { label: "Complex / Highly Complex", value: complexCount, icon: Layers, clr: complexCount > 0 ? "text-orange-600" : "text-[var(--cs-text-secondary)]" },
             { label: "Reviews Due", value: reviewsDue, icon: Clock, clr: reviewsDue > 0 ? "text-amber-600" : "text-green-600" },
           ].map((s) => (
