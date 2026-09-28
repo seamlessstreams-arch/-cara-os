@@ -91,8 +91,8 @@ export function HomeAutomationROIIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.route_type_diversity >= 3 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.route_type_diversity}</p>
               <p className="text-[9px] text-muted-foreground">Types</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.avg_minutes_per_route > 0 ? "bg-blue-50" : "bg-slate-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.avg_minutes_per_route > 0 ? "text-blue-600" : "text-slate-600")}>{d.avg_minutes_per_route}m</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.avg_minutes_per_route ?? 0) > 0 ? "bg-blue-50" : "bg-slate-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.avg_minutes_per_route ?? 0) > 0 ? "text-blue-600" : "text-slate-600")}>{d.avg_minutes_per_route === null ? "—" : `${d.avg_minutes_per_route}m`}</p>
               <p className="text-[9px] text-muted-foreground">Avg/Route</p>
             </div>
           </div>
