@@ -200,7 +200,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
       expect(r.automation_coverage).toBe(0);
       expect(r.error_rate).toBeNull();
       expect(r.route_type_diversity).toBe(0);
-      expect(r.avg_minutes_per_route).toBe(0);
+      expect(r.avg_minutes_per_route).toBeNull();
     });
 
     it("returns insufficient_data even when metrics/routes/events exist with 0 staff", () => {
@@ -1878,7 +1878,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
         events: [makeEvent()],
         metrics: [makeMetric()],
       }));
-      expect(r.avg_minutes_per_route).toBe(0);
+      expect(r.avg_minutes_per_route).toBeNull();
     });
 
     it("rounds to one decimal place", () => {
@@ -2349,6 +2349,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
     it("handles routes with 0 time_saved_minutes", () => {
       const routes = [makeRoute({ time_saved_minutes: 0, created_at: "2026-05-20" })];
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
+      // routes present but zero minutes saved → a genuine computed 0, not empty (null)
       expect(r.avg_minutes_per_route).toBe(0);
     });
 

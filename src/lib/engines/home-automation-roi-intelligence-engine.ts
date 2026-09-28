@@ -81,7 +81,7 @@ export interface AutomationROIResult {
   /** null when the population is empty — nothing measured, not 0%. */
   error_rate: number | null;
   route_type_diversity: number;
-  avg_minutes_per_route: number;
+  avg_minutes_per_route: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AutomationROIRecommendation[];
@@ -120,7 +120,7 @@ export function computeAutomationROI(
       automation_coverage: 0,
       error_rate: null,
       route_type_diversity: 0,
-      avg_minutes_per_route: 0,
+      avg_minutes_per_route: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -148,7 +148,7 @@ export function computeAutomationROI(
       automation_coverage: 0,
       error_rate: null,
       route_type_diversity: 0,
-      avg_minutes_per_route: 0,
+      avg_minutes_per_route: null,
       strengths: [],
       concerns: ["No automation activity recorded in the last 90 days despite staff being registered — the platform's routing and automation capabilities are not being used to support care governance."],
       recommendations: [{ rank: 1, recommendation: "Enable automated routing for care events immediately — routing ensures that safeguarding, health, and behavioural data reaches the right records without manual intervention.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" }],
@@ -174,7 +174,7 @@ export function computeAutomationROI(
   const routeTypeDiversity = uniqueRouteTypes.size;
 
   const totalRouteTimeSaved = routes.reduce((sum, r) => sum + r.time_saved_minutes, 0);
-  const avgMinutesPerRoute = routes.length === 0 ? 0 : Math.round((totalRouteTimeSaved / routes.length) * 10) / 10;
+  const avgMinutesPerRoute = routes.length === 0 ? null : Math.round((totalRouteTimeSaved / routes.length) * 10) / 10;
 
   // Minutes saved per staff member
   const minutesPerStaff = total_staff > 0 ? totalTimeSaved / total_staff : 0;
