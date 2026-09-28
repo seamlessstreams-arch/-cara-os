@@ -127,6 +127,10 @@ describe("computeHomeOutcomesProgress", () => {
       const r = computeHomeOutcomesProgress(baseInput());
       expect(r.domain_profile.total_domains_covered).toBe(0);
       expect(r.progress_profile.improving_count).toBe(0);
+      // With no active targets the averages are UNMEASURED, not a fabricated 0
+      expect(r.progress_profile.avg_progress).toBeNull();
+      expect(r.progress_profile.avg_current_rating).toBeNull();
+      expect(r.progress_profile.avg_baseline_rating).toBeNull();
       expect(r.review_profile.total_reviews).toBe(0);
       expect(r.equity_profile.children_with_targets).toBe(0);
     });
