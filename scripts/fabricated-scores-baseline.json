@@ -22,8 +22,6 @@
   "src/lib/engines/home-bsp-effectiveness-intelligence-engine.ts:values:0",
   "src/lib/engines/home-cara-content-quality-intelligence-engine.ts:totalArtifacts:0",
   "src/lib/engines/home-cara-content-quality-intelligence-engine.ts:turnaroundPairs:0",
-  "src/lib/engines/home-childrens-voice-participation-intelligence-engine.ts:meetings:0",
-  "src/lib/engines/home-childrens-voice-participation-intelligence-engine.ts:total_children:0",
   "src/lib/engines/home-competency-landscape-intelligence-engine.ts:values:0",
   "src/lib/engines/home-cultural-events-celebrations-intelligence-engine.ts:values:0",
   "src/lib/engines/home-emotional-literacy-feelings-expression-intelligence-engine.ts:nums:0",

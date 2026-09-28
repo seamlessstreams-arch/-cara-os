@@ -121,9 +121,9 @@ export function computeChildrensVoiceParticipation(
   // ── Metric calculations ─────────────────────────────────────────────
 
   // Meeting attendance rate: avg(yp_present_count / yp_total) across meetings
-  const meetingAttendanceRate =
+  const meetingAttendanceRate: number | null =
     meetings.length === 0
-      ? 0
+      ? null // no meetings held → attendance is UNMEASURED, not 0% (a false red)
       : Math.round(
           (meetings.reduce(
             (sum, m) => sum + (m.yp_total === 0 ? 0 : m.yp_present_count / m.yp_total),
@@ -164,10 +164,10 @@ export function computeChildrensVoiceParticipation(
       .map((e) => e.child_id),
   );
   const expertParticipationCount = expertChildIds.size;
+  // total_children > 0 here (an empty home returns insufficient_data above), and
+  // 0% when no child participated is a real measured value, not a fabrication.
   const expertParticipationRate =
-    total_children === 0
-      ? 0
-      : Math.round((expertParticipationCount / total_children) * 100);
+    Math.round((expertParticipationCount / total_children) * 100);
 
   // ── Scoring ─────────────────────────────────────────────────────────
   // Base 52, 6 modifiers, max ~82
@@ -176,11 +176,11 @@ export function computeChildrensVoiceParticipation(
   // Mod 1: Meeting attendance rate
   if (meetings.length === 0) {
     score += 0;
-  } else if (meetingAttendanceRate >= 80) {
+  } else if ((meetingAttendanceRate ?? 0) >= 80) {
     score += 5;
-  } else if (meetingAttendanceRate >= 60) {
+  } else if ((meetingAttendanceRate ?? 0) >= 60) {
     score += 2;
-  } else if (meetingAttendanceRate >= 40) {
+  } else if ((meetingAttendanceRate ?? 0) >= 40) {
     score += 0;
   } else {
     score -= 5;
@@ -280,7 +280,7 @@ export function computeChildrensVoiceParticipation(
   // ── Strengths ───────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (meetingAttendanceRate >= 80 && meetings.length > 0)
+  if ((meetingAttendanceRate ?? 0) >= 80 && meetings.length > 0)
     strengths.push(
       `Strong meeting attendance — ${meetingAttendanceRate}% average attendance across ${meetings.length} meeting${meetings.length > 1 ? "s" : ""}.`,
     );
@@ -312,7 +312,7 @@ export function computeChildrensVoiceParticipation(
     concerns.push(
       "No children's meetings recorded — children's collective voice is not being facilitated.",
     );
-  if (meetingAttendanceRate < 40 && meetings.length > 0)
+  if ((meetingAttendanceRate ?? 0) < 40 && meetings.length > 0)
     concerns.push(
       `Low meeting attendance — only ${meetingAttendanceRate}% average, many children's voices may be missing.`,
     );
@@ -365,7 +365,7 @@ export function computeChildrensVoiceParticipation(
     });
   }
 
-  if (meetingAttendanceRate < 40 && meetings.length > 0) {
+  if ((meetingAttendanceRate ?? 0) < 40 && meetings.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -429,7 +429,7 @@ export function computeChildrensVoiceParticipation(
   const insights: { text: string; severity: string }[] = [];
 
   if (
-    meetingAttendanceRate >= 80 &&
+    (meetingAttendanceRate ?? 0) >= 80 &&
     meets(feedbackResponseRate, 85) &&
     meets(positiveFeedbackRate, 80) &&
     meets(childFriendlyPolicyRate, 80) &&
@@ -440,7 +440,7 @@ export function computeChildrensVoiceParticipation(
       severity: "positive",
     });
 
-  if (meetings.length > 0 && meets(childChairingRate, 50) && meetingAttendanceRate >= 80)
+  if (meetings.length > 0 && meets(childChairingRate, 50) && (meetingAttendanceRate ?? 0) >= 80)
     insights.push({
       text: `Cara detects strong child-led governance — ${formatRate(childChairingRate)} of meetings child-chaired with ${meetingAttendanceRate}% attendance.`,
       severity: "positive",
