@@ -119,8 +119,8 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
@@ -163,8 +163,8 @@ export function computeChildDailyLife(
       .filter((e) => daysAgo(today, e.date) > 7 && e.mood_score !== null)
       .map((e) => e.mood_score!);
     if (older.length >= 2) {
-      const recent = avg(moods7d);
-      const olderAvg = avg(older);
+      const recent = avg(moods7d) ?? 0; // guarded non-empty above (length >= 2)
+      const olderAvg = avg(older) ?? 0; // guarded non-empty above (length >= 2)
       if (recent - olderAvg > 0.5) moodTrend = "improving";
       else if (olderAvg - recent > 0.5) moodTrend = "declining";
       else moodTrend = "stable";
