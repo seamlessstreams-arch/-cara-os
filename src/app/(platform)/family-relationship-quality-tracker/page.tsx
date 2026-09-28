@@ -83,7 +83,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
     const strongOrImproving = records.filter(
       (r) => r.current_quality === "strong" || r.trajectory === "improving",
     ).length;
-    const pct = total === 0 ? 0 : Math.round((strongOrImproving / total) * 100);
+    const pct = total === 0 ? null : Math.round((strongOrImproving / total) * 100);
 
     const today = todayStr();
     const in30 = new Date();
@@ -184,7 +184,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
         <StatCard
           icon={<TrendingUp className="h-4 w-4" />}
           label="Strong / improving"
-          value={`${stats.pct}%`}
+          value={stats.pct === null ? "—" : `${stats.pct}%`}
           tone="emerald"
         />
         <StatCard
