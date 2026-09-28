@@ -193,6 +193,15 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
       expect(result.expert_participation_count).toBe(0);
       expect(result.positive_feedback_rate).toBeNull();
     });
+
+    it("reports meeting_attendance_rate null (not a fabricated 0%) when children exist but no meetings were held", () => {
+      // Past the insufficient_data guard (total_children > 0) with feedback and
+      // policies present, but no meetings — attendance is UNMEASURED, not 0%
+      // (which would read as a false red).
+      const result = computeChildrensVoiceParticipation(baseInput({ meetings: [] }));
+      expect(result.voice_rating).not.toBe("insufficient_data");
+      expect(result.meeting_attendance_rate).toBeNull();
+    });
   });
 
   // ── Rating thresholds ─────────────────────────────────────────────────
@@ -483,9 +492,9 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
       const result = computeChildrensVoiceParticipation(
         baseInput({ meetings: [] }),
       );
-      expect(result.meeting_attendance_rate).toBe(0);
+      expect(result.meeting_attendance_rate).toBeNull(); // unmeasured, not fabricated 0%
       // mod1: +0, mod2: +0 (no meetings) → was +5 +5 = +10 → now +0 +0 → drop 10
-      // 82 - 10 = 72
+      // 82 - 10 = 72 — scoring unchanged (null rate is treated as 0 in the gated comparisons)
       expect(result.voice_score).toBe(72);
     });
 
