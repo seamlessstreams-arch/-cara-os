@@ -57,7 +57,7 @@ export interface ActionsRegisterSummary {
   overdue: number;
   due_soon: number;
   no_date: number;
-  completion_rate: number;     // done / total, 0 when empty
+  completion_rate: number | null; // done / total, null when no actions recorded
 }
 
 export interface ActionsRegisterResult {
@@ -139,7 +139,7 @@ export function computeActionsRegister(input: ActionsRegisterInput): ActionsRegi
     overdue: overdue.length,
     due_soon: dueSoonList.length,
     no_date: noDate.length,
-    completion_rate: classified.length === 0 ? 0 : Math.round((doneCount / classified.length) * 100),
+    completion_rate: classified.length === 0 ? null : Math.round((doneCount / classified.length) * 100),
   };
 
   return { summary, by_owner, by_source, actions: ranked, headline: buildHeadline(summary) };
@@ -151,5 +151,5 @@ function buildHeadline(s: ActionsRegisterSummary): string {
   const parts: string[] = [`${s.open} open action${s.open === 1 ? "" : "s"}`];
   if (s.overdue > 0) parts.push(`${s.overdue} overdue`);
   if (s.due_soon > 0) parts.push(`${s.due_soon} due this week`);
-  return `${parts.join(" — ")}. ${s.completion_rate}% of all agreed actions completed.`;
+  return `${parts.join(" — ")}. ${s.completion_rate ?? 0}% of all agreed actions completed.`;
 }
