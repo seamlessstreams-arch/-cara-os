@@ -46,8 +46,8 @@ export interface GatewayAuditSummary {
   ai_calls: number;
   /** Calls answered with NO model call (deterministic + cache + refused). */
   avoided_calls: number;
-  /** Share of AI-eligible requests answered without a model (0 when no data). */
-  avoided_pct: number;
+  /** Share of AI-eligible requests answered without a model (null when no data). */
+  avoided_pct: number | null;
   /** Genuine engine/cache wins (deterministic + cache) — "avoided by design". */
   deterministic_calls: number;
   /** Invocations where at least one PII item was stripped before send. */
@@ -143,8 +143,8 @@ export function summariseGatewayAudit(
     by_method,
     ai_calls,
     avoided_calls,
-    // No data → 0, not 100: never show a falsely-reassuring "everything avoided".
-    avoided_pct: total === 0 ? 0 : Math.round((avoided_calls / total) * 100),
+    // No data → null (renders "—"): never a hollow 0% nor a falsely-reassuring 100% "everything avoided".
+    avoided_pct: total === 0 ? null : Math.round((avoided_calls / total) * 100),
     deterministic_calls,
     redaction_events,
     redacted_items,

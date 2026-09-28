@@ -38,10 +38,10 @@ describe("classifyRefusal", () => {
 });
 
 describe("summariseGatewayAudit", () => {
-  it("returns honest zeros for an empty log (avoided_pct 0, NOT 100)", () => {
+  it("returns honest empties for an empty log (avoided_pct null, NOT 0 or 100)", () => {
     const s = summariseGatewayAudit([], NOW);
     expect(s.total).toBe(0);
-    expect(s.avoided_pct).toBe(0);
+    expect(s.avoided_pct).toBeNull();
     expect(s.ai_calls).toBe(0);
     expect(s.avoided_calls).toBe(0);
     expect(s.by_feature).toEqual([]);
