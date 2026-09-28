@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — COMPLAINTS CLOCK ENGINE
 //
@@ -68,8 +69,8 @@ export interface ComplaintsClockSummary {
   breached: number;          // open complaints currently past a deadline
   due_soon: number;          // open complaints whose next deadline is within the window
   on_track: number;
-  ack_compliance_rate: number;     // % acknowledged on time, of those acknowledged
-  response_compliance_rate: number; // % responded on time, of those responded
+  ack_compliance_rate: number | null;     // % acknowledged on time, of those acknowledged; null when none acknowledged
+  response_compliance_rate: number | null; // % responded on time, of those responded; null when none responded
 }
 
 export interface ComplaintsClockResult {
@@ -150,8 +151,8 @@ export function computeComplaintsClock(input: ComplaintsClockInput): ComplaintsC
     breached: clocks.filter((c) => c.urgency === "breached").length,
     due_soon: clocks.filter((c) => c.urgency === "due_soon").length,
     on_track: clocks.filter((c) => c.urgency === "on_track").length,
-    ack_compliance_rate: acknowledged.length === 0 ? 0 : Math.round((acknowledged.filter((c) => c.acknowledgement.met).length / acknowledged.length) * 100),
-    response_compliance_rate: responded.length === 0 ? 0 : Math.round((responded.filter((c) => c.response.met).length / responded.length) * 100),
+    ack_compliance_rate: rate(acknowledged.filter((c) => c.acknowledgement.met).length, acknowledged.length),
+    response_compliance_rate: rate(responded.filter((c) => c.response.met).length, responded.length),
   };
 
   return { summary, complaints: ranked, headline: buildHeadline(summary) };
@@ -159,9 +160,15 @@ export function computeComplaintsClock(input: ComplaintsClockInput): ComplaintsC
 
 function buildHeadline(s: ComplaintsClockSummary): string {
   if (s.total === 0) return "No complaints recorded — nothing on the clock.";
-  if (s.open === 0) return `All ${s.total} complaints resolved. ${s.response_compliance_rate}% were responded to within timescale.`;
+  if (s.open === 0) {
+    // Omit the rate clause entirely when nothing has been responded to — an
+    // unmeasured rate must not read as "0% within timescale".
+    const tail = s.response_compliance_rate === null ? "" : ` ${s.response_compliance_rate}% were responded to within timescale.`;
+    return `All ${s.total} complaints resolved.${tail}`;
+  }
   const parts: string[] = [`${s.open} open complaint${s.open === 1 ? "" : "s"}`];
   if (s.breached > 0) parts.push(`${s.breached} past deadline`);
   if (s.due_soon > 0) parts.push(`${s.due_soon} due within 3 days`);
-  return `${parts.join(" — ")}. ${s.response_compliance_rate}% of closed complaints met the response timescale.`;
+  const tail = s.response_compliance_rate === null ? "" : ` ${s.response_compliance_rate}% of closed complaints met the response timescale.`;
+  return `${parts.join(" — ")}.${tail}`;
 }

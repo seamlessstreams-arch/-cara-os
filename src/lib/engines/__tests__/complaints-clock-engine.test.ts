@@ -93,6 +93,19 @@ describe("computeComplaintsClock", () => {
     expect(r.headline).toMatch(/All 2 complaints resolved/);
   });
 
+  it("reports compliance rates as null (not a fabricated 0%) when nothing is acknowledged or responded", () => {
+    // Complaints exist but none acknowledged/responded yet — the rates have no
+    // denominator, so they are UNMEASURED, not 0% ("0% on time" is a false red).
+    const r = computeComplaintsClock({
+      today: TODAY,
+      complaints: [complaint({ id: "a" }), complaint({ id: "b" })],
+    });
+    expect(r.summary.total).toBe(2);
+    expect(r.summary.ack_compliance_rate).toBeNull();
+    expect(r.summary.response_compliance_rate).toBeNull();
+    expect(r.headline).not.toMatch(/0%/); // never claims a 0% timescale figure
+  });
+
   it("ranks breached before due_soon before on_track before resolved", () => {
     const r = computeComplaintsClock({
       today: TODAY,
