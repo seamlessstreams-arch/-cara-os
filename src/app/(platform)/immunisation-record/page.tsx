@@ -93,7 +93,8 @@ export default function ImmunisationRecordPage() {
       ).length,
       0,
     );
-    const compliance = totalDoses === 0 ? 0 : Math.round((completedDoses / totalDoses) * 100);
+    // No dose records → compliance is UNMEASURED, not 0% (which reads as a false red).
+    const compliance = totalDoses === 0 ? null : Math.round((completedDoses / totalDoses) * 100);
 
     return { upToDate, dueWithin90, refusalsHandled, compliance };
   }, [records]);
@@ -146,7 +147,7 @@ export default function ImmunisationRecordPage() {
           { label: "Children up to date",              value: `${stats.upToDate}/${records.length}`, icon: ShieldCheck, c: "text-green-600"  },
           { label: "Doses due within 90 days",         value: stats.dueWithin90,                     icon: Calendar,    c: "text-amber-600"  },
           { label: "Children with refusals (handled)", value: stats.refusalsHandled,                 icon: ShieldAlert, c: "text-orange-600" },
-          { label: "Schedule compliance",              value: `${stats.compliance}%`,                icon: Activity,    c: "text-blue-600"   },
+          { label: "Schedule compliance",              value: stats.compliance === null ? "—" : `${stats.compliance}%`,                icon: Activity,    c: "text-blue-600"   },
         ].map(s => (
           <div key={s.label} className="rounded-lg border bg-card p-3 flex items-center gap-3">
             <s.icon className={cn("h-5 w-5", s.c)} />
