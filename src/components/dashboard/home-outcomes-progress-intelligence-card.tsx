@@ -191,11 +191,12 @@ export function HomeOutcomesProgressIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Progress</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Avg rating: <span className="font-medium text-slate-600">{d.progress_profile.avg_current_rating}/5</span></p>
+                <p>Avg rating: <span className="font-medium text-slate-600">{d.progress_profile.avg_current_rating ?? "—"}/5</span></p>
                 <p>Avg progress: <span className={cn("font-medium",
+                  d.progress_profile.avg_progress === null ? "text-muted-foreground" :
                   d.progress_profile.avg_progress >= 1 ? "text-[--cs-success]" :
                   d.progress_profile.avg_progress > 0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>+{d.progress_profile.avg_progress}</span></p>
+                )}>{d.progress_profile.avg_progress === null ? "—" : `+${d.progress_profile.avg_progress}`}</span></p>
                 <p>On target: <span className="font-medium text-slate-600">{d.progress_profile.on_target_count}</span></p>
                 <p>Achieved: <span className={cn("font-medium",
                   d.progress_profile.achieved_count > 0 ? "text-[--cs-success]" : "text-slate-600"

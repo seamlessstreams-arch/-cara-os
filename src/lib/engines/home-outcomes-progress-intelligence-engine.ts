@@ -69,9 +69,9 @@ export interface ProgressProfile {
   declining_count: number;
   improving_rate: number | null;
   declining_rate: number | null;
-  avg_current_rating: number;
-  avg_baseline_rating: number;
-  avg_progress: number;          // avg(current - baseline)
+  avg_current_rating: number | null;
+  avg_baseline_rating: number | null;
+  avg_progress: number | null;          // avg(current - baseline); null when no active targets
   achieved_count: number;
   on_target_count: number;       // current >= target
 }
@@ -130,8 +130,8 @@ const ALL_DOMAINS = [
   "family_social", "self_care", "independence", "behaviour",
 ];
 
-function avg(values: number[]): number {
-  if (values.length === 0) return 0;
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null; // unmeasured, not 0
   return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10;
 }
 
@@ -151,7 +151,7 @@ function emptyDomain(): DomainProfile {
 }
 
 function emptyProgress(): ProgressProfile {
-  return { improving_count: 0, stable_count: 0, declining_count: 0, improving_rate: null, declining_rate: null, avg_current_rating: 0, avg_baseline_rating: 0, avg_progress: 0, achieved_count: 0, on_target_count: 0 };
+  return { improving_count: 0, stable_count: 0, declining_count: 0, improving_rate: null, declining_rate: null, avg_current_rating: null, avg_baseline_rating: null, avg_progress: null, achieved_count: 0, on_target_count: 0 };
 }
 
 function emptyReview(): ReviewProfile {
@@ -309,7 +309,7 @@ export function computeHomeOutcomesProgress(
   else score -= 2;
 
   // 4. Average progress (±4)
-  const avgProg = progressProfile.avg_progress;
+  const avgProg = progressProfile.avg_progress ?? 0; // non-null here (activeTargets > 0 past the guard); 0 keeps the score identical
   if (avgProg >= 1.5) score += 4;
   else if (avgProg >= 1.0) score += 2;
   else if (avgProg >= 0.5) score += 1;
