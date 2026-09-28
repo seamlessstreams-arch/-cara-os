@@ -154,7 +154,7 @@ export default function ChildTraumaTherapyLogPage() {
       return sd >= monthAgo && sd <= today;
     });
     const attended = monthRecords.filter((r) => r.attended).length;
-    const attendancePct = monthRecords.length === 0 ? 0 : Math.round((attended / monthRecords.length) * 100);
+    const attendancePct = monthRecords.length === 0 ? null : Math.round((attended / monthRecords.length) * 100);
 
     const escalationFlagsThisMonth = monthRecords.reduce((acc, r) => acc + r.escalation_flags.length, 0);
 
@@ -231,7 +231,7 @@ export default function ChildTraumaTherapyLogPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Sessions this month", value: stats.sessionsThisMonth, icon: Brain, colour: "text-violet-600" },
-          { label: "Attendance %", value: `${stats.attendancePct}%`, icon: Heart, colour: stats.attendancePct >= 85 ? "text-emerald-600" : "text-amber-600" },
+          { label: "Attendance %", value: stats.attendancePct === null ? "—" : `${stats.attendancePct}%`, icon: Heart, colour: stats.attendancePct === null ? "text-gray-400" : stats.attendancePct >= 85 ? "text-emerald-600" : "text-amber-600" },
           { label: "Escalation flags this month", value: stats.escalationFlagsThisMonth, icon: AlertTriangle, colour: stats.escalationFlagsThisMonth > 0 ? "text-amber-600" : "text-gray-400" },
           { label: "Sessions next 14d", value: stats.upcoming, icon: Calendar, colour: "text-teal-600" },
         ].map((s) => (
