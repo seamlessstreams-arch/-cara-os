@@ -200,7 +200,7 @@ export default function InspectionSnapshotPage() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm md:grid-cols-3">
                   <Row k="Filing total"             v={snap.headline.filing_total} />
-                  <Row k="Filing unverified %"      v={`${snap.headline.filing_unverified_pct}%`} />
+                  <Row k="Filing unverified %"      v={snap.headline.filing_unverified_pct === null ? "—" : `${snap.headline.filing_unverified_pct}%`} />
                   <Row k="Manager verify queue"     v={snap.headline.manager_verify_total} />
                   <Row k="Manager verify critical"  v={snap.headline.manager_verify_critical} />
                   <Row k="Manager verify sensitive" v={snap.headline.manager_verify_sensitive} />

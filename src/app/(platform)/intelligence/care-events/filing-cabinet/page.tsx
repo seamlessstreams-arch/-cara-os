@@ -141,9 +141,9 @@ export default function FilingCabinetIndexPage() {
             <CardContent>
               <div className="mb-1 flex justify-between text-xs text-slate-500">
                 <span>{idx.total - idx.unverified} verified</span>
-                <span>{idx.unverified_pct}% unverified</span>
+                <span>{idx.unverified_pct === null ? "—" : `${idx.unverified_pct}%`} unverified</span>
               </div>
-              <Progress value={idx.total === 0 ? 0 : 100 - idx.unverified_pct} />
+              <Progress value={idx.total === 0 ? 0 : 100 - (idx.unverified_pct ?? 0)} />
             </CardContent>
           </Card>
 

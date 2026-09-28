@@ -49,7 +49,7 @@ describe("loadFilingCabinetIndexFromStore", () => {
     expect(r.total).toBe(0);
     expect(r.verified).toBe(0);
     expect(r.unverified).toBe(0);
-    expect(r.unverified_pct).toBe(0);
+    expect(r.unverified_pct).toBeNull();
     expect(r.categories).toEqual([]);
     expect(r.recent_filings).toEqual([]);
   });
