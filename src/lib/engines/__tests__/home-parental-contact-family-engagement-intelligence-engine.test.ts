@@ -193,7 +193,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.supervised_contact_adherence_rate).toBeNull();
       expect(r.family_support_coverage_rate).toBeNull();
       expect(r.child_voice_in_contact_rate).toBeNull();
-      expect(r.contact_quality_avg).toBe(0);
+      expect(r.contact_quality_avg).toBeNull(); // no quality ratings → unmeasured, not 0
       expect(r.visit_risk_assessment_rate).toBeNull();
       expect(r.parent_invitation_rate).toBeNull();
       expect(r.parent_views_incorporation_rate).toBeNull();
@@ -2575,7 +2575,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.contact_quality_avg).toBe(4);
     });
 
-    it("quality avg is 0 when all ratings are null", () => {
+    it("quality avg is null (unmeasured, not 0) when all ratings are null", () => {
       const contacts = [
         makeContact({ occurred: true, quality_rating: null }),
         makeContact({ occurred: true, quality_rating: null }),
@@ -2583,7 +2583,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       const r = computeParentalContactFamilyEngagement(
         baseInput({ total_children: 1, contact_schedule_records: contacts }),
       );
-      expect(r.contact_quality_avg).toBe(0);
+      expect(r.contact_quality_avg).toBeNull();
     });
 
     it("family support coverage ignores inactive records", () => {
