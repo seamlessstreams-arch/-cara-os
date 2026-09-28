@@ -1,6 +1,4 @@
 [
-  "src/app/(platform)/whistleblowing-investigations/page.tsx:decided:0",
-  "src/app/(platform)/whistleblowing-investigations/page.tsx:records:0",
   "src/lib/cara/ai-gateway/audit-summary.ts:total:0",
   "src/lib/cara/education-intelligence.ts:totalPossible:0",
   "src/lib/cara/ofsted-readiness.ts:expected:0",
