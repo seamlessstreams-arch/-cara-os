@@ -63,7 +63,7 @@ export default function MultiDisciplinaryFormulationPage() {
   const stats = useMemo(() => {
     const active = data.length;
     const reviewDue = data.filter((f) => f.next_review_date <= d(30)).length;
-    const avgParticipants = data.length === 0 ? 0 : Math.round((data.reduce((s, f) => s + f.participants_attended.length, 0) / data.length) * 10) / 10;
+    const avgParticipants = data.length === 0 ? null : Math.round((data.reduce((s, f) => s + f.participants_attended.length, 0) / data.length) * 10) / 10;
     const modelsUsed = new Set(data.map((f) => f.model_used)).size;
     return { active, reviewDue, avgParticipants, modelsUsed };
   }, [data]);
@@ -162,7 +162,7 @@ export default function MultiDisciplinaryFormulationPage() {
         {[
           { label: "Active Formulations", value: stats.active, icon: Brain, colour: "text-blue-600" },
           { label: "Review Due (30 d)", value: stats.reviewDue, icon: AlertTriangle, colour: stats.reviewDue > 0 ? "text-amber-600" : "text-gray-400" },
-          { label: "Avg Participants", value: stats.avgParticipants, icon: Users, colour: "text-emerald-600" },
+          { label: "Avg Participants", value: stats.avgParticipants === null ? "—" : stats.avgParticipants, icon: Users, colour: "text-emerald-600" },
           { label: "Models Used", value: stats.modelsUsed, icon: Layers, colour: "text-purple-600" },
         ].map((s) => (
           <div key={s.label} className="rounded-lg border bg-white p-4 flex items-center gap-3">
