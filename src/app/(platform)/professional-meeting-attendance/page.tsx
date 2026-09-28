@@ -94,7 +94,7 @@ export default function ProfessionalMeetingAttendancePage() {
     const childAttendedCount = records.filter((m) => m.child_attended).length;
     return {
       thisQuarter: thisQuarter.length,
-      childAttendedPct: records.length === 0 ? 0 : Math.round((childAttendedCount / records.length) * 100),
+      childAttendedPct: records.length === 0 ? null : Math.round((childAttendedCount / records.length) * 100),
       openActions: allActions.filter((a) => a.status === "pending" || a.status === "overdue").length,
       reportsSubmitted: records.filter((m) => m.report_submitted).length,
     };
@@ -184,7 +184,7 @@ export default function ProfessionalMeetingAttendancePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { l: "Meetings This Quarter", v: stats.thisQuarter, icon: Calendar, c: "text-blue-600" },
-            { l: "Child Attended %", v: `${stats.childAttendedPct}%`, icon: Users, c: "text-pink-600" },
+            { l: "Child Attended %", v: stats.childAttendedPct === null ? "—" : `${stats.childAttendedPct}%`, icon: Users, c: "text-pink-600" },
             { l: "Open Actions", v: stats.openActions, icon: Clock, c: stats.openActions > 0 ? "text-amber-600" : "text-gray-400" },
             { l: "Reports Submitted", v: `${stats.reportsSubmitted}/${records.length}`, icon: FileText, c: "text-green-600" },
           ].map((s) => (
