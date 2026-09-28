@@ -95,7 +95,8 @@ export default function HateIncidentLogPage() {
   const thisQuarter = data.filter((r) => r.date >= cutoffQ).length;
   const policeReported = last12.filter((r) => r.reported_to_police).length;
   const closed = last12.filter((r) => r.status !== "open").length;
-  const resolvedPct = last12.length === 0 ? 0 : Math.round((closed / last12.length) * 100);
+  // No incidents in the window → resolved rate is UNMEASURED, not 0% (a false red).
+  const resolvedPct = last12.length === 0 ? null : Math.round((closed / last12.length) * 100);
 
   const exportCols: ExportColumn<HateIncident>[] = [
     { header: "Date", accessor: (r: HateIncident) => r.date },
@@ -137,7 +138,7 @@ export default function HateIncidentLogPage() {
             { label: "Incidents (12 mo)", value: last12.length, icon: FileWarning, clr: "text-red-600" },
             { label: "This Quarter", value: thisQuarter, icon: AlertTriangle, clr: "text-amber-600" },
             { label: "Police-reported", value: policeReported, icon: Scale, clr: "text-blue-600" },
-            { label: "Resolved %", value: `${resolvedPct}%`, icon: CheckCircle2, clr: "text-green-600" },
+            { label: "Resolved %", value: resolvedPct === null ? "—" : `${resolvedPct}%`, icon: CheckCircle2, clr: "text-green-600" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="pt-4 pb-3 text-center">
