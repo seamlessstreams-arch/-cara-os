@@ -53,7 +53,7 @@ export interface PepEducationResult {
   children_with_pep_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   current_rate: number | null;
-  average_attendance: number;
+  average_attendance: number | null; // null when there are no PEP records
   /** null when the population is empty — nothing measured, not 0%. */
   exclusion_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -100,7 +100,7 @@ export function computePepEducationQuality(
       total_peps: 0,
       children_with_pep_rate: null,
       current_rate: null,
-      average_attendance: 0,
+      average_attendance: null,
       exclusion_rate: null,
       target_progress_rate: null,
       action_completion_rate: null,
@@ -121,7 +121,8 @@ export function computePepEducationQuality(
   const currentRate = rate(current, total);
 
   const totalAttendance = peps.reduce((sum, p) => sum + p.attendance, 0);
-  const averageAttendance = total === 0 ? 0 : Math.round(totalAttendance / total);
+  // No PEP records → attendance is UNMEASURED, not 0% (a false red).
+  const averageAttendance: number | null = total === 0 ? null : Math.round(totalAttendance / total);
 
   const withExclusions = peps.filter(p => p.exclusions > 0).length;
   const exclusionRate = rate(withExclusions, total);
@@ -159,9 +160,9 @@ export function computePepEducationQuality(
   if (total === 0) {
     score -= 1;
   } else {
-    if (averageAttendance >= 95) score += 5;
-    else if (averageAttendance >= 85) score += 2;
-    else if (averageAttendance < 75) score -= 4;
+    if ((averageAttendance ?? 0) >= 95) score += 5;
+    else if ((averageAttendance ?? 0) >= 85) score += 2;
+    else if ((averageAttendance ?? 0) < 75) score -= 4;
   }
 
   // Modifier 4: Target progress
@@ -223,7 +224,7 @@ export function computePepEducationQuality(
   const strengths: string[] = [];
   if (meets(childrenWithPepRate, 90) && total > 0) strengths.push("All children have Personal Education Plans — comprehensive education oversight");
   if (meets(currentRate, 80) && total > 0) strengths.push("PEPs are overwhelmingly current and up to date");
-  if (averageAttendance >= 95 && total > 0) strengths.push("School attendance across the home is excellent — above 95%");
+  if ((averageAttendance ?? 0) >= 95 && total > 0) strengths.push("School attendance across the home is excellent — above 95%");
   if (meets(targetProgressRate, 75) && totalTargets > 0) strengths.push("Education targets are on track or exceeded for most children");
   if (meets(actionCompletionRate, 80) && totalActions > 0) strengths.push("PEP actions are consistently completed — strong follow-through");
   const childViewPct = total > 0 ? rate(peps.filter(p => p.has_child_views).length, total) : 0;
@@ -234,7 +235,7 @@ export function computePepEducationQuality(
   if (total === 0) concerns.push("No PEP records — children's education plans are not being documented");
   if (below(childrenWithPepRate, 40) && total > 0) concerns.push("Most children do not have a PEP — education planning is critically incomplete");
   if (below(currentRate, 30) && total > 0) concerns.push("Most PEPs are overdue or in draft — plans are not current");
-  if (averageAttendance < 75 && total > 0) concerns.push("Average attendance is below 75% — persistent absence is a significant concern");
+  if ((averageAttendance ?? 0) < 75 && total > 0) concerns.push("Average attendance is below 75% — persistent absence is a significant concern");
   if (below(targetProgressRate, 30) && totalTargets > 0) concerns.push("Very few education targets are on track — children are not making expected progress");
   if (below(actionCompletionRate, 30) && totalActions > 0) concerns.push("PEP actions are rarely completed — accountability is poor");
 
@@ -250,7 +251,7 @@ export function computePepEducationQuality(
   if (below(currentRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Schedule PEP reviews to bring overdue and draft plans up to date", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
-  if (averageAttendance < 85 && total > 0) {
+  if ((averageAttendance ?? 0) < 85 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement attendance improvement strategies with designated teachers and virtual school", urgency: "soon", regulatory_ref: "SCCIF Education" });
   }
   if (below(targetProgressRate, 50) && totalTargets > 0) {
@@ -265,16 +266,16 @@ export function computePepEducationQuality(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: PepEducationResult["insights"] = [];
 
-  if (meets(childrenWithPepRate, 90) && meets(currentRate, 80) && averageAttendance >= 95 && total >= 10) {
+  if (meets(childrenWithPepRate, 90) && meets(currentRate, 80) && (averageAttendance ?? 0) >= 95 && total >= 10) {
     insights.push({ text: "Education quality is exemplary — every child has a current PEP, attendance is excellent and targets are being met", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No PEP records means Ofsted cannot verify how children's educational attainment is being supported", severity: "critical" });
   }
-  if (averageAttendance < 75 && total > 0) {
+  if ((averageAttendance ?? 0) < 75 && total > 0) {
     insights.push({ text: "Persistent absence is a major concern — without regular attendance, children cannot make educational progress", severity: "warning" });
   }
-  if (averageAttendance >= 95 && total > 0) {
+  if ((averageAttendance ?? 0) >= 95 && total > 0) {
     insights.push({ text: "Excellent attendance rates demonstrate the home prioritises education and supports children to attend school", severity: "positive" });
   }
   if (meets(exclusionRate, 30) && total > 0) {

@@ -65,7 +65,7 @@ describe("computePepEducationQuality", () => {
       expect(result.total_peps).toBe(0);
       expect(result.children_with_pep_rate).toBeNull();
       expect(result.current_rate).toBeNull();
-      expect(result.average_attendance).toBe(0);
+      expect(result.average_attendance).toBeNull(); // no PEP records → unmeasured, not 0%
       expect(result.exclusion_rate).toBeNull();
       expect(result.target_progress_rate).toBeNull();
       expect(result.action_completion_rate).toBeNull();
@@ -480,7 +480,7 @@ describe("computePepEducationQuality", () => {
     it("subtracts -1 when 0 PEP records", () => {
       // Already tested via zero records score
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps: [] }));
-      expect(result.average_attendance).toBe(0);
+      expect(result.average_attendance).toBeNull(); // children but no PEP records → unmeasured, not fabricated 0%
     });
 
     it("rounds average attendance to nearest integer", () => {
