@@ -159,7 +159,7 @@ export interface ParentalContactFamilyEngagementResult {
   supervised_contact_adherence_rate: number | null;
   family_support_coverage_rate: number | null;
   child_voice_in_contact_rate: number | null;
-  contact_quality_avg: number;
+  contact_quality_avg: number | null; // null when no contact has a quality rating
   visit_risk_assessment_rate: number | null;
   parent_invitation_rate: number | null;
   parent_views_incorporation_rate: number | null;
@@ -184,9 +184,9 @@ function toRating(score: number): FamilyEngagementRating {
   return "inadequate";
 }
 
-function safeAvg(values: (number | null)[]): number {
+function safeAvg(values: (number | null)[]): number | null {
   const valid = values.filter((v): v is number => v !== null && v !== undefined);
-  if (valid.length === 0) return 0;
+  if (valid.length === 0) return null; // unmeasured, not 0
   return Math.round((valid.reduce((a, b) => a + b, 0) / valid.length) * 100) / 100;
 }
 
@@ -210,7 +210,7 @@ function emptyResult(
     supervised_contact_adherence_rate: null,
     family_support_coverage_rate: null,
     child_voice_in_contact_rate: null,
-    contact_quality_avg: 0,
+    contact_quality_avg: null,
     visit_risk_assessment_rate: null,
     parent_invitation_rate: null,
     parent_views_incorporation_rate: null,
@@ -552,11 +552,11 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Contact quality strengths
-  if (contactQualityAvg >= 4.0 && contactQualityRatings.length > 0) {
+  if ((contactQualityAvg ?? 0) >= 4.0 && contactQualityRatings.length > 0) {
     strengths.push(
       `Contact quality averages ${contactQualityAvg}/5 — contacts are consistently high-quality experiences for children and their families.`,
     );
-  } else if (contactQualityAvg >= 3.0 && contactQualityRatings.length > 0) {
+  } else if ((contactQualityAvg ?? 0) >= 3.0 && contactQualityRatings.length > 0) {
     strengths.push(
       `Contact quality averages ${contactQualityAvg}/5 — contacts are generally positive experiences that support family relationships.`,
     );
@@ -1333,7 +1333,7 @@ export function computeParentalContactFamilyEngagement(
 
   if (
     meets(contactComplianceRate, 95) &&
-    contactQualityAvg >= 4.0 &&
+    (contactQualityAvg ?? 0) >= 4.0 &&
     totalScheduledContacts > 0 &&
     contactQualityRatings.length > 0
   ) {
