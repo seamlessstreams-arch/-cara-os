@@ -162,8 +162,8 @@ export interface CulturalEventsResult {
   children_leading_activities: number;
   external_community_events: number;
   educational_component_count: number;
-  avg_celebration_quality: number;
-  avg_festival_quality: number;
+  avg_celebration_quality: number | null; // null when no celebration has a quality rating
+  avg_festival_quality: number | null;    // null when no festival has a quality rating
   strengths: string[];
   concerns: string[];
   recommendations: CulturalEventsRecommendation[];
@@ -176,8 +176,8 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function avgRating(values: number[]): number {
-  if (values.length === 0) return 0;
+function avgRating(values: number[]): number | null {
+  if (values.length === 0) return null; // unmeasured, not 0
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 100) / 100;
 }
 
@@ -217,8 +217,8 @@ function emptyResult(
     children_leading_activities: 0,
     external_community_events: 0,
     educational_component_count: 0,
-    avg_celebration_quality: 0,
-    avg_festival_quality: 0,
+    avg_celebration_quality: null,
+    avg_festival_quality: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -493,8 +493,8 @@ export function computeCulturalEventsCelebrations(
   else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: avgCelebrationQuality (>=4.0: +3, >=3.0: +1) ---
-  if (avgCelebrationQuality >= 4.0) score += 3;
-  else if (avgCelebrationQuality >= 3.0) score += 1;
+  if ((avgCelebrationQuality ?? 0) >= 4.0) score += 3;
+  else if ((avgCelebrationQuality ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 8: uniqueFaithsRepresented (>=4: +2, >=2: +1) ---
   if (uniqueFaithsRepresented >= 4) score += 2;
@@ -596,11 +596,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (avgCelebrationQuality >= 4.0 && totalDiversityCelebrations > 0) {
+  if ((avgCelebrationQuality ?? 0) >= 4.0 && totalDiversityCelebrations > 0) {
     strengths.push(
       `Diversity celebrations average ${avgCelebrationQuality}/5 quality rating — high-quality celebrations that are well-planned, educational, and meaningful for children.`,
     );
-  } else if (avgCelebrationQuality >= 3.0 && totalDiversityCelebrations > 0) {
+  } else if ((avgCelebrationQuality ?? 0) >= 3.0 && totalDiversityCelebrations > 0) {
     strengths.push(
       `Diversity celebrations average ${avgCelebrationQuality}/5 quality — celebrations are delivered to a competent standard.`,
     );
@@ -746,7 +746,7 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (avgCelebrationQuality > 0 && avgCelebrationQuality < 3.0 && totalDiversityCelebrations > 0) {
+  if ((avgCelebrationQuality ?? 0) > 0 && (avgCelebrationQuality ?? 0) < 3.0 && totalDiversityCelebrations > 0) {
     concerns.push(
       `Diversity celebration quality averages ${avgCelebrationQuality}/5 — celebrations are not meeting a good standard. Poor-quality cultural events can feel tokenistic and may undermine rather than promote children's sense of cultural identity.`,
     );
@@ -927,7 +927,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (avgCelebrationQuality > 0 && avgCelebrationQuality < 3.0 && totalDiversityCelebrations > 0) {
+  if ((avgCelebrationQuality ?? 0) > 0 && (avgCelebrationQuality ?? 0) < 3.0 && totalDiversityCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1082,7 +1082,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (avgCelebrationQuality > 0 && avgCelebrationQuality < 3.0 && totalDiversityCelebrations > 0) {
+  if ((avgCelebrationQuality ?? 0) > 0 && (avgCelebrationQuality ?? 0) < 3.0 && totalDiversityCelebrations > 0) {
     insights.push({
       text: `Diversity celebration quality at ${avgCelebrationQuality}/5. Low-quality celebrations risk being tokenistic — quick, superficial acknowledgements rather than meaningful learning experiences. Quality celebrations include educational content, child involvement, community input, and genuine celebration.`,
       severity: "warning",
@@ -1209,7 +1209,7 @@ export function computeCulturalEventsCelebrations(
 
   if (
     (diversityCelebrationRate ?? 0) >= 90 &&
-    avgCelebrationQuality >= 4.0 &&
+    (avgCelebrationQuality ?? 0) >= 4.0 &&
     totalDiversityCelebrations > 0
   ) {
     insights.push({
