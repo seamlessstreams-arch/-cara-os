@@ -106,11 +106,11 @@ export default function WhistleblowingInvestigationsPage() {
       closedYear: closedInWindow.length,
       substantiatedRate:
         decided.length === 0
-          ? 0
+          ? null
           : Math.round((substantiated.length / decided.length) * 100),
       externalPct:
         records.length === 0
-          ? 0
+          ? null
           : Math.round((externalLed.length / records.length) * 100),
     };
   }, [records]);
@@ -199,8 +199,8 @@ export default function WhistleblowingInvestigationsPage() {
           {[
             { l: "Active Investigations",   v: stats.active,                       icon: FileSearch,    c: "text-amber-600" },
             { l: "Closed (12 months)",      v: stats.closedYear,                   icon: CheckCircle2,  c: "text-green-600" },
-            { l: "Substantiated Rate",      v: `${stats.substantiatedRate}%`,      icon: AlertTriangle, c: "text-orange-600" },
-            { l: "External-led %",          v: `${stats.externalPct}%`,            icon: ShieldCheck,   c: "text-blue-600" },
+            { l: "Substantiated Rate",      v: stats.substantiatedRate === null ? "—" : `${stats.substantiatedRate}%`,      icon: AlertTriangle, c: "text-orange-600" },
+            { l: "External-led %",          v: stats.externalPct === null ? "—" : `${stats.externalPct}%`,            icon: ShieldCheck,   c: "text-blue-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
