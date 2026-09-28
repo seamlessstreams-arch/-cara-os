@@ -49,8 +49,8 @@ describe("computeReportProgress", () => {
     expect(p.total_sections).toBe(0);
     expect(p.completed_sections).toBe(0);
     expect(p.reviewed_sections).toBe(0);
-    expect(p.progress_percentage).toBe(0);
-    expect(p.review_percentage).toBe(0);
+    expect(p.progress_percentage).toBeNull();
+    expect(p.review_percentage).toBeNull();
     expect(p.ready_for_submission).toBe(false);
   });
 

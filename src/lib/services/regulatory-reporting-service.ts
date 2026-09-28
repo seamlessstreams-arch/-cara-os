@@ -116,8 +116,8 @@ export interface ReportProgress {
   total_sections: number;
   completed_sections: number;
   reviewed_sections: number;
-  progress_percentage: number;
-  review_percentage: number;
+  progress_percentage: number | null;
+  review_percentage: number | null;
   ready_for_submission: boolean;
 }
 
@@ -129,8 +129,8 @@ export function computeReportProgress(sections: ReportSection[]): ReportProgress
   const completed_sections = sections.filter((s) => s.completed).length;
   const reviewed_sections = sections.filter((s) => s.reviewed_by !== null).length;
 
-  const progress_percentage = total_sections === 0 ? 0 : Math.round((completed_sections / total_sections) * 100);
-  const review_percentage = total_sections === 0 ? 0 : Math.round((reviewed_sections / total_sections) * 100);
+  const progress_percentage = total_sections === 0 ? null : Math.round((completed_sections / total_sections) * 100);
+  const review_percentage = total_sections === 0 ? null : Math.round((reviewed_sections / total_sections) * 100);
 
   const ready_for_submission =
     total_sections > 0 &&
