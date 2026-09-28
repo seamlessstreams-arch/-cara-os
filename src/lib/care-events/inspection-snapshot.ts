@@ -29,7 +29,7 @@ export interface InspectionSnapshotHeadline {
   readiness_score: number | null;
   readiness_severity: InspectionReadinessReport["severity"];
   filing_total: number;
-  filing_unverified_pct: number;
+  filing_unverified_pct: number | null;
   oversight_total: number;
   oversight_critical: number;
   manager_verify_total: number;

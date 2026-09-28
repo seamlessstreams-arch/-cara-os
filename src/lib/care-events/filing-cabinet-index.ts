@@ -29,7 +29,7 @@ export interface FilingCabinetIndex {
   total: number;
   verified: number;
   unverified: number;
-  unverified_pct: number;       // 0..100, 0 dp
+  unverified_pct: number | null; // 0..100, 0 dp; null when there are no items
   categories: FilingCategoryGroup[];
   // most-recent first across the whole index
   recent_filings: FilingCabinetItem[];
@@ -87,7 +87,7 @@ function buildFilingCabinetIndex(homeId: string, items: FilingCabinetItem[]): Fi
   const total = items.length;
   const verified = items.filter((x) => x.is_verified).length;
   const unverified = total - verified;
-  const unverified_pct = total === 0 ? 0 : Math.round((unverified / total) * 100);
+  const unverified_pct = total === 0 ? null : Math.round((unverified / total) * 100);
 
   const recent_filings = [...items]
     .sort((a, b) => b.filed_at.localeCompare(a.filed_at))
