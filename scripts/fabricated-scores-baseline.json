@@ -3,7 +3,6 @@
   "src/lib/cara/ofsted-readiness.ts:expected:0",
   "src/lib/cara/reports/report-generator.ts:scores:0",
   "src/lib/child-voice-dimensions/dimensions-engine.ts:totalCaptures:0",
-  "src/lib/engines/health-wellbeing-engine.ts:values:0",
   "src/lib/engines/home-bsp-effectiveness-intelligence-engine.ts:values:0",
   "src/lib/engines/home-cara-content-quality-intelligence-engine.ts:totalArtifacts:0",
   "src/lib/engines/home-cara-content-quality-intelligence-engine.ts:turnaroundPairs:0",

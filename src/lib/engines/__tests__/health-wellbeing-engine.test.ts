@@ -167,8 +167,8 @@ describe("Health & Wellbeing Engine — Helper Functions", () => {
   });
 
   describe("average", () => {
-    it("returns 0 for empty array", () => {
-      expect(average([])).toBe(0);
+    it("returns null for empty array", () => {
+      expect(average([])).toBeNull();
     });
 
     it("computes correct average", () => {
@@ -494,7 +494,7 @@ describe("Health & Wellbeing Engine — Wellbeing Trends", () => {
 
     expect(result.wellbeing_trends).toHaveLength(1);
     expect(result.wellbeing_trends[0].trend).toBe("improving");
-    expect(result.wellbeing_trends[0].current_avg).toBeGreaterThan(result.wellbeing_trends[0].previous_avg);
+    expect(result.wellbeing_trends[0].current_avg!).toBeGreaterThan(result.wellbeing_trends[0].previous_avg!);
   });
 
   it("detects declining wellbeing trend", () => {
