@@ -121,7 +121,7 @@ function parseDebriefText(text: string): { heading: string; content: string }[] 
 
 function PreviousReflections({ childId }: { childId: string }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const { data, isLoading } = useCaraAssessments({ childId: childId || undefined, homeId });
   const reflections: CaraAssessment[] = useMemo(
     () => (data?.data ?? []).filter((a) => a.assessment_type === "reflective_debrief"),
@@ -165,7 +165,7 @@ function DebriefSection({ heading, content }: { heading: string; content: string
 
 export default function ReflectivePracticePage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const ypQuery = useYoungPeople("current");
   const youngPeople = (ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }));
   const [childId, setChildId]     = useState("");

@@ -318,7 +318,7 @@ function SavedQuizItem({ resource }: { resource: { id: string; title: string; pa
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function QuizzesPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState<LearningPathway>("staff");
   const [numberOfQuestions, setNumberOfQuestions] = useState<"5" | "10" | "15">("10");

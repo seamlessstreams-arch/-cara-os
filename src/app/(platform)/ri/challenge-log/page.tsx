@@ -132,7 +132,7 @@ const STATUS_COLOURS: Record<string, string> = {
 // ── Challenge card ─────────────────────────────────────────────────────────────
 function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (log: RiChallengeLog) => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [expanded, setExpanded] = useState(false);
   const [needCreated, setNeedCreated] = useState(false);
   const updateMutation = useUpdateRiChallengeLog();
@@ -280,7 +280,7 @@ function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (lo
 // ── New challenge form ─────────────────────────────────────────────────────────
 function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [title, setTitle] = useState("");
   const [area, setArea] = useState<RiChallengeArea>("oversight");
   const [escalation, setEscalation] = useState<RiEscalationLevel>("standard");
@@ -460,7 +460,7 @@ function ResponseDialog({ log, onClose }: { log: RiChallengeLog; onClose: () => 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ChallengeLogPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [showNew, setShowNew] = useState(false);
   const [responding, setResponding] = useState<RiChallengeLog | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "resolved">("all");

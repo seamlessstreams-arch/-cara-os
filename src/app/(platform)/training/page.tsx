@@ -186,7 +186,7 @@ const TRAINING_EXPORT_COLS: ExportColumn<TrainingRecord>[] = [
 // ── Add Record dialog ──────────────────────────────────────────────────────────
 function AddRecordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [staffId, setStaffId] = useState("");
   const [courseName, setCourseName] = useState("");
   const [category, setCategory] = useState<TrainingCategory>("mandatory");
@@ -442,7 +442,7 @@ const STATUS_ORDER: Record<string, number> = { expired: 0, expiring_soon: 1, not
 
 export default function TrainingPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");

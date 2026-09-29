@@ -237,7 +237,7 @@ function ResultsPanel({
 }) {
   const createAssessment = useCreateCaraAssessment();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
 

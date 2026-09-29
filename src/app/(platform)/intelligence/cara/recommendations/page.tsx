@@ -224,7 +224,7 @@ function RecommendationCard({
 
 export default function RecommendationsPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [statusFilter, setStatusFilter] = useState("all");
   const [childFilter, setChildFilter] = useState("all");
 

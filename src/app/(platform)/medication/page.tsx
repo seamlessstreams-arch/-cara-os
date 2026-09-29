@@ -514,7 +514,7 @@ function TodayScheduleTab({
   mar: { medication: Medication; administrations: MedicationAdministration[] }[];
 }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [openForms, setOpenForms] = useState<Set<string>>(new Set());
   const [caraFor, setCaraFor] = useState<string | null>(null);
   const [schedSearch, setSchedSearch] = useState("");
@@ -1205,7 +1205,7 @@ function StockOversightTab({
   mar: { medication: Medication; administrations: MedicationAdministration[] }[];
 }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [showCara, setShowCara] = useState(false);
   const [needCreated, setNeedCreated] = useState<Set<string>>(new Set());
   const createNeed = useCreateTrainingNeed();

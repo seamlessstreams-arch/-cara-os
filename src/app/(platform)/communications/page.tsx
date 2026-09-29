@@ -111,7 +111,7 @@ function useDraftAction(homeId: string) {
 
 export default function CommunicationsPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const author = currentUser?.full_name ?? "";
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);

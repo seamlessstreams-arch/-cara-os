@@ -280,7 +280,7 @@ function WorkshopListItem({ resource }: { resource: { id: string; title: string;
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function WorkshopPlannerPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState<LearningPathway>("staff");
   const [audience, setAudience] = useState("");

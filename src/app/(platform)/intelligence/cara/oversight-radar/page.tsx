@@ -284,7 +284,7 @@ function RadarItemCard({
 export default function OversightRadarPage() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const createTask = useCreateTask();
   const ypQuery = useYoungPeople("current");
   const youngPeople = [{ id: "all", name: "Whole Home" }, ...(ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }))];

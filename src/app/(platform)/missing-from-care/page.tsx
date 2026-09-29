@@ -446,7 +446,7 @@ function ReportMissingDialog({
   open, onClose,
 }: { open: boolean; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const ypQuery = useYoungPeople("current");
   const youngPeople = ypQuery.data?.data ?? [];
   const createMutation = useCreateMissingEpisode();
@@ -935,7 +935,7 @@ function StatChip({
 
 export default function MissingFromCarePage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
 
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "closed">("all");
   const [search, setSearch] = useState("");

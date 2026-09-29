@@ -309,7 +309,7 @@ export default function TimesheetsPage() {
         status: "approved",
         approved_by: "system",
         approved_at: new Date().toISOString(),
-        home_id: d.staff.home_id || "home_oak",
+        home_id: d.staff.home_id || "",
         return_to_work_required: false,
         return_to_work_completed: false,
         return_to_work_date: null,
