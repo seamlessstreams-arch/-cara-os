@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { requireFields } from "@/lib/http/require-fields";
@@ -26,6 +27,11 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // A Reg 44 independent-visit report is a statutory record; who authored it
+  // must be the authenticated caller, not a seed default. Reject rather than
+  // file it under a guessed or anonymous author.
+  const __identity = await getRequestIdentity(req);
+  if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["visitor_name"]);
   if (__missing) return __missing;
   const __fd = rejectFutureDates(body, ["visit_date"]); if (__fd) return __fd;
@@ -48,8 +54,8 @@ export async function POST(req: NextRequest) {
     ri_review_by: null,
     ri_comments: null,
     cara_summary: null,
-    created_by: body.created_by ?? "staff_darren",
     ...body,
+    created_by: __identity.userId, // after ...body: the authenticated caller is authoritative
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }

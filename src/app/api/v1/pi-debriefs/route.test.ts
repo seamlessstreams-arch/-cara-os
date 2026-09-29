@@ -52,4 +52,29 @@ describe("POST /api/v1/pi-debriefs", () => {
     expect(data.de_escalation_attempted).toBe(false);
     expect(data.duration_minutes).toBe(0);
   });
+
+  // Bucket 2 of the seeded-actors track: a restraint debrief is recorded by the
+  // authenticated caller, never the "staff_darren" seed default. (An unresolved
+  // LIVE session records unattributed rather than blocking — getRequestIdentity's
+  // domain; here we prove the demo header path and that the body cannot forge it.)
+  function postAs(user: string, body: Record<string, unknown>) {
+    return new NextRequest("http://localhost/api/v1/pi-debriefs", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-user-id": user },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it("stamps the authenticated caller as created_by, not the seed default", async () => {
+    const res = await POST(postAs("staff_someone_else", COMPLETE));
+    const { data } = await res.json();
+    expect(data.created_by).toBe("staff_someone_else");
+    expect(data.created_by).not.toBe("staff_darren");
+  });
+
+  it("ignores a created_by supplied in the body — the session decides", async () => {
+    const res = await POST(postAs("staff_someone_else", { ...COMPLETE, created_by: "staff_impersonated" }));
+    const { data } = await res.json();
+    expect(data.created_by).toBe("staff_someone_else");
+  });
 });

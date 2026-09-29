@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,6 +30,12 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // Who recorded this, from the authenticated request — never a seed default.
+  // A restraint debrief must be recorded even if the author cannot be resolved
+  // (losing the account is worse than a missing name), so an unresolved live
+  // session records UNATTRIBUTED ("") rather than blocking.
+  const __identity = await getRequestIdentity(req);
+  const recordedBy = __identity instanceof NextResponse ? "" : __identity.userId;
   // A physical-intervention debrief is a record of what was done to a child.
   // These four used to default — to a named Team Teach hold, a standing
   // position, a nil duration, and an assertion that de-escalation was tried —
@@ -82,8 +89,8 @@ export async function POST(req: NextRequest) {
     rm_sign_off_by:              null,
     rm_comments:                 null,
     cara_analysis:               null,
-    created_by:                  body.created_by ?? "staff_darren",
     ...body,
+    created_by:                  recordedBy, // after ...body: the request actor is authoritative, a client-sent created_by cannot override it
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }
