@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -390,7 +391,7 @@ export default function AccidentBookPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: "staff_darren", person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

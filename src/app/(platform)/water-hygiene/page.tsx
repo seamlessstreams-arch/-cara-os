@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -87,7 +88,7 @@ export default function WaterHygienePage() {
     location: "" as WaterHygieneLocation | "",
     temperature: "",
     compliance: "" as WaterHygieneCompliance | "",
-    checked_by: "staff_darren",
+    checked_by: currentUserId(),
     notes: "",
     action_required: "",
   });
@@ -116,7 +117,7 @@ export default function WaterHygienePage() {
       next_due_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
     });
     toast.success("Water hygiene check recorded.");
-    setWhForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), check_type: "", location: "", temperature: "", compliance: "", checked_by: "staff_darren", notes: "", action_required: "" });
+    setWhForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), check_type: "", location: "", temperature: "", compliance: "", checked_by: currentUserId(), notes: "", action_required: "" });
     setShowNew(false);
   };
 

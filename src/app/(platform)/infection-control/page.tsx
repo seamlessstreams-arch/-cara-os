@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -76,7 +77,7 @@ export default function InfectionControlPage() {
     symptoms: "",
     notes: "",
     date_reported: todayStr(),
-    reported_by_id: "staff_darren",
+    reported_by_id: currentUserId(),
   });
   const setIF = (k: keyof typeof infForm, v: string) => setInfForm((p) => ({ ...p, [k]: v }));
 
@@ -108,7 +109,7 @@ export default function InfectionControlPage() {
       created_at: new Date().toISOString(),
     });
     toast.success("Infection record logged.");
-    setInfForm({ affected_person_type: "child", affected_person_id: "", infection_type: "", severity: "", symptoms: "", notes: "", date_reported: todayStr(), reported_by_id: "staff_darren" });
+    setInfForm({ affected_person_type: "child", affected_person_id: "", infection_type: "", severity: "", symptoms: "", notes: "", date_reported: todayStr(), reported_by_id: currentUserId() });
     setShowNew(false);
   };
 

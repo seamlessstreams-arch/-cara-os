@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -122,7 +123,7 @@ export default function OnlineSafetyPage() {
     actions_taken: "",
     safeguarding_referral: false,
     parent_carer_notified: false,
-    discovered_by: "staff_darren",
+    discovered_by: currentUserId(),
   });
   const setOSF = (k: keyof typeof osForm, v: string | boolean) => setOsForm((p) => ({ ...p, [k]: v }));
 
@@ -150,7 +151,7 @@ export default function OnlineSafetyPage() {
       created_at: new Date().toISOString(),
     });
     toast.success("Online safety incident logged.");
-    setOsForm({ child_id: "", category: "", severity: "", platform: "", summary: "", detail: "", actions_taken: "", safeguarding_referral: false, parent_carer_notified: false, discovered_by: "staff_darren" });
+    setOsForm({ child_id: "", category: "", severity: "", platform: "", summary: "", detail: "", actions_taken: "", safeguarding_referral: false, parent_carer_notified: false, discovered_by: currentUserId() });
     setShowDialog(false);
   };
 

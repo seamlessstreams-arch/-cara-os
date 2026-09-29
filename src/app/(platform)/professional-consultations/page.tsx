@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,7 @@ export default function ProfessionalConsultationsPage() {
     e.preventDefault();
     if (!pcForm.professional_name.trim()) { toast.error("Professional name is required."); return; }
     if (!pcForm.reason.trim()) { toast.error("Reason is required."); return; }
-    await createConsultation.mutateAsync({ date: pcForm.date, time: pcForm.time, type: pcForm.type, method: pcForm.method, professional_name: pcForm.professional_name.trim(), professional_role: "", organisation: pcForm.organisation.trim(), child_id: "", reason: pcForm.reason.trim(), advice_given: pcForm.advice_given.trim(), actions_agreed: [], follow_up_required: false, follow_up_date: "", follow_up_completed: false, confidential: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    await createConsultation.mutateAsync({ date: pcForm.date, time: pcForm.time, type: pcForm.type, method: pcForm.method, professional_name: pcForm.professional_name.trim(), professional_role: "", organisation: pcForm.organisation.trim(), child_id: "", reason: pcForm.reason.trim(), advice_given: pcForm.advice_given.trim(), actions_agreed: [], follow_up_required: false, follow_up_date: "", follow_up_completed: false, confidential: false, recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Consultation recorded.");
     setPcForm({ date: todayStr(), time: "", type: "social_worker", method: "phone", professional_name: "", organisation: "", reason: "", advice_given: "" });
     setShowNew(false);

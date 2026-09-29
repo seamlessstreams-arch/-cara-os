@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -78,7 +79,7 @@ export default function AgencyStaffLogPage() {
     shift_type: "day",
     booking_reason: "" as AgencyBookingReason | "",
     dbs_number: "",
-    authorised_by_id: "staff_darren",
+    authorised_by_id: currentUserId(),
     notes: "",
   });
   const setASF = (k: keyof typeof asForm, v: string) => setAsForm((p) => ({ ...p, [k]: v }));
@@ -117,7 +118,7 @@ export default function AgencyStaffLogPage() {
       notes: asForm.notes,
     });
     toast.success("Agency shift logged.");
-    setAsForm({ agency_name: "", worker_name: "", worker_ref: "", date_of_shift: todayStr(), shift_type: "day", booking_reason: "", dbs_number: "", authorised_by_id: "staff_darren", notes: "" });
+    setAsForm({ agency_name: "", worker_name: "", worker_ref: "", date_of_shift: todayStr(), shift_type: "day", booking_reason: "", dbs_number: "", authorised_by_id: currentUserId(), notes: "" });
     setShowNew(false);
   };
 

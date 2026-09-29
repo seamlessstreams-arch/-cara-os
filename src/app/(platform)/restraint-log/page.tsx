@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { PacePanel } from "@/components/pace/pace-panel";
@@ -143,7 +144,7 @@ export default function RestraintLogPage() {
     if (!rlForm.child_id) { toast.error("Please select a young person."); return; }
     if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
     const minutesBetween = (a: string, b: string) => { const [ah, am] = a.split(":").map(Number); const [bh, bm] = b.split(":").map(Number); if ([ah, am, bh, bm].some(Number.isNaN)) return 0; const d = (bh * 60 + bm) - (ah * 60 + am); return d < 0 ? d + 1440 : d; };
-    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: minutesBetween(rlForm.start_time, rlForm.end_time), child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "other", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: minutesBetween(rlForm.start_time, rlForm.end_time), child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "other", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Restraint record saved.");
     setRlForm({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
     setShowNew(false);

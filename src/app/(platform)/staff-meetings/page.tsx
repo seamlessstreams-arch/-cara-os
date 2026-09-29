@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,7 +94,7 @@ export default function StaffMeetingsPage() {
   const handleSaveMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!smForm.title.trim()) { toast.error("Meeting title is required."); return; }
-    await createMeeting.mutateAsync({ date: smForm.date, type: smForm.type, title: smForm.title.trim(), chair: "staff_darren", attendees: [], apologies: [], agenda_items: [], actions_from_previous: [], new_actions: [], general_notes: smForm.general_notes.trim(), next_meeting_date: smForm.next_meeting_date, duration: 60, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    await createMeeting.mutateAsync({ date: smForm.date, type: smForm.type, title: smForm.title.trim(), chair: currentUserId(), attendees: [], apologies: [], agenda_items: [], actions_from_previous: [], new_actions: [], general_notes: smForm.general_notes.trim(), next_meeting_date: smForm.next_meeting_date, duration: 60, recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Staff meeting recorded.");
     setSmForm({ date: todayStr(), type: "team_meeting", title: "", general_notes: "", next_meeting_date: "" });
     setShowNew(false);

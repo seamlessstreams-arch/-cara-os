@@ -1,6 +1,7 @@
 "use client";
 
 import { formatRate } from "@/lib/metrics/rate";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -85,7 +86,7 @@ export default function ReflectiveSupervisionPage() {
   const create = useCreateSupervision();
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<any>({ staff_id: "", supervisor_id: "staff_darren", date: "", type: "1:1", wellbeing_score: "4", confidence_level: "4", training_needs: "", follow_up_date: "" });
+  const [form, setForm] = useState<any>({ staff_id: "", supervisor_id: currentUserId(), date: "", type: "1:1", wellbeing_score: "4", confidence_level: "4", training_needs: "", follow_up_date: "" });
   const set = (k: string, v: string) => setForm((f: any) => ({ ...f, [k]: v }));
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -107,7 +108,7 @@ export default function ReflectiveSupervisionPage() {
         confidence_level: Number(form.confidence_level),
         training_needs: String(form.training_needs).split(/[\n,]/).map((s) => s.trim()).filter(Boolean),
       },
-      { onSuccess: () => { setShowForm(false); setForm({ staff_id: "", supervisor_id: "staff_darren", date: "", type: "1:1", wellbeing_score: "4", confidence_level: "4", training_needs: "", follow_up_date: "" }); } },
+      { onSuccess: () => { setShowForm(false); setForm({ staff_id: "", supervisor_id: currentUserId(), date: "", type: "1:1", wellbeing_score: "4", confidence_level: "4", training_needs: "", follow_up_date: "" }); } },
     );
   }
 

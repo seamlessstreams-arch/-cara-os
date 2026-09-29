@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -91,7 +92,7 @@ export default function StaffInductionPage() {
     staff_name: "",
     role: "",
     start_date: todayStr(),
-    induction_lead: "staff_darren",
+    induction_lead: currentUserId(),
   });
   const setIND = (k: keyof typeof indForm, v: string) => setIndForm((p) => ({ ...p, [k]: v }));
 
@@ -122,7 +123,7 @@ export default function StaffInductionPage() {
       tasks: [],
     });
     toast.success("Induction record created.");
-    setIndForm({ staff_name: "", role: "", start_date: todayStr(), induction_lead: "staff_darren" });
+    setIndForm({ staff_name: "", role: "", start_date: todayStr(), induction_lead: currentUserId() });
     setShowDialog(false);
   };
 

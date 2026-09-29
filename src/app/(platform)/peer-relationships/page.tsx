@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -141,7 +142,7 @@ export default function PeerRelationshipsPage() {
     if (!prForm.child_id_1 || !prForm.child_id_2) { toast.error("Please select both children."); return; }
     if (prForm.child_id_1 === prForm.child_id_2) { toast.error("Please select two different children."); return; }
     if (!prForm.description.trim()) { toast.error("Description is required."); return; }
-    await createPeer.mutateAsync({ child_id_1: prForm.child_id_1, child_id_2: prForm.child_id_2, quality: "neutral", risk_level: "none", strengths: [], concerns: [], strategies: [], entries: [{ id: crypto.randomUUID(), date: new Date().toISOString(), type: prForm.entry_type, staff_witness: "staff_darren", intervention_used: "", description: prForm.description.trim(), outcome: prForm.outcome.trim() }], last_review_date: todayStr(), reviewed_by: "staff_darren", next_review_due: "", notes: "", created_at: new Date().toISOString() });
+    await createPeer.mutateAsync({ child_id_1: prForm.child_id_1, child_id_2: prForm.child_id_2, quality: "neutral", risk_level: "none", strengths: [], concerns: [], strategies: [], entries: [{ id: crypto.randomUUID(), date: new Date().toISOString(), type: prForm.entry_type, staff_witness: currentUserId(), intervention_used: "", description: prForm.description.trim(), outcome: prForm.outcome.trim() }], last_review_date: todayStr(), reviewed_by: currentUserId(), next_review_due: "", notes: "", created_at: new Date().toISOString() });
     toast.success("Peer relationship entry saved.");
     setPrForm({ child_id_1: "", child_id_2: "", entry_type: "observation", description: "", outcome: "" });
     setDialogOpen(false);

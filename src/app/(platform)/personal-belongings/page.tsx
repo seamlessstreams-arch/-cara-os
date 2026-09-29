@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -125,7 +126,7 @@ export default function PersonalBelongingsPage() {
       condition: pbForm.condition,
       status: "in_possession" as BelongingItemStatus,
       date_logged: today,
-      logged_by: "staff_darren",
+      logged_by: currentUserId(),
       estimated_value: pbForm.estimated_value ? parseFloat(pbForm.estimated_value) : null,
       photo_on_file: false,
       storage_location: pbForm.storage_location,
@@ -135,11 +136,11 @@ export default function PersonalBelongingsPage() {
       child_id: pbForm.child_id,
       admission_date: today,
       admission_inventory_complete: false,
-      admission_checked_by: "staff_darren",
+      admission_checked_by: currentUserId(),
       admission_witnessed_by: "",
       items: [item],
       last_audit_date: today,
-      last_audit_by: "staff_darren",
+      last_audit_by: currentUserId(),
       next_audit_due: new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10),
       notes: "",
       created_at: new Date().toISOString(),

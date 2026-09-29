@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,7 +134,7 @@ export function ReferralIntakeDialog({
       risk_factors: splitLines(risks),
       status: "new",
       referral_date: todayStr(),
-      staff_id: "staff_darren",
+      staff_id: currentUserId(),
     });
     reset();
   }

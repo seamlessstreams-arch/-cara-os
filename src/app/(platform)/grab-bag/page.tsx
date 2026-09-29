@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase, Plus, Search, ArrowUpDown,
@@ -173,7 +174,7 @@ export default function GrabBagPage() {
     const today = todayStr();
     const next = new Date();
     next.setDate(next.getDate() + 30);
-    updateMutation.mutate({ id: bagId, last_checked: today, checked_by: "staff_darren", next_check_due: next.toISOString().slice(0, 10) });
+    updateMutation.mutate({ id: bagId, last_checked: today, checked_by: currentUserId(), next_check_due: next.toISOString().slice(0, 10) });
   };
 
   if (isLoading) return <PageShell title="Emergency Grab Bags" subtitle="Essential documents and supplies for each young person — ready for immediate use"><div className="p-8 text-center text-muted-foreground">Loading grab bags…</div></PageShell>;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
@@ -125,7 +126,7 @@ export default function RoomSearchesPage() {
     e.preventDefault();
     if (!rsForm.child_id) { toast.error("Please select a young person."); return; }
     if (!rsForm.reason.trim()) { toast.error("Reason for search is required."); return; }
-    await createSearch.mutateAsync({ child_id: rsForm.child_id, date: rsForm.date, time: rsForm.time, search_type: rsForm.search_type, reason: rsForm.reason.trim(), conducted_by: "staff_darren", witnessed_by: "", child_present: true, child_informed: true, areas_searched: rsForm.areas, items_found: [], nothing_found: true, child_response: rsForm.child_response.trim(), child_distress_level: "none", follow_up_required: false, follow_up_actions: [], social_worker_notified: false, parent_notified: false, manager_approval: "", notes: rsForm.notes.trim(), status: "completed", linked_incident: null });
+    await createSearch.mutateAsync({ child_id: rsForm.child_id, date: rsForm.date, time: rsForm.time, search_type: rsForm.search_type, reason: rsForm.reason.trim(), conducted_by: currentUserId(), witnessed_by: "", child_present: true, child_informed: true, areas_searched: rsForm.areas, items_found: [], nothing_found: true, child_response: rsForm.child_response.trim(), child_distress_level: "none", follow_up_required: false, follow_up_actions: [], social_worker_notified: false, parent_notified: false, manager_approval: "", notes: rsForm.notes.trim(), status: "completed", linked_incident: null });
     toast.success("Room search recorded.");
     setRsForm({ child_id: "", search_type: "routine", date: todayStr(), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [], child_response: "", notes: "" });
     setShowDialog(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,7 @@ export default function DebriefsPage() {
   const handleCreateDebrief = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!debForm.what_happened.trim()) { toast.error("What happened is required."); return; }
-    await createDebrief.mutateAsync({ date: debForm.date, type: debForm.type, linked_incident_id: "", linked_incident_summary: "", child_id: "", staff_involved: [], facilitated_by: "staff_darren", what_happened: debForm.what_happened.trim(), what_worked_well: debForm.what_worked_well.trim(), what_could_improve: debForm.what_could_improve.trim(), staff_wellbeing: "", child_perspective: "", lessons_learned: debForm.lessons_learned.split("\n").filter(Boolean), changes_needed: [], follow_up_actions: [], support_offered: false, support_details: "", created_at: new Date().toISOString() });
+    await createDebrief.mutateAsync({ date: debForm.date, type: debForm.type, linked_incident_id: "", linked_incident_summary: "", child_id: "", staff_involved: [], facilitated_by: currentUserId(), what_happened: debForm.what_happened.trim(), what_worked_well: debForm.what_worked_well.trim(), what_could_improve: debForm.what_could_improve.trim(), staff_wellbeing: "", child_perspective: "", lessons_learned: debForm.lessons_learned.split("\n").filter(Boolean), changes_needed: [], follow_up_actions: [], support_offered: false, support_details: "", created_at: new Date().toISOString() });
     toast.success("Debrief saved.");
     setDebForm({ date: todayStr(), type: "post_incident", what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
     setShowNew(false);

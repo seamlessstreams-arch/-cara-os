@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -110,7 +111,7 @@ export default function AfterCarePage() {
       staying_close_eligible: false,
       support_package: [],
       contact_log: [],
-      key_worker: "staff_darren",
+      key_worker: currentUserId(),
       personal_adviser: "",
       pathway_plan: false,
       pathway_plan_review_date: null,

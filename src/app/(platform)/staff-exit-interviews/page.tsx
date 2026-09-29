@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   UserMinus, Plus, Search, ArrowUpDown, Filter,
   ChevronDown, ChevronUp, Star, TrendingUp,
@@ -99,7 +100,7 @@ export default function StaffExitInterviewsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createInterview = useCreateStaffExitInterviewRecord();
-  const [eiForm, setEiForm] = useState({ staff_name: "", reason: "resigned_career" as StaffExitInterviewReason, interview_date: todayStr(), interviewer: "staff_darren", status: "completed" as StaffExitInterviewStatus, overall_rating: "", positives: "", improvements: "", notes: "" });
+  const [eiForm, setEiForm] = useState({ staff_name: "", reason: "resigned_career" as StaffExitInterviewReason, interview_date: todayStr(), interviewer: currentUserId(), status: "completed" as StaffExitInterviewStatus, overall_rating: "", positives: "", improvements: "", notes: "" });
   const setEI = (k: string, v: unknown) => setEiForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveInterview = async (e: React.FormEvent) => {
@@ -107,7 +108,7 @@ export default function StaffExitInterviewsPage() {
     if (!eiForm.staff_name.trim()) { toast.error("Staff name is required."); return; }
     await createInterview.mutateAsync({ staff_name: eiForm.staff_name.trim(), reason: eiForm.reason, interview_date: eiForm.interview_date, interviewer: eiForm.interviewer, status: eiForm.status, overall_rating: eiForm.overall_rating ? parseInt(eiForm.overall_rating) : null, positives: eiForm.positives.split("\n").filter(Boolean), improvements: eiForm.improvements.split("\n").filter(Boolean), would_recommend: null, themes: [], notes: eiForm.notes.trim(), confidential: true });
     toast.success("Exit interview recorded.");
-    setEiForm({ staff_name: "", reason: "resigned_career", interview_date: todayStr(), interviewer: "staff_darren", status: "completed", overall_rating: "", positives: "", improvements: "", notes: "" });
+    setEiForm({ staff_name: "", reason: "resigned_career", interview_date: todayStr(), interviewer: currentUserId(), status: "completed", overall_rating: "", positives: "", improvements: "", notes: "" });
     setShowNew(false);
   };
 

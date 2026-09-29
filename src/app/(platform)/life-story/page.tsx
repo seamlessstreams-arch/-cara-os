@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -163,7 +164,7 @@ export default function LifeStoryPage() {
       title: nTitle,
       description: nDesc,
       child_voice: nVoice,
-      facilitator: "staff_darren",
+      facilitator: currentUserId(),
       status: "completed",
       linked_to_book: false,
     });

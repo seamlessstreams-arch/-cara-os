@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -133,7 +134,7 @@ export default function DeprivationOfLibertyPage() {
       notes: "",
     });
     toast.success("Restriction logged.");
-    setDolForm({ child_id: "", restriction_type: "", description: "", necessary_justification: "", child_views: "", legal_basis: "care_plan", authorised_by_id: "staff_darren", date_imposed: todayStr(), review_date: "" });
+    setDolForm({ child_id: "", restriction_type: "", description: "", necessary_justification: "", child_views: "", legal_basis: "care_plan", authorised_by_id: currentUserId(), date_imposed: todayStr(), review_date: "" });
     setShowNew(false);
   };
 

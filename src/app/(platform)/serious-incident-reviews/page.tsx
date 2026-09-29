@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -81,7 +82,7 @@ export default function SeriousIncidentReviewsPage() {
     e.preventDefault();
     if (!sirForm.title.trim()) { toast.error("Title is required."); return; }
     if (!sirForm.incident_date) { toast.error("Incident date is required."); return; }
-    await createSIR.mutateAsync({ title: sirForm.title.trim(), review_type: sirForm.review_type, incident_date: sirForm.incident_date, review_commenced_date: sirForm.review_commenced_date, review_completed_date: null, linked_incidents: [], young_people_involved: [], staff_involved: [], review_lead: "staff_darren", panel_members: [], background_summary: sirForm.background.trim(), key_findings: [], lessons_learned: [], recommendations: [], actions: [], external_notifications: [], practice_changes: [], training_implications: [], policy_changes: [], status: "initiated", next_review_date: null, confidentiality: "standard" });
+    await createSIR.mutateAsync({ title: sirForm.title.trim(), review_type: sirForm.review_type, incident_date: sirForm.incident_date, review_commenced_date: sirForm.review_commenced_date, review_completed_date: null, linked_incidents: [], young_people_involved: [], staff_involved: [], review_lead: currentUserId(), panel_members: [], background_summary: sirForm.background.trim(), key_findings: [], lessons_learned: [], recommendations: [], actions: [], external_notifications: [], practice_changes: [], training_implications: [], policy_changes: [], status: "initiated", next_review_date: null, confidentiality: "standard" });
     toast.success("Serious incident review initiated.");
     setSirForm({ title: "", review_type: "serious_incident", incident_date: "", review_commenced_date: todayStr(), background: "" });
     setDialogOpen(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -81,7 +82,7 @@ export default function YPSavingsPage() {
     amount: "",
     date: todayStr(),
     receipt_ref: "",
-    recorded_by: "staff_darren",
+    recorded_by: currentUserId(),
   });
   const setYPF = (k: keyof typeof ypForm, v: string) => setYpForm((p) => ({ ...p, [k]: v }));
 
@@ -106,7 +107,7 @@ export default function YPSavingsPage() {
       notes: "",
     });
     toast.success("Transaction recorded.");
-    setYpForm({ child_id: "", tx_type: "", description: "", amount: "", date: todayStr(), receipt_ref: "", recorded_by: "staff_darren" });
+    setYpForm({ child_id: "", tx_type: "", description: "", amount: "", date: todayStr(), receipt_ref: "", recorded_by: currentUserId() });
     setShowDialog(false);
   };
 
