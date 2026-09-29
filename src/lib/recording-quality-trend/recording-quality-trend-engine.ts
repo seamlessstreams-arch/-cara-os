@@ -32,8 +32,8 @@ export interface WeeklyPoint {
   week_start: string;        // ISO date (start of the 7-day window)
   label: string;             // e.g. "w/c 2026-05-12"
   count: number;
-  avg_overall: number;
-  child_voice: number;
+  avg_overall: number | null; // null for a week with no records (chart gap, not 0)
+  child_voice: number | null;
   dimension_averages: DimensionAverages;
 }
 
@@ -119,21 +119,21 @@ export function computeRecordingQualityTrend(input: RecordingQualityTrendInput):
   for (let i = weeks - 1; i >= 0; i--) {
     const recs = buckets[i];
     const n = recs.length;
-    const avgDim = (k: keyof DimensionAverages) => (n === 0 ? 0 : round(mean(recs.map((r) => r.score[k]))));
+    const avgDim = (k: keyof DimensionAverages) => (n === 0 ? null : round(mean(recs.map((r) => r.score[k]))));
     const dimension_averages = Object.fromEntries(DIM_KEYS.map((k) => [k, avgDim(k)])) as unknown as DimensionAverages;
     const weekStart = addDays(today, -((i + 1) * 7 - 1)); // start of this 7-day window
     series.push({
       week_start: weekStart,
       label: `w/c ${weekStart}`,
       count: n,
-      avg_overall: n === 0 ? 0 : round(mean(recs.map((r) => r.overall))),
+      avg_overall: n === 0 ? null : round(mean(recs.map((r) => r.overall))),
       child_voice: avgDim("childCentredness"),
       dimension_averages,
     });
   }
 
-  const overallTrend = trendOverPoints(series, (p) => p.avg_overall);
-  const voiceTrend = trendOverPoints(series, (p) => p.child_voice);
+  const overallTrend = trendOverPoints(series, (p) => p.avg_overall ?? 0);
+  const voiceTrend = trendOverPoints(series, (p) => p.child_voice ?? 0);
   const populated = series.filter((p) => p.count > 0);
   const latest = populated[populated.length - 1] ?? null;
 

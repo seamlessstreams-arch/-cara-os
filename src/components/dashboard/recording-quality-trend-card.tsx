@@ -93,7 +93,7 @@ export function RecordingQualityTrendCard() {
           <div className="flex items-end gap-1 h-16">
             {series.map((p, i) => (
               <div key={i} className="flex-1 flex flex-col justify-end items-center" title={`${p.label}: ${p.count ? `${p.avg_overall}/100 (${p.count})` : "no records"}`}>
-                <div className={cn("w-full rounded-t", p.count ? barColor(p.avg_overall) : "bg-gray-100")} style={{ height: `${p.count ? Math.max(6, p.avg_overall) : 4}%` }} />
+                <div className={cn("w-full rounded-t", p.count ? barColor(p.avg_overall ?? 0) : "bg-gray-100")} style={{ height: `${p.count ? Math.max(6, p.avg_overall ?? 0) : 4}%` }} />
               </div>
             ))}
           </div>

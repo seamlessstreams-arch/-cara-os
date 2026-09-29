@@ -92,7 +92,7 @@ export default function RecordingQualityTrendPage() {
                 {intel.series.map((p, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end h-full" title={`${p.label}: ${p.count ? `${p.avg_overall}/100 (${p.count} records)` : "no records"}`}>
                     <span className="text-[9px] tabular-nums text-[var(--cs-text-muted)] mb-0.5">{p.count ? p.avg_overall : ""}</span>
-                    <div className={cn("w-full rounded-t", p.count ? barColor(p.avg_overall) : "bg-gray-100")} style={{ height: `${p.count ? Math.max(4, p.avg_overall) : 3}%` }} />
+                    <div className={cn("w-full rounded-t", p.count ? barColor(p.avg_overall ?? 0) : "bg-gray-100")} style={{ height: `${p.count ? Math.max(4, p.avg_overall ?? 0) : 3}%` }} />
                     <span className="text-[8px] text-[var(--cs-text-gentle)] mt-1 rotate-0 truncate w-full text-center">{p.week_start.slice(5)}</span>
                   </div>
                 ))}

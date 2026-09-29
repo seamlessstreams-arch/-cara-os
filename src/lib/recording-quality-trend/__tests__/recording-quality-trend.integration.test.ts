@@ -15,12 +15,18 @@ describe("recording-quality-trend integration (quality → weekly trend)", () =>
     expect(result.overview.populated_weeks).toBeGreaterThan(0);
   });
 
-  it("every weekly point has valid averages", () => {
+  it("every populated weekly point has valid averages; empty weeks are null", () => {
     for (const p of result.series) {
-      expect(p.avg_overall).toBeGreaterThanOrEqual(0);
-      expect(p.avg_overall).toBeLessThanOrEqual(100);
-      expect(p.child_voice).toBeGreaterThanOrEqual(0);
-      expect(p.child_voice).toBeLessThanOrEqual(100);
+      if (p.count > 0) {
+        expect(p.avg_overall).toBeGreaterThanOrEqual(0);
+        expect(p.avg_overall).toBeLessThanOrEqual(100);
+        expect(p.child_voice).toBeGreaterThanOrEqual(0);
+        expect(p.child_voice).toBeLessThanOrEqual(100);
+      } else {
+        // A week with no records is unmeasured, not 0
+        expect(p.avg_overall).toBeNull();
+        expect(p.child_voice).toBeNull();
+      }
     }
   });
 
