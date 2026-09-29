@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     title: `Complaint: ${record.category} — ${record.reference}`,
     summary: record.summary ?? "",
     eventType: "complaint",
-    createdBy: record.created_by ?? "staff_darren",
+    createdBy: record.created_by,
     eventDate: record.date_received,
   }).catch(() => {});
 
