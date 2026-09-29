@@ -1255,7 +1255,7 @@ function LogIncidentTab() {
           onChange={(text) => setForm((p) => ({ ...p, description: text }))}
           actorUserId={currentUser?.id ?? currentUserId()}
           actorRole={appRoleToCaraRole(currentRole)}
-          homeId={currentUser?.home_id ?? "home_oak"}
+          homeId={currentUser?.home_id ?? ""}
           childId={form.child_id || undefined}
           sourceModule="incident"
           sourceField="description"
@@ -1285,7 +1285,7 @@ function LogIncidentTab() {
           onChange={(text) => setForm((p) => ({ ...p, immediate_action: text }))}
           actorUserId={currentUser?.id ?? currentUserId()}
           actorRole={appRoleToCaraRole(currentRole)}
-          homeId={currentUser?.home_id ?? "home_oak"}
+          homeId={currentUser?.home_id ?? ""}
           childId={form.child_id || undefined}
           sourceModule="incident"
           sourceField="immediate_action"

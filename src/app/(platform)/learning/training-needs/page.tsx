@@ -283,7 +283,7 @@ const CARA_MODE_MAP: Record<string, string> = {
 
 function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [pipelineStep, setPipelineStep] = useState<PipelineStep>("idle");
   const [resourceType, setResourceType] = useState("workshop");
   const [pathway, setPathway] = useState("staff");
@@ -502,7 +502,7 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
 // ── New need dialog ───────────────────────────────────────────────────────────
 function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [title, setTitle] = useState("");
   const [needType, setNeedType] = useState("safeguarding");
   const [priority, setPriority] = useState<TrainingNeedPriority>("medium");
@@ -652,7 +652,7 @@ function CaraAutoDetect({
 }) {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [scanning, setScanning] = useState(false);
   const [detected, setDetected] = useState<DetectedNeed[]>([]);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
@@ -845,7 +845,7 @@ function CaraAutoDetect({
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TrainingNeedsPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [showNew, setShowNew] = useState(false);
   const [sendingToStudio, setSendingToStudio] = useState<TrainingNeed | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<"all" | "urgent" | "active" | "completed">("all");

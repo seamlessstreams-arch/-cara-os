@@ -263,7 +263,7 @@ function CreateForm({
   initialResourceType?: ChildResourceType;
 }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const ypQuery = useYoungPeople("current");
   const youngPeople = (ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }));
   const [childId, setChildId] = useState(initialChildId);
@@ -591,7 +591,7 @@ function CreateForm({
 
 export default function ChildResourcesPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [paramChildId, setParamChildId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [previewing, setPreviewing] = useState<ChildResource | null>(null);

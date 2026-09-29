@@ -262,7 +262,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
             onChange={setContent}
             actorUserId={currentUser?.id ?? currentUserId()}
             actorRole={appRoleToCaraRole(currentRole)}
-            homeId={currentUser?.home_id ?? "home_oak"}
+            homeId={currentUser?.home_id ?? ""}
             childId={childId || undefined}
             sourceModule="daily_log"
             sourceField="content"
@@ -450,7 +450,7 @@ type DetectedPattern = {
 
 function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [open, setOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [patterns, setPatterns] = useState<DetectedPattern[]>([]);

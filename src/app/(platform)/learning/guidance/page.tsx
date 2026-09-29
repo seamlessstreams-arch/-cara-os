@@ -217,7 +217,7 @@ function GuidanceCard({ resource }: { resource: { id: string; title: string; sta
 export default function GuidanceNotesPage() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState("staff");
   const [context, setContext] = useState("");
