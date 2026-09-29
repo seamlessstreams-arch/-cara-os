@@ -494,7 +494,7 @@ describe("Health & Wellbeing Engine — Wellbeing Trends", () => {
 
     expect(result.wellbeing_trends).toHaveLength(1);
     expect(result.wellbeing_trends[0].trend).toBe("improving");
-    expect(result.wellbeing_trends[0].current_avg).toBeGreaterThan(result.wellbeing_trends[0].previous_avg);
+    expect(result.wellbeing_trends[0].current_avg!).toBeGreaterThan(result.wellbeing_trends[0].previous_avg!);
   });
 
   it("detects declining wellbeing trend", () => {
