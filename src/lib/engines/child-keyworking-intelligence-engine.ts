@@ -63,9 +63,9 @@ export interface FrequencyProfile {
 }
 
 export interface MoodImpact {
-  avg_mood_before: number;
-  avg_mood_after: number;
-  avg_improvement: number;        // avg (after - before)
+  avg_mood_before: number | null;
+  avg_mood_after: number | null;
+  avg_improvement: number | null; // avg (after - before); null when no mood recorded
   positive_impact_rate: number | null;   // % sessions where mood improved
   no_change_rate: number | null;
   negative_impact_rate: number | null;
@@ -81,8 +81,8 @@ export interface QualityMetrics {
   child_voice_rate: number | null;       // % with child voice
   follow_up_set_rate: number | null;     // % with follow-up set
   follow_up_completion_rate: number | null; // % of set follow-ups completed
-  avg_duration_minutes: number;
-  avg_actions_per_session: number;
+  avg_duration_minutes: number | null;
+  avg_actions_per_session: number | null;
   topic_variety: number;          // unique topics count
 }
 
@@ -130,8 +130,8 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
@@ -217,7 +217,7 @@ export function computeChildKeyworking(
     child_voice_rate: rate(withVoice.length, sessions.length),
     follow_up_set_rate: rate(withFollowUp.length, sessions.length),
     follow_up_completion_rate: rate(followUpCompleted.length, withFollowUp.length),
-    avg_duration_minutes: Math.round(avg(sessions.map((s) => s.duration_minutes))),
+    avg_duration_minutes: sessions.length > 0 ? Math.round(avg(sessions.map((s) => s.duration_minutes)) ?? 0) : null,
     avg_actions_per_session: avg(sessions.map((s) => s.actions_count)),
     topic_variety: uniqueTopics.size,
   };
@@ -263,8 +263,8 @@ export function computeChildKeyworking(
     else if (session_types.length >= 2) score += 2;
 
     // Duration
-    if (quality_metrics.avg_duration_minutes >= 30) score += 3;
-    else if (quality_metrics.avg_duration_minutes < 15) score -= 3;
+    if ((quality_metrics.avg_duration_minutes ?? 0) >= 30) score += 3;
+    else if ((quality_metrics.avg_duration_minutes ?? 0) < 15) score -= 3;
 
     // Key worker consistency
     if (key_worker_consistency && sessions.length >= 3) score += 3;
@@ -291,7 +291,7 @@ export function computeChildKeyworking(
     parts.push(`${sessions.length} session${sessions.length !== 1 ? "s" : ""}`);
     parts.push(`${frequency.sessions_30d} in last 30d`);
   }
-  if (mood_impact.avg_improvement > 0) parts.push(`avg mood +${mood_impact.avg_improvement}`);
+  if ((mood_impact.avg_improvement ?? 0) > 0) parts.push(`avg mood +${mood_impact.avg_improvement}`);
   if (frequency.sessions_30d === 0 && sessions.length > 0) parts.push("no recent sessions");
   const headline = parts.join(". ") + ".";
 
@@ -438,7 +438,7 @@ export function computeChildKeyworking(
     });
   }
 
-  if (mood_impact.avg_improvement >= 1.5 && sessions.length >= 3) {
+  if ((mood_impact.avg_improvement ?? 0) >= 1.5 && sessions.length >= 3) {
     insights.push({
       severity: "positive",
       text: `Average mood improvement of +${mood_impact.avg_improvement} per session. This quantifiable impact shows that keywork is genuinely therapeutic — each session leaves ${child_name} feeling better than before.`,

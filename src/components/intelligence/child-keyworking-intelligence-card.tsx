@@ -130,8 +130,8 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Heart className={cn("h-3.5 w-3.5", (d.mood_impact.positive_impact_rate ?? 0) >= 70 ? "text-green-500" : (d.mood_impact.positive_impact_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.mood_impact.avg_improvement > 0 ? "text-green-600" : d.mood_impact.avg_improvement < 0 ? "text-red-600" : "text-slate-600")}>
-                  {d.mood_impact.avg_improvement > 0 ? "+" : ""}{d.mood_impact.avg_improvement}
+                <p className={cn("text-lg font-bold tabular-nums", (d.mood_impact.avg_improvement ?? 0) > 0 ? "text-green-600" : (d.mood_impact.avg_improvement ?? 0) < 0 ? "text-red-600" : "text-slate-600")}>
+                  {d.mood_impact.avg_improvement === null ? "—" : `${d.mood_impact.avg_improvement > 0 ? "+" : ""}${d.mood_impact.avg_improvement}`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Mood Δ</p>
@@ -172,7 +172,7 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Mood Impact</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Before: <span className="font-medium text-slate-600">{d.mood_impact.avg_mood_before}/5</span> → After: <span className={cn("font-medium", d.mood_impact.avg_mood_after > d.mood_impact.avg_mood_before ? "text-green-600" : "text-slate-600")}>{d.mood_impact.avg_mood_after}/5</span></p>
+                <p>Before: <span className="font-medium text-slate-600">{d.mood_impact.avg_mood_before === null ? "—" : `${d.mood_impact.avg_mood_before}/5`}</span> → After: <span className={cn("font-medium", (d.mood_impact.avg_mood_after ?? 0) > (d.mood_impact.avg_mood_before ?? 0) ? "text-green-600" : "text-slate-600")}>{d.mood_impact.avg_mood_after === null ? "—" : `${d.mood_impact.avg_mood_after}/5`}</span></p>
                 <p>Positive: <span className="font-medium text-green-600">{formatRate(d.mood_impact.positive_impact_rate)}</span></p>
                 {(d.mood_impact.negative_impact_rate ?? 0) > 0 && (
                   <p>Negative: <span className="font-medium text-red-600">{formatRate(d.mood_impact.negative_impact_rate)}</span></p>
