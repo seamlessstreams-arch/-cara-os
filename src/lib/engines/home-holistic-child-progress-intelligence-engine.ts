@@ -80,12 +80,12 @@ export interface HolisticChildProgressResult {
   outcome_child_voice_rate: number | null; // % of outcome reviews with child voice
   /** null when the population is empty — nothing measured, not 0%. */
   education_engagement_rate: number | null; // % of education records where engaged
-  average_attendance: number; // avg attendance across education records
+  average_attendance: number | null; // avg attendance across education records; null when none
   /** null when the population is empty — nothing measured, not 0%. */
   key_work_completion_rate: number | null; // % of key work sessions completed
   /** null when the population is empty — nothing measured, not 0%. */
   key_work_goal_progress_rate: number | null; // % of goals progressed out of total goals
-  independence_readiness_average: number; // avg overall_readiness
+  independence_readiness_average: number | null; // avg overall_readiness; null when none
   domain_coverage: number; // distinct domains covered across all inputs
   /** null when the population is empty — nothing measured, not 0%. */
   child_voice_composite_rate: number | null; // avg child voice across all data types
@@ -214,7 +214,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   // Average attendance
   const averageAttendance = education_records.length === 0
-    ? 0
+    ? null
     : Math.round(education_records.reduce((sum, r) => sum + r.attendance_rate, 0) / education_records.length);
 
   // Key work completion rate
@@ -230,7 +230,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   // Independence readiness average
   const independenceReadinessAverage = independence_records.length === 0
-    ? 0
+    ? null
     : Math.round(independence_records.reduce((sum, r) => sum + r.overall_readiness, 0) / independence_records.length);
 
   // Domain coverage: distinct domains from outcome reviews
@@ -274,8 +274,8 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   else if (meets(educationEngagementRate, 75)) score += 2;
 
   // Average attendance bonuses
-  if (averageAttendance >= 95) score += 3;
-  else if (averageAttendance >= 85) score += 1;
+  if (meets(averageAttendance, 95)) score += 3;
+  else if (meets(averageAttendance, 85)) score += 1;
 
   // Key work completion bonuses
   if (meets(keyWorkCompletionRate, 90)) score += 4;
@@ -286,8 +286,8 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   else if (meets(keyWorkGoalProgressRate, 60)) score += 1;
 
   // Independence readiness bonuses
-  if (independenceReadinessAverage >= 70) score += 3;
-  else if (independenceReadinessAverage >= 50) score += 1;
+  if (meets(independenceReadinessAverage, 70)) score += 3;
+  else if (meets(independenceReadinessAverage, 50)) score += 1;
 
   // Domain coverage bonuses
   if (domainCoverage >= 5) score += 2;
@@ -299,7 +299,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   // Penalties
   if (below(educationEngagementRate, 50)) score -= 5;
-  if (averageAttendance < 70) score -= 5;
+  if (below(averageAttendance, 70)) score -= 5;
   if (below(keyWorkCompletionRate, 50)) score -= 5;
   if (outcomeImprovementRate === 0 && outcome_reviews.length > 0) score -= 3;
 
@@ -329,9 +329,9 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     strengths.push(`Good education engagement rate (${formatRate(educationEngagementRate)}).`);
   }
 
-  if (averageAttendance >= 95) {
+  if (meets(averageAttendance, 95)) {
     strengths.push(`Outstanding average attendance at ${averageAttendance}%.`);
-  } else if (averageAttendance >= 85) {
+  } else if (meets(averageAttendance, 85)) {
     strengths.push(`Good average attendance at ${averageAttendance}%.`);
   }
 
@@ -347,9 +347,9 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     strengths.push(`Majority of key working goals progressing (${formatRate(keyWorkGoalProgressRate)}).`);
   }
 
-  if (independenceReadinessAverage >= 70) {
+  if (meets(independenceReadinessAverage, 70)) {
     strengths.push(`Good independence readiness average (${independenceReadinessAverage}/100).`);
-  } else if (independenceReadinessAverage >= 50) {
+  } else if (meets(independenceReadinessAverage, 50)) {
     strengths.push(`Adequate independence readiness (${independenceReadinessAverage}/100).`);
   }
 
@@ -379,9 +379,9 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     concerns.push(`Education engagement needs improvement (${formatRate(educationEngagementRate)}).`);
   }
 
-  if (averageAttendance < 70) {
+  if (below(averageAttendance, 70)) {
     concerns.push(`Critical: average attendance below 70% (${averageAttendance}%) — persistent absence is a safeguarding concern.`);
-  } else if (averageAttendance < 85) {
+  } else if (below(averageAttendance, 85)) {
     concerns.push(`Average attendance below target (${averageAttendance}%) — risk of educational disengagement.`);
   }
 
@@ -395,7 +395,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     concerns.push(`Low goal progress rate (${formatRate(keyWorkGoalProgressRate)}) — key working goals are not translating into outcomes.`);
   }
 
-  if (independenceReadinessAverage < 50 && independence_records.length > 0) {
+  if (below(independenceReadinessAverage, 50) && independence_records.length > 0) {
     concerns.push(`Independence readiness below adequate threshold (${independenceReadinessAverage}/100).`);
   }
 
@@ -441,7 +441,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Urgently review education engagement strategy — liaise with Virtual School Head to develop individual support plans.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
-  if (averageAttendance < 70) {
+  if (below(averageAttendance, 70)) {
     recommendations.push({ rank: ++rank, recommendation: "Implement attendance improvement plan — consider barriers to attendance and coordinate with school and social worker.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
@@ -485,7 +485,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Develop targeted education engagement strategies for disengaged children in partnership with schools.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
-  if (averageAttendance >= 70 && averageAttendance < 85) {
+  if (meets(averageAttendance, 70) && below(averageAttendance, 85)) {
     recommendations.push({ rank: ++rank, recommendation: "Review attendance patterns and address barriers for children below 90% attendance.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
@@ -497,7 +497,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Review key working goals — ensure they are SMART and linked to care plan objectives.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 10" });
   }
 
-  if (independenceReadinessAverage < 50 && independence_records.length > 0) {
+  if (below(independenceReadinessAverage, 50) && independence_records.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Increase focus on independence skill development — embed practical life skills into daily routines.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
 
@@ -519,7 +519,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (below(educationEngagementRate, 50)) {
     insights.push({ text: `Education engagement critically low at ${formatRate(educationEngagementRate)} — immediate intervention required.`, severity: "critical" });
   }
-  if (averageAttendance < 70) {
+  if (below(averageAttendance, 70)) {
     insights.push({ text: `Average attendance critically low at ${averageAttendance}% — persistent absence puts children at risk.`, severity: "critical" });
   }
   if (below(keyWorkCompletionRate, 50)) {
@@ -550,7 +550,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (meets(educationEngagementRate, 50) && below(educationEngagementRate, 75)) {
     insights.push({ text: `Education engagement at ${formatRate(educationEngagementRate)} — below target for good outcomes.`, severity: "warning" });
   }
-  if (averageAttendance >= 70 && averageAttendance < 85) {
+  if (meets(averageAttendance, 70) && below(averageAttendance, 85)) {
     insights.push({ text: `Average attendance at ${averageAttendance}% — below expected threshold.`, severity: "warning" });
   }
   if (meets(keyWorkCompletionRate, 50) && below(keyWorkCompletionRate, 75)) {
@@ -565,7 +565,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (domainCoverage < 3 && outcome_reviews.length > 0) {
     insights.push({ text: `Only ${domainCoverage} outcome domain(s) covered — holistic view requires broader assessment.`, severity: "warning" });
   }
-  if (independenceReadinessAverage > 0 && independenceReadinessAverage < 50) {
+  if (above(independenceReadinessAverage, 0) && below(independenceReadinessAverage, 50)) {
     insights.push({ text: `Independence readiness average at ${independenceReadinessAverage}/100 — below adequate threshold.`, severity: "warning" });
   }
 
@@ -582,7 +582,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (meets(keyWorkCompletionRate, 90) && meets(keyWorkGoalProgressRate, 80)) {
     insights.push({ text: "Key working is highly effective — both completion and goal progress are strong.", severity: "positive" });
   }
-  if (averageAttendance >= 95) {
+  if (meets(averageAttendance, 95)) {
     insights.push({ text: `Attendance outstanding at ${averageAttendance}% — above national average for looked after children.`, severity: "positive" });
   }
   if (domainCoverage >= 5) {

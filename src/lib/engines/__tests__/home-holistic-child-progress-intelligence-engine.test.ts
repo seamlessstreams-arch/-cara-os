@@ -1062,11 +1062,12 @@ describe("computeHolisticChildProgress", () => {
       expect(r.average_attendance).toBe(92); // Math.round(276/3) = 92
     });
 
-    it("returns 0 when no education records", () => {
+    it("returns null when no education records", () => {
       const r = computeHolisticChildProgress(baseInput({
         outcome_reviews: [makeOutcomeReview({ id: "aa3-or-1" })],
       }));
-      expect(r.average_attendance).toBe(0);
+      // No education records → no attendance to average → unmeasured, not 0
+      expect(r.average_attendance).toBeNull();
     });
   });
 
@@ -1123,11 +1124,12 @@ describe("computeHolisticChildProgress", () => {
       expect(r.independence_readiness_average).toBe(60); // Math.round(180/3)
     });
 
-    it("returns 0 when no independence records", () => {
+    it("returns null when no independence records", () => {
       const r = computeHolisticChildProgress(baseInput({
         outcome_reviews: [makeOutcomeReview({ id: "ira2-or-1" })],
       }));
-      expect(r.independence_readiness_average).toBe(0);
+      // No independence records → nothing to average → unmeasured, not 0
+      expect(r.independence_readiness_average).toBeNull();
     });
   });
 
