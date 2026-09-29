@@ -3,7 +3,6 @@
   "src/lib/cara/ofsted-readiness.ts:expected:0",
   "src/lib/cara/reports/report-generator.ts:scores:0",
   "src/lib/child-voice-dimensions/dimensions-engine.ts:totalCaptures:0",
-  "src/lib/engines/home-emotional-literacy-feelings-expression-intelligence-engine.ts:nums:0",
   "src/lib/engines/home-holistic-child-progress-intelligence-engine.ts:education_records:0",
   "src/lib/engines/home-holistic-child-progress-intelligence-engine.ts:independence_records:0",
   "src/lib/engines/home-key-worker-relationship-quality-intelligence-engine.ts:values:0",
