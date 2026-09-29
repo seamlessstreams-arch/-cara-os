@@ -1,6 +1,5 @@
 [
   "src/lib/cara/education-intelligence.ts:totalPossible:0",
-  "src/lib/cara/ofsted-readiness.ts:expected:0",
   "src/lib/cara/reports/report-generator.ts:scores:0",
   "src/lib/search/search-engine.ts:scores:0"
 ]
