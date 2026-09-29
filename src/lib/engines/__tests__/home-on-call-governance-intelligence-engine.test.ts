@@ -596,7 +596,7 @@ describe("edge cases", () => {
       on_call_shifts: [makeShift({ calls_received: [] })],
     }));
     expect(r.response.total_calls).toBe(0);
-    expect(r.response.avg_call_duration).toBe(0);
+    expect(r.response.avg_call_duration).toBeNull(); // no calls → no duration to average → unmeasured
     expect(r.response.calls_per_shift).toBe(0);
   });
 

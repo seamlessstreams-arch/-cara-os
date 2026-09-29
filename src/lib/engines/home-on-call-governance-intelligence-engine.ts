@@ -63,7 +63,7 @@ export interface ResponseProfile {
   routine_calls: number;
   advisory_calls: number;
   escalated_calls: number;
-  avg_call_duration: number;
+  avg_call_duration: number | null;
   calls_per_shift: number | null;
 }
 
@@ -115,8 +115,8 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round(nums.reduce((s, n) => s + n, 0) / nums.length);
 }
 
@@ -148,7 +148,7 @@ export function computeHomeOnCallGovernance(
       },
       response: {
         total_calls: 0, critical_calls: 0, routine_calls: 0,
-        advisory_calls: 0, escalated_calls: 0, avg_call_duration: 0,
+        advisory_calls: 0, escalated_calls: 0, avg_call_duration: null,
         calls_per_shift: 0,
       },
       quality: {
