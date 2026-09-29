@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -36,6 +37,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
   const job = intelligenceDb.docJobs.create({
     home_id: HOME_ID,
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
     placement_ref_type: null,
     placement_ref_id: null,
     cara_notes: (body.cara_notes as string) ?? null,
-    created_by: (body.created_by as string) ?? "staff_darren",
+    created_by: identity.userId,
   });
 
   return NextResponse.json({ data: job }, { status: 201 });

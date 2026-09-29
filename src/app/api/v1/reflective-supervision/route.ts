@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     id: generateId("rsup"),
     staff_id,
     staff_name: sm ? staffName(sm) : staff_id,
-    supervisor_id: String(body.supervisor_id ?? "staff_darren"),
+    supervisor_id: String(body.supervisor_id ?? auth.userId),
     supervisor_name: supervisor ? staffName(supervisor) : null,
     date: date.slice(0, 10),
     type: String(body.type ?? "1:1"),

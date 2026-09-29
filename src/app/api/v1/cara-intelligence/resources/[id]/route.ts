@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -18,6 +19,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
   const existing = intelligenceDb.childResources.findById(id);
   if (!existing) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
@@ -34,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (body.status === "approved") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: (body.approved_by as string) ?? "staff_darren",
+      user_id: identity.userId,
       child_id: updated.child_id,
       action_type: "child_resource_approved",
       source_table: "child_resources",
