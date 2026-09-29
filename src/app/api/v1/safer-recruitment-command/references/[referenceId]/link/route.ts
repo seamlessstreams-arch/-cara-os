@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
 import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import { issueToken } from "@/lib/safer-recruitment/reference-link-service";
@@ -34,7 +35,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ referenceI
     status: reference.status === "not_requested" ? "requested" : reference.status,
   });
 
-  const actor = req.headers.get("x-user-id") ?? "staff_darren";
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const actor = identity.userId;
   createRecruitmentAuditRecord({
     candidate_id: reference.candidate_id,
     actor_id: actor,
