@@ -57,9 +57,9 @@ function nowISO(): string {
   return new Date().toISOString();
 }
 
-function computeOverallConfidence(sections: ChildReportSection[]): number {
+function computeOverallConfidence(sections: ChildReportSection[]): number | null {
   const scores = sections.map((s) => s.confidence_score ?? 0);
-  if (scores.length === 0) return 0;
+  if (scores.length === 0) return null; // no sections → confidence unmeasured, not a fabricated 0%
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
