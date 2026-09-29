@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
@@ -19,7 +20,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ do
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const { actor_id = "staff_darren", ...updates } = body;
+  // Document action: the actor is the authenticated caller; reject an
+  // unresolved session rather than attribute the audit entry to a seed default.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const { actor_id: _bodyActorId, ...updates } = body;
+  const actor_id = identity.userId;
 
   // Rehydrate first so a patch works on a lambda that never saw the upload.
   if (!(await ensureUploadedDocument(docId))) {
