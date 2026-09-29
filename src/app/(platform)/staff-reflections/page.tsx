@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -79,7 +80,7 @@ export default function StaffReflectionsPage() {
   const handleSaveReflection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rfForm.title.trim()) { toast.error("Title is required."); return; }
-    await createRecord.mutateAsync({ staff_id: rfForm.staff_id || "staff_darren", date: todayStr(), type: rfForm.type, mood: rfForm.mood, title: rfForm.title.trim(), what_happened: rfForm.what_happened.trim(), what_i_felt: rfForm.what_i_felt.trim(), what_i_learned: rfForm.what_i_learned.trim(), what_i_would_do_differently: rfForm.what_i_would_do_differently.trim(), linked_to_yp: [], linked_incident: null, shared_with_manager: false, manager_feedback: "", development_goal: "", is_private: false });
+    await createRecord.mutateAsync({ staff_id: rfForm.staff_id || currentUserId(), date: todayStr(), type: rfForm.type, mood: rfForm.mood, title: rfForm.title.trim(), what_happened: rfForm.what_happened.trim(), what_i_felt: rfForm.what_i_felt.trim(), what_i_learned: rfForm.what_i_learned.trim(), what_i_would_do_differently: rfForm.what_i_would_do_differently.trim(), linked_to_yp: [], linked_incident: null, shared_with_manager: false, manager_feedback: "", development_goal: "", is_private: false });
     toast.success("Reflection saved.");
     setRfForm({ staff_id: "", title: "", type: "daily", mood: "positive", what_happened: "", what_i_felt: "", what_i_learned: "", what_i_would_do_differently: "" });
     setDialogOpen(false);

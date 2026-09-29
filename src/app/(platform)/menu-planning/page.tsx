@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -89,7 +90,7 @@ export default function MenuPlanningPage() {
   const handleAddMeal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mealForm.main_dish.trim()) { toast.error("Main dish is required."); return; }
-    await createMeal.mutateAsync({ date: mealForm.date, meal: mealForm.meal, main_dish: mealForm.main_dish.trim(), sides: mealForm.sides ? mealForm.sides.split(",").map((s) => s.trim()).filter(Boolean) : [], dessert: mealForm.dessert.trim(), dietary_flags: [], prepared_by: mealForm.prepared_by || "staff_darren", child_preferences: [], special_notes: mealForm.notes.trim(), budget: parseFloat(mealForm.budget) || 0, leftover_action: "", created_at: new Date().toISOString() });
+    await createMeal.mutateAsync({ date: mealForm.date, meal: mealForm.meal, main_dish: mealForm.main_dish.trim(), sides: mealForm.sides ? mealForm.sides.split(",").map((s) => s.trim()).filter(Boolean) : [], dessert: mealForm.dessert.trim(), dietary_flags: [], prepared_by: mealForm.prepared_by || currentUserId(), child_preferences: [], special_notes: mealForm.notes.trim(), budget: parseFloat(mealForm.budget) || 0, leftover_action: "", created_at: new Date().toISOString() });
     toast.success("Meal plan added.");
     setMealForm({ date: todayStr(), meal: "dinner", main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
     setShowNew(false);

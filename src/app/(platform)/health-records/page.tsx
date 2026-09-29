@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -189,7 +190,7 @@ export default function HealthRecordsPage() {
         status: nType === "referral" ? "referred" : "current",
         follow_up_date: null,
         outcome: nOutcome || null,
-        staff_id: currentUser?.id || "staff_darren",
+        staff_id: currentUser?.id || currentUserId(),
       },
       {
         onSuccess: () => toast.success("Health record saved"),

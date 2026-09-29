@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useEffect } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useUrlParam } from "@/hooks/use-client-value";
 import { PrintButton } from "@/components/ui/print-button";
 import { PageShell } from "@/components/layout/page-shell";
@@ -387,7 +388,7 @@ function CreateForm({
         content: generatedContent,
         status: approve ? "approved" : "draft",
         created_by: currentUser?.id ?? "",
-        ...(approve ? { approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() } : {}),
+        ...(approve ? { approved_by: currentUser?.id ?? currentUserId(), approved_at: new Date().toISOString() } : {}),
       });
       setSavedOk(true);
       setTimeout(onClose, 1500);

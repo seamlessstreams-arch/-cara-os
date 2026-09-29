@@ -453,7 +453,7 @@ export default function FormDetailPage() {
         {canSubmit && isDraft && !editing && (
           <SubmitPanel
             formId={form.id}
-            currentUserId={currentUser?.id ?? "staff_darren"}
+            currentUserId={currentUser?.id ?? currentUserId()}
             onSuccess={() => handleActionSuccess("Form submitted for review.")}
           />
         )}
@@ -461,7 +461,7 @@ export default function FormDetailPage() {
         {canApprove && isSubmitted && (
           <ApprovePanel
             formId={form.id}
-            currentUserId={currentUser?.id ?? "staff_darren"}
+            currentUserId={currentUser?.id ?? currentUserId()}
             onSuccess={() => handleActionSuccess("Form approved.")}
           />
         )}

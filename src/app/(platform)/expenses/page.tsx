@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -259,7 +260,7 @@ export default function ExpensesPage() {
   function handleApprove(id: string) {
     updateExpense.mutate({
       id,
-      data: { status: "approved", approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() },
+      data: { status: "approved", approved_by: currentUser?.id ?? currentUserId(), approved_at: new Date().toISOString() },
     });
   }
 

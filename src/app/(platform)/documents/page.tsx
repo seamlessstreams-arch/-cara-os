@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -271,7 +272,7 @@ export default function DocumentsPage() {
     if (allReceipts.length > 0) {
       setSignedByMe(new Set(
         allReceipts
-          .filter((r) => r.staff_id === (currentUser?.id ?? "staff_darren") && r.signed_at)
+          .filter((r) => r.staff_id === (currentUser?.id ?? currentUserId()) && r.signed_at)
           .map((r) => r.document_id)
       ));
     }
@@ -350,7 +351,7 @@ export default function DocumentsPage() {
     const requireSign = documents.filter((d) => d.requires_read_sign);
     const allSigned = requireSign.filter((d) => {
       const seedSigned = new Set(allReceipts.filter((r) => r.document_id === d.id && r.signed_at).map((r) => r.staff_id));
-      if (signedByMe.has(d.id)) seedSigned.add(currentUser?.id ?? "staff_darren");
+      if (signedByMe.has(d.id)) seedSigned.add(currentUser?.id ?? currentUserId());
       return seedSigned.size >= activeCount;
     });
     const expiring = documents.filter((d) => d.expiry_date && d.expiry_date <= daysFromNow(30) && d.expiry_date >= todayStr());
@@ -514,7 +515,7 @@ export default function DocumentsPage() {
               const seedSigned = allReceipts.filter((r) => r.document_id === doc.id && r.signed_at);
               const signedStaffIds = new Set([
                 ...seedSigned.map((r) => r.staff_id),
-                ...(signedByMe.has(doc.id) ? [currentUser?.id ?? "staff_darren"] : []),
+                ...(signedByMe.has(doc.id) ? [currentUser?.id ?? currentUserId()] : []),
               ]);
               const signed = activeStaff.filter((s) => signedStaffIds.has(s.id));
               const notSigned = activeStaff.filter((s) => !signedStaffIds.has(s.id));

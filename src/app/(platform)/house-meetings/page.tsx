@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -89,7 +90,7 @@ export default function HouseMeetingsPage() {
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hmForm.general_comments.trim()) { toast.error("General comments are required."); return; }
-    await createMeeting.mutateAsync({ date: hmForm.date, meeting_type: hmForm.meeting_type, chair_person: hmForm.chair_person || "staff_darren", minutes_taker: hmForm.minutes_taker || "staff_ryan", children_present: [], children_absent: [], staff_present: [], agenda: [], child_feedback: [], actions_from_previous: [], new_actions: [], general_comments: hmForm.general_comments.trim(), next_meeting_date: hmForm.next_meeting_date, duration: parseInt(hmForm.duration) || 60, created_at: new Date().toISOString() });
+    await createMeeting.mutateAsync({ date: hmForm.date, meeting_type: hmForm.meeting_type, chair_person: hmForm.chair_person || currentUserId(), minutes_taker: hmForm.minutes_taker || "staff_ryan", children_present: [], children_absent: [], staff_present: [], agenda: [], child_feedback: [], actions_from_previous: [], new_actions: [], general_comments: hmForm.general_comments.trim(), next_meeting_date: hmForm.next_meeting_date, duration: parseInt(hmForm.duration) || 60, created_at: new Date().toISOString() });
     toast.success("House meeting recorded.");
     setHmForm({ date: todayStr(), meeting_type: "regular", chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
     setShowNew(false);

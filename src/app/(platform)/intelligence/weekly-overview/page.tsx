@@ -40,6 +40,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useMemo, useState, useEffect } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import Link from "next/link";
@@ -523,7 +524,7 @@ function PatternAlertsSection() {
   const { currentUser } = useAuthContext();
 
   function handleAcknowledge(id: string) {
-    acknowledge.mutate({ id, status: "acknowledged", acknowledged_by: currentUser?.id ?? "staff_darren" });
+    acknowledge.mutate({ id, status: "acknowledged", acknowledged_by: currentUser?.id ?? currentUserId() });
   }
 
   return (

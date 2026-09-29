@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -163,11 +164,11 @@ export default function FireDrillsPage() {
       result: nResult as FireDrillResult,
       all_present: true,
       children_present: ["yp_alex", "yp_jordan", "yp_casey"],
-      staff_present: [currentUser?.id || "staff_darren"],
+      staff_present: [currentUser?.id || currentUserId()],
       issues: nIssues,
       actions_taken: nActions,
       next_drill_due: "", // will be set properly later
-      conducted_by: currentUser?.id || "staff_darren",
+      conducted_by: currentUser?.id || currentUserId(),
       notes: nNotes,
     } as Partial<FireDrill>, {
       onSuccess: () => {

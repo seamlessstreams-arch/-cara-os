@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -253,7 +254,7 @@ function ActionPanel({ session, onUpdate }: {
 
       {session.status === "completed" && (
         <Button
-          onClick={() => act({ status: "reviewed", reviewed_by: currentUser?.id ?? "staff_darren", reviewed_at: new Date().toISOString() })}
+          onClick={() => act({ status: "reviewed", reviewed_by: currentUser?.id ?? currentUserId(), reviewed_at: new Date().toISOString() })}
           disabled={saving}
           className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white gap-2"
         >

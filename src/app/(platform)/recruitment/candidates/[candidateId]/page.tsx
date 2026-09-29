@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -597,7 +598,7 @@ export default function CandidateDetailPage() {
   }
 
   function handleGrantFinalClearance() {
-    updateOffer.mutate({ candidateId, action: "grant_final_clearance", by: currentUser?.id ?? "staff_darren" });
+    updateOffer.mutate({ candidateId, action: "grant_final_clearance", by: currentUser?.id ?? currentUserId() });
   }
 
   if (isLoading) return (

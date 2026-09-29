@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Megaphone, Users, MoonStar, Pill, ShieldAlert, CalendarClock, HardHat, Wrench,
@@ -34,7 +35,7 @@ function timeLabel(iso: string): string {
 export function CommsCentre() {
   const qc = useQueryClient();
   const { currentUser } = useAuthContext();
-  const userId = currentUser?.id ?? "staff_darren";
+  const userId = currentUser?.id ?? currentUserId();
   const isManager = isManagerRole(currentUser?.role ?? "residential_care_worker");
 
   const { data: channels = [], isLoading } = useQuery({

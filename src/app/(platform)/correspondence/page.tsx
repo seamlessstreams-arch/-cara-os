@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CorrespondenceEntry, CorrespondenceDirection, CorrespondenceMethod, CorrespondencePriority, CorrespondenceStatus } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -215,7 +216,7 @@ export default function CorrespondencePage() {
       action_required: nAction || null,
       action_due: null,
       child_id: nChild || null,
-      recorded_by: currentUser?.id || "staff_darren",
+      recorded_by: currentUser?.id || currentUserId(),
     }, {
       onSuccess: () => toast.success("Correspondence logged"),
     });

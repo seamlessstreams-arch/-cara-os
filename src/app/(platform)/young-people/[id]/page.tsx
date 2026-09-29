@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -584,7 +585,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
         reason: kwForm.reason, aims: kwForm.aims, desired_outcomes: kwForm.desired_outcomes,
         child_voice: kwForm.child_voice || undefined,
         staff_reflection: kwForm.staff_reflection || undefined,
-        status: "completed", created_by: currentUser?.id ?? "staff_darren",
+        status: "completed", created_by: currentUser?.id ?? currentUserId(),
       },
       {
         onSuccess: () => {

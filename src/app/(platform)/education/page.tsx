@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -207,7 +208,7 @@ export default function EducationPage() {
         attendance_status: nAttendance ? (nAttendance as EducationAttendanceStatus) : null,
         linked_pep: nType === "pep_meeting",
         outcome: nOutcome || undefined,
-        staff_id: currentUser?.id || "staff_darren",
+        staff_id: currentUser?.id || currentUserId(),
         status: "open",
       },
       {

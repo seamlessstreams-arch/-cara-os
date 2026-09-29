@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   Target,
   Plus,
@@ -101,7 +102,7 @@ export default function HomeImprovementPlanPage() {
   const handleSaveObjective = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!objForm.title.trim()) { toast.error("Title is required."); return; }
-    await createObjective.mutateAsync({ title: objForm.title.trim(), source: objForm.source, priority: objForm.priority, status: "planned" as ObjectiveStatus, owner: objForm.owner || "staff_darren", target_date: objForm.target_date, completed_date: null, progress: 0, budget: null, notes: objForm.notes.trim(), updates: [] });
+    await createObjective.mutateAsync({ title: objForm.title.trim(), source: objForm.source, priority: objForm.priority, status: "planned" as ObjectiveStatus, owner: objForm.owner || currentUserId(), target_date: objForm.target_date, completed_date: null, progress: 0, budget: null, notes: objForm.notes.trim(), updates: [] });
     toast.success("Objective added.");
     setObjForm({ title: "", source: "self", priority: "medium", owner: "", target_date: "", notes: "" });
     setShowNew(false);
