@@ -247,7 +247,7 @@ export const CreateEventSchema = z.object({
   // DEMO default only. The POST route always supplies the session identity,
   // so this is reached only by direct service callers and tests. Do not rely
   // on it in a request path: on a live tenant it names nobody.
-  organiser_id: z.string().default("staff_darren"),
+  organiser_id: z.string().default(""),
   attendees: z.array(AttendeeSchema).default([]),
   reminder_minutes_before: z.number().int().min(0).max(10080).nullable().optional(),
   recurrence: RecurrenceSchema,

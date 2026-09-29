@@ -244,7 +244,7 @@ export const sbCareEvents = {
       home_id: data.home_id ?? tenantHomeId(),
       child_ids: data.child_id ? [data.child_id] : [],
       shift_id: data.shift_id ?? null,
-      staff_id: data.staff_id ?? "staff_darren",
+      staff_id: data.staff_id ?? "",
       category: data.category ?? "general",
       status: data.status ?? "draft",
       title: data.title ?? "",

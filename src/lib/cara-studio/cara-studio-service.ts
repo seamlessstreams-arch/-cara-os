@@ -35,7 +35,7 @@ export interface CaraActor {
 
 export function actorFromHeaders(headers: Headers): CaraActor {
   return {
-    userId: headers.get("x-user-id") ?? "staff_darren",
+    userId: headers.get("x-user-id") ?? "",
     role: headers.get("x-user-role") ?? "residential_support_worker",
   };
 }

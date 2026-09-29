@@ -4,6 +4,7 @@ import {
   scheduledInstant, pickTodayShift, buildSignInStatus, clockIn, clockOut, isStaffOnShift,
 } from "../sign-in-service";
 import { db } from "@/lib/db/store";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { currentKioskCode } from "../presence-verification";
 
 // Unique ids/date per concern so tests don't collide with seed data or each other.
@@ -58,7 +59,7 @@ describe("clock in / out against a scheduled shift", () => {
     db.shifts.create({
       staff_id: staff, date: DATE, shift_type: "day", start_time: "08:00", end_time: "16:00",
       break_minutes: 30, actual_start: null, actual_end: null, clock_in_at: null, clock_out_at: null,
-      overtime_minutes: 0, notes: null, status: "scheduled", is_open_shift: false, home_id: "home_oak",
+      overtime_minutes: 0, notes: null, status: "scheduled", is_open_shift: false, home_id: tenantHomeId(),
       created_by: staff, updated_by: staff,
     });
     const r = clockIn(staff, at("08:15"));
@@ -103,7 +104,7 @@ describe("overnight (waking-night) shift spanning midnight", () => {
     db.shifts.create({
       staff_id: staff, date: DATE, shift_type: "waking_night", start_time: "22:00", end_time: "07:00",
       break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: null, clock_out_at: null,
-      overtime_minutes: 0, notes: null, status: "scheduled", is_open_shift: false, home_id: "home_oak",
+      overtime_minutes: 0, notes: null, status: "scheduled", is_open_shift: false, home_id: tenantHomeId(),
       created_by: staff, updated_by: staff,
     });
     const r = clockIn(staff, at("22:05"));
@@ -163,9 +164,9 @@ describe("clock-out guard", () => {
 });
 
 describe("presence-verified clock-in (Phase 5)", () => {
-  it("records a verified kiosk sign-in (home defaults to home_oak)", () => {
+  it("records a verified kiosk sign-in (home defaults to the deployment home)", () => {
     const staff = "staff_test_kiosk";
-    const code = currentKioskCode("home_oak", at("14:00"));
+    const code = currentKioskCode(tenantHomeId(), at("14:00"));
     const r = clockIn(staff, at("14:00"), { verification: { method: "kiosk", code } });
     expect(r.presence?.method).toBe("kiosk");
     expect(r.presence?.verified).toBe(true);
@@ -195,7 +196,7 @@ describe("presence-verified clock-in (Phase 5)", () => {
 
   it("surfaces the verification in the sign-in status", () => {
     const staff = "staff_test_status_presence";
-    const code = currentKioskCode("home_oak", at("14:00"));
+    const code = currentKioskCode(tenantHomeId(), at("14:00"));
     clockIn(staff, at("14:00"), { verification: { method: "kiosk", code } });
     const s = buildSignInStatus(staff, at("14:30"));
     expect(s.presence?.verified).toBe(true);
@@ -234,7 +235,7 @@ describe("on-shift lookup at the London/UTC date boundary", () => {
       staff_id: staff, date: LONDON_TODAY, shift_type: "waking_night", start_time: "22:00", end_time: "07:00",
       break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: `${LONDON_TODAY}T00:05:00.000Z`,
       clock_out_at: null, overtime_minutes: 0, notes: null, status: "in_progress", is_open_shift: false,
-      home_id: "home_oak", created_by: staff, updated_by: staff,
+      home_id: tenantHomeId(), created_by: staff, updated_by: staff,
     });
     // Before the fix this was false: the shift was filed under 2026-06-16 and
     // looked up under 2026-06-15, so it was invisible.
@@ -247,7 +248,7 @@ describe("on-shift lookup at the London/UTC date boundary", () => {
       staff_id: other, date: "2026-06-15", shift_type: "waking_night", start_time: "22:00", end_time: "07:00",
       break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: "2026-06-15T21:00:00.000Z",
       clock_out_at: null, overtime_minutes: 0, notes: null, status: "in_progress", is_open_shift: false,
-      home_id: "home_oak", created_by: other, updated_by: other,
+      home_id: tenantHomeId(), created_by: other, updated_by: other,
     });
     expect(isStaffOnShift(other, NOW)).toBe(true);
   });
