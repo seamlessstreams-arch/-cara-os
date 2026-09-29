@@ -12,8 +12,6 @@
   "src/app/api/v1/cara-intelligence/safeguarding-flags/route.ts": 1,
   "src/app/api/v1/comms/channels/route.ts": 1,
   "src/app/api/v1/complaints/route.ts": 3,
-  "src/app/api/v1/doc-intelligence/[docId]/approve/route.ts": 1,
-  "src/app/api/v1/doc-intelligence/[docId]/route.ts": 1,
   "src/app/api/v1/intelligence/document/route.ts": 1,
   "src/app/api/v1/recruitment/offers/route.ts": 4,
   "src/app/api/v1/recruitment/route.ts": 1,
