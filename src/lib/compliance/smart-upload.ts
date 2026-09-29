@@ -51,7 +51,7 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
   const name = input.fileName || "Uploaded document";
   const ctx = input.uploadContext || "";
   const text = (input.text || "").slice(0, SMART_UPLOAD_TEXT_LIMIT);
-  const actorId = input.actorId || "staff_darren";
+  const actorId = input.actorId || "";
   const now = new Date().toISOString();
   const today = todayStr();
 

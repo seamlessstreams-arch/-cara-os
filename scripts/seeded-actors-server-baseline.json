@@ -1,8 +1,1 @@
-{
-  "src/lib/attendance/sign-in-service.ts": 2,
-  "src/lib/calendar/calendar-service.ts": 1,
-  "src/lib/cara-studio/cara-studio-service.ts": 1,
-  "src/lib/cara-studio/source.service.ts": 3,
-  "src/lib/compliance/smart-upload.ts": 1,
-  "src/lib/supabase/care-events.ts": 1
-}
+{}

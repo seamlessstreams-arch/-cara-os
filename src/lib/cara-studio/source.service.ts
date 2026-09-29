@@ -101,7 +101,7 @@ function getDemoSources(): CaraStudioSource[] {
       content: null, extracted_text: null, source_date: now,
       category: "daily_recording", tags: ["positive", "education"],
       confidentiality_level: "standard", approval_status: "approved",
-      is_sensitive: false, created_by: "staff_darren",
+      is_sensitive: false, created_by: "staff_darren",  // seed-actor-ok: demo source fixture, not a written attribution
       created_at: now, updated_at: now, archived_at: null,
     },
     {
@@ -112,7 +112,7 @@ function getDemoSources(): CaraStudioSource[] {
       content: null, extracted_text: null, source_date: now,
       category: "incident", tags: ["peer_conflict", "de-escalated"],
       confidentiality_level: "standard", approval_status: "approved",
-      is_sensitive: false, created_by: "staff_darren",
+      is_sensitive: false, created_by: "staff_darren",  // seed-actor-ok: demo source fixture, not a written attribution
       created_at: now, updated_at: now, archived_at: null,
     },
     {
@@ -123,7 +123,7 @@ function getDemoSources(): CaraStudioSource[] {
       content: null, extracted_text: null, source_date: now,
       category: "keywork", tags: ["goals", "child_voice"],
       confidentiality_level: "standard", approval_status: "approved",
-      is_sensitive: false, created_by: "staff_darren",
+      is_sensitive: false, created_by: "staff_darren",  // seed-actor-ok: demo source fixture, not a written attribution
       created_at: now, updated_at: now, archived_at: null,
     },
   ];

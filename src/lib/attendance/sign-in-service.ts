@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { londonDateStr } from "@/lib/utils";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import { verifyPresence, type PresenceMethod, type PresenceResult, type PresenceBand } from "./presence-verification";
@@ -31,8 +32,8 @@ export interface PresenceVerificationInput {
   coords?: { lat: number; lng: number };
 }
 
-const DEFAULT_USER_ID = "staff_darren";
-const DEFAULT_HOME = "home_oak";
+const DEFAULT_USER_ID = ""; // unattributed when the request carries no user; the caller supplies the real actor
+const DEFAULT_HOME = tenantHomeId(); // the deployment home, not a seed id
 
 // ── Identity ──────────────────────────────────────────────────────────────────
 
