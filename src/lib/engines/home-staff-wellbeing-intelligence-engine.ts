@@ -43,10 +43,10 @@ export type StaffWellbeingRating =
   | "insufficient_data";
 
 export interface MoraleProfile {
-  avg_overall: number;
-  avg_workload: number;
-  avg_support: number;
-  avg_moral: number;
+  avg_overall: number | null;
+  avg_workload: number | null;
+  avg_support: number | null;
+  avg_moral: number | null;
   lowest_overall: number;
   highest_overall: number;
   at_risk_count: number;               // overall_score <= 4
@@ -120,8 +120,8 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
 }
 
@@ -256,10 +256,10 @@ export function computeHomeStaffWellbeing(
   // mod1: Average morale (±5)
   // High average overall score = positive culture
   const mod1 =
-    morale.avg_overall >= 7 ? 5 :
-    morale.avg_overall >= 6 ? 3 :
-    morale.avg_overall >= 5 ? 0 :
-    morale.avg_overall >= 4 ? -3 : -5;
+    (morale.avg_overall ?? 0) >= 7 ? 5 :
+    (morale.avg_overall ?? 0) >= 6 ? 3 :
+    (morale.avg_overall ?? 0) >= 5 ? 0 :
+    (morale.avg_overall ?? 0) >= 4 ? -3 : -5;
   score += mod1;
 
   // mod2: Staff coverage (±4)
@@ -336,7 +336,7 @@ export function computeHomeStaffWellbeing(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (morale.avg_overall >= 7) strengths.push("Average staff morale is high, indicating a supportive working environment.");
+  if ((morale.avg_overall ?? 0) >= 7) strengths.push("Average staff morale is high, indicating a supportive working environment.");
   if (meets(coverage.coverage_rate, 80)) strengths.push(`${coverage.coverage_rate}% of staff have had a wellbeing check — excellent coverage.`);
   if (morale.at_risk_count === 0) strengths.push("No staff members are currently flagged as at-risk.");
   if (meets(actionRate, 90) && supportNeeded > 0) strengths.push("Management responds to wellbeing concerns with agreed actions in almost all cases.");
@@ -347,12 +347,12 @@ export function computeHomeStaffWellbeing(
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (morale.avg_overall < 5) concerns.push(`Average staff morale is low (${morale.avg_overall}/10) — urgent leadership attention needed.`);
+  if ((morale.avg_overall ?? 0) < 5) concerns.push(`Average staff morale is low (${morale.avg_overall}/10) — urgent leadership attention needed.`);
   if (morale.at_risk_count > 0) concerns.push(`${morale.at_risk_count} staff member(s) scored ≤4 overall — at risk of burnout or disengagement.`);
   if (below(coverage.coverage_rate, 50)) concerns.push(`Only ${coverage.coverage_rate}% of staff have had a wellbeing check — significant gaps in monitoring.`);
   if (follow_ups.overdue_follow_ups > 0) concerns.push(`${follow_ups.overdue_follow_ups} wellbeing follow-up(s) are overdue — support commitments not being met.`);
   if (below(actionRate, 70) && supportNeeded > 0) concerns.push("Staff requesting support are not consistently receiving agreed actions.");
-  if (morale.avg_workload < 5) concerns.push(`Average workload score is low (${morale.avg_workload}/10) — staff feeling overburdened.`);
+  if ((morale.avg_workload ?? 0) < 5) concerns.push(`Average workload score is low (${morale.avg_workload}/10) — staff feeling overburdened.`);
   if (stressor_profile.total_stressors > stressor_profile.total_positives * 2) concerns.push("Stressors significantly outweigh positives — team culture may be deteriorating.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -383,7 +383,7 @@ export function computeHomeStaffWellbeing(
       regulatory_ref: "Reg 33(4)(a)",
     });
   }
-  if (morale.avg_workload < 5) {
+  if ((morale.avg_workload ?? 0) < 5) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review workload distribution and consider additional staffing or task reallocation.",
@@ -429,13 +429,13 @@ export function computeHomeStaffWellbeing(
       severity: "positive",
     });
   }
-  if (morale.avg_support >= 7) {
+  if ((morale.avg_support ?? 0) >= 7) {
     insights.push({
       text: `Staff rate support at ${morale.avg_support}/10 on average — the team feels well-supported by management.`,
       severity: "positive",
     });
   }
-  if (morale.avg_support < 5) {
+  if ((morale.avg_support ?? 0) < 5) {
     insights.push({
       text: `Average support score is only ${morale.avg_support}/10 — staff do not feel adequately supported.`,
       severity: "critical",

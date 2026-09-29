@@ -122,10 +122,11 @@ export function HomeStaffWellbeingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Activity className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
+                  d.morale.avg_overall === null ? "text-slate-400" :
                   d.morale.avg_overall >= 7 ? "text-[--cs-success]" :
                   d.morale.avg_overall >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.morale.avg_overall}
+                  {d.morale.avg_overall ?? "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Morale</p>
@@ -180,14 +181,14 @@ export function HomeStaffWellbeingIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Morale</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Workload: <span className={cn("font-medium",
-                  d.morale.avg_workload >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.morale.avg_workload}/10</span></p>
+                  (d.morale.avg_workload ?? 0) >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{d.morale.avg_workload === null ? "—" : `${d.morale.avg_workload}/10`}</span></p>
                 <p>Support: <span className={cn("font-medium",
-                  d.morale.avg_support >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.morale.avg_support}/10</span></p>
+                  (d.morale.avg_support ?? 0) >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{d.morale.avg_support === null ? "—" : `${d.morale.avg_support}/10`}</span></p>
                 <p>Moral: <span className={cn("font-medium",
-                  d.morale.avg_moral >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.morale.avg_moral}/10</span></p>
+                  (d.morale.avg_moral ?? 0) >= 6 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{d.morale.avg_moral === null ? "—" : `${d.morale.avg_moral}/10`}</span></p>
                 <p>Range: <span className="font-medium text-slate-600">{d.morale.lowest_overall}–{d.morale.highest_overall}</span></p>
               </div>
             </div>
