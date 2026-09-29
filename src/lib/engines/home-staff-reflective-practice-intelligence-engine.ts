@@ -142,7 +142,7 @@ export function computeHomeStaffReflectivePractice(
   // Meeting attendance: average of (attendees_count / total_staff * 100) across meetings
   const avgAttendRate =
     staff_meetings.length === 0
-      ? 0
+      ? null
       : Math.round(
           staff_meetings.reduce((sum, m) => sum + (m.total_staff === 0 ? 0 : (m.attendees_count / m.total_staff) * 100), 0) /
             staff_meetings.length,
@@ -192,9 +192,9 @@ export function computeHomeStaffReflectivePractice(
   // Mod 5: Staff meeting attendance & action completion (±5)
   const mod5 =
     staff_meetings.length === 0 ? -2 :
-    (avgAttendRate >= 80 && meets(actionCompRate, 80)) ? 5 :
-    (avgAttendRate >= 60 && meets(actionCompRate, 60)) ? 2 :
-    (avgAttendRate >= 40 || meets(actionCompRate, 40)) ? 0 : -5;
+    ((avgAttendRate ?? 0) >= 80 && meets(actionCompRate, 80)) ? 5 :
+    ((avgAttendRate ?? 0) >= 60 && meets(actionCompRate, 60)) ? 2 :
+    ((avgAttendRate ?? 0) >= 40 || meets(actionCompRate, 40)) ? 0 : -5;
   score += mod5;
 
   // Mod 6: Reflective culture indicators (±4)
