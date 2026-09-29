@@ -102,6 +102,10 @@ const ALLOWED = new Map([
     "src/lib/child-voice-dimensions/dimensions-engine.ts:totalCaptures:0",
     "child-voice 'voice_captured' dimension: 0 captures across all 5 channels (key work / reviews / meetings / feedback / advocacy) over the window is a REAL practice concern for child voice, not unmeasured — the engine deliberately pairs the 0 score with status 'needs_attention' and an explicit 'No voice recorded' note. Absence of voice capture IS the finding here; a null score would contradict the needs_attention status and hide the gap. Not converted to null.",
   ],
+  [
+    "src/lib/search/search-engine.ts:scores:0",
+    "search RELEVANCE ranking (multiTermScore returns 'the average relevance score'), NOT a care/compliance score — mean of per-term best-match scores across fields; an empty term set ⇒ relevance 0 is the correct ranking value, not a fabricated care metric. Matches the command-palette search-ranking allowlist precedent from the fab-100 sweep.",
+  ],
 
   // ── Statement-form leaves ───────────────────────────────────────────────────
   // Sites the EMPTY_RETURN matcher flags that are NOT the bug: a score is only
