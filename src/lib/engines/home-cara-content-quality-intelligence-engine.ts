@@ -57,9 +57,9 @@ export interface CaraContentQualityResult {
   approval_rate: number | null; // % of submitted artifacts that got approved
   /** null when the population is empty — nothing measured, not 0%. */
   rejection_rate: number | null; // % of submitted artifacts that got rejected
-  average_quality_score: number; // avg quality_score across all artifacts
-  average_evidence_confidence: number; // avg evidence_confidence_score
-  review_turnaround_hours: number; // avg hours from submitted to reviewed
+  average_quality_score: number; // avg quality_score across all artifacts (always measured; empty returns early)
+  average_evidence_confidence: number; // avg evidence_confidence_score (always measured; empty returns early)
+  review_turnaround_hours: number | null; // avg hours submitted→reviewed; null when no reviewed pairs
   /** null when the population is empty — nothing measured, not 0%. */
   safeguarding_flagged_rate: number | null; // % of artifacts with safeguarding_level != "none"
   /** null when the population is empty — nothing measured, not 0%. */
@@ -171,15 +171,13 @@ export function computeCaraContentQuality(
   const approvalRate = rate(approvedArtifacts.length, submittedArtifacts.length);
   const rejectionRate = rate(rejectedArtifacts.length, submittedArtifacts.length);
 
-  // Average quality score across all artifacts
-  const avgQuality = totalArtifacts === 0
-    ? 0
-    : Math.round(artifacts.reduce((sum, a) => sum + a.quality_score, 0) / totalArtifacts);
+  // Average quality score across all artifacts.
+  // artifacts.length > 0 is guaranteed here (the empty case returns early above),
+  // so this is always a measured value — no fabricated-0-on-empty branch needed.
+  const avgQuality = Math.round(artifacts.reduce((sum, a) => sum + a.quality_score, 0) / totalArtifacts);
 
-  // Average evidence confidence across all artifacts
-  const avgEvidence = totalArtifacts === 0
-    ? 0
-    : Math.round(artifacts.reduce((sum, a) => sum + a.evidence_confidence_score, 0) / totalArtifacts);
+  // Average evidence confidence across all artifacts (artifacts.length > 0 guaranteed above).
+  const avgEvidence = Math.round(artifacts.reduce((sum, a) => sum + a.evidence_confidence_score, 0) / totalArtifacts);
 
   // Review turnaround hours
   const turnaroundPairs = artifacts.filter(
@@ -187,7 +185,7 @@ export function computeCaraContentQuality(
   );
   const reviewTurnaroundHours =
     turnaroundPairs.length === 0
-      ? 0
+      ? null
       : Math.round(
           (turnaroundPairs.reduce(
             (sum, a) => sum + hoursBetween(a.submitted_for_review_at!, a.reviewed_at!),
@@ -337,7 +335,7 @@ export function computeCaraContentQuality(
     strengths.push(`${artifactTypeDiversity} distinct artifact types — Cara is being used across a broad range of record types.`);
   }
 
-  if (reviewTurnaroundHours > 0 && reviewTurnaroundHours <= 24) {
+  if ((reviewTurnaroundHours ?? 0) > 0 && (reviewTurnaroundHours ?? 0) <= 24) {
     strengths.push(`Average review turnaround of ${reviewTurnaroundHours} hours — prompt governance of AI-assisted content.`);
   }
 
@@ -377,7 +375,7 @@ export function computeCaraContentQuality(
     concerns.push(`Only ${childCoverageRate}% child coverage — Cara is not being used for most children, creating inconsistent recording quality.`);
   }
 
-  if (reviewTurnaroundHours > 72) {
+  if ((reviewTurnaroundHours ?? 0) > 72) {
     concerns.push(`Average review turnaround of ${reviewTurnaroundHours} hours — AI-assisted content is not being reviewed promptly, risking governance gaps.`);
   }
 
@@ -463,7 +461,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (reviewTurnaroundHours > 72) {
+  if ((reviewTurnaroundHours ?? 0) > 72) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Reduce review turnaround time for Cara-generated content — delays in governance of AI-assisted records risk information becoming stale.",
@@ -513,12 +511,12 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (reviewTurnaroundHours > 72) {
+  if ((reviewTurnaroundHours ?? 0) > 72) {
     insights.push({
       text: `Review turnaround averages ${reviewTurnaroundHours} hours — AI-assisted content is not being governed promptly.`,
       severity: "warning",
     });
-  } else if (reviewTurnaroundHours > 48) {
+  } else if ((reviewTurnaroundHours ?? 0) > 48) {
     insights.push({
       text: `Review turnaround averages ${reviewTurnaroundHours} hours — consider streamlining the review process for AI-assisted drafts.`,
       severity: "warning",
