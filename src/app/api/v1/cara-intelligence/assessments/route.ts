@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     ai_generated_text: body.ai_generated_text!,
     human_reviewed_text: body.human_reviewed_text,
     status: (body.status as CaraAssessmentStatus) ?? "draft",
-    created_by: body.created_by ?? "staff_darren",
+    created_by: identity.userId,
     reviewed_by: body.reviewed_by,
     approved_by: body.approved_by,
     reviewed_at: body.reviewed_at,

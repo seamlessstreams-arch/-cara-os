@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     outcome: body.outcome ?? "too_early",
     outcome_notes: body.outcome_notes ?? null,
     evidence_refs: body.evidence_refs ?? [],
-    created_by: body.created_by ?? "staff_darren",
+    created_by: identity.userId,
   });
 
   return NextResponse.json({ data: intervention }, { status: 201 });

@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     cara_summary:    body.cara_summary,
     manager_oversight_id: body.manager_oversight_id,
     status:          (body.status as KeyWorkSessionStatus) ?? "planned",
-    created_by:      body.created_by ?? "staff_darren",
+    created_by:      identity.userId,
     completed_by:    body.completed_by,
     reviewed_by:     body.reviewed_by,
     completed_at:    body.completed_at,

@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     status: body.status ?? "open",
     linked_evidence: body.linked_evidence ?? [],
     should_continue: null,
-    created_by: body.created_by ?? "staff_darren",
+    created_by: identity.userId,
   });
 
   return NextResponse.json({ data: outcome }, { status: 201 });
