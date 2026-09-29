@@ -170,11 +170,12 @@ describe("aggregate metrics — output field accuracy", () => {
     expect(r.check_compliance_rate).toBe(0);
   });
 
-  it("computes check_compliance_rate = 0 when expected_checks_count is 0", () => {
+  it("check_compliance_rate is null when expected_checks_count is 0", () => {
     const r = computeSleepNightCare(
       baseInput({ logs: [baseRecord({ checks_completed_count: 0, expected_checks_count: 0 })] }),
     );
-    expect(r.check_compliance_rate).toBe(0);
+    // No expected checks → nothing to be compliant against → unmeasured, not 0%
+    expect(r.check_compliance_rate).toBeNull();
   });
 
   it("computes building_security_rate correctly", () => {
@@ -208,9 +209,10 @@ describe("aggregate metrics — output field accuracy", () => {
     expect(r.disturbance_response_rate).toBe(50);
   });
 
-  it("computes disturbance_response_rate = 0 when no disturbances exist", () => {
+  it("disturbance_response_rate is null when no disturbances exist", () => {
     const r = computeSleepNightCare(baseInput({ logs: [baseRecord()] }));
-    expect(r.disturbance_response_rate).toBe(0);
+    // No disturbances → nothing to respond to → unmeasured, not 0%
+    expect(r.disturbance_response_rate).toBeNull();
   });
 
   it("computes quiet_night_rate correctly", () => {
@@ -1859,7 +1861,7 @@ describe("edge cases", () => {
     const r = computeSleepNightCare(baseInput({ logs }));
     expect(r.quiet_night_rate).toBe(100);
     expect(r.significant_disturbance_count).toBe(0);
-    expect(r.disturbance_response_rate).toBe(0); // no disturbances
+    expect(r.disturbance_response_rate).toBeNull(); // no disturbances → unmeasured
     expect(r.average_disturbance_duration).toBeNull();
   });
 
@@ -2065,10 +2067,10 @@ describe("full scenario integration", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("pct helper behavior", () => {
-  it("pct returns 0 when denominator is 0 (no expected checks)", () => {
+  it("rate is null when denominator is 0 (no expected checks)", () => {
     const log = baseRecord({ checks_completed_count: 0, expected_checks_count: 0 });
     const r = computeSleepNightCare(baseInput({ logs: [log] }));
-    expect(r.check_compliance_rate).toBe(0);
+    expect(r.check_compliance_rate).toBeNull();
   });
 
   it("pct rounds to nearest integer", () => {

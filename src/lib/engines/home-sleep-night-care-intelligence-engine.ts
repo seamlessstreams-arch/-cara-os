@@ -12,6 +12,8 @@
 // National Minimum Standards 7.9 (night care arrangements).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SleepNightCareRecordInput {
@@ -72,7 +74,9 @@ export interface SleepNightCareResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const pct = (n: number, d: number) => d === 0 ? 0 : Math.round((n / d) * 100);
+// Rates use the shared null-safe rate() — empty denominator ⇒ unmeasured (null), never a fabricated 0%.
+// Scoring branches are guarded by the matching emptiness (insufficient_data / .length checks), so the
+// `?? 0` coercions below never actually fire.
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -116,31 +120,31 @@ export function computeSleepNightCare(
   // Check compliance: total checks completed / total expected checks across all logs
   const totalChecksCompleted = logs.reduce((s, l) => s + l.checks_completed_count, 0);
   const totalExpectedChecks = logs.reduce((s, l) => s + l.expected_checks_count, 0);
-  const checkComplianceRate = pct(totalChecksCompleted, totalExpectedChecks);
+  const checkComplianceRate = rate(totalChecksCompleted, totalExpectedChecks);
 
   // Building security
   const buildingSecureCount = logs.filter(l => l.building_secure).length;
-  const buildingSecurityRate = pct(buildingSecureCount, totalLogs);
+  const buildingSecurityRate = rate(buildingSecureCount, totalLogs);
 
   // Alarm compliance
   const alarmsSetCount = logs.filter(l => l.alarms_set).length;
-  const alarmComplianceRate = pct(alarmsSetCount, totalLogs);
+  const alarmComplianceRate = rate(alarmsSetCount, totalLogs);
 
   // Disturbance response: among logs that HAVE disturbances, rate of all_disturbances_have_action
   const logsWithDisturbances = logs.filter(l => l.disturbance_count > 0);
   const logsWithFullResponse = logsWithDisturbances.filter(l => l.all_disturbances_have_action).length;
-  const disturbanceResponseRate = pct(logsWithFullResponse, logsWithDisturbances.length);
+  const disturbanceResponseRate = rate(logsWithFullResponse, logsWithDisturbances.length);
 
   // Quiet nights: disturbance_level === "none"
   const quietNights = logs.filter(l => l.disturbance_level === "none").length;
-  const quietNightRate = pct(quietNights, totalLogs);
+  const quietNightRate = rate(quietNights, totalLogs);
 
   // Significant disturbance count
   const significantDisturbanceCount = logs.filter(l => l.disturbance_level === "significant").length;
 
   // Handover quality: has_handover_notes AND has_morning_handover
   const logsWithFullHandover = logs.filter(l => l.has_handover_notes && l.has_morning_handover).length;
-  const handoverQualityRate = pct(logsWithFullHandover, totalLogs);
+  const handoverQualityRate = rate(logsWithFullHandover, totalLogs);
 
   // Average disturbance duration (across logs that have disturbances)
   const totalDisturbanceDuration = logs.reduce((s, l) => s + l.total_disturbance_duration_minutes, 0);
@@ -157,18 +161,18 @@ export function computeSleepNightCare(
 
   // ── Mod 1: Check Compliance (+6/+3/0/-3/-5) ──────────────────────────
   {
-    if (checkComplianceRate >= 95) score += 6;
-    else if (checkComplianceRate >= 80) score += 3;
-    else if (checkComplianceRate < 50) score -= 5;
+    if ((checkComplianceRate ?? 0) >= 95) score += 6;
+    else if ((checkComplianceRate ?? 0) >= 80) score += 3;
+    else if ((checkComplianceRate ?? 0) < 50) score -= 5;
     // 0 logs with children case already handled by insufficient_data guard
     // but if logs exist with 0 checks across the board (rate would be 0 < 50) → -5
   }
 
   // ── Mod 2: Building Security & Alarm Compliance (+5/+2/-1/-5) ────────
   {
-    if (buildingSecurityRate >= 98 && alarmComplianceRate >= 98) score += 5;
-    else if (buildingSecurityRate >= 90 || alarmComplianceRate >= 90) score += 2;
-    else if (buildingSecurityRate < 70 || alarmComplianceRate < 70) score -= 5;
+    if ((buildingSecurityRate ?? 0) >= 98 && (alarmComplianceRate ?? 0) >= 98) score += 5;
+    else if ((buildingSecurityRate ?? 0) >= 90 || (alarmComplianceRate ?? 0) >= 90) score += 2;
+    else if ((buildingSecurityRate ?? 0) < 70 || (alarmComplianceRate ?? 0) < 70) score -= 5;
     else score -= 1;
   }
 
@@ -178,33 +182,33 @@ export function computeSleepNightCare(
       // No disturbances at all — all quiet, minor positive
       score += 2;
     } else {
-      if (disturbanceResponseRate >= 95) score += 5;
-      else if (disturbanceResponseRate >= 80) score += 2;
-      else if (disturbanceResponseRate < 50) score -= 4;
+      if ((disturbanceResponseRate ?? 0) >= 95) score += 5;
+      else if ((disturbanceResponseRate ?? 0) >= 80) score += 2;
+      else if ((disturbanceResponseRate ?? 0) < 50) score -= 4;
     }
   }
 
   // ── Mod 4: Handover Quality (+5/+2/-1/-4) ────────────────────────────
   {
-    if (handoverQualityRate >= 90) score += 5;
-    else if (handoverQualityRate >= 70) score += 2;
-    else if (handoverQualityRate < 40) score -= 4;
+    if ((handoverQualityRate ?? 0) >= 90) score += 5;
+    else if ((handoverQualityRate ?? 0) >= 70) score += 2;
+    else if ((handoverQualityRate ?? 0) < 40) score -= 4;
     else score -= 1;
   }
 
   // ── Mod 5: Quiet Nights (+4/+2/-1/-4) ────────────────────────────────
   {
-    if (quietNightRate >= 70) score += 4;
-    else if (quietNightRate >= 50) score += 2;
-    else if (quietNightRate < 20) score -= 4;
+    if ((quietNightRate ?? 0) >= 70) score += 4;
+    else if ((quietNightRate ?? 0) >= 50) score += 2;
+    else if ((quietNightRate ?? 0) < 20) score -= 4;
     else score -= 1;
   }
 
   // ── Mod 6: Overall Pattern + Significant Events (+5/+2/-2/-3) ────────
   {
-    if (significantDisturbanceCount === 0 && checkComplianceRate >= 90) score += 5;
-    else if (significantDisturbanceCount <= 1 || checkComplianceRate >= 80) score += 2;
-    else if (significantDisturbanceCount > 3 || checkComplianceRate < 60) score -= 3;
+    if (significantDisturbanceCount === 0 && (checkComplianceRate ?? 0) >= 90) score += 5;
+    else if (significantDisturbanceCount <= 1 || (checkComplianceRate ?? 0) >= 80) score += 2;
+    else if (significantDisturbanceCount > 3 || (checkComplianceRate ?? 0) < 60) score -= 3;
     else score -= 2;
   }
 
@@ -230,21 +234,21 @@ export function computeSleepNightCare(
 
   // ── Strengths ─────────────────────────────────────────────────────────
 
-  if (checkComplianceRate >= 95) {
+  if ((checkComplianceRate ?? 0) >= 95) {
     strengths.push(`Excellent welfare check compliance at ${checkComplianceRate}% — all scheduled overnight checks are being completed consistently.`);
-  } else if (checkComplianceRate >= 80) {
+  } else if ((checkComplianceRate ?? 0) >= 80) {
     strengths.push(`Good welfare check compliance at ${checkComplianceRate}% — the majority of scheduled overnight checks are completed.`);
   }
 
-  if (buildingSecurityRate >= 98 && alarmComplianceRate >= 98) {
+  if ((buildingSecurityRate ?? 0) >= 98 && (alarmComplianceRate ?? 0) >= 98) {
     strengths.push("Building security and alarm compliance are both at or near 100% — the home is consistently secured overnight.");
   }
 
-  if (quietNightRate >= 70) {
+  if ((quietNightRate ?? 0) >= 70) {
     strengths.push(`${quietNightRate}% of nights are undisturbed — children are sleeping well and the overnight environment is calm.`);
   }
 
-  if (logsWithDisturbances.length > 0 && disturbanceResponseRate >= 95) {
+  if (logsWithDisturbances.length > 0 && (disturbanceResponseRate ?? 0) >= 95) {
     strengths.push(`${disturbanceResponseRate}% of disturbances have documented response actions — staff are responding to and recording every overnight incident.`);
   }
 
@@ -252,7 +256,7 @@ export function computeSleepNightCare(
     strengths.push("No disturbances recorded across all logged nights — children are settled and the home provides a calm sleeping environment.");
   }
 
-  if (handoverQualityRate >= 90) {
+  if ((handoverQualityRate ?? 0) >= 90) {
     strengths.push(`${handoverQualityRate}% of shifts have complete handover documentation — strong continuity of care between night and day staff.`);
   }
 
@@ -268,7 +272,7 @@ export function computeSleepNightCare(
   }
 
   // CRITICAL: check compliance safety concern
-  if (checkComplianceRate < 80) {
+  if ((checkComplianceRate ?? 0) < 80) {
     concerns.push(`Welfare check compliance is only ${checkComplianceRate}% — below the 80% safety threshold. Incomplete overnight checks mean children's safety and wellbeing cannot be fully evidenced.`);
   }
 
@@ -278,19 +282,19 @@ export function computeSleepNightCare(
     concerns.push(`Building security was not confirmed on ${failureCount} of ${totalLogs} nights — any failure to secure the building overnight is an immediate safeguarding concern.`);
   }
 
-  if (alarmComplianceRate < 90) {
+  if ((alarmComplianceRate ?? 0) < 90) {
     concerns.push(`Alarm compliance is only ${alarmComplianceRate}% — alarms should be set on every night to ensure children's physical safety.`);
   }
 
-  if (logsWithDisturbances.length > 0 && disturbanceResponseRate < 80) {
+  if (logsWithDisturbances.length > 0 && (disturbanceResponseRate ?? 0) < 80) {
     concerns.push(`Only ${disturbanceResponseRate}% of disturbances have a documented response action — staff must record how they responded to every overnight disturbance.`);
   }
 
-  if (handoverQualityRate < 40) {
+  if ((handoverQualityRate ?? 0) < 40) {
     concerns.push(`Handover quality is critically low at ${handoverQualityRate}% — information is being lost between night and day shifts, creating continuity of care risks.`);
   }
 
-  if (quietNightRate < 20) {
+  if ((quietNightRate ?? 0) < 20) {
     concerns.push(`Only ${quietNightRate}% of nights are undisturbed — the majority of nights involve some level of disruption, which may impact children's sleep, emotional regulation, and daytime functioning.`);
   }
 
@@ -305,7 +309,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (checkComplianceRate < 80) {
+  if ((checkComplianceRate ?? 0) < 80) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review overnight welfare check procedures. Ensure waking night staff complete all 5 scheduled checks and sleep-in staff complete at least 2 checks per shift. Consider implementing timed reminders.",
@@ -323,7 +327,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (logsWithDisturbances.length > 0 && disturbanceResponseRate < 80) {
+  if (logsWithDisturbances.length > 0 && (disturbanceResponseRate ?? 0) < 80) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure every disturbance has a recorded response action. Staff should document what happened, what they did, and the outcome. This is essential evidence for Ofsted and for understanding children's overnight needs.",
@@ -332,7 +336,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (alarmComplianceRate < 90) {
+  if ((alarmComplianceRate ?? 0) < 90) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review alarm-setting procedures with all night staff. Alarms must be set on every night shift — include alarm confirmation as a required field in the night log completion process.",
@@ -341,7 +345,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (handoverQualityRate < 70) {
+  if ((handoverQualityRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Improve handover documentation between night and day shifts. Both handover notes and morning handover summaries should be completed on every shift to ensure continuity of care.",
@@ -350,7 +354,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (quietNightRate < 50 && totalDisturbanceCount > 0) {
+  if ((quietNightRate ?? 0) < 50 && totalDisturbanceCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review bedtime routines, sleep hygiene practices, and the overnight environment (noise, temperature, lighting). Over half of nights are experiencing disturbances — a structured sleep improvement plan is needed.",
@@ -378,14 +382,14 @@ export function computeSleepNightCare(
     });
   }
 
-  if (checkComplianceRate < 50) {
+  if ((checkComplianceRate ?? 0) < 50) {
     insights.push({
       text: `Welfare check compliance is critically low at ${checkComplianceRate}%. Overnight welfare checks are a fundamental safeguarding requirement under NMS 7.9 — without consistent checks, there is no evidence that children are being monitored and kept safe during sleeping hours.`,
       severity: "critical",
     });
   }
 
-  if (buildingSecurityRate < 90) {
+  if ((buildingSecurityRate ?? 0) < 90) {
     insights.push({
       text: `Building security rate is ${buildingSecurityRate}%. Failure to secure the premises overnight creates a direct physical safety risk for children. This will be scrutinised at inspection under Reg 12.`,
       severity: "critical",
@@ -400,7 +404,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (handoverQualityRate >= 40 && handoverQualityRate < 70) {
+  if ((handoverQualityRate ?? 0) >= 40 && (handoverQualityRate ?? 0) < 70) {
     insights.push({
       text: `Handover quality at ${handoverQualityRate}% is below expectations. Incomplete handovers mean day staff may miss important information about children's overnight experiences, affecting the quality of morning care.`,
       severity: "warning",
@@ -415,21 +419,21 @@ export function computeSleepNightCare(
   }
 
   // Positive insights
-  if (checkComplianceRate >= 95 && buildingSecurityRate >= 98 && alarmComplianceRate >= 98) {
+  if ((checkComplianceRate ?? 0) >= 95 && (buildingSecurityRate ?? 0) >= 98 && (alarmComplianceRate ?? 0) >= 98) {
     insights.push({
       text: `Excellent overnight governance: ${checkComplianceRate}% check compliance, ${buildingSecurityRate}% building security, ${alarmComplianceRate}% alarm compliance. This demonstrates a home with robust night-time safeguarding procedures — strong evidence for Reg 12 and NMS 7.9 compliance.`,
       severity: "positive",
     });
   }
 
-  if (quietNightRate >= 70 && significantDisturbanceCount === 0) {
+  if ((quietNightRate ?? 0) >= 70 && significantDisturbanceCount === 0) {
     insights.push({
       text: `${quietNightRate}% of nights are undisturbed with zero significant events. Children are sleeping well, which supports emotional regulation, education engagement, and overall placement stability.`,
       severity: "positive",
     });
   }
 
-  if (logsWithDisturbances.length > 0 && disturbanceResponseRate >= 95 && handoverQualityRate >= 90) {
+  if (logsWithDisturbances.length > 0 && (disturbanceResponseRate ?? 0) >= 95 && (handoverQualityRate ?? 0) >= 90) {
     insights.push({
       text: `All disturbances are being responded to (${disturbanceResponseRate}%) and handover quality is strong (${handoverQualityRate}%). Night staff are providing reflective, child-centred care with effective communication to day colleagues.`,
       severity: "positive",
