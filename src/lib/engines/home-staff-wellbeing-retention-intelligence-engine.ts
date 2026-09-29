@@ -166,8 +166,8 @@ function toRating(score: number): StaffWellbeingRating {
   return "inadequate";
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
 }
 
@@ -552,11 +552,11 @@ export function computeStaffWellbeingRetention(
     );
   }
 
-  if (avgOverallWellbeing >= 7.5 && totalSurveyRecords > 0) {
+  if ((avgOverallWellbeing ?? 0) >= 7.5 && totalSurveyRecords > 0) {
     strengths.push(
       `Average overall wellbeing score of ${avgOverallWellbeing}/10 — staff wellbeing is excellent, reflecting a supportive workplace that prioritises workforce health.`,
     );
-  } else if (avgOverallWellbeing >= 6.5 && totalSurveyRecords > 0) {
+  } else if ((avgOverallWellbeing ?? 0) >= 6.5 && totalSurveyRecords > 0) {
     strengths.push(
       `Average overall wellbeing score of ${avgOverallWellbeing}/10 — staff wellbeing is generally positive across the team.`,
     );
@@ -1238,7 +1238,7 @@ export function computeStaffWellbeingRetention(
 
   if (
     meets(wellbeingSurveyCompletionRate, 80) &&
-    avgOverallWellbeing >= 7.5 &&
+    (avgOverallWellbeing ?? 0) >= 7.5 &&
     totalSurveyRecords > 0
   ) {
     insights.push({
