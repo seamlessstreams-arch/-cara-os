@@ -884,7 +884,7 @@ type BulkState = "idle" | "running" | "done" | "error";
 
 function BulkComputeSection() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [state, setState]   = useState<BulkState>("idle");
   const [progress, setProgress] = useState<string[]>([]);
   const [error, setError]   = useState<string | null>(null);

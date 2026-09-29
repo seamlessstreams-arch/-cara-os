@@ -189,7 +189,7 @@ function ExpenseRow({
 
 export default function ExpensesPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const staffQuery = useStaff();
   const allActiveStaff = (staffQuery.data?.data ?? []).filter((s) => s.is_active);
   const qc = useQueryClient();

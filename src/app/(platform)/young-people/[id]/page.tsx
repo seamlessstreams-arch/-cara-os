@@ -534,7 +534,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const router = useRouter();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [needsCreated, setNeedsCreated] = useState<Set<string>>(new Set());
   const createNeed = useCreateTrainingNeed();

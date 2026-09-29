@@ -284,7 +284,7 @@ function HomeClimateSection() {
   const homeName = useHomeName();
   const { data, isLoading, isError } = useHomeClimate();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const climate: HomeClimateSnapshot | null = data?.data?.latest ?? null;
 
   const { data: alertsData }     = usePatternAlerts({ status: "active" });
@@ -1077,7 +1077,7 @@ interface ScannedPattern {
 function CaraPatternScanSection() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [scanning, setScanning]           = useState(false);
   const [patterns, setPatterns]           = useState<ScannedPattern[] | null>(null);
   const [saveStates, setSaveStates]       = useState<Record<number, "idle" | "saving" | "saved">>({});

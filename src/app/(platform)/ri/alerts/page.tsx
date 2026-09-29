@@ -497,7 +497,7 @@ function TypeBreakdown({
 
 export default function RiAlertsPage() {
   const { currentUser }  = useAuthContext();
-  const homeId           = currentUser?.home_id ?? "home_oak";
+  const homeId           = currentUser?.home_id ?? "";
   const { data, isLoading } = useRiAlerts({ homeId });
 
   // ── State ────────────────────────────────────────────────────────────────

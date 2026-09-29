@@ -239,7 +239,7 @@ function ResourceCard({ resource }: { resource: GeneratedResource }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ResourceGeneratorPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState<LearningPathway>("staff");
   const [resourceType, setResourceType] = useState<GeneratedResourceType>("guidance_note");
