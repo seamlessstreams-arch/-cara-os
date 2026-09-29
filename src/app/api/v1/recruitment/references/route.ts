@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
   createRecruitmentAuditRecord({
     candidate_id,
-    actor_id: "staff_darren",
+    actor_id: auth.userId,
     event_type: "reference_added",
     entity_type: "candidate_reference",
     entity_id: ref.id,
@@ -141,7 +141,7 @@ export async function PATCH(req: NextRequest) {
   if (cidForAudit) {
     createRecruitmentAuditRecord({
       candidate_id: cidForAudit,
-      actor_id: "staff_darren",
+      actor_id: auth.userId,
       event_type: status ? `reference_${status}` : "reference_updated",
       entity_type: "candidate_reference",
       entity_id: id,
