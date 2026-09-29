@@ -52,6 +52,10 @@ export async function POST(req: NextRequest) {
 
   const missing = requireFields(body, ["child_id"]);
   if (missing) return missing;
+  // Author is the authenticated caller — a care plan is a formal record, so
+  // reject an unresolved session rather than attribute it to a seed default.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const record = intelligenceDb.carePlans.create({
     home_id:                   body.home_id ?? tenantHomeId(),
     child_id:                  body.child_id ?? "",
@@ -71,7 +75,7 @@ export async function POST(req: NextRequest) {
     strengths_summary:         null,
     concerns_summary:          null,
     cara_overview:             null,
-    created_by:                body.created_by ?? "staff_darren",
+    created_by:                identity.userId,
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }

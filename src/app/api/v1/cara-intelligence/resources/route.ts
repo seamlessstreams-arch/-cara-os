@@ -37,6 +37,11 @@ export async function POST(req: NextRequest) {
     if (!body[field]) return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
   }
 
+  // Author is the authenticated caller — reject an unresolved session rather
+  // than attribute a child resource to a seed default.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const resource = intelligenceDb.childResources.create({
     home_id:       body.home_id ?? tenantHomeId(),
     child_id:      body.child_id!,
@@ -49,7 +54,7 @@ export async function POST(req: NextRequest) {
     content:       body.content ?? null,
     printable_html:body.printable_html,
     pdf_url:       body.pdf_url,
-    created_by:    body.created_by ?? "staff_darren",
+    created_by:    identity.userId,
     approved_by:   body.approved_by,
     status:        (body.status as ChildResourceStatus) ?? "draft",
     approved_at:   body.approved_at,

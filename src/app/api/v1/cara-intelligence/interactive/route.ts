@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
   if (!body.child_id) return NextResponse.json({ error: "Missing required field: child_id" }, { status: 400 });
   if (body.consent_recorded === undefined) return NextResponse.json({ error: "Missing required field: consent_recorded" }, { status: 400 });
 
+  // Author is the authenticated caller — this records a child interaction, so
+  // reject an unresolved session rather than attribute it to a seed default.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const session = intelligenceDb.interactiveSessions.create({
     home_id:              body.home_id ?? tenantHomeId(),
     child_id:             body.child_id,
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest) {
     safeguarding_flags:   body.safeguarding_flags ?? [],
     follow_up_actions:    body.follow_up_actions ?? [],
     status:               (body.status as InteractiveSessionStatus) ?? "active",
-    created_by:           body.created_by ?? "staff_darren",
+    created_by:           identity.userId,
     completed_at:         body.completed_at,
   });
 
