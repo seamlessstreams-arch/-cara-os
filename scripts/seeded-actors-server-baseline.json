@@ -1,10 +1,7 @@
 {
-  "src/app/api/v1/admissions/admit/route.ts": 1,
   "src/app/api/v1/cara-intelligence/keywork/[id]/route.ts": 2,
   "src/app/api/v1/cara-intelligence/resources/[id]/route.ts": 1,
-  "src/app/api/v1/complaints/route.ts": 3,
   "src/app/api/v1/intelligence/document/route.ts": 1,
-  "src/app/api/v1/recruitment/offers/route.ts": 4,
   "src/app/api/v1/recruitment/route.ts": 1,
   "src/app/api/v1/reflective-supervision/route.ts": 1,
   "src/lib/attendance/sign-in-service.ts": 2,

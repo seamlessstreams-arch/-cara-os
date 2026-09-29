@@ -81,13 +81,13 @@ export async function POST(req: NextRequest) {
     timeline:                  [{
       date:        dateReceived,
       action:      "Complaint received",
-      recorded_by: body.created_by ?? "staff_darren",
+      recorded_by: auth.userId,
       note:        body.summary ?? null,
     }],
     includes_safeguarding_element: body.includes_safeguarding_element ?? false,
     linked_incident_id:        body.linked_incident_id ?? null,
     cara_summary:              null,
-    created_by:                body.created_by ?? "staff_darren",
+    created_by:                auth.userId,
   });
 
   // Write through the canonical event spine (forms-as-views). The canonical event
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     title: `Complaint: ${record.category} — ${record.reference}`,
     summary: record.summary ?? "",
     eventType: "complaint",
-    createdBy: record.created_by ?? "staff_darren",
+    createdBy: record.created_by,
     eventDate: record.date_received,
   }).catch(() => {});
 
