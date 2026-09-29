@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db/dal";
 import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import { createTaskRecord } from "@/lib/supabase/care-records";
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       due_date: s.due_date,
       assigned_to: s.assigned_role ? null : profile?.assigned_manager_id ?? null,
       assigned_role: s.assigned_role,
-      home_id: profile?.home_id ?? "home_oak",
+      home_id: profile?.home_id ?? tenantHomeId(),
       created_by: actor,
     });
   });

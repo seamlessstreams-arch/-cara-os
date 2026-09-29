@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { InteractiveSession, InteractiveSessionMode, InteractiveSessionStatus } from "@/types/extended";
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const homeId  = searchParams.get("home_id") ?? "home_oak";
+  const homeId  = searchParams.get("home_id") ?? tenantHomeId();
 
   const results = childId
     ? intelligenceDb.interactiveSessions.findByChild(childId)
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (body.consent_recorded === undefined) return NextResponse.json({ error: "Missing required field: consent_recorded" }, { status: 400 });
 
   const session = intelligenceDb.interactiveSessions.create({
-    home_id:              body.home_id ?? "home_oak",
+    home_id:              body.home_id ?? tenantHomeId(),
     child_id:             body.child_id,
     key_work_session_id:  body.key_work_session_id,
     consent_recorded:     body.consent_recorded,

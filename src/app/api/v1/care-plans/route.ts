@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
@@ -6,7 +7,7 @@ import { intelligenceDb } from "@/lib/intelligence/store";
 import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
-  const homeId  = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId  = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const childId = req.nextUrl.searchParams.get("child_id");
 
   const identity = await getRequestIdentity(req);
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   const missing = requireFields(body, ["child_id"]);
   if (missing) return missing;
   const record = intelligenceDb.carePlans.create({
-    home_id:                   body.home_id ?? "home_oak",
+    home_id:                   body.home_id ?? tenantHomeId(),
     child_id:                  body.child_id ?? "",
     version:                   body.version ?? 1,
     status:                    "active",

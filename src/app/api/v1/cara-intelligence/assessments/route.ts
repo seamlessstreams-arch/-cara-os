@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const homeId = searchParams.get("home_id") ?? "home_oak";
+  const homeId = searchParams.get("home_id") ?? tenantHomeId();
 
   let results: CaraAssessment[];
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   }
 
   const assessment = intelligenceDb.caraAssessments.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     child_id: body.child_id!,
     source_record_type: body.source_record_type,
     source_record_id: body.source_record_id,

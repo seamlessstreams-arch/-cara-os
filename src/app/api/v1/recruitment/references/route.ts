@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     : db.candidateReferences.findAll();
 
   const candidate = candidateId ? db.candidateProfiles.findById(candidateId) : null;
-  const home_id = candidate?.home_id ?? "home_oak";
+  const home_id = candidate?.home_id ?? tenantHomeId();
 
   const refs = rawRefs.map((r) => serializeRef(r, home_id));
   return NextResponse.json({ data: refs });
@@ -155,7 +156,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const candidateRecord = db.candidateProfiles.findById(updated.candidate_id);
-  return NextResponse.json({ data: serializeRef(updated, candidateRecord?.home_id ?? "home_oak") });
+  return NextResponse.json({ data: serializeRef(updated, candidateRecord?.home_id ?? tenantHomeId()) });
 }
 
 // ── Serializer ────────────────────────────────────────────────────────────────

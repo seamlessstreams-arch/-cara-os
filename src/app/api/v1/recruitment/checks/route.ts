@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     : db.candidateChecks.findAll();
 
   const candidate = candidateId ? db.candidateProfiles.findById(candidateId) : null;
-  const home_id = candidate?.home_id ?? "home_oak";
+  const home_id = candidate?.home_id ?? tenantHomeId();
 
   const checks = rawChecks.map((c) => ({
     id: c.id,
@@ -126,7 +127,7 @@ export async function PATCH(req: NextRequest) {
     override_at: updated.overridden_at ?? null,
     risk_mitigation: updated.risk_mitigation ?? null,
     notes: updated.notes ?? null,
-    home_id: "home_oak",
+    home_id: tenantHomeId(),
     created_at: updated.created_at,
     updated_at: now,
   };

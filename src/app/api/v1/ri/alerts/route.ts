@@ -1,11 +1,12 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { RiAlertSeverity } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const alerts = intelligenceDb.riAlerts.findAll(homeId);
   const active = alerts.filter((a) => !a.is_resolved);
   const resolved = alerts.filter((a) => a.is_resolved);
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
   const __missing = requireFields(body, ["title"]);
   if (__missing) return __missing;
   const record = intelligenceDb.riAlerts.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     alert_type: body.alert_type ?? "rising_risk",
     severity: body.severity ?? "medium",
     title: body.title ?? "Alert",

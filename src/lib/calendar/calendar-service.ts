@@ -1,4 +1,5 @@
 import "server-only";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — CALENDAR service (route-facing)
@@ -39,7 +40,7 @@ function defaultCircleWindow(): { from: string; to: string } {
 }
 
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 // ── Name resolvers from the LIVE store (stays correct as the store grows) ──────
 

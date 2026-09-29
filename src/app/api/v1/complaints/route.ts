@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +12,7 @@ import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const open   = req.nextUrl.searchParams.get("open") === "true";
 
   const records = open
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   // had a better-than-one-in-three chance of two complaints sharing a
   // reference — and a statutory complaint reference that is not unique cannot
   // be used to trace the complaint it names.
-  const homeId = (body.home_id as string) ?? "home_oak";
+  const homeId = (body.home_id as string) ?? tenantHomeId();
   const year = new Date().getFullYear();
   const usedThisYear = intelligenceDb.complaints
     .findAll(homeId)
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
 
   // Fire-and-forget Cara intelligence hook (golden thread + child voice detection)
   runPostSaveIntelligence({
-    homeId: record.home_id ?? "home_oak",
+    homeId: record.home_id ?? tenantHomeId(),
     childId: record.child_id ?? null,
     sourceTable: "cs_complaints",
     sourceId: record.id,

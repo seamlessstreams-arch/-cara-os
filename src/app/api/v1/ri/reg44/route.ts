@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
@@ -6,7 +7,7 @@ import { intelligenceDb } from "@/lib/intelligence/store";
 import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const records = intelligenceDb.reg44Visits.findAll(homeId);
   return NextResponse.json({
     data: records,
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (__missing) return __missing;
   const __fd = rejectFutureDates(body, ["visit_date"]); if (__fd) return __fd;
   const record = intelligenceDb.reg44Visits.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     visit_number: body.visit_number ?? 1,
     visit_date: body.visit_date ?? null,
     scheduled_date: body.scheduled_date ?? todayStr(),

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requireFields } from "@/lib/http/require-fields";
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

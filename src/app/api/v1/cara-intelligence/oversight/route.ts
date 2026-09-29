@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { runPostSaveIntelligence } from "@/lib/cara/post-save-intelligence";
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const homeId  = searchParams.get("home_id") ?? "home_oak";
+  const homeId  = searchParams.get("home_id") ?? tenantHomeId();
 
   const results = childId
     ? intelligenceDb.caraOversight.findByChild(childId)
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   const record = intelligenceDb.caraOversight.create({
-    home_id:        body.home_id ?? "home_oak",
+    home_id:        body.home_id ?? tenantHomeId(),
     child_id:       body.child_id,
     record_type:    body.record_type!,
     record_id:      body.record_id,
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   // Fire-and-forget Cara intelligence hook (golden thread)
   runPostSaveIntelligence({
-    homeId: record.home_id ?? "home_oak",
+    homeId: record.home_id ?? tenantHomeId(),
     childId: record.child_id ?? null,
     sourceTable: "cs_management_oversight",
     sourceId: record.id,

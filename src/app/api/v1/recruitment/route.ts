@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -158,7 +159,7 @@ export async function POST(req: NextRequest) {
   }
 
   const created = db.candidateProfiles.create({
-    home_id: "home_oak",
+    home_id: tenantHomeId(),
     first_name,
     last_name,
     email,
