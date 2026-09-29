@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -56,6 +57,10 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // Practice record: the author is the authenticated caller. An unresolved
+  // live session records unattributed ('') rather than blocking or guessing.
+  const __identity = await getRequestIdentity(req);
+  const recordedBy = __identity instanceof NextResponse ? "" : __identity.userId;
 
   // require-fields.ts cites this record in its own header as the motivating
   // case, but only the identity field was ever required. The judgements it
@@ -68,6 +73,7 @@ export async function POST(req: NextRequest) {
   if (missing) return missing;
   const record = intelligenceDb.contactLogs.create({
     ...body,
+    created_by: recordedBy,
     status:     body.status     ?? "completed",
     outcome:    body.outcome,
     concerns_identified: body.concerns_identified,
@@ -77,7 +83,6 @@ export async function POST(req: NextRequest) {
     photos_shared:  body.photos_shared ?? false,
     gifts_received: body.gifts_received ?? false,
     cara_analysis: null,
-    created_by: body.created_by ?? "staff_darren",
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }
