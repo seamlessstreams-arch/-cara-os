@@ -65,8 +65,8 @@ export type BSPEffectivenessRating =
 export interface PlanQualityProfile {
   total_active: number;
   total_inactive: number;
-  avg_triggers: number;
-  avg_strategies: number;
+  avg_triggers: number | null;
+  avg_strategies: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   strategy_effectiveness_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -75,15 +75,15 @@ export interface PlanQualityProfile {
   professional_input_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   safety_plan_rate: number | null;
-  avg_de_escalation_stages: number;
-  avg_guidance_points: number;
+  avg_de_escalation_stages: number | null;
+  avg_guidance_points: number | null;
 }
 
 export interface CurrencyProfile {
   overdue_reviews: number;
   upcoming_reviews: number;
-  avg_days_since_review: number;
-  review_depth: number;
+  avg_days_since_review: number | null;
+  review_depth: number | null;
 }
 
 export interface BSPBehaviourProfile {
@@ -101,7 +101,7 @@ export interface BSPBehaviourProfile {
 
 export interface BSPRestraintProfile {
   total_restraints: number;
-  avg_de_escalation: number;
+  avg_de_escalation: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   debrief_rate: number | null;
 }
@@ -146,8 +146,8 @@ export interface HomeBSPEffectivenessResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function avg(values: number[]): number {
-  if (values.length === 0) return 0;
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null;
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 }
 
@@ -432,7 +432,7 @@ export function computeHomeBSPEffectiveness(
     strengths.push(
       "All BSPs include robust safety plans for high-risk scenarios.",
     );
-  if (planQuality.avg_de_escalation_stages >= 3)
+  if ((planQuality.avg_de_escalation_stages ?? 0) >= 3)
     strengths.push(
       "BSPs include comprehensive de-escalation staging (green/amber/red), giving staff clear graduated responses.",
     );
@@ -571,7 +571,7 @@ export function computeHomeBSPEffectiveness(
 
   if (
     activePlans.length > 0 &&
-    planQuality.avg_de_escalation_stages >= 3 &&
+    (planQuality.avg_de_escalation_stages ?? 0) >= 3 &&
     meets(planQuality.safety_plan_rate, 90)
   )
     insights.push({
