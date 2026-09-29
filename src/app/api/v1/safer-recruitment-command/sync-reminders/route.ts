@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db/dal";
 import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
@@ -22,7 +23,10 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const today = todayStr();
-  const actor = req.headers.get("x-user-id") ?? "staff_darren";
+  // Safer-recruitment action: the actor must be the authenticated caller.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const actor = identity.userId;
 
   const command = computeSaferRecruitmentCommand({ today, candidates: assembleCommandCandidates() });
   const specs = deriveReminderSpecs(command);

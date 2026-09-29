@@ -21,8 +21,6 @@
   "src/app/api/v1/recruitment/references/route.ts": 2,
   "src/app/api/v1/recruitment/route.ts": 1,
   "src/app/api/v1/reflective-supervision/route.ts": 1,
-  "src/app/api/v1/safer-recruitment-command/references/[referenceId]/link/route.ts": 1,
-  "src/app/api/v1/safer-recruitment-command/sync-reminders/route.ts": 1,
   "src/app/api/v1/young-people/[id]/route.ts": 2,
   "src/lib/attendance/sign-in-service.ts": 2,
   "src/lib/calendar/calendar-service.ts": 1,
