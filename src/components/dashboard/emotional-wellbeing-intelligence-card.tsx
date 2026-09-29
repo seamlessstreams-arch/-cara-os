@@ -195,10 +195,10 @@ export function EmotionalWellbeingIntelligenceCard() {
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-muted-foreground">
                     <span className="text-[10px]">
-                      Current avg: <span className={cn("font-medium", moodColor(trend.current_avg))}>{trend.current_avg.toFixed(1)}</span>
+                      Current avg: <span className={cn("font-medium", trend.current_avg === null ? "text-slate-400" : moodColor(trend.current_avg))}>{trend.current_avg === null ? "—" : trend.current_avg.toFixed(1)}</span>
                     </span>
                     <span className="text-[10px]">
-                      Previous: {trend.previous_avg.toFixed(1)}
+                      Previous: {trend.previous_avg === null ? "—" : trend.previous_avg.toFixed(1)}
                     </span>
                     <span className="text-[10px]">
                       Latest: {trend.latest_score}/10

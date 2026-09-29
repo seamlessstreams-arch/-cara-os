@@ -167,8 +167,8 @@ describe("Health & Wellbeing Engine — Helper Functions", () => {
   });
 
   describe("average", () => {
-    it("returns 0 for empty array", () => {
-      expect(average([])).toBe(0);
+    it("returns null for empty array", () => {
+      expect(average([])).toBeNull();
     });
 
     it("computes correct average", () => {

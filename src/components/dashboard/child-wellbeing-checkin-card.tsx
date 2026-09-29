@@ -58,7 +58,7 @@ export function ChildWellbeingCheckinCard() {
   const insights = d?.insights ?? [];
 
   const avgWellbeing = trends.length > 0
-    ? (trends.reduce((sum, t) => sum + t.current_avg, 0) / trends.length).toFixed(1)
+    ? (trends.reduce((sum, t) => sum + (t.current_avg ?? 0), 0) / trends.length).toFixed(1)
     : "N/A";
 
   return (
@@ -108,7 +108,7 @@ export function ChildWellbeingCheckinCard() {
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <TrendIcon className={cn("h-3 w-3 shrink-0", trendColor)} />
                       <span className="font-medium">{t.child_name}</span>
-                      <span className="text-muted-foreground">Score: {t.current_avg.toFixed(1)}</span>
+                      <span className="text-muted-foreground">Score: {t.current_avg === null ? "—" : t.current_avg.toFixed(1)}</span>
                     </div>
                     <Badge variant="outline" className={cn("text-[10px] shrink-0", t.trend === "improving" ? "text-green-700 bg-green-50 border-green-200" : t.trend === "declining" ? "text-red-700 bg-red-50 border-red-200" : "text-gray-700 bg-gray-50 border-gray-200")}>
                       {t.trend}

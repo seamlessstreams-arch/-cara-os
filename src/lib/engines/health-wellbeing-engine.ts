@@ -108,8 +108,8 @@ export interface AppointmentAnalysis {
 export interface WellbeingTrend {
   child_id: string;
   child_name: string;
-  current_avg: number; // last 7 days
-  previous_avg: number; // 8-14 days ago
+  current_avg: number | null; // last 7 days; null when none recorded
+  previous_avg: number | null; // 8-14 days ago; null when none recorded
   trend: "improving" | "stable" | "declining";
   latest_score: number | null;
   data_points_30d: number;
@@ -189,8 +189,8 @@ export function isOverdue(dueDate: string, today: string): boolean {
 }
 
 /** Compute average of number array */
-export function average(values: number[]): number {
-  if (values.length === 0) return 0;
+export function average(values: number[]): number | null {
+  if (values.length === 0) return null;
   return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10;
 }
 
@@ -438,7 +438,7 @@ export function computeHealthWellbeing(
         child_name: child.name,
         current_avg: currentAvg,
         previous_avg: previousAvg,
-        trend: computeWellbeingTrend(currentAvg, previousAvg),
+        trend: computeWellbeingTrend(currentAvg ?? 0, previousAvg ?? 0),
         latest_score: latestScore,
         data_points_30d: entries30d.length,
       });
@@ -519,7 +519,7 @@ export function computeHealthWellbeing(
 
   // Declining wellbeing alerts
   for (const trend of wellbeingTrends) {
-    if (trend.trend === "declining" && trend.current_avg < 5) {
+    if (trend.trend === "declining" && (trend.current_avg ?? 0) < 5) {
       alerts.push({
         severity: "high",
         type: "wellbeing_declining",
