@@ -163,7 +163,7 @@ export interface TherapyEngagement {
   engagement_level: EngagementLevel;
   sessions_last_30d: number;
   modalities_used: string[];
-  average_mood_improvement: number;
+  average_mood_improvement: number | null;
   escalation_flags_count: number;
   common_themes: string[];
 }
@@ -193,7 +193,7 @@ export interface BehaviourTrajectory {
 export interface KeyworkEffectiveness {
   total_sessions: number;
   sessions_last_30d: number;
-  average_mood_lift: number;
+  average_mood_lift: number | null;
   // Null on empty: no keywork sessions with actions ⇒ no signal. Fab-0 doctrine.
   action_completion_rate: number | null;
   therapeutic_session_pct: number | null;
@@ -243,8 +243,8 @@ function withinDays(date: string, today: string, days: number): boolean {
   return d >= 0 && d <= days;
 }
 
-function average(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function average(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
 }
 
@@ -407,8 +407,8 @@ function computeMoodTrajectory(input: TherapeuticProgressInput): MoodTrajectory 
     const half = Math.floor(moodPoints.length / 2);
     const firstHalf = average(moodPoints.slice(0, half).map((m) => m.score));
     const secondHalf = average(moodPoints.slice(half).map((m) => m.score));
-    if (secondHalf > firstHalf + 0.3) direction = "improving";
-    else if (secondHalf < firstHalf - 0.3) direction = "declining";
+    if ((secondHalf ?? 0) > (firstHalf ?? 0) + 0.3) direction = "improving";
+    else if ((secondHalf ?? 0) < (firstHalf ?? 0) - 0.3) direction = "declining";
   }
 
   const allScores = moodPoints.map((m) => m.score);
@@ -542,7 +542,7 @@ function computeOutcomeProgress(input: TherapeuticProgressInput): OutcomeProgres
     .map((t) =>
       Math.round(((t.current_score! - t.baseline_score!) / Math.max(1, RATING_MAX - t.baseline_score!)) * 100),
     );
-  const avgProgress: number | null = progressScores.length > 0 ? Math.round(average(progressScores)) : null;
+  const avgProgress: number | null = progressScores.length > 0 ? Math.round(average(progressScores) ?? 0) : null;
 
   return { total_targets: total, improving, stable, declining, achieved, average_progress_pct: avgProgress };
 }
@@ -684,7 +684,7 @@ function identifyStrengths(
   if (therapy.engagement_level === "excellent" || therapy.engagement_level === "good") {
     strengths.push(`Strong therapy engagement (${therapy.attendance_rate}% attendance)`);
   }
-  if (therapy.average_mood_improvement > 0.5) {
+  if ((therapy.average_mood_improvement ?? 0) > 0.5) {
     strengths.push(`Positive mood shift after therapy sessions (+${therapy.average_mood_improvement})`);
   }
   if (mood.direction === "improving") {
@@ -696,7 +696,7 @@ function identifyStrengths(
   if (above(behaviour.de_escalation_success_rate, 70)) {
     strengths.push(`Effective de-escalation (${behaviour.de_escalation_success_rate}% success)`);
   }
-  if (keywork.average_mood_lift > 0.3) {
+  if ((keywork.average_mood_lift ?? 0) > 0.3) {
     strengths.push("Keywork sessions lifting mood consistently");
   }
   if (above(keywork.action_completion_rate, 75)) {
@@ -891,7 +891,7 @@ function generateInsights(
     });
   }
 
-  if (therapy.average_mood_improvement > 0.5 && above(therapy.attendance_rate, 80)) {
+  if ((therapy.average_mood_improvement ?? 0) > 0.5 && above(therapy.attendance_rate, 80)) {
     insights.push({
       text: `Therapy is demonstrably effective — ${input.child_name} shows consistent mood improvement post-session (avg +${therapy.average_mood_improvement}).`,
       severity: "positive",

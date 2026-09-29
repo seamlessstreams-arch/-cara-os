@@ -6,7 +6,6 @@
   "src/lib/engines/home-keyworker-intelligence-engine.ts:vals:0",
   "src/lib/engines/home-staff-wellbeing-intelligence-engine.ts:nums:0",
   "src/lib/engines/home-staff-wellbeing-retention-intelligence-engine.ts:nums:0",
-  "src/lib/engines/therapeutic-progress-intelligence-engine.ts:nums:0",
   "src/lib/recording-quality-trend/recording-quality-trend-engine.ts:n:0",
   "src/lib/search/search-engine.ts:scores:0"
 ]
