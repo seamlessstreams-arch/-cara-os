@@ -37,7 +37,7 @@ export type ComplaintSource =
 
 export type ComplaintCategory =
   | "care_quality"
-  | "staff_conduct"
+  | "staff_conduct"  // seed-actor-ok: complaint category enum, not a person
   | "safeguarding"
   | "medication"
   | "food_nutrition"
@@ -107,7 +107,7 @@ export const COMPLAINT_SOURCES: { source: ComplaintSource; label: string }[] = [
 
 export const COMPLAINT_CATEGORIES: { category: ComplaintCategory; label: string }[] = [
   { category: "care_quality", label: "Care Quality" },
-  { category: "staff_conduct", label: "Staff Conduct" },
+  { category: "staff_conduct", label: "Staff Conduct" },  // seed-actor-ok: complaint category enum, not a person
   { category: "safeguarding", label: "Safeguarding" },
   { category: "medication", label: "Medication" },
   { category: "food_nutrition", label: "Food/Nutrition" },

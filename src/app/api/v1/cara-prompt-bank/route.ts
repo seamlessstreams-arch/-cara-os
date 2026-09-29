@@ -19,7 +19,7 @@ import { INCIDENT_TYPES, buildWorkflowChecklist, type PromptBankEntry } from "@/
 import { currentUserId, logIncidentAudit } from "@/lib/cara-incident/incident-service";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const CATEGORIES = ["co_regulation", "deescalation", "restorative", "safeguarding", "recording", "child_voice", "manager_oversight", "staff_reflection", "compliance", "post_incident_learning"];
+const CATEGORIES = ["co_regulation", "deescalation", "restorative", "safeguarding", "recording", "child_voice", "manager_oversight", "staff_reflection", "compliance", "post_incident_learning"];  // seed-actor-ok: keywork/prompt category, not a person
 
 export async function GET() {
   const bank: PromptBankEntry[] = await dal.caraPromptBank.findAll();

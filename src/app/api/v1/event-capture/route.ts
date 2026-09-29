@@ -33,7 +33,7 @@ export async function GET() {
   const draft = template
     ? { ...template, id: "draft-preview" }
     : {
-        id: "draft-preview", eventType: "daily_log" as const, homeId: tenantHomeId(), childId: "yp_alex",
+        id: "draft-preview", eventType: "daily_log" as const, homeId: tenantHomeId(), childId: "yp_alex",  // seed-actor-ok: draft preview object, never persisted
         occurredAt: new Date().toISOString(), createdBy: "system", summary: "Draft entry",
         structuredTags: [], riskLevel: "low" as const, requiresApproval: false,
         linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],

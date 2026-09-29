@@ -37,7 +37,7 @@ export type BreakType =
 
 export type BreakReason =
   | "placement_stability"
-  | "staff_wellbeing"
+  | "staff_wellbeing"  // seed-actor-ok: respite category enum, not a person
   | "child_request"
   | "behaviour_management"
   | "family_contact"
@@ -104,7 +104,7 @@ export const BREAK_TYPES: { type: BreakType; label: string }[] = [
 
 export const BREAK_REASONS: { reason: BreakReason; label: string }[] = [
   { reason: "placement_stability", label: "Placement Stability" },
-  { reason: "staff_wellbeing", label: "Staff Wellbeing" },
+  { reason: "staff_wellbeing", label: "Staff Wellbeing" },  // seed-actor-ok: respite category enum, not a person
   { reason: "child_request", label: "Child Request" },
   { reason: "behaviour_management", label: "Behaviour Management" },
   { reason: "family_contact", label: "Family Contact" },
