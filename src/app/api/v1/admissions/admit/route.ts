@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -49,7 +50,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const actorId = (b.actor_id as string) || "staff_darren";
+  // Admitting a child is a formal action — the actor is the authenticated caller.
+  const __identity = await getRequestIdentity(req);
+  if (__identity instanceof NextResponse) return __identity;
+  const actorId = __identity.userId;
   const referralText = ((b.referral_text as string) || "").trim();
   const today = todayStr();
   const now = new Date().toISOString();

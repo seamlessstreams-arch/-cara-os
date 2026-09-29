@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const { candidate_id, action, by } = body;
+  const { candidate_id, action } = body;
 
   if (!candidate_id) {
     return NextResponse.json({ error: "candidate_id is required" }, { status: 400 });
@@ -52,20 +52,20 @@ export async function PATCH(req: NextRequest) {
     const now = new Date().toISOString();
     const updated = db.conditionalOffers.update(offer.id, {
       final_clearance_completed_at: now,
-      final_clearance_by: by ?? "staff_darren",
+      final_clearance_by: auth.userId,
       status: "final_accepted",
     });
     if (updated) void persistRecruitmentOffer(updated); // best-effort write-through (no-op when off)
 
     createRecruitmentAuditRecord({
       candidate_id,
-      actor_id: by ?? "staff_darren",
+      actor_id: auth.userId,
       event_type: "final_clearance_granted",
       entity_type: "conditional_offer",
       entity_id: offer.id,
       before_state: null,
-      after_state: { final_clearance_completed_at: now, final_clearance_by: by ?? "staff_darren" },
-      notes: `Final clearance granted by ${by ?? "staff_darren"}`,
+      after_state: { final_clearance_completed_at: now, final_clearance_by: auth.userId },
+      notes: `Final clearance granted by ${auth.userId}`,
     });
 
     return NextResponse.json({ data: updated });
