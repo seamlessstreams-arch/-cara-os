@@ -9,6 +9,7 @@
 // ==============================================================================
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -840,7 +841,7 @@ export default function BehaviourSupportPlansPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createBSP.isPending || !canCreateBsp} onClick={() => { createBSP.mutate({ child_id: bsp.child_id, status: bsp.status, created_date: todayStr(), created_by: bsp.created_by || "staff_darren", review_date: bsp.review_date || d(42), diagnosis: toList(bsp.diagnosis), primary_behaviours: [] as BSPPrimaryBehaviour[], known_triggers: [] as BSPKnownTrigger[], early_warnings: toList(bsp.early_warnings), de_escalation: [] as BSPDeEscalationStage[], positive_strategies: [] as BSPPositiveStrategy[], rewards: [] as BSPReward[], boundaries: [] as BSPBoundary[], safety_plan: [] as BSPSafetyPlanItem[], communication_needs: bsp.communication_needs.trim(), sensory_considerations: bsp.sensory_considerations.trim(), child_views: bsp.child_views.trim(), parent_views: "", professional_input: [] as BSPProfessionalInput[], staff_guidance: toList(bsp.staff_guidance), restrictive_interventions: [] as BSPRestrictiveIntervention[], review_history: [] as BSPReviewHistoryEntry[], home_id: "home_oak" }, { onSuccess: () => { toast.success("BSP created"); setShowNew(false); setBsp(EMPTY_BSP); }, onError: () => toast.error("Failed to create BSP") }); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
+            <Button disabled={createBSP.isPending || !canCreateBsp} onClick={() => { createBSP.mutate({ child_id: bsp.child_id, status: bsp.status, created_date: todayStr(), created_by: bsp.created_by || currentUserId(), review_date: bsp.review_date || d(42), diagnosis: toList(bsp.diagnosis), primary_behaviours: [] as BSPPrimaryBehaviour[], known_triggers: [] as BSPKnownTrigger[], early_warnings: toList(bsp.early_warnings), de_escalation: [] as BSPDeEscalationStage[], positive_strategies: [] as BSPPositiveStrategy[], rewards: [] as BSPReward[], boundaries: [] as BSPBoundary[], safety_plan: [] as BSPSafetyPlanItem[], communication_needs: bsp.communication_needs.trim(), sensory_considerations: bsp.sensory_considerations.trim(), child_views: bsp.child_views.trim(), parent_views: "", professional_input: [] as BSPProfessionalInput[], staff_guidance: toList(bsp.staff_guidance), restrictive_interventions: [] as BSPRestrictiveIntervention[], review_history: [] as BSPReviewHistoryEntry[], home_id: "home_oak" }, { onSuccess: () => { toast.success("BSP created"); setShowNew(false); setBsp(EMPTY_BSP); }, onError: () => toast.error("Failed to create BSP") }); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

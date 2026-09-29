@@ -38,6 +38,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -153,7 +154,7 @@ function GuidanceCard({ resource }: { resource: { id: string; title: string; sta
 
   const handleApprove = () => {
     updateMutation.mutate(
-      { id: resource.id, status: "approved", approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() },
+      { id: resource.id, status: "approved", approved_by: currentUser?.id ?? currentUserId(), approved_at: new Date().toISOString() },
       {
         onSuccess: () => {
           addToLibrary.mutate({

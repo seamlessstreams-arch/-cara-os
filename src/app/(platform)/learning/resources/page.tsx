@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -164,7 +165,7 @@ function ResourceCard({ resource }: { resource: GeneratedResource }) {
   const handleApprove = () => {
     // Approve the resource
     updateMutation.mutate(
-      { id: resource.id, status: "approved", approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() },
+      { id: resource.id, status: "approved", approved_by: currentUser?.id ?? currentUserId(), approved_at: new Date().toISOString() },
       {
         onSuccess: () => {
           // Auto-add to Resource Library

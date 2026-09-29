@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   Moon, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, Clock, CheckCircle2,
@@ -352,7 +353,7 @@ export default function SleepLogPage() {
             createEntry.mutate({
               date: fd.get("date") as string,
               shift_type: fd.get("shift_type") as SleepShiftType,
-              staff_id: fd.get("staff_id") as string || "staff_darren",
+              staff_id: fd.get("staff_id") as string || currentUserId(),
               start_time: fd.get("start_time") as string,
               end_time: fd.get("end_time") as string,
               disturbance_level: "none" as SleepDisturbanceLevel,

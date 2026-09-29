@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -259,7 +260,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
           <CaraCompose
             value={content}
             onChange={setContent}
-            actorUserId={currentUser?.id ?? "staff_darren"}
+            actorUserId={currentUser?.id ?? currentUserId()}
             actorRole={appRoleToCaraRole(currentRole)}
             homeId={currentUser?.home_id ?? "home_oak"}
             childId={childId || undefined}

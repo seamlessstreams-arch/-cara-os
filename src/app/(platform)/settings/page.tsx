@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -605,7 +606,7 @@ export default function SettingsPage() {
   const { currentUser } = useAuthContext();
   const staffQ = useStaff();
   const allStaff = (staffQ.data?.data ?? []).filter((s) => s.is_active);
-  const me = allStaff.find((s) => s.id === (currentUser?.id ?? "staff_darren")) ?? allStaff[0];
+  const me = allStaff.find((s) => s.id === (currentUser?.id ?? currentUserId())) ?? allStaff[0];
 
   const [tab, setTab] = useState<SettingsTab>("profile");
   const [profile, setProfile] = useState({ first_name: "", last_name: "", email: "", phone: "", payroll_id: "", avatar_url: null as string | null });
@@ -835,7 +836,7 @@ export default function SettingsPage() {
                       <div className="text-sm font-medium text-slate-900">{staff.full_name}</div>
                       <div className="text-xs text-slate-400">{staff.email}</div>
                     </div>
-                    <select value={roles[staff.id] ?? staff.role} onChange={(e) => setRoles((r) => ({ ...r, [staff.id]: e.target.value }))} disabled={staff.id === (currentUser?.id ?? "staff_darren")} className="h-8 rounded-xl border border-slate-200 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-slate-100">
+                    <select value={roles[staff.id] ?? staff.role} onChange={(e) => setRoles((r) => ({ ...r, [staff.id]: e.target.value }))} disabled={staff.id === (currentUser?.id ?? currentUserId())} className="h-8 rounded-xl border border-slate-200 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-slate-100">
                       {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{r.replace(/_/g, " ")}</option>)}
                     </select>
                   </div>

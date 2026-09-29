@@ -1,5 +1,6 @@
 "use client";
 import type { DashboardData , HealthCheckScore , TimeSavedSummary } from "@/types/extended";
+import { currentUserId } from "@/lib/auth/current-user";
 import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
@@ -1397,7 +1398,7 @@ export default function DashboardPage() {
   }, [d]);
 
   const handleCompleteTask = (id: string) =>
-    completeTask.mutate({ id, by: currentUser?.id ?? "staff_darren" });
+    completeTask.mutate({ id, by: currentUser?.id ?? currentUserId() });
 
   const handleAddOversight = (incident: Incident) => {
     setOversightTarget(incident);
@@ -1407,7 +1408,7 @@ export default function DashboardPage() {
   const handleSubmitOversight = () => {
     if (!oversightTarget || !oversightNote.trim()) return;
     addOversight.mutate(
-      { id: oversightTarget.id, note: oversightNote.trim(), by: currentUser?.id ?? "staff_darren" },
+      { id: oversightTarget.id, note: oversightNote.trim(), by: currentUser?.id ?? currentUserId() },
       { onSuccess: () => { setOversightTarget(null); setOversightNote(""); } },
     );
   };

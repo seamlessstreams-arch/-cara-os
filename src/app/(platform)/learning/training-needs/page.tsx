@@ -38,6 +38,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -318,7 +319,7 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
         tone:                   pathway === "child" ? "child_friendly" : "professional",
         linked_training_need_id: need.id,
         status:                 "active",
-        created_by:             currentUser?.id ?? "staff_darren",
+        created_by:             currentUser?.id ?? currentUserId(),
       });
 
       const projectId = project.data.id;
@@ -351,7 +352,7 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
         content,
         status:        "draft",
         cara_generated: true,
-        created_by:    currentUser?.id ?? "staff_darren",
+        created_by:    currentUser?.id ?? currentUserId(),
       });
 
       // ── Step 4: update training need status ──────────────────────────────────

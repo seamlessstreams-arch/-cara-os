@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -242,7 +243,7 @@ export default function BodyMapPage() {
       child_id: nChild,
       date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
-      recorded_by: currentUser?.id || "staff_darren",
+      recorded_by: currentUser?.id || currentUserId(),
       body_region: nRegion as BodyRegion,
       mark_type: nType as MarkType,
       mark_colour: nColour as MarkColour,
@@ -267,7 +268,7 @@ export default function BodyMapPage() {
     updateEntry.mutate({
       id,
       status: "reviewed",
-      reviewed_by: currentUser?.id || "staff_darren",
+      reviewed_by: currentUser?.id || currentUserId(),
       reviewed_at: new Date().toISOString(),
     });
   };

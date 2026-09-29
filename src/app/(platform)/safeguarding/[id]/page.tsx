@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { EntryAssist } from "@/components/forms/entry-assist";
@@ -154,7 +155,7 @@ function OversightPanel({ concernId, onSaved }: { concernId: string; onSaved: ()
     if (!note.trim()) { setError("Please enter oversight notes"); return; }
     setError("");
     updateIncident.mutate(
-      { id: concernId, action: "oversight", oversight_note: note.trim(), oversight_by: currentUser?.id ?? "staff_darren" },
+      { id: concernId, action: "oversight", oversight_note: note.trim(), oversight_by: currentUser?.id ?? currentUserId() },
       { onSuccess: () => onSaved(), onError: (e) => setError(e.message) }
     );
   }

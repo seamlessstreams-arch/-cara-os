@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -469,7 +470,7 @@ function AllIncidentsTab({ onLogNew }: { onLogNew: () => void }) {
   function handleSubmitOversight() {
     if (!oversightTarget || !oversightNote.trim()) return;
     addOversight.mutate(
-      { id: oversightTarget.id, note: oversightNote, by: currentUser?.id ?? "staff_darren" },
+      { id: oversightTarget.id, note: oversightNote, by: currentUser?.id ?? currentUserId() },
       { onSuccess: () => { setOversightTarget(null); setOversightNote(""); } }
     );
   }
@@ -789,7 +790,7 @@ function OversightQueueTab() {
     const note = notesById[inc.id] ?? "";
     if (!note.trim()) return;
     addOversight.mutate(
-      { id: inc.id, note, by: currentUser?.id ?? "staff_darren" },
+      { id: inc.id, note, by: currentUser?.id ?? currentUserId() },
       {
         onSuccess: () => {
           setSubmittedIds((prev) => new Set([...prev, inc.id]));
@@ -1252,7 +1253,7 @@ function LogIncidentTab() {
         <CaraCompose
           value={form.description}
           onChange={(text) => setForm((p) => ({ ...p, description: text }))}
-          actorUserId={currentUser?.id ?? "staff_darren"}
+          actorUserId={currentUser?.id ?? currentUserId()}
           actorRole={appRoleToCaraRole(currentRole)}
           homeId={currentUser?.home_id ?? "home_oak"}
           childId={form.child_id || undefined}
@@ -1282,7 +1283,7 @@ function LogIncidentTab() {
         <CaraCompose
           value={form.immediate_action}
           onChange={(text) => setForm((p) => ({ ...p, immediate_action: text }))}
-          actorUserId={currentUser?.id ?? "staff_darren"}
+          actorUserId={currentUser?.id ?? currentUserId()}
           actorRole={appRoleToCaraRole(currentRole)}
           homeId={currentUser?.home_id ?? "home_oak"}
           childId={form.child_id || undefined}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -498,7 +499,7 @@ export default function TaskDetailPage() {
         {showComplete && (
           <CompletePanel
             taskId={task.id}
-            currentUserId={currentUser?.id ?? "staff_darren"}
+            currentUserId={currentUser?.id ?? currentUserId()}
             onDone={() => setShowComplete(false)}
           />
         )}

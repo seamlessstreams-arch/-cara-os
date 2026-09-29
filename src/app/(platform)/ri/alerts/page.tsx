@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -178,7 +179,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
   const handleResolve = () => {
     if (!note.trim()) return;
     resolveMutation.mutate(
-      { id: alert.id, resolution_note: note, resolved_by: currentUser?.id ?? "staff_darren" },
+      { id: alert.id, resolution_note: note, resolved_by: currentUser?.id ?? currentUserId() },
       { onSuccess: () => setResolving(false) },
     );
   };

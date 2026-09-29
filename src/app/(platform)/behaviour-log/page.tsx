@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -209,7 +210,7 @@ export default function BehaviourLogPage() {
       trigger: nTrigger,
       strategy_used: nStrategy,
       outcome: nOutcome,
-      recorded_by: currentUser?.id || "staff_darren",
+      recorded_by: currentUser?.id || currentUserId(),
     });
     toast.success("Behaviour entry recorded");
     setShowNew(false);

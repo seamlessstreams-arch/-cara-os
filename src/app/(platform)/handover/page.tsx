@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { careToast, toastSuccess } from "@/lib/toast";
@@ -362,7 +363,7 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
   const [signOffNotes, setSignOffNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
 
-  const myId = currentUser?.id ?? "staff_darren";
+  const myId = currentUser?.id ?? currentUserId();
   const isIncoming = handover.incoming_staff.includes(myId);
   const alreadySigned = handover.sign_offs?.some((s) => s.staff_id === myId);
   const signOffs = handover.sign_offs ?? [];

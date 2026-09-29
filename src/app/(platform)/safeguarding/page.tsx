@@ -434,7 +434,7 @@ function SafeguardingConcernsTab() {
   function handleOversight() {
     if (!oversightTarget || !oversightNote.trim()) return;
     addOversight.mutate(
-      { id: oversightTarget.id, note: oversightNote, by: currentUser?.id ?? "staff_darren" },
+      { id: oversightTarget.id, note: oversightNote, by: currentUser?.id ?? currentUserId() },
       { onSuccess: () => { setOversightTarget(null); setOversightNote(""); } }
     );
   }
@@ -1392,7 +1392,7 @@ function ManagerActionsTab() {
   function handleOversight(inc: Incident) {
     const note = oversightNote[inc.id] ?? "";
     if (!note.trim()) return;
-    addOversight.mutate({ id: inc.id, note, by: currentUser?.id ?? "staff_darren" }, {
+    addOversight.mutate({ id: inc.id, note, by: currentUser?.id ?? currentUserId() }, {
       onSuccess: () => setOversightNote((prev) => { const n = { ...prev }; delete n[inc.id]; return n; }),
     });
   }

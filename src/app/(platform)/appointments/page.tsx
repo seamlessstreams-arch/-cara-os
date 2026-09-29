@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -224,7 +225,7 @@ export default function AppointmentsPage() {
         transport_arranged: nTransport,
         escort_staff: null,
         follow_up_date: null,
-        recorded_by: currentUser?.id || "staff_darren",
+        recorded_by: currentUser?.id || currentUserId(),
         created_at: new Date().toISOString(),
       },
       {

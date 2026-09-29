@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -1073,7 +1074,7 @@ export default function FamilyContactPage() {
                   onUpdateArrangement={(id, data) => updateArrangement.mutate({ id, data })}
                   onUpdateLog={(id, data) => updateLog.mutate({ id, data })}
                   onCreateLog={(data) => createLog.mutate(data)}
-                  currentUserId={currentUser?.id ?? "staff_darren"}
+                  currentUserId={currentUser?.id ?? currentUserId()}
                 />
               );
             })}

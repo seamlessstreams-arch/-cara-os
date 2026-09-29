@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -129,7 +130,7 @@ function OversightPanel({ incidentId, onSaved }: OversightPanelProps) {
     if (!note.trim()) { setError("Please enter oversight notes"); return; }
     setError("");
     updateIncident.mutate(
-      { id: incidentId, action: "oversight", oversight_note: note.trim(), oversight_by: currentUser?.id ?? "staff_darren" },
+      { id: incidentId, action: "oversight", oversight_note: note.trim(), oversight_by: currentUser?.id ?? currentUserId() },
       {
         onSuccess: () => onSaved(),
         onError: (e) => setError(e.message),

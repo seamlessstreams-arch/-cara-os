@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -210,7 +211,7 @@ export default function SanctionsRewardsPage() {
       child_response: nChildResp,
       outcome: nOutcome,
       proportionate: true,
-      recorded_by: currentUser?.id || "staff_darren",
+      recorded_by: currentUser?.id || currentUserId(),
       created_at: new Date().toISOString(),
     } as Partial<SanctionRewardEntry>, {
       onSuccess: () => {

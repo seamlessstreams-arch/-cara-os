@@ -34,6 +34,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -395,7 +396,7 @@ export default function StaffDashboardPage() {
   const qc = useQueryClient();
   const [showCara, setShowCara] = useState(false);
   const { currentUser } = useAuthContext();
-  const staffId = currentUser?.id ?? "staff_darren";
+  const staffId = currentUser?.id ?? currentUserId();
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-staff", staffId],

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -109,7 +110,7 @@ export default function NightStaffHandoverPage() {
     e.preventDefault();
     if (!nhForm.night_staff) { toast.error("Night staff is required."); return; }
     const today = todayStr();
-    await createHandover.mutateAsync({ date: today, evening_staff: nhForm.evening_staff || "staff_darren", night_staff: nhForm.night_staff, handover_time: nhForm.handover_time, children_at_home: YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => y.id), children_sleeping: {}, children_awake: "", medication_given: false, medication_due: "", risk_briefing: nhForm.risk_briefing.split("\n").filter(Boolean), specific_concerns: {}, night_checks_required: {}, expected_returns: "", emergency_contacts: "", morning_wake_time: "07:00", morning_staff: "", night_events: [], morning_handover_complete: false });
+    await createHandover.mutateAsync({ date: today, evening_staff: nhForm.evening_staff || currentUserId(), night_staff: nhForm.night_staff, handover_time: nhForm.handover_time, children_at_home: YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => y.id), children_sleeping: {}, children_awake: "", medication_given: false, medication_due: "", risk_briefing: nhForm.risk_briefing.split("\n").filter(Boolean), specific_concerns: {}, night_checks_required: {}, expected_returns: "", emergency_contacts: "", morning_wake_time: "07:00", morning_staff: "", night_events: [], morning_handover_complete: false });
     toast.success("Night handover logged.");
     setNhForm({ evening_staff: "", night_staff: "", handover_time: "22:00", risk_briefing: "", notes: "" });
     setShowNew(false);

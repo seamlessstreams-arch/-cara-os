@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -205,7 +206,7 @@ export default function PlacementPlanPage() {
       description: nDesc,
       target: nTarget,
       current_status: "not_started",
-      responsible: currentUser?.id || "staff_darren",
+      responsible: currentUser?.id || currentUserId(),
       start_date: todayStr(),
       review_date: (() => { const dt = new Date(); dt.setDate(dt.getDate() + 90); return dt.toISOString().slice(0, 10); })(),
       progress_notes: "",

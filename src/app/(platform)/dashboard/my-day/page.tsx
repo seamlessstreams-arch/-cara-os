@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -194,7 +195,7 @@ export default function MyDayPage() {
   const completeTask = useCompleteTask();
   const [signedOffIds, setSignedOffIds] = useState<Set<string>>(new Set());
   const { currentUser } = useAuthContext();
-  const ME = currentUser?.id ?? "staff_darren";
+  const ME = currentUser?.id ?? currentUserId();
 
   const weekStart = getMondayOfThisWeek();
 
