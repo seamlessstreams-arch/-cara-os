@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
@@ -274,7 +275,7 @@ export default function KeyWorkingPage() {
     createMutation.mutate(
       {
         child_id: formChildId,
-        staff_id: "staff_darren",
+        staff_id: currentUserId(),
         date: (fd.get("date") as string) || todayStr(),
         type: formType as SessionType,
         duration: Number(fd.get("duration")) || 30,

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MessageCircle, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -161,7 +162,7 @@ export function VoiceCaptureModal({
         voice_heeded:   voiceHeeded,
         source_ref_type: null,
         source_ref_id:  null,
-        recorded_by:    "staff_darren",
+        recorded_by:    currentUserId(),
       },
       {
         onSuccess: () => {

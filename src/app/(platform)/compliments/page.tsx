@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   Award,
   Plus,
@@ -311,7 +312,7 @@ export default function ComplimentsPage() {
               shared_with_team: false,
               shared_date: null,
               added_to_reg45: false,
-              recorded_by: "staff_darren",
+              recorded_by: currentUserId(),
             } as Partial<Compliment>, {
               onSuccess: () => { toast.success("Compliment recorded"); setShowNew(false); },
               onError: () => toast.error("Failed to save"),

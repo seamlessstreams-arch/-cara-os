@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -396,7 +397,7 @@ function NewComplaintDialog({
       await onSave({
         ...form,
         child_id: form.child_id || null,
-        created_by: "staff_darren",
+        created_by: currentUserId(),
       });
       onClose();
     } finally {

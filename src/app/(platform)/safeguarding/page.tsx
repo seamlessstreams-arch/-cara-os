@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1383,9 +1384,9 @@ function ManagerActionsTab() {
   const NOTIF_LOG = [
     { date: seedDay(-20), time: "19:25", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
     { date: seedDay(-20), time: "19:20", role: "Registered Manager", contact: "Olivia Hayes", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
-    { date: seedDay(-20), time: "20:00", role: "Police / MASH", contact: "MASH referral", incident: "INC-2026-0043", method: "Phone", by: "staff_darren", acknowledged: false },
+    { date: seedDay(-20), time: "20:00", role: "Police / MASH", contact: "MASH referral", incident: "INC-2026-0043", method: "Phone", by: currentUserId(), acknowledged: false },
     { date: seedDay(-21), time: "08:30", role: "Deputy Manager", contact: "Ryan Forsythe", incident: "INC-2026-0040", method: "In person", by: "staff_anna", acknowledged: true },
-    { date: seedDay(-21), time: "09:15", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0041", method: "Phone", by: "staff_darren", acknowledged: true },
+    { date: seedDay(-21), time: "09:15", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0041", method: "Phone", by: currentUserId(), acknowledged: true },
   ];
 
   function handleOversight(inc: Incident) {

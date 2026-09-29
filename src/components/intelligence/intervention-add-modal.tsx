@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -207,7 +208,7 @@ export function InterventionAddModal({
         agreed_by: null,
         review_date: reviewDate || null,
         evidence_refs: [],
-        created_by: "staff_darren",
+        created_by: currentUserId(),
       }),
       {
         onSuccess: () => {

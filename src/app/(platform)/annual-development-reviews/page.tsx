@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -289,7 +290,7 @@ export default function AnnualDevelopmentReviewsPage() {
               createMutation.mutate(
                 {
                   staff_id: formStaffId,
-                  reviewer_id: "staff_darren",
+                  reviewer_id: currentUserId(),
                   review_date: (fd.get("review_date") as string) || d(0),
                   status: "scheduled" as ADRReviewStatus,
                   period: (fd.get("period") as string) || "",

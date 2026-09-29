@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -111,7 +112,7 @@ export default function PreventDutyPage() {
   /* ── new-entry draft state ────────────────────────────────────────── */
   const [draft, setDraft] = useState({
     date: d(0),
-    staff_id: "staff_darren",
+    staff_id: currentUserId(),
     child_id: "",
     referral_type: "community_concern" as PreventReferralType,
     risk_level: "low" as PreventRiskLevel,

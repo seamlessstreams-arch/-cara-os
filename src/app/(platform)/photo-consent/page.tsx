@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -87,7 +88,7 @@ export default function PhotoConsentPage() {
     e.preventDefault();
     if (!pcForm.child_id) { toast.error("Please select a young person."); return; }
     const next = new Date(pcForm.review_date); next.setFullYear(next.getFullYear() + 1);
-    await createRecord.mutateAsync({ child_id: pcForm.child_id, last_review_date: pcForm.review_date, next_review_date: next.toISOString().slice(0, 10), reviewed_by: "staff_darren", overall_notes: pcForm.overall_notes.trim(), permissions: [], social_worker_consent: false, young_person_views: pcForm.young_person_views.trim(), delegated_authority: "", created_at: new Date().toISOString() });
+    await createRecord.mutateAsync({ child_id: pcForm.child_id, last_review_date: pcForm.review_date, next_review_date: next.toISOString().slice(0, 10), reviewed_by: currentUserId(), overall_notes: pcForm.overall_notes.trim(), permissions: [], social_worker_consent: false, young_person_views: pcForm.young_person_views.trim(), delegated_authority: "", created_at: new Date().toISOString() });
     toast.success("Photo consent review saved.");
     setPcForm({ child_id: "", review_date: todayStr(), young_person_views: "", overall_notes: "" });
     setShowNew(false);

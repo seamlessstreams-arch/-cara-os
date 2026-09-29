@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -79,7 +80,7 @@ export default function MedicationTrainingPage() {
     if (!mtForm.staff_id) { toast.error("Please select a staff member."); return; }
     const expiry = new Date(mtForm.assessment_date);
     expiry.setFullYear(expiry.getFullYear() + 1);
-    await createRecord.mutateAsync({ staff_id: mtForm.staff_id, competency_type: mtForm.competency_type, status: "competent", assessment_date: mtForm.assessment_date, assessed_by: "staff_darren", expiry_date: expiry.toISOString().slice(0, 10), score: mtForm.score ? parseInt(mtForm.score) : null, pass_threshold: 80, practical_assessment: false, written_assessment: true, observations: 0, notes: mtForm.notes.trim(), action_plan: "", next_assessment_date: expiry.toISOString().slice(0, 10), created_at: new Date().toISOString() });
+    await createRecord.mutateAsync({ staff_id: mtForm.staff_id, competency_type: mtForm.competency_type, status: "competent", assessment_date: mtForm.assessment_date, assessed_by: currentUserId(), expiry_date: expiry.toISOString().slice(0, 10), score: mtForm.score ? parseInt(mtForm.score) : null, pass_threshold: 80, practical_assessment: false, written_assessment: true, observations: 0, notes: mtForm.notes.trim(), action_plan: "", next_assessment_date: expiry.toISOString().slice(0, 10), created_at: new Date().toISOString() });
     toast.success("Competency assessment recorded.");
     setMtForm({ staff_id: "", competency_type: "administration", assessment_date: todayStr(), score: "", notes: "" });
     setShowNew(false);

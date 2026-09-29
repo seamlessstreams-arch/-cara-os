@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -89,7 +90,7 @@ export default function MedicationAuditPage() {
     actual_count: "",
     batch_number: "",
     expiry_date: "",
-    audited_by: "staff_darren",
+    audited_by: currentUserId(),
     witnessed_by: "",
     notes: "",
   });
@@ -129,7 +130,7 @@ export default function MedicationAuditPage() {
       notes: maForm.notes,
     });
     toast.success("Medication audit recorded.");
-    setMaForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), child_id: "", audit_type: "", medication_name: "", strength: "", expected_count: "", actual_count: "", batch_number: "", expiry_date: "", audited_by: "staff_darren", witnessed_by: "", notes: "" });
+    setMaForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), child_id: "", audit_type: "", medication_name: "", strength: "", expected_count: "", actual_count: "", batch_number: "", expiry_date: "", audited_by: currentUserId(), witnessed_by: "", notes: "" });
     setShowNew(false);
   };
 

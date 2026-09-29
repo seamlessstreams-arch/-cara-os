@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -468,13 +469,13 @@ function NewInterventionDialog({
         home_id: "home_oak",
         started_at: todayStr(),
         review_date: form.review_date || null,
-        agreed_by: "staff_darren",
+        agreed_by: currentUserId(),
         status: "active",
         outcome: "too_early",
         outcome_notes: null,
         ended_at: null,
         evidence_refs: [],
-        created_by: "staff_darren",
+        created_by: currentUserId(),
       });
       onClose();
       setForm({ child_id: "", title: "", description: "", rationale: "", intended_outcome: "", review_date: "" });
