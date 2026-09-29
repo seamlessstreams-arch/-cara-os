@@ -177,9 +177,10 @@ describe("attendance", () => {
     expect(result.attendanceBand).toBe("severe_absence");
   });
 
-  it("returns 0 attendance for empty records", () => {
+  it("returns null (unmeasured) attendance for empty records", () => {
     const result = analyseEducation(makeInput({ attendanceRecords: [] }));
-    expect(result.attendancePercentage).toBe(0);
+    expect(result.attendancePercentage).toBeNull();
+    expect(result.attendanceBand).toBe("not_recorded");
   });
 });
 
