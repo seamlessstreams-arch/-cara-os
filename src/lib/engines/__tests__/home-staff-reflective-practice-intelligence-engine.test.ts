@@ -848,7 +848,7 @@ describe("edge cases", () => {
 
   it("handles empty meetings collection", () => {
     const r = computeHomeStaffReflectivePractice(baseInput({ staff_meetings: [] }));
-    expect(r.meeting_attendance_rate).toBe(0);
+    expect(r.meeting_attendance_rate).toBeNull(); // no meetings → unmeasured
     expect(r.reflective_rating).not.toBe("insufficient_data");
   });
 
