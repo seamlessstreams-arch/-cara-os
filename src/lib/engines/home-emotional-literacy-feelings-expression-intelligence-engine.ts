@@ -162,7 +162,7 @@ export interface EmotionalLiteracyResult {
   empathy_rate: number | null;
   context_understanding_rate: number | null;
 
-  avg_vocabulary_words: number;
+  avg_vocabulary_words: number | null;
   spontaneous_use_rate: number | null;
   creative_expression_rate: number | null;
   vocabulary_progress_rate: number | null;
@@ -171,13 +171,13 @@ export interface EmotionalLiteracyResult {
   unique_tool_types: number;
   child_initiated_tool_use_rate: number | null;
   tool_accessibility_rate: number | null;
-  avg_tool_effectiveness: number;
+  avg_tool_effectiveness: number | null;
 
   total_journal_entries: number;
   children_journaling: number;
   child_initiated_journal_rate: number | null;
   staff_response_rate: number | null;
-  avg_journal_depth: number;
+  avg_journal_depth: number | null;
   journal_keywork_link_rate: number | null;
 
   total_attunement_observations: number;
@@ -208,8 +208,8 @@ function toRating(score: number): EmotionalLiteracyRating {
   return "inadequate";
 }
 
-function avg(nums: number[]): number {
-  if (nums.length === 0) return 0;
+function avg(nums: number[]): number | null {
+  if (nums.length === 0) return null;
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 100) / 100;
 }
 
@@ -732,7 +732,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (avgToolEffectiveness >= 4.0 && totalToolRecords > 0) {
+  if ((avgToolEffectiveness ?? 0) >= 4.0 && totalToolRecords > 0) {
     strengths.push(
       `Average tool effectiveness rating of ${avgToolEffectiveness}/5 — expression tools are making a meaningful difference in children's ability to communicate feelings.`,
     );
@@ -763,7 +763,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (avgJournalDepth >= 4.0 && totalJournalEntries > 0) {
+  if ((avgJournalDepth ?? 0) >= 4.0 && totalJournalEntries > 0) {
     strengths.push(
       `Average journal depth rating of ${avgJournalDepth}/5 — children are exploring their emotions with genuine depth and reflection.`,
     );
@@ -938,7 +938,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (avgToolEffectiveness < 2.5 && totalToolRecords > 0) {
+  if ((avgToolEffectiveness ?? 0) < 2.5 && totalToolRecords > 0) {
     concerns.push(
       `Average tool effectiveness only ${avgToolEffectiveness}/5 — the expression tools in use are not making a meaningful impact on children's ability to communicate feelings.`,
     );
@@ -975,7 +975,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (avgJournalDepth < 2.5 && totalJournalEntries > 0) {
+  if ((avgJournalDepth ?? 0) < 2.5 && totalJournalEntries > 0) {
     concerns.push(
       `Average journal depth only ${avgJournalDepth}/5 — children are not exploring their emotions with sufficient depth, suggesting the journaling approach may need reviewing.`,
     );
@@ -1461,7 +1461,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (avgToolEffectiveness >= 2.5 && avgToolEffectiveness < 3.5 && totalToolRecords > 0) {
+  if ((avgToolEffectiveness ?? 0) >= 2.5 && (avgToolEffectiveness ?? 0) < 3.5 && totalToolRecords > 0) {
     insights.push({
       text: `Average tool effectiveness at ${avgToolEffectiveness}/5 — tools are having some impact but could be more effective. Review which tools work best for individual children and adjust provision.`,
       severity: "warning",
@@ -1540,7 +1540,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (avgJournalDepth >= 4.0 && meets(helpfulRate, 80) && totalJournalEntries > 0) {
+  if ((avgJournalDepth ?? 0) >= 4.0 && meets(helpfulRate, 80) && totalJournalEntries > 0) {
     insights.push({
       text: `Journal depth averaging ${avgJournalDepth}/5 with ${helpfulRate}% of children finding journaling helpful — therapeutic journaling is a genuine tool for emotional processing, not just a recording exercise.`,
       severity: "positive",
