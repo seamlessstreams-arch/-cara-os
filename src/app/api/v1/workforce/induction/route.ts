@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,14 +28,18 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // Statutory/formal record: the author must be the authenticated caller.
+  // Reject rather than file it under a seed default or an anonymous author.
+  const __identity = await getRequestIdentity(req);
+  if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
   const record = db.inductionRecords.create({
     ...body,
+    created_by: __identity.userId,
     home_id: body.home_id ?? tenantHomeId(),
     items: body.items ?? [],
     overall_status: body.overall_status ?? "not_started",
-    created_by: body.created_by ?? "staff_darren",
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }
