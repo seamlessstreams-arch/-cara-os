@@ -16,6 +16,7 @@
 export const dynamic = "force-dynamic";
 
 import { persistRecordingReview } from "@/lib/supabase/incident-persist";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
     const now = new Date().toISOString();
     const review: CaraRecordingReview = {
       id: generateId("arr"),
-      home_id: "home_oak",
+      home_id: tenantHomeId(),
       child_id,
       user_id,
       incident_session_id: null,
