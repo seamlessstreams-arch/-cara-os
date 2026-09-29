@@ -78,7 +78,7 @@ export interface ProgressionProfile {
 export interface CurrencyProfile {
   overdue_assessments: number;
   overdue_assessment_rate: number | null;
-  avg_days_since_assessment: number;
+  avg_days_since_assessment: number | null;
 }
 
 export interface CompLandscapeRecommendation {
@@ -111,8 +111,8 @@ export interface HomeCompetencyLandscapeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function avg(values: number[]): number {
-  if (values.length === 0) return 0;
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null;
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 }
 
@@ -292,11 +292,11 @@ export function computeHomeCompetencyLandscape(
   // Modifier 7: Development balance (±4)
   if (profiles.length === 0) {
     // neutral
-  } else if (avgDevAreas <= 2 && avgStrengths >= 2) {
+  } else if ((avgDevAreas ?? 0) <= 2 && (avgStrengths ?? 0) >= 2) {
     bonuses += 4;
-  } else if (avgDevAreas <= 3) {
+  } else if ((avgDevAreas ?? 0) <= 3) {
     bonuses += 2;
-  } else if (avgDevAreas <= 4) {
+  } else if ((avgDevAreas ?? 0) <= 4) {
     // +0
   } else {
     bonuses -= 3;
@@ -343,7 +343,7 @@ export function computeHomeCompetencyLandscape(
     strengths.push(
       "Team has staff across multiple role stages — providing a healthy succession pipeline and mentoring capability.",
     );
-  if (avgStrengths >= 2.5 && profiles.length > 0)
+  if ((avgStrengths ?? 0) >= 2.5 && profiles.length > 0)
     strengths.push(
       `Staff average ${avgStrengths} recognised strengths each — a well-balanced and capable team.`,
     );
@@ -370,7 +370,7 @@ export function computeHomeCompetencyLandscape(
     concerns.push(
       `Only ${readiness.staff_above_70_rate}% of staff have readiness scores above 70 — team capability may be insufficient for complex work.`,
     );
-  if (avgDevAreas > 3 && profiles.length > 0)
+  if ((avgDevAreas ?? 0) > 3 && profiles.length > 0)
     concerns.push(
       `Staff average ${avgDevAreas} development areas each — significant competency gaps exist across the team.`,
     );

@@ -639,7 +639,8 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan()],
       }));
       expect(r.competency_rating).not.toBe("insufficient_data");
-      expect(r.readiness.avg_readiness_score).toBe(0);
+      // No profiles → no readiness scores to average → unmeasured, not 0
+      expect(r.readiness.avg_readiness_score).toBeNull();
     });
 
     it("score is clamped to [0, 100]", () => {
