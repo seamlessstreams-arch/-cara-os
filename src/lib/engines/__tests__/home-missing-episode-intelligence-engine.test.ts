@@ -438,7 +438,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         baseRecord({ return_interview_completed: false, still_missing: false }),
       ];
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.return_interview_timeliness_rate).toBe(0);
+      expect(r.return_interview_timeliness_rate).toBeNull();
     });
 
     it("boundary: exactly 90% triggers +5", () => {
@@ -573,7 +573,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         }),
       );
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.police_report_rate_high_risk).toBe(0);
+      expect(r.police_report_rate_high_risk).toBeNull();
       expect(r.la_notification_rate).toBe(80);
     });
 
@@ -1123,7 +1123,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         baseRecord({ id: "ep_2", risk_level: "low", reported_to_police: true }),
       ];
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.police_report_rate_high_risk).toBe(0);
+      expect(r.police_report_rate_high_risk).toBeNull();
     });
 
     it("contextual_safeguarding_flag_rate is computed only among high-risk episodes", () => {
@@ -1142,7 +1142,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         baseRecord({ id: "ep_1", risk_level: "medium", has_contextual_safeguarding_risk: true }),
       ];
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.contextual_safeguarding_flag_rate).toBe(0);
+      expect(r.contextual_safeguarding_flag_rate).toBeNull();
     });
 
     it("pattern_analysis_rate is computed over all episodes", () => {
@@ -2488,8 +2488,8 @@ describe("Home Missing Episode Intelligence Engine", () => {
         }),
       );
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.return_interview_rate).toBe(0);
-      expect(r.return_interview_timeliness_rate).toBe(0);
+      expect(r.return_interview_rate).toBeNull();
+      expect(r.return_interview_timeliness_rate).toBeNull();
     });
 
     it("timeliness rate is 0 when all returned but none completed interviews", () => {
@@ -2502,7 +2502,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         }),
       );
       const r = computeMissingEpisode(baseInput({ episodes }));
-      expect(r.return_interview_timeliness_rate).toBe(0);
+      expect(r.return_interview_timeliness_rate).toBeNull();
     });
 
     it("concerns and recommendations overlap correctly for multiple issues", () => {
