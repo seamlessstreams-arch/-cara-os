@@ -1663,17 +1663,18 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         expect(r.avg_overall_quality_score).toBe(3);
       });
 
-      it("returns 0 for all when no assessments", () => {
+      it("returns null for all when no assessments", () => {
         const r = computeKeyWorkerRelationshipQuality(baseInput({
           total_children: 1,
           key_worker_allocation_records: [makeAllocation({ child_id: "yp_alex", allocated: true, active: true })],
           relationship_assessment_records: [],
         }));
-        expect(r.avg_trust_score).toBe(0);
-        expect(r.avg_communication_score).toBe(0);
-        expect(r.avg_responsiveness_score).toBe(0);
-        expect(r.avg_emotional_attunement_score).toBe(0);
-        expect(r.avg_overall_quality_score).toBe(0);
+        // No relationship assessments → nothing to average → unmeasured, not 0
+        expect(r.avg_trust_score).toBeNull();
+        expect(r.avg_communication_score).toBeNull();
+        expect(r.avg_responsiveness_score).toBeNull();
+        expect(r.avg_emotional_attunement_score).toBeNull();
+        expect(r.avg_overall_quality_score).toBeNull();
       });
     });
   });
