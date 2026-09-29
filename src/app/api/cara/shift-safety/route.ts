@@ -23,7 +23,7 @@ function getDemoContext(): ShiftContext {
     shiftType: londonHour(now) < 14 ? "day" : londonHour(now) < 22 ? "evening" : "waking_night",
     staffOnDuty: [
       {
-        id: "staff_darren",
+        id: "staff_darren",  // seed-actor-ok: demo staffOnDuty fixture, not a written attribution
         name: "Olivia H",
         role: "senior",
         qualifications: ["medication", "restraint", "first_aid", "senior_on_duty"],

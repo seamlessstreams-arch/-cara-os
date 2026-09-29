@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
@@ -120,8 +121,11 @@ async function updateYoungPerson(
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "No editable fields supplied." }, { status: 400 });
   }
-  const actor = req.headers.get("x-user-id") || (body.actor_id as string) || "staff_darren";
-  patch.updated_by = actor;
+  // Updating a young person's record is a formal change — the actor is the
+  // authenticated caller, never a seed default; reject an unresolved session.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  patch.updated_by = identity.userId;
 
   const updated = await dal.youngPeople.update(id, patch);
   if (!updated) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
@@ -137,7 +141,7 @@ async function updateYoungPerson(
     action: "update",
     before: existing as unknown as Record<string, unknown>,
     after: updated as unknown as Record<string, unknown>,
-    performedBy: actor,
+    performedBy: identity.userId,
   });
 
   return NextResponse.json({ data: updated });
@@ -156,7 +160,11 @@ async function archiveYoungPerson(
   const existing = await dal.youngPeople.findById(id);
   if (!existing) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
 
-  const actor = req.headers.get("x-user-id") || "staff_darren";
+  // Archiving (ending a placement) is a significant change to a looked-after
+  // child's record — the actor is the authenticated caller; reject if unresolved.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const actor = identity.userId;
   const updated = await dal.youngPeople.update(id, {
     status: "ended",
     placement_end: todayStr(),
