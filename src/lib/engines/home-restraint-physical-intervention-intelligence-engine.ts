@@ -8,6 +8,8 @@
 // "Leadership and management".
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface RestraintRecordInput {
@@ -82,8 +84,9 @@ export interface RestraintPhysicalInterventionResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const pct = (n: number, d: number): number =>
-  d === 0 ? 0 : Math.round((n / d) * 100);
+// Rates use the shared null-safe rate() — empty denominator ⇒ unmeasured (null), never a fabricated 0%.
+// Scoring branches are guarded by the matching emptiness (insufficient_data / .length checks), so the
+// `?? 0` coercions below never actually fire.
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -221,19 +224,19 @@ export function computeRestraintPhysicalIntervention(
 
   // De-escalation rate: restraints where de_escalation_attempt_count > 0
   const withDeEscalation = r90d.filter(r => r.de_escalation_attempt_count > 0).length;
-  const deEscalationRate = pct(withDeEscalation, total);
+  const deEscalationRate = rate(withDeEscalation, total);
 
   // Team Teach compliance: all_staff_team_teach_trained
   const teamTeachCompliant = r90d.filter(r => r.all_staff_team_teach_trained).length;
-  const teamTeachRate = pct(teamTeachCompliant, total);
+  const teamTeachRate = rate(teamTeachCompliant, total);
 
   // Child debrief rate
   const childDebriefed = r90d.filter(r => r.child_debriefed).length;
-  const childDebriefRate = pct(childDebriefed, total);
+  const childDebriefRate = rate(childDebriefed, total);
 
   // Staff debrief rate (tracked but not a primary modifier)
   const staffDebriefed = r90d.filter(r => r.staff_debriefed).length;
-  const staffDebriefRate = pct(staffDebriefed, total);
+  const staffDebriefRate = rate(staffDebriefed, total);
 
   // Review completion rate. review_status is the canonical RestraintReviewStatus
   // ("pending_rm" | "pending_ri" | "reviewed" | "referred_lado"). Previously this
@@ -243,33 +246,33 @@ export function computeRestraintPhysicalIntervention(
   // escalated to the LADO was miscounted as not reviewed. Mirrors the sibling
   // child-restrictive-practice engine.
   const reviewed = r90d.filter(r => r.review_status === "reviewed" || r.review_status === "referred_lado").length;
-  const reviewCompletionRate = pct(reviewed, total);
+  const reviewCompletionRate = rate(reviewed, total);
   const pendingReviews = r90d.filter(r => r.review_status !== "reviewed" && r.review_status !== "referred_lado").length;
 
   // Body map rate
   const bodyMapDone = r90d.filter(r => r.has_body_map).length;
-  const bodyMapRate = pct(bodyMapDone, total);
+  const bodyMapRate = rate(bodyMapDone, total);
 
   // Notification rate: notification_count >= 2
   const notified = r90d.filter(r => r.notification_count >= 2).length;
-  const notificationRate = pct(notified, total);
+  const notificationRate = rate(notified, total);
 
   // Injury rate
   const withInjury = r90d.filter(r => r.has_injury).length;
-  const injuryRate = pct(withInjury, total);
+  const injuryRate = rate(withInjury, total);
   const totalInjuries = r90d.reduce((sum, r) => sum + r.injury_count, 0);
 
   // Justification rate
   const justified = r90d.filter(r => r.has_justification).length;
-  const justificationRate = pct(justified, total);
+  const justificationRate = rate(justified, total);
 
   // Witness rate
   const witnessed = r90d.filter(r => r.has_witness).length;
-  const witnessRate = pct(witnessed, total);
+  const witnessRate = rate(witnessed, total);
 
   // Linked incident rate
   const linked = r90d.filter(r => r.has_linked_incident).length;
-  const linkedRate = pct(linked, total);
+  const linkedRate = rate(linked, total);
 
   // Frequency analysis
   const isHighFrequency = total > total_children * 2;
@@ -278,40 +281,40 @@ export function computeRestraintPhysicalIntervention(
   let score = 52;
 
   // Modifier 1: De-escalation practice (+6 / +3 / -5)
-  if (deEscalationRate >= 90) score += 6;
-  else if (deEscalationRate >= 70) score += 3;
-  else if (deEscalationRate < 40) score -= 5;
+  if ((deEscalationRate ?? 0) >= 90) score += 6;
+  else if ((deEscalationRate ?? 0) >= 70) score += 3;
+  else if ((deEscalationRate ?? 0) < 40) score -= 5;
   // 0 records with children scenario already handled by guard above;
   // if we reach here there are records, so check edge case of 0 rate
   if (deEscalationRate === 0 && total > 0) score -= 3;
 
   // Modifier 2: Team Teach compliance (+5 / +2 / -5)
-  if (teamTeachRate >= 95) score += 5;
-  else if (teamTeachRate >= 80) score += 2;
-  else if (teamTeachRate < 50) score -= 5;
+  if ((teamTeachRate ?? 0) >= 95) score += 5;
+  else if ((teamTeachRate ?? 0) >= 80) score += 2;
+  else if ((teamTeachRate ?? 0) < 50) score -= 5;
   if (teamTeachRate === 0 && total > 0) score -= 1;
 
   // Modifier 3: Child debrief (+5 / +2 / -4)
-  if (childDebriefRate >= 85) score += 5;
-  else if (childDebriefRate >= 60) score += 2;
-  else if (childDebriefRate < 30) score -= 4;
+  if ((childDebriefRate ?? 0) >= 85) score += 5;
+  else if ((childDebriefRate ?? 0) >= 60) score += 2;
+  else if ((childDebriefRate ?? 0) < 30) score -= 4;
   if (childDebriefRate === 0 && total > 0) score -= 1;
 
   // Modifier 4: Review completion (+5 / +2 / -4)
-  if (reviewCompletionRate >= 90) score += 5;
-  else if (reviewCompletionRate >= 70) score += 2;
-  else if (reviewCompletionRate < 40) score -= 4;
+  if ((reviewCompletionRate ?? 0) >= 90) score += 5;
+  else if ((reviewCompletionRate ?? 0) >= 70) score += 2;
+  else if ((reviewCompletionRate ?? 0) < 40) score -= 4;
 
   // Modifier 5: Body map + notification (+4 / +2 / -4)
-  if (bodyMapRate >= 90 && notificationRate >= 90) score += 4;
-  else if (bodyMapRate >= 70 || notificationRate >= 70) score += 2;
-  else if (bodyMapRate < 40 && notificationRate < 40) score -= 4;
+  if ((bodyMapRate ?? 0) >= 90 && (notificationRate ?? 0) >= 90) score += 4;
+  else if ((bodyMapRate ?? 0) >= 70 || (notificationRate ?? 0) >= 70) score += 2;
+  else if ((bodyMapRate ?? 0) < 40 && (notificationRate ?? 0) < 40) score -= 4;
   if (bodyMapRate === 0 && notificationRate === 0 && total > 0) score -= 1;
 
   // Modifier 6: Duration + injury monitoring (+5 / +2 / -3)
   if ((averageDuration ?? 0) <= 5 && injuryRate === 0) score += 5;
-  else if ((averageDuration ?? 0) <= 10 || injuryRate <= 10) score += 2;
-  else if ((averageDuration ?? 0) > 15 || injuryRate > 30) score -= 3;
+  else if ((averageDuration ?? 0) <= 10 || (injuryRate ?? 0) <= 10) score += 2;
+  else if ((averageDuration ?? 0) > 15 || (injuryRate ?? 0) > 30) score -= 3;
   if (averageDuration === 0 && injuryRate === 0 && total === 0) score -= 2;
 
   // Additional penalty: high frequency
@@ -332,43 +335,43 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (deEscalationRate >= 90) {
+  if ((deEscalationRate ?? 0) >= 90) {
     strengths.push(
       `De-escalation attempted in ${deEscalationRate}% of interventions — strong evidence of least restrictive approach.`,
     );
   }
 
-  if (teamTeachRate >= 95) {
+  if ((teamTeachRate ?? 0) >= 95) {
     strengths.push(
       `Team Teach compliance at ${teamTeachRate}% — all staff involved are appropriately trained.`,
     );
   }
 
-  if (childDebriefRate >= 85) {
+  if ((childDebriefRate ?? 0) >= 85) {
     strengths.push(
       `Child debrief rate at ${childDebriefRate}% — therapeutic aftercare is embedded in practice.`,
     );
   }
 
-  if (staffDebriefRate >= 85) {
+  if ((staffDebriefRate ?? 0) >= 85) {
     strengths.push(
       `Staff debriefed after ${staffDebriefRate}% of interventions — reflective practice culture in place.`,
     );
   }
 
-  if (reviewCompletionRate >= 90) {
+  if ((reviewCompletionRate ?? 0) >= 90) {
     strengths.push(
       `${reviewCompletionRate}% of restraints reviewed — robust management oversight of physical interventions.`,
     );
   }
 
-  if (bodyMapRate >= 90) {
+  if ((bodyMapRate ?? 0) >= 90) {
     strengths.push(
       `Body map completion at ${bodyMapRate}% — comprehensive post-intervention documentation.`,
     );
   }
 
-  if (notificationRate >= 90) {
+  if ((notificationRate ?? 0) >= 90) {
     strengths.push(
       `Notification rate at ${notificationRate}% — appropriate parties informed promptly after each intervention.`,
     );
@@ -392,7 +395,7 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (witnessRate >= 90 && total > 0) {
+  if ((witnessRate ?? 0) >= 90 && total > 0) {
     strengths.push(
       `${witnessRate}% of interventions witnessed — transparency and accountability in physical intervention.`,
     );
@@ -416,19 +419,19 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (deEscalationRate < 70) {
+  if ((deEscalationRate ?? 0) < 70) {
     concerns.push(
       `De-escalation rate at ${deEscalationRate}% — less restrictive interventions must always be attempted before physical intervention.`,
     );
   }
 
-  if (teamTeachRate < 80) {
+  if ((teamTeachRate ?? 0) < 80) {
     concerns.push(
       `Team Teach compliance at ${teamTeachRate}% — untrained staff are participating in physical interventions.`,
     );
   }
 
-  if (childDebriefRate < 60) {
+  if ((childDebriefRate ?? 0) < 60) {
     concerns.push(
       `Child debrief rate at ${childDebriefRate}% — children are not being debriefed after restraint, impacting therapeutic recovery.`,
     );
@@ -440,19 +443,19 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (bodyMapRate < 70) {
+  if ((bodyMapRate ?? 0) < 70) {
     concerns.push(
       `Body map completion at ${bodyMapRate}% — gaps in post-intervention medical documentation.`,
     );
   }
 
-  if (notificationRate < 70) {
+  if ((notificationRate ?? 0) < 70) {
     concerns.push(
       `Notification rate at ${notificationRate}% — placing authorities and parents/carers may not be informed of restraint use.`,
     );
   }
 
-  if (injuryRate > 20) {
+  if ((injuryRate ?? 0) > 20) {
     concerns.push(
       `Injury rate at ${injuryRate}% (${withInjury} intervention${withInjury > 1 ? "s" : ""} with ${totalInjuries} total injuries) — restraint techniques and proportionality require urgent review.`,
     );
@@ -464,13 +467,13 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (justificationRate < 80 && total > 0) {
+  if ((justificationRate ?? 0) < 80 && total > 0) {
     concerns.push(
       `Justification documented in only ${justificationRate}% of interventions — every restraint must have a recorded reason.`,
     );
   }
 
-  if (staffDebriefRate < 50) {
+  if ((staffDebriefRate ?? 0) < 50) {
     concerns.push(
       `Staff debrief rate at ${staffDebriefRate}% — staff wellbeing and reflective practice are not being prioritised after interventions.`,
     );
@@ -489,7 +492,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (injuryRate > 20) {
+  if ((injuryRate ?? 0) > 20) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Review restraint techniques urgently — ${injuryRate}% injury rate across ${total} interventions indicates potential issues with application or proportionality.`,
@@ -498,7 +501,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (deEscalationRate < 70) {
+  if ((deEscalationRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Implement mandatory de-escalation documentation — current rate of ${deEscalationRate}% falls below acceptable standards. Staff must evidence all pre-intervention strategies attempted.`,
@@ -507,7 +510,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (teamTeachRate < 80) {
+  if ((teamTeachRate ?? 0) < 80) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Schedule immediate Team Teach training — only ${teamTeachRate}% of interventions involved fully trained staff. No untrained staff member should participate in physical intervention.`,
@@ -516,7 +519,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (childDebriefRate < 60) {
+  if ((childDebriefRate ?? 0) < 60) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Embed child debrief as a mandatory post-intervention step — current rate of ${childDebriefRate}% denies children the therapeutic aftercare they need.`,
@@ -543,7 +546,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (bodyMapRate < 70) {
+  if ((bodyMapRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Ensure body maps are completed for every physical intervention — current rate of ${bodyMapRate}% leaves gaps in post-incident evidence.`,
@@ -552,7 +555,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (notificationRate < 70) {
+  if ((notificationRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve notification processes — ${notificationRate}% compliance means placing authorities and families are not consistently informed of restraint use.`,
@@ -561,7 +564,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (staffDebriefRate < 50) {
+  if ((staffDebriefRate ?? 0) < 50) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Introduce mandatory staff debrief after every physical intervention — current rate of ${staffDebriefRate}% undermines reflective practice.`,
@@ -579,16 +582,16 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (justificationRate < 100 && total > 0) {
+  if ((justificationRate ?? 0) < 100 && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Ensure all restraints have documented justification — ${100 - justificationRate}% of records lack formal rationale for use of physical intervention.`,
+      recommendation: `Ensure all restraints have documented justification — ${100 - (justificationRate ?? 0)}% of records lack formal rationale for use of physical intervention.`,
       urgency: "planned",
       regulatory_ref: "CHR 2015 Reg 35",
     });
   }
 
-  if (witnessRate < 70 && total > 0) {
+  if ((witnessRate ?? 0) < 70 && total > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve independent witnessing of physical interventions — only ${witnessRate}% had a witness present, reducing transparency and accountability.`,
@@ -597,7 +600,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (linkedRate < 50 && total > 0) {
+  if ((linkedRate ?? 0) < 50 && total > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Link restraint records to associated incident reports — only ${linkedRate}% are currently linked, making holistic analysis difficult.`,
@@ -610,7 +613,7 @@ export function computeRestraintPhysicalIntervention(
   const insights: RestraintInsight[] = [];
 
   // Critical insights
-  if (injuryRate > 30) {
+  if ((injuryRate ?? 0) > 30) {
     insights.push({
       text: `Injury rate of ${injuryRate}% across physical interventions is a serious safeguarding concern. Ofsted will scrutinise whether restraint techniques are safe and staff training is adequate.`,
       severity: "critical",
@@ -624,14 +627,14 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (deEscalationRate < 40) {
+  if ((deEscalationRate ?? 0) < 40) {
     insights.push({
       text: `De-escalation attempted in fewer than 40% of interventions. Ofsted expects to see evidence that physical intervention is always a last resort — this rate undermines that expectation.`,
       severity: "critical",
     });
   }
 
-  if (teamTeachRate < 50) {
+  if ((teamTeachRate ?? 0) < 50) {
     insights.push({
       text: `Fewer than half of physical interventions involved fully trained staff. This is a significant safety risk and a likely Ofsted shortfall finding under Reg 35.`,
       severity: "critical",
@@ -653,7 +656,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (childDebriefRate < 60 && childDebriefRate >= 30) {
+  if ((childDebriefRate ?? 0) < 60 && (childDebriefRate ?? 0) >= 30) {
     insights.push({
       text: `Child debrief rate of ${childDebriefRate}% leaves many children without therapeutic aftercare following restraint. Ofsted views debriefing as essential to child-centred practice.`,
       severity: "warning",
@@ -667,7 +670,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (injuryRate > 0 && injuryRate <= 20) {
+  if ((injuryRate ?? 0) > 0 && (injuryRate ?? 0) <= 20) {
     insights.push({
       text: `${withInjury} intervention${withInjury > 1 ? "s" : ""} resulted in injury (${injuryRate}% rate). While some risk is inherent, each injury should trigger a technique review and be reported.`,
       severity: "warning",
@@ -687,10 +690,10 @@ export function computeRestraintPhysicalIntervention(
     reasonCounts[r.reason] = (reasonCounts[r.reason] || 0) + 1;
   }
   const dominantReason = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0];
-  if (dominantReason && total >= 3 && pct(dominantReason[1], total) >= 80) {
+  if (dominantReason && total >= 3 && (rate(dominantReason[1], total) ?? 0) >= 80) {
     const reasonLabel = dominantReason[0].replace(/_/g, " ");
     insights.push({
-      text: `${pct(dominantReason[1], total)}% of interventions were for "${reasonLabel}". This dominant trigger pattern should inform targeted de-escalation strategy updates.`,
+      text: `${rate(dominantReason[1], total)}% of interventions were for "${reasonLabel}". This dominant trigger pattern should inform targeted de-escalation strategy updates.`,
       severity: "warning",
     });
   }
@@ -701,36 +704,36 @@ export function computeRestraintPhysicalIntervention(
     typeCounts[r.restraint_type] = (typeCounts[r.restraint_type] || 0) + 1;
   }
   const dominantType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
-  if (dominantType && total >= 3 && dominantType[0] === "wrap_hold" && pct(dominantType[1], total) >= 50) {
+  if (dominantType && total >= 3 && dominantType[0] === "wrap_hold" && (rate(dominantType[1], total) ?? 0) >= 50) {
     insights.push({
-      text: `Wrap holds used in ${pct(dominantType[1], total)}% of interventions. As the most restrictive common hold type, this warrants review to ensure proportionality and that less restrictive alternatives are considered first.`,
+      text: `Wrap holds used in ${rate(dominantType[1], total)}% of interventions. As the most restrictive common hold type, this warrants review to ensure proportionality and that less restrictive alternatives are considered first.`,
       severity: "warning",
     });
   }
 
   // Positive insights
-  if (deEscalationRate >= 90 && total > 0) {
+  if ((deEscalationRate ?? 0) >= 90 && total > 0) {
     insights.push({
       text: `De-escalation documented in ${deEscalationRate}% of interventions. This demonstrates a consistent least restrictive approach — a key Ofsted expectation under Reg 35.`,
       severity: "positive",
     });
   }
 
-  if (childDebriefRate >= 85 && total > 0) {
+  if ((childDebriefRate ?? 0) >= 85 && total > 0) {
     insights.push({
       text: `${childDebriefRate}% child debrief rate evidences therapeutically informed aftercare. Children's voices and experiences are prioritised following physical intervention.`,
       severity: "positive",
     });
   }
 
-  if (teamTeachRate >= 95 && total > 0) {
+  if ((teamTeachRate ?? 0) >= 95 && total > 0) {
     insights.push({
       text: `Team Teach compliance at ${teamTeachRate}% — all physical interventions are conducted by trained staff, demonstrating safe and competent practice.`,
       severity: "positive",
     });
   }
 
-  if (reviewCompletionRate >= 90 && total > 0) {
+  if ((reviewCompletionRate ?? 0) >= 90 && total > 0) {
     insights.push({
       text: `${reviewCompletionRate}% review completion rate — the Registered Manager is providing timely oversight of every physical intervention, evidencing strong governance.`,
       severity: "positive",
@@ -744,7 +747,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (bodyMapRate >= 90 && notificationRate >= 90 && total > 0) {
+  if ((bodyMapRate ?? 0) >= 90 && (notificationRate ?? 0) >= 90 && total > 0) {
     insights.push({
       text: `Body map (${bodyMapRate}%) and notification (${notificationRate}%) compliance is excellent — post-intervention documentation and communication meet regulatory standards.`,
       severity: "positive",
@@ -768,7 +771,7 @@ export function computeRestraintPhysicalIntervention(
   } else if (restraint_rating === "adequate") {
     headline = `Adequate physical intervention management — ${concerns.length} area${concerns.length !== 1 ? "s" : ""} of concern identified across ${total} intervention${total !== 1 ? "s" : ""}, improvement action required.`;
   } else {
-    headline = `Physical intervention practice is inadequate — ${total} restraint${total !== 1 ? "s" : ""} with significant gaps in ${deEscalationRate < 70 ? "de-escalation, " : ""}${childDebriefRate < 60 ? "child debriefs, " : ""}${reviewCompletionRate < 70 ? "reviews, " : ""}${teamTeachRate < 80 ? "training compliance, " : ""}requiring urgent action.`.replace(/, $/, ".");
+    headline = `Physical intervention practice is inadequate — ${total} restraint${total !== 1 ? "s" : ""} with significant gaps in ${(deEscalationRate ?? 0) < 70 ? "de-escalation, " : ""}${(childDebriefRate ?? 0) < 60 ? "child debriefs, " : ""}${(reviewCompletionRate ?? 0) < 70 ? "reviews, " : ""}${(teamTeachRate ?? 0) < 80 ? "training compliance, " : ""}requiring urgent action.`.replace(/, $/, ".");
   }
 
   // ── Return ────────────────────────────────────────────────────────────
