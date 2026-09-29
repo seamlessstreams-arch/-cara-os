@@ -372,35 +372,38 @@ describe("computeMedicationAdministration", () => {
       expect(result.reason_documented_rate).toBe(50);
     });
 
-    it("returns 0 for reason_documented_rate when no refused or withheld", () => {
+    it("returns null for reason_documented_rate when no refused or withheld", () => {
       const result = computeMedicationAdministration(
         baseInput({ administrations: makeRecords(5) }),
       );
-      expect(result.reason_documented_rate).toBe(0);
+      // No refused/withheld records → nothing to document a reason for → unmeasured.
+      expect(result.reason_documented_rate).toBeNull();
     });
 
-    it("returns 0 for prn_documentation_rate when no PRN given", () => {
+    it("returns null for prn_documentation_rate when no PRN given", () => {
       const result = computeMedicationAdministration(
         baseInput({ administrations: makeRecords(5) }),
       );
-      expect(result.prn_documentation_rate).toBe(0);
+      // No PRN administrations → nothing to document → unmeasured.
+      expect(result.prn_documentation_rate).toBeNull();
     });
 
-    it("returns 0 for on_time_rate when no administrations (all refused)", () => {
+    it("returns null for on_time_rate when no administrations (all refused)", () => {
       const records = makeRecords(3, { status: "refused", has_witness: false });
       const result = computeMedicationAdministration(
         baseInput({ administrations: records }),
       );
-      // administered = 0, on_time_rate = pct(0, 0) = 0
-      expect(result.on_time_rate).toBe(0);
+      // administered = 0 → no administration timeliness to measure → unmeasured (null), not 0
+      expect(result.on_time_rate).toBeNull();
     });
 
-    it("returns 0 for witness_rate when no administrations (all refused)", () => {
+    it("returns null for witness_rate when no administrations (all refused)", () => {
       const records = makeRecords(3, { status: "refused", has_witness: false });
       const result = computeMedicationAdministration(
         baseInput({ administrations: records }),
       );
-      expect(result.witness_rate).toBe(0);
+      // No administered records → no witnessing to measure → unmeasured (null), not 0
+      expect(result.witness_rate).toBeNull();
     });
 
     it("passes through children_on_medication from input", () => {
@@ -627,7 +630,7 @@ describe("computeMedicationAdministration", () => {
         baseInput({ administrations: records }),
       );
       // administered = 0 → mod2 = -1
-      expect(result.on_time_rate).toBe(0);
+      expect(result.on_time_rate).toBeNull();
     });
 
     it("awards +5 when onTimeRate >= 95%", () => {
@@ -2700,10 +2703,10 @@ describe("computeMedicationAdministration", () => {
       const result = computeMedicationAdministration(
         baseInput({ administrations: records }),
       );
-      expect(result.administration_rate).toBe(0);
+      expect(result.administration_rate).toBe(0); // 0 administered of 3 records — a measured 0
       expect(result.refusal_rate).toBe(100);
-      expect(result.on_time_rate).toBe(0);
-      expect(result.witness_rate).toBe(0);
+      expect(result.on_time_rate).toBeNull(); // no administrations → unmeasured
+      expect(result.witness_rate).toBeNull(); // no administered records → unmeasured
     });
 
     it("handles all-late records", () => {
@@ -2736,7 +2739,7 @@ describe("computeMedicationAdministration", () => {
       const result = computeMedicationAdministration(
         baseInput({ administrations: records }),
       );
-      expect(result.prn_documentation_rate).toBe(0);
+      expect(result.prn_documentation_rate).toBeNull(); // no PRN administrations → unmeasured
     });
 
     it("handles all-withheld records", () => {
@@ -2971,15 +2974,21 @@ describe("computeMedicationAdministration", () => {
       expect(Array.isArray(result.insights)).toBe(true);
     });
 
-    it("returns numeric values for all rate fields", () => {
+    it("returns number | null for all rate fields", () => {
       const result = computeMedicationAdministration(baseInput());
       expect(typeof result.medication_score).toBe("number");
-      expect(typeof result.administration_rate).toBe("number");
-      expect(typeof result.on_time_rate).toBe("number");
-      expect(typeof result.refusal_rate).toBe("number");
-      expect(typeof result.witness_rate).toBe("number");
-      expect(typeof result.prn_documentation_rate).toBe("number");
-      expect(typeof result.reason_documented_rate).toBe("number");
+      // Rate fields are number | null — null when their denominator is empty
+      // (baseInput's single non-PRN, non-refused record leaves prn/reason unmeasured).
+      for (const r of [
+        result.administration_rate,
+        result.on_time_rate,
+        result.refusal_rate,
+        result.witness_rate,
+        result.prn_documentation_rate,
+        result.reason_documented_rate,
+      ]) {
+        expect(r === null || typeof r === "number").toBe(true);
+      }
     });
 
     it("returns a string headline", () => {

@@ -12,6 +12,8 @@
 // NICE Medicines Management Guidelines.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface MedicationAdministrationRecordInput {
@@ -85,8 +87,9 @@ export interface MedicationAdministrationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const pct = (n: number, d: number): number =>
-  d === 0 ? 0 : Math.round((n / d) * 100);
+// Rates use the shared null-safe rate() — an empty denominator is unmeasured (null),
+// never a fabricated 0%. Scoring branches below are each guarded by the matching
+// `.length === 0` case, so the `?? 0` coercions there never actually fire.
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -216,91 +219,91 @@ export function computeMedicationAdministration(
   const administered = staffGivenLate + selfAdministered.length;
 
   // administration_rate: doses actually taken / all non-scheduled doses * 100
-  const adminRate = pct(administered, totalNonScheduled);
+  const adminRate = rate(administered, totalNonScheduled);
 
   // on_time_rate: given / given+late * 100 (among staff-administered doses)
-  const onTimeRate = pct(given.length, staffGivenLate);
+  const onTimeRate = rate(given.length, staffGivenLate);
 
   // refusal_rate: refused / total non-scheduled * 100
-  const refusalRate = pct(refused.length, totalNonScheduled);
+  const refusalRate = rate(refused.length, totalNonScheduled);
 
   // witness_rate: has_witness among doses actually administered (incl. self-administered —
   // a self-administered controlled drug still requires witnessing)
   const administeredRecords = records.filter(r => r.status === "given" || r.status === "late" || r.status === "self_administered");
   const witnessed = administeredRecords.filter(r => r.has_witness);
-  const witnessRate = pct(witnessed.length, administeredRecords.length);
+  const witnessRate = rate(witnessed.length, administeredRecords.length);
 
   // prn_documentation_rate: has_prn_reason && has_prn_effectiveness among PRN given
   const prnGiven = records.filter(r => r.is_prn && (r.status === "given" || r.status === "late"));
   const prnDocumented = prnGiven.filter(r => r.has_prn_reason && r.has_prn_effectiveness);
-  const prnDocRate = pct(prnDocumented.length, prnGiven.length);
+  const prnDocRate = rate(prnDocumented.length, prnGiven.length);
 
   // reason_documented_rate: has_reason_not_given among refused+withheld
   const refusedWithheld = records.filter(r => r.status === "refused" || r.status === "withheld");
   const reasonDocumented = refusedWithheld.filter(r => r.has_reason_not_given);
-  const reasonRate = pct(reasonDocumented.length, refusedWithheld.length);
+  const reasonRate = rate(reasonDocumented.length, refusedWithheld.length);
 
   // ── Scoring: Base 52 + 6 Modifiers ─────────────────────────────────
   let score = 52;
 
   // 1. Administration compliance (+6/+3/0/-5, 0 records with children → -3)
-  if (adminRate >= 98) score += 6;
-  else if (adminRate >= 90) score += 3;
-  else if (adminRate < 70) score -= 5;
+  if ((adminRate ?? 0) >= 98) score += 6;
+  else if ((adminRate ?? 0) >= 90) score += 3;
+  else if ((adminRate ?? 0) < 70) score -= 5;
   // else 0
 
   // 2. Timeliness (+5/+2/0/-5, 0 → -1)
   if (administered === 0) {
     score -= 1;
-  } else if (onTimeRate >= 95) {
+  } else if ((onTimeRate ?? 0) >= 95) {
     score += 5;
-  } else if (onTimeRate >= 80) {
+  } else if ((onTimeRate ?? 0) >= 80) {
     score += 2;
-  } else if (onTimeRate < 60) {
+  } else if ((onTimeRate ?? 0) < 60) {
     score -= 5;
   }
 
   // 3. Witness compliance (+5/+2/0/-4, 0 → -1)
   if (administeredRecords.length === 0) {
     score -= 1;
-  } else if (witnessRate >= 95) {
+  } else if ((witnessRate ?? 0) >= 95) {
     score += 5;
-  } else if (witnessRate >= 80) {
+  } else if ((witnessRate ?? 0) >= 80) {
     score += 2;
-  } else if (witnessRate < 50) {
+  } else if ((witnessRate ?? 0) < 50) {
     score -= 4;
   }
 
   // 4. Refusal management (+5/+2/0/-4)
-  if (refusalRate <= 5 && reasonRate >= 90) {
+  if ((refusalRate ?? 0) <= 5 && (reasonRate ?? 0) >= 90) {
     score += 5;
-  } else if (refusalRate <= 15 || reasonRate >= 70) {
+  } else if ((refusalRate ?? 0) <= 15 || (reasonRate ?? 0) >= 70) {
     score += 2;
-  } else if (refusalRate > 30 && reasonRate < 50) {
+  } else if ((refusalRate ?? 0) > 30 && (reasonRate ?? 0) < 50) {
     score -= 4;
   }
 
   // 5. PRN documentation (+4/+2/0/-4, 0 PRN → +1)
   if (prnGiven.length === 0) {
     score += 1; // No PRN needed
-  } else if (prnDocRate >= 90) {
+  } else if ((prnDocRate ?? 0) >= 90) {
     score += 4;
-  } else if (prnDocRate >= 70) {
+  } else if ((prnDocRate ?? 0) >= 70) {
     score += 2;
-  } else if (prnDocRate < 40) {
+  } else if ((prnDocRate ?? 0) < 40) {
     score -= 4;
   }
 
   // 6. Overall quality (+5/+2/0/-3, 0 → -2)
   if (administeredRecords.length === 0) {
     score -= 2;
-  } else if (adminRate >= 95 && onTimeRate >= 90 && witnessRate >= 90) {
+  } else if ((adminRate ?? 0) >= 95 && (onTimeRate ?? 0) >= 90 && (witnessRate ?? 0) >= 90) {
     score += 5;
   } else {
-    const aboveEighty = [adminRate >= 80, onTimeRate >= 80, witnessRate >= 80].filter(Boolean).length;
+    const aboveEighty = [(adminRate ?? 0) >= 80, (onTimeRate ?? 0) >= 80, (witnessRate ?? 0) >= 80].filter(Boolean).length;
     if (aboveEighty >= 2) {
       score += 2;
-    } else if (adminRate < 70 && onTimeRate < 70 && witnessRate < 70) {
+    } else if ((adminRate ?? 0) < 70 && (onTimeRate ?? 0) < 70 && (witnessRate ?? 0) < 70) {
       score -= 3;
     }
   }
@@ -323,46 +326,46 @@ export function computeMedicationAdministration(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (adminRate >= 98) {
+  if ((adminRate ?? 0) >= 98) {
     strengths.push(`${adminRate}% medication administration rate — near-perfect compliance demonstrates robust medicines management and safeguards children's health.`);
-  } else if (adminRate >= 90) {
+  } else if ((adminRate ?? 0) >= 90) {
     strengths.push(`${adminRate}% medication administration rate — strong compliance with prescribed medication regimes.`);
   }
 
-  if (onTimeRate >= 95 && administered > 0) {
+  if ((onTimeRate ?? 0) >= 95 && administered > 0) {
     strengths.push(`${onTimeRate}% of medications administered on time — excellent timeliness ensures therapeutic effectiveness and consistent care.`);
-  } else if (onTimeRate >= 80 && administered > 0) {
+  } else if ((onTimeRate ?? 0) >= 80 && administered > 0) {
     strengths.push(`${onTimeRate}% on-time administration rate — good timeliness across medication rounds.`);
   }
 
-  if (witnessRate >= 95 && administeredRecords.length > 0) {
+  if ((witnessRate ?? 0) >= 95 && administeredRecords.length > 0) {
     strengths.push(`${witnessRate}% witness rate — strong governance with dual-signature verification for medication administration.`);
-  } else if (witnessRate >= 80 && administeredRecords.length > 0) {
+  } else if ((witnessRate ?? 0) >= 80 && administeredRecords.length > 0) {
     strengths.push(`${witnessRate}% of administrations witnessed — good oversight and accountability in medicines management.`);
   }
 
-  if (refusalRate <= 5 && totalNonScheduled >= 5) {
+  if ((refusalRate ?? 0) <= 5 && totalNonScheduled >= 5) {
     strengths.push(`Very low refusal rate (${refusalRate}%) — children are generally accepting their medication, indicating good therapeutic relationships and effective explanation of medication benefits.`);
   }
 
-  if (reasonRate >= 90 && refusedWithheld.length > 0) {
+  if ((reasonRate ?? 0) >= 90 && refusedWithheld.length > 0) {
     strengths.push(`${reasonRate}% of refusals/withholdings have documented reasons — staff are properly recording why medication was not given, supporting clinical oversight.`);
   }
 
-  if (prnDocRate >= 90 && prnGiven.length > 0) {
+  if ((prnDocRate ?? 0) >= 90 && prnGiven.length > 0) {
     strengths.push(`${prnDocRate}% PRN documentation rate — reason for administration and effectiveness are consistently recorded, supporting informed clinical decisions.`);
   }
 
-  if (adminRate >= 95 && onTimeRate >= 90 && witnessRate >= 90) {
+  if ((adminRate ?? 0) >= 95 && (onTimeRate ?? 0) >= 90 && (witnessRate ?? 0) >= 90) {
     strengths.push("Administration rate, timeliness, and witness governance all exceed 90% — this demonstrates an embedded culture of safe medicines management.");
   }
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (adminRate < 70) {
+  if ((adminRate ?? 0) < 70) {
     concerns.push(`Only ${adminRate}% of medications were administered — children may not be receiving their prescribed treatment. This is a serious medicines management failure requiring immediate review.`);
-  } else if (adminRate < 90) {
+  } else if ((adminRate ?? 0) < 90) {
     concerns.push(`${adminRate}% administration rate is below expected standards — ${totalNonScheduled - administered} administrations were missed, refused, or withheld.`);
   }
 
@@ -377,27 +380,27 @@ export function computeMedicationAdministration(
     concerns.push(`${notAvailable.length} dose${notAvailable.length !== 1 ? "s" : ""} could not be given because the medication was not available (stock-out) — review ordering and stock control to prevent gaps in treatment.`);
   }
 
-  if (onTimeRate < 60 && administered > 0) {
+  if ((onTimeRate ?? 0) < 60 && administered > 0) {
     concerns.push(`Only ${onTimeRate}% of medications given on time — poor timeliness can reduce medication effectiveness and indicates weak medication round management.`);
-  } else if (onTimeRate < 80 && administered > 0) {
+  } else if ((onTimeRate ?? 0) < 80 && administered > 0) {
     concerns.push(`${onTimeRate}% on-time rate — ${late.length} late administration${late.length !== 1 ? "s" : ""} identified. Review medication round scheduling and staffing.`);
   }
 
   // Refusal pattern concern: if refusal_rate > 20%
-  if (refusalRate > 20) {
+  if ((refusalRate ?? 0) > 20) {
     concerns.push(`${refusalRate}% medication refusal rate — a significant pattern of refusal that requires clinical review. Consider whether children understand their medication, whether there are side effects, or whether administration approach needs adapting.`);
   }
 
   // Witness governance concern: if witness_rate < 80%
-  if (witnessRate < 80 && administeredRecords.length > 0) {
+  if ((witnessRate ?? 0) < 80 && administeredRecords.length > 0) {
     concerns.push(`Only ${witnessRate}% of administrations were witnessed — medication governance requires dual signatures to prevent errors and safeguard both children and staff. This is a governance gap that Ofsted would identify.`);
   }
 
-  if (refusedWithheld.length > 0 && reasonRate < 50) {
+  if (refusedWithheld.length > 0 && (reasonRate ?? 0) < 50) {
     concerns.push(`Only ${reasonRate}% of refusals/withholdings have documented reasons — without clear rationale, the home cannot demonstrate safe decision-making around non-administration.`);
   }
 
-  if (prnGiven.length > 0 && prnDocRate < 40) {
+  if (prnGiven.length > 0 && (prnDocRate ?? 0) < 40) {
     concerns.push(`Only ${prnDocRate}% PRN documentation rate — PRN medication requires documented reason for giving and recorded effectiveness to justify continued use.`);
   }
 
@@ -418,14 +421,14 @@ export function computeMedicationAdministration(
   const recommendations: MedicationAdministrationRecommendation[] = [];
   let rank = 0;
 
-  if (adminRate < 70) {
+  if ((adminRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Conduct an urgent medicines management audit. Review all missed administrations, verify stock levels, and ensure every child is receiving their prescribed medication. Brief all staff on Reg 31 obligations.",
       urgency: "immediate",
       regulatory_ref: "Reg 31",
     });
-  } else if (adminRate < 90) {
+  } else if ((adminRate ?? 0) < 90) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve administration compliance from ${adminRate}% toward 98%+. Review reasons for non-administration and implement a daily medication round checklist to ensure no doses are missed.`,
@@ -434,14 +437,14 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (onTimeRate < 60 && administered > 0) {
+  if ((onTimeRate ?? 0) < 60 && administered > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review medication round scheduling and staffing. Late administration affects therapeutic effectiveness. Ensure designated medication times are realistic and that trained staff are available at each round.",
       urgency: "immediate",
       regulatory_ref: "Reg 31",
     });
-  } else if (onTimeRate < 80 && administered > 0) {
+  } else if ((onTimeRate ?? 0) < 80 && administered > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve on-time administration from ${onTimeRate}% — review medication round timings and identify recurring causes of delay. Set alert reminders for approaching medication times.`,
@@ -450,7 +453,7 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (witnessRate < 80 && administeredRecords.length > 0) {
+  if ((witnessRate ?? 0) < 80 && administeredRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Increase witness rate from ${witnessRate}% to 95%+. All medication administration should be witnessed by a second trained staff member. Review rota to ensure two trained staff are on shift during medication rounds.`,
@@ -459,7 +462,7 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (refusalRate > 20) {
+  if ((refusalRate ?? 0) > 20) {
     recommendations.push({
       rank: ++rank,
       recommendation: "High refusal rate requires clinical review. Arrange a medication review with the prescribing clinician for each child with repeated refusals. Explore alternative formulations, timing, or therapeutic approaches to support compliance.",
@@ -468,7 +471,7 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (refusedWithheld.length > 0 && reasonRate < 70) {
+  if (refusedWithheld.length > 0 && (reasonRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve documentation of reasons for refusal/withholding from ${reasonRate}% to 90%+. Every non-administration must have a clear, recorded rationale. Train staff on the importance of documenting why medication was not given.`,
@@ -477,7 +480,7 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (prnGiven.length > 0 && prnDocRate < 70) {
+  if (prnGiven.length > 0 && (prnDocRate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve PRN documentation from ${prnDocRate}% to 90%+. Every PRN administration must record why it was given and whether it was effective. This is essential for prescriber reviews and NICE compliance.`,
@@ -505,59 +508,59 @@ export function computeMedicationAdministration(
     });
   }
 
-  if (adminRate >= 98 && onTimeRate >= 95 && witnessRate >= 95) {
+  if ((adminRate ?? 0) >= 98 && (onTimeRate ?? 0) >= 95 && (witnessRate ?? 0) >= 95) {
     insights.push({
       text: `Near-perfect medication management — ${adminRate}% administered, ${onTimeRate}% on time, ${witnessRate}% witnessed. This level of consistency demonstrates embedded safe practice and a team culture that takes medicines management seriously.`,
       severity: "positive",
     });
   }
 
-  if (adminRate < 70) {
+  if ((adminRate ?? 0) < 70) {
     insights.push({
       text: `Only ${adminRate}% of medications were administered. This is a critical safeguarding concern under Reg 12 (Protection) and Reg 31 (Medicines). Children may not be receiving medication essential to their physical or mental health. An Ofsted inspector would view this as evidence of inadequate care. Immediate remedial action and clinical review are required.`,
       severity: "critical",
     });
   }
 
-  if (refusalRate > 30) {
+  if ((refusalRate ?? 0) > 30) {
     insights.push({
       text: `${refusalRate}% medication refusal rate is exceptionally high. This may indicate that children do not understand their medication, are experiencing side effects, or are using refusal as a means of exercising control. A multi-disciplinary review involving prescribers, social workers, and the child's key worker is essential. NICE guidelines require proactive refusal management.`,
       severity: "critical",
     });
-  } else if (refusalRate > 20) {
+  } else if ((refusalRate ?? 0) > 20) {
     insights.push({
       text: `${refusalRate}% medication refusal rate indicates a concerning pattern. Repeated refusal should trigger a clinical review and exploration of the child's understanding of their medication. Consider involving the pharmacist or prescriber for alternative approaches.`,
       severity: "warning",
     });
   }
 
-  if (witnessRate < 50 && administeredRecords.length > 0) {
+  if ((witnessRate ?? 0) < 50 && administeredRecords.length > 0) {
     insights.push({
       text: `Only ${witnessRate}% of administrations were witnessed. Unwitnessed medication administration is a significant governance risk — it increases the chance of errors going undetected and leaves staff without protection if concerns are raised. Ofsted expects robust dual-verification for controlled and regular medication.`,
       severity: "critical",
     });
-  } else if (witnessRate < 80 && administeredRecords.length > 0) {
+  } else if ((witnessRate ?? 0) < 80 && administeredRecords.length > 0) {
     insights.push({
       text: `${witnessRate}% witness rate falls below the expected 95%+ standard. Medication witnessing protects both children and staff. Review staffing during medication rounds to ensure a second trained person is always available.`,
       severity: "warning",
     });
   }
 
-  if (onTimeRate < 60 && administered > 0) {
+  if ((onTimeRate ?? 0) < 60 && administered > 0) {
     insights.push({
       text: `Only ${onTimeRate}% of medications given on time. Consistently late administration can reduce the therapeutic effectiveness of time-sensitive medications and may indicate wider organisational issues with medication round management.`,
       severity: "warning",
     });
   }
 
-  if (prnGiven.length > 0 && prnDocRate < 40) {
+  if (prnGiven.length > 0 && (prnDocRate ?? 0) < 40) {
     insights.push({
       text: `PRN documentation is critically low at ${prnDocRate}%. PRN medication is given on an as-needed basis, making documentation of the reason and effectiveness essential for clinical oversight. Without this, prescribers cannot make informed decisions about ongoing PRN prescriptions.`,
       severity: "warning",
     });
   }
 
-  if (refusalRate <= 5 && adminRate >= 95 && prnGiven.length > 0 && prnDocRate >= 90) {
+  if ((refusalRate ?? 0) <= 5 && (adminRate ?? 0) >= 95 && prnGiven.length > 0 && (prnDocRate ?? 0) >= 90) {
     insights.push({
       text: "Low refusal rate combined with high administration compliance and thorough PRN documentation. Children are accepting their medication and PRN use is well-justified and monitored. This supports effective health outcomes and demonstrates compliance with NICE Medicines Management Guidelines.",
       severity: "positive",
