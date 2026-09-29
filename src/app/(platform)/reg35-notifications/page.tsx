@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -91,7 +92,7 @@ export default function Reg35NotificationsPage() {
   const handleLogNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!r35Form.summary.trim()) { toast.error("Summary is required."); return; }
-    await createNotif.mutateAsync({ date_of_event: r35Form.date_of_event, date_notified: todayStr(), notification_type: r35Form.notification_type, notified_to_ofsted: true, notified_to_la: false, notified_to_police: false, notified_to_other: [], method: r35Form.method, ofsted_ref: r35Form.ofsted_ref.trim(), child_id: r35Form.child_id || null, summary: r35Form.summary.trim(), actions_taken: [], notified_by_id: "staff_darren", timeliness_compliant: true, ofsted_response: "awaiting_response", follow_up_required: false, follow_up_details: "", linked_records: [], notes: "" });
+    await createNotif.mutateAsync({ date_of_event: r35Form.date_of_event, date_notified: todayStr(), notification_type: r35Form.notification_type, notified_to_ofsted: true, notified_to_la: false, notified_to_police: false, notified_to_other: [], method: r35Form.method, ofsted_ref: r35Form.ofsted_ref.trim(), child_id: r35Form.child_id || null, summary: r35Form.summary.trim(), actions_taken: [], notified_by_id: currentUserId(), timeliness_compliant: true, ofsted_response: "awaiting_response", follow_up_required: false, follow_up_details: "", linked_records: [], notes: "" });
     toast.success("Reg 35 notification logged.");
     setR35Form({ date_of_event: todayStr(), notification_type: "serious_injury", child_id: "", method: "phone", ofsted_ref: "", summary: "" });
     setShowNew(false);

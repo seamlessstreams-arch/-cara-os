@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -263,7 +264,7 @@ export default function RiskRegisterPage() {
     impact: "3",
     description: "",
     mitigations: "",
-    owner_id: "staff_darren",
+    owner_id: currentUserId(),
     review_date: "",
   });
   const setNF = (k: keyof typeof newForm, v: string) => setNewForm((p) => ({ ...p, [k]: v }));
@@ -297,7 +298,7 @@ export default function RiskRegisterPage() {
       notes: null,
     });
     toast.success("Risk added to register.");
-    setNewForm({ title: "", category: "", child_id: "none", likelihood: "3", impact: "3", description: "", mitigations: "", owner_id: "staff_darren", review_date: "" });
+    setNewForm({ title: "", category: "", child_id: "none", likelihood: "3", impact: "3", description: "", mitigations: "", owner_id: currentUserId(), review_date: "" });
     setShowNew(false);
   };
 

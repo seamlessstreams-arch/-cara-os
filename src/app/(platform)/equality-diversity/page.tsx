@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -97,7 +98,7 @@ const MONITORING: EqualityMonitoringData = {
   ],
   last_audit_date: seedDay(-27),
   next_audit_due: seedDay(63),
-  audited_by: "staff_darren",
+  audited_by: currentUserId(),
 };
 
 /* ── flat row for export ─────────────────────────────────────────────── */
@@ -137,7 +138,7 @@ export default function EqualityDiversityPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const createInitiative = useCreateEqualityInitiative();
-  const [eqForm, setEqForm] = useState({ title: "", description: "", lead_by: "staff_darren" });
+  const [eqForm, setEqForm] = useState({ title: "", description: "", lead_by: currentUserId() });
   const setEQ = (k: keyof typeof eqForm, v: string) => setEqForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateInitiative = async (e: React.FormEvent) => {
@@ -147,7 +148,7 @@ export default function EqualityDiversityPage() {
     const target = new Date(Date.now() + 90 * 864e5).toISOString().slice(0, 10);
     await createInitiative.mutateAsync({ title: eqForm.title.trim(), description: eqForm.description.trim(), status: "planned", lead_by: eqForm.lead_by, start_date: today, target_date: target, characteristics: [], objectives: [], actions: [], outcomes: [], evidence: [], notes: "", created_at: new Date().toISOString() });
     toast.success("Initiative created.");
-    setEqForm({ title: "", description: "", lead_by: "staff_darren" });
+    setEqForm({ title: "", description: "", lead_by: currentUserId() });
     setDialogOpen(false);
   };
 

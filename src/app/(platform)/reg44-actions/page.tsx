@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -103,7 +104,7 @@ export default function Reg44ActionsPage() {
     recommendation: "",
     action_required: "",
     management_response: "",
-    assigned_to: "staff_darren",
+    assigned_to: currentUserId(),
     due_date: "",
   });
   const setF = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
@@ -136,7 +137,7 @@ export default function Reg44ActionsPage() {
       visit_date: today, visit_ref: "", visitor_name: "",
       theme: "", priority: "medium",
       recommendation: "", action_required: "", management_response: "",
-      assigned_to: "staff_darren", due_date: "",
+      assigned_to: currentUserId(), due_date: "",
     });
     setShowNew(false);
   };

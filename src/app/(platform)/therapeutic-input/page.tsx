@@ -1,6 +1,7 @@
 "use client";
 
 import { formatRate } from "@/lib/metrics/rate";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -110,7 +111,7 @@ export default function TherapeuticInputPage() {
     e.preventDefault();
     if (!tiForm.child_id) { toast.error("Please select a young person."); return; }
     if (!tiForm.referral_reason.trim()) { toast.error("Referral reason is required."); return; }
-    await createReferral.mutateAsync({ child_id: tiForm.child_id, therapy_type: tiForm.therapy_type, provider: tiForm.provider.trim(), therapist: tiForm.therapist.trim(), referral_date: todayStr(), start_date: null, frequency: "", status: "pending", referral_reason: tiForm.referral_reason.trim(), goals: tiForm.goals ? tiForm.goals.split("\n").map((s) => s.trim()).filter(Boolean) : [], recent_sessions: [], waiting_weeks: null, home_key_worker: "staff_darren", consent: "obtained", next_appointment: null, review_date: null, progress_notes: "" });
+    await createReferral.mutateAsync({ child_id: tiForm.child_id, therapy_type: tiForm.therapy_type, provider: tiForm.provider.trim(), therapist: tiForm.therapist.trim(), referral_date: todayStr(), start_date: null, frequency: "", status: "pending", referral_reason: tiForm.referral_reason.trim(), goals: tiForm.goals ? tiForm.goals.split("\n").map((s) => s.trim()).filter(Boolean) : [], recent_sessions: [], waiting_weeks: null, home_key_worker: currentUserId(), consent: "obtained", next_appointment: null, review_date: null, progress_notes: "" });
     toast.success("Therapy referral submitted.");
     setTiForm({ child_id: "", therapy_type: "camhs", provider: "", therapist: "", referral_reason: "", goals: "" });
     setShowDialog(false);

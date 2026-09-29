@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -155,7 +156,7 @@ export default function DataProtectionPage() {
       date_raised: todayStr(),
       due_date: dpForm.due_date || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       completed_date: null,
-      handled_by: "staff_darren",
+      handled_by: currentUserId(),
       breach_severity: null,
       ico_notified: false,
       ico_notification_date: null,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MessageSquare, Plus, Search, ArrowUpDown, Filter,
@@ -94,7 +95,7 @@ export default function StakeholderFeedbackPage() {
   const handleSaveFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sfForm.summary.trim()) { toast.error("Summary is required."); return; }
-    await createRecord.mutateAsync({ date: sfForm.date, source: sfForm.source, source_name: sfForm.source_name.trim(), related_yp: null, method: sfForm.method, sentiment: sfForm.sentiment, themes: [], summary: sfForm.summary.trim(), direct_quote: sfForm.direct_quote.trim() || null, action_taken: sfForm.action_taken.trim() || null, responded_by: "staff_darren", response_date: null, acknowledged: false });
+    await createRecord.mutateAsync({ date: sfForm.date, source: sfForm.source, source_name: sfForm.source_name.trim(), related_yp: null, method: sfForm.method, sentiment: sfForm.sentiment, themes: [], summary: sfForm.summary.trim(), direct_quote: sfForm.direct_quote.trim() || null, action_taken: sfForm.action_taken.trim() || null, responded_by: currentUserId(), response_date: null, acknowledged: false });
     toast.success("Stakeholder feedback recorded.");
     setSfForm({ date: todayStr(), source: "social_worker", source_name: "", method: "conversation", sentiment: "positive", summary: "", direct_quote: "", action_taken: "" });
     setShowNew(false);

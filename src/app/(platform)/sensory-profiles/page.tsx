@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -132,7 +133,7 @@ export default function SensoryProfilesPage() {
     e.preventDefault();
     if (!spForm.child_id) { toast.error("Please select a young person."); return; }
     const reviewDate = spForm.review_date || new Date(Date.now() + 180 * 864e5).toISOString().slice(0, 10);
-    await createProfile.mutateAsync({ child_id: spForm.child_id, status: "active", diagnosis: spForm.diagnosis ? [spForm.diagnosis] : [], assessment_date: spForm.assessment_date, assessed_by: "staff_darren", review_date: reviewDate, entries: [], strategies: [], environmental_adaptations: [], communication_preferences: [], child_views: "", parent_carer_views: "", professional_input: "", notes: spForm.notes });
+    await createProfile.mutateAsync({ child_id: spForm.child_id, status: "active", diagnosis: spForm.diagnosis ? [spForm.diagnosis] : [], assessment_date: spForm.assessment_date, assessed_by: currentUserId(), review_date: reviewDate, entries: [], strategies: [], environmental_adaptations: [], communication_preferences: [], child_views: "", parent_carer_views: "", professional_input: "", notes: spForm.notes });
     toast.success("Sensory profile created.");
     setSpForm({ child_id: "", diagnosis: "", assessment_date: todayStr(), review_date: "", notes: "" });
     setDialogOpen(false);

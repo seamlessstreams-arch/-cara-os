@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Package,
@@ -163,7 +164,7 @@ export default function InventoryPage() {
       warranty_expiry: null,
       pat_test_due: null,
       last_checked: today,
-      checked_by: "staff_darren",
+      checked_by: currentUserId(),
       serial_number: fSerial.trim() || null,
       notes: fNotes.trim(),
     });

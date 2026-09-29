@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,7 @@ export default function PettyCashPage() {
     const amount = parseFloat(pcForm.amount);
     if (!pcForm.description.trim()) { toast.error("Description is required."); return; }
     if (isNaN(amount) || amount <= 0) { toast.error("Valid amount is required."); return; }
-    await createEntry.mutateAsync({ date: pcForm.date, type: pcForm.type, category: pcForm.category, amount, description: pcForm.description.trim(), receipt_ref: pcForm.receipt_ref.trim(), receipt_attached: false, child_id: "", authorised_by: "staff_darren", recorded_by: "staff_darren", notes: pcForm.notes.trim(), balance_after: 0, created_at: new Date().toISOString() });
+    await createEntry.mutateAsync({ date: pcForm.date, type: pcForm.type, category: pcForm.category, amount, description: pcForm.description.trim(), receipt_ref: pcForm.receipt_ref.trim(), receipt_attached: false, child_id: "", authorised_by: currentUserId(), recorded_by: currentUserId(), notes: pcForm.notes.trim(), balance_after: 0, created_at: new Date().toISOString() });
     toast.success("Petty cash entry saved.");
     setPcForm({ date: todayStr(), type: "withdrawal", amount: "", category: "activities", description: "", receipt_ref: "", notes: "" });
     setShowNew(false);

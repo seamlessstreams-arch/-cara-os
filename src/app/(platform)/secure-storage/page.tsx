@@ -127,7 +127,7 @@ export default function SecureStoragePage() {
     e.preventDefault();
     if (!ssForm.name.trim()) { toast.error("Item name is required."); return; }
     const today = todayStr();
-    await createItem.mutateAsync({ name: ssForm.name.trim(), category: ssForm.category, description: ssForm.description, location: ssForm.location, access_level: ssForm.access_level, owner: ssForm.owner || "staff_darren", added_date: today, added_by: "staff_darren", last_checked: today, next_check_due: d(90), status: "stored", notes: ssForm.notes, access_log: [] });
+    await createItem.mutateAsync({ name: ssForm.name.trim(), category: ssForm.category, description: ssForm.description, location: ssForm.location, access_level: ssForm.access_level, owner: ssForm.owner || currentUserId(), added_date: today, added_by: currentUserId(), last_checked: today, next_check_due: d(90), status: "stored", notes: ssForm.notes, access_log: [] });
     toast.success("Item added to secure storage.");
     setSsForm({ name: "", category: "documentation", description: "", location: "filing_cabinet", access_level: "all_staff", owner: "", notes: "" });
     setShowDialog(false);

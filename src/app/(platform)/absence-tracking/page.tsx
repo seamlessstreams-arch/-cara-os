@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarX, Plus, Search, ArrowUpDown, Filter,
@@ -82,7 +83,7 @@ export default function AbsenceTrackingPage() {
     e.preventDefault();
     if (!abForm.child_id) { toast.error("Please select a young person."); return; }
     if (!abForm.reason.trim()) { toast.error("Reason is required."); return; }
-    await createAbsence.mutateAsync({ child_id: abForm.child_id, date: abForm.date, absence_type: abForm.absence_type, setting: abForm.setting, setting_name: abForm.setting_name.trim(), sessions: parseInt(abForm.sessions) || 1, reason: abForm.reason.trim(), action_taken: abForm.action_taken.trim(), school_notified: false, sw_notified: false, recorded_by: "staff_darren", follow_up: "", created_at: new Date().toISOString() });
+    await createAbsence.mutateAsync({ child_id: abForm.child_id, date: abForm.date, absence_type: abForm.absence_type, setting: abForm.setting, setting_name: abForm.setting_name.trim(), sessions: parseInt(abForm.sessions) || 1, reason: abForm.reason.trim(), action_taken: abForm.action_taken.trim(), school_notified: false, sw_notified: false, recorded_by: currentUserId(), follow_up: "", created_at: new Date().toISOString() });
     toast.success("Absence recorded.");
     setAbForm({ child_id: "", date: todayStr(), absence_type: "unauthorised", setting: "school", setting_name: "", sessions: "1", reason: "", action_taken: "" });
     setShowNew(false);

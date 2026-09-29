@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -129,7 +130,7 @@ export default function SocialWorkerContactPage() {
       contact_type: swForm.contact_type as SocialWorkerContactType,
       direction: swForm.direction as "incoming" | "outgoing",
       initiated_by: "home" as const,
-      staff_member: "staff_darren",
+      staff_member: currentUserId(),
       purpose: swForm.purpose,
       summary: swForm.summary.trim(),
       key_decisions: [],

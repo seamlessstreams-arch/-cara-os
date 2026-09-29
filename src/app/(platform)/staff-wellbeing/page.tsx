@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   HeartPulse, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, TrendingUp,
@@ -91,7 +92,7 @@ export default function StaffWellbeingPage() {
   const handleSaveWellbeing = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!swForm.staff_id) { toast.error("Please select a staff member."); return; }
-    await createWellbeing.mutateAsync({ staff_id: swForm.staff_id, date: swForm.date, type: swForm.type, overall_score: parseInt(swForm.overall_score) || 7, workload_score: 5, support_score: 5, moral_score: 5, stressors: swForm.stressors.split("\n").filter(Boolean), positives: swForm.positives.split("\n").filter(Boolean), support_needed: swForm.support_needed.trim(), action_agreed: swForm.action_agreed.trim(), follow_up_date: null, conducted_by: "staff_darren", confidential: swForm.confidential, notes: swForm.notes.trim() });
+    await createWellbeing.mutateAsync({ staff_id: swForm.staff_id, date: swForm.date, type: swForm.type, overall_score: parseInt(swForm.overall_score) || 7, workload_score: 5, support_score: 5, moral_score: 5, stressors: swForm.stressors.split("\n").filter(Boolean), positives: swForm.positives.split("\n").filter(Boolean), support_needed: swForm.support_needed.trim(), action_agreed: swForm.action_agreed.trim(), follow_up_date: null, conducted_by: currentUserId(), confidential: swForm.confidential, notes: swForm.notes.trim() });
     toast.success("Wellbeing check-in saved.");
     setSwForm({ staff_id: "", date: todayStr(), type: "monthly_checkin", overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
     setShowNew(false);

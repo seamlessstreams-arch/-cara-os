@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -75,8 +76,8 @@ export default function IndependenceSkillsPage() {
     e.preventDefault();
     if (!isForm.child_id) { toast.error("Please select a young person."); return; }
     if (!isForm.skill_name.trim()) { toast.error("Skill name is required."); return; }
-    const skill = { id: crypto.randomUUID(), name: isForm.skill_name.trim(), category: isForm.category, proficiency: isForm.proficiency, target_date: "", last_assessed: isForm.date, assessed_by: "staff_darren", evidence: isForm.evidence.trim(), next_step: isForm.next_step.trim() };
-    await createRecord.mutateAsync({ child_id: isForm.child_id, review_date: isForm.date, reviewer: "staff_darren", overall_readiness: 50, skills: [skill], strengths: [], areas_for_development: [], child_view: "", pathway_notes: "", created_at: new Date().toISOString() });
+    const skill = { id: crypto.randomUUID(), name: isForm.skill_name.trim(), category: isForm.category, proficiency: isForm.proficiency, target_date: "", last_assessed: isForm.date, assessed_by: currentUserId(), evidence: isForm.evidence.trim(), next_step: isForm.next_step.trim() };
+    await createRecord.mutateAsync({ child_id: isForm.child_id, review_date: isForm.date, reviewer: currentUserId(), overall_readiness: 50, skills: [skill], strengths: [], areas_for_development: [], child_view: "", pathway_notes: "", created_at: new Date().toISOString() });
     toast.success("Independence skill record added.");
     setIsForm({ child_id: "", skill_name: "", category: "cooking", proficiency: "not_started", date: todayStr(), evidence: "", next_step: "" });
     setShowDialog(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown, ChevronUp, Users, Plus, ArrowUpDown, Search,
   Clock, CheckCircle2, Calendar, AlertTriangle, Loader2,
@@ -93,7 +94,7 @@ export default function MultiAgencyMeetingsPage() {
     e.preventDefault();
     if (!mamForm.child_id) { toast.error("Please select a young person."); return; }
     if (!mamForm.venue.trim()) { toast.error("Venue is required."); return; }
-    await createMeeting.mutateAsync({ child_id: mamForm.child_id, meeting_type: mamForm.meeting_type, meeting_status: "scheduled", date: mamForm.date, time: mamForm.time, venue: mamForm.venue.trim(), chaired_by: mamForm.chaired_by || "External chair", home_representative: "staff_darren", attendees: [], key_discussion_points: [], decisions_reached: [], child_participation: "", action_items: [], next_meeting_date: null, notes: "", created_at: new Date().toISOString() });
+    await createMeeting.mutateAsync({ child_id: mamForm.child_id, meeting_type: mamForm.meeting_type, meeting_status: "scheduled", date: mamForm.date, time: mamForm.time, venue: mamForm.venue.trim(), chaired_by: mamForm.chaired_by || "External chair", home_representative: currentUserId(), attendees: [], key_discussion_points: [], decisions_reached: [], child_participation: "", action_items: [], next_meeting_date: null, notes: "", created_at: new Date().toISOString() });
     toast.success("Meeting scheduled.");
     setMamForm({ child_id: "", meeting_type: "professionals", date: todayStr(), time: "10:00", venue: "", chaired_by: "" });
     setShowDialog(false);

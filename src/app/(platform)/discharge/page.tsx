@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -121,7 +122,7 @@ export default function DischargePage() {
     e.preventDefault();
     if (!dcForm.child_id) { toast.error("Please select a young person."); return; }
     if (!dcForm.planned_date) { toast.error("Planned date is required."); return; }
-    await createDischarge.mutateAsync({ child_id: dcForm.child_id, reason: dcForm.reason, status: "not_started", planned_date: dcForm.planned_date, actual_date: null, destination: dcForm.destination.trim(), destination_address: "", receiving_provider: null, social_worker: dcForm.social_worker.trim(), social_worker_contact: dcForm.social_worker_contact.trim(), key_worker: "staff_darren", checklist: [], transition_actions: [], risk_assessment_completed: false, belongings_returned: false, belongings_witnessed: null, exit_interview: { completed: false, date: null, conducted_by: null, child_views: "" }, aftercare_provision: [], stay_in_touch_plan: "", child_views: "", professional_views: "", notes: dcForm.notes.trim(), created_at: new Date().toISOString() });
+    await createDischarge.mutateAsync({ child_id: dcForm.child_id, reason: dcForm.reason, status: "not_started", planned_date: dcForm.planned_date, actual_date: null, destination: dcForm.destination.trim(), destination_address: "", receiving_provider: null, social_worker: dcForm.social_worker.trim(), social_worker_contact: dcForm.social_worker_contact.trim(), key_worker: currentUserId(), checklist: [], transition_actions: [], risk_assessment_completed: false, belongings_returned: false, belongings_witnessed: null, exit_interview: { completed: false, date: null, conducted_by: null, child_views: "" }, aftercare_provision: [], stay_in_touch_plan: "", child_views: "", professional_views: "", notes: dcForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Discharge plan created.");
     setDcForm({ child_id: "", reason: "reunification", planned_date: "", destination: "", social_worker: "", social_worker_contact: "", notes: "" });
     setDialogOpen(false);

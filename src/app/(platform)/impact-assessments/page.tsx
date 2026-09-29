@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   Scale,
   Plus,
@@ -83,7 +84,7 @@ export default function ImpactAssessmentsPage() {
     e.preventDefault();
     if (!iaForm.referral_name.trim()) { toast.error("Referral name is required."); return; }
     const today = todayStr();
-    await createAssessment.mutateAsync({ referral_name: iaForm.referral_name.trim(), referral_age: parseInt(iaForm.referral_age) || 0, referral_gender: iaForm.referral_gender, referral_authority: iaForm.referral_authority.trim(), date: today, status: "draft" as ImpactAssessmentStatus, assessor: "staff_darren", impact_on_existing: [], impact_on_referral: [], overall_recommendation: iaForm.recommendation, conditions: [], rationale: iaForm.rationale.trim(), panel_date: null, panel_outcome: null, notes: "" });
+    await createAssessment.mutateAsync({ referral_name: iaForm.referral_name.trim(), referral_age: parseInt(iaForm.referral_age) || 0, referral_gender: iaForm.referral_gender, referral_authority: iaForm.referral_authority.trim(), date: today, status: "draft" as ImpactAssessmentStatus, assessor: currentUserId(), impact_on_existing: [], impact_on_referral: [], overall_recommendation: iaForm.recommendation, conditions: [], rationale: iaForm.rationale.trim(), panel_date: null, panel_outcome: null, notes: "" });
     toast.success("Impact assessment created.");
     setIaForm({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" });
     setShowNew(false);

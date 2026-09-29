@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -88,7 +89,7 @@ export default function ServiceUserAgreementsPage() {
     e.preventDefault();
     if (!suaForm.child_id) { toast.error("Please select a young person."); return; }
     const today = todayStr();
-    await createRecord.mutateAsync({ child_id: suaForm.child_id, agreement_type: suaForm.agreement_type, status: suaForm.status, created_date: today, review_date: suaForm.review_date || today, last_reviewed_date: today, created_by: "staff_darren", young_person_signed_date: null, young_person_views: suaForm.young_person_views.trim(), rules: suaForm.rules.split("\n").filter(Boolean).map((r) => ({ rule: r.trim(), agreed_by_yp: false, notes: "" })), consequences: "", rewards: "", modifications: "", social_worker_aware: false });
+    await createRecord.mutateAsync({ child_id: suaForm.child_id, agreement_type: suaForm.agreement_type, status: suaForm.status, created_date: today, review_date: suaForm.review_date || today, last_reviewed_date: today, created_by: currentUserId(), young_person_signed_date: null, young_person_views: suaForm.young_person_views.trim(), rules: suaForm.rules.split("\n").filter(Boolean).map((r) => ({ rule: r.trim(), agreed_by_yp: false, notes: "" })), consequences: "", rewards: "", modifications: "", social_worker_aware: false });
     toast.success("Agreement saved.");
     setSuaForm({ child_id: "", agreement_type: "house_rules", status: "active", review_date: "", young_person_views: "", rules: "" });
     setShowNew(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   MapPin, Search, ArrowUpDown,
   AlertTriangle, CheckCircle2, Shield,
@@ -255,7 +256,7 @@ export default function LocalityRiskPage() {
                         updateMut.mutate({
                           id: risk.id,
                           last_reviewed: todayStr(),
-                          reviewed_by: "staff_darren",
+                          reviewed_by: currentUserId(),
                           next_review: d.toISOString().slice(0, 10),
                         });
                       }}

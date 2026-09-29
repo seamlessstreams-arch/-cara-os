@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -74,7 +75,7 @@ export default function LoneWorkingPage() {
   const handleSaveAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lwForm.staff_id) { toast.error("Please select a staff member."); return; }
-    await createRecord.mutateAsync({ staff_id: lwForm.staff_id, scenario: lwForm.scenario, risk_level: lwForm.risk_level, status: "current", assessment_date: todayStr(), review_date: lwForm.review_date, assessed_by: "staff_darren", hazards: lwForm.hazards.split("\n").filter(Boolean), control_measures: lwForm.control_measures.split("\n").filter(Boolean), check_in_protocol: "", personal_alarm_issued: false, emergency_procedure: "", notes: "", created_at: new Date().toISOString() });
+    await createRecord.mutateAsync({ staff_id: lwForm.staff_id, scenario: lwForm.scenario, risk_level: lwForm.risk_level, status: "current", assessment_date: todayStr(), review_date: lwForm.review_date, assessed_by: currentUserId(), hazards: lwForm.hazards.split("\n").filter(Boolean), control_measures: lwForm.control_measures.split("\n").filter(Boolean), check_in_protocol: "", personal_alarm_issued: false, emergency_procedure: "", notes: "", created_at: new Date().toISOString() });
     toast.success("Lone working assessment saved.");
     setLwForm({ staff_id: "", scenario: "waking_night", risk_level: "low", review_date: "", hazards: "", control_measures: "" });
     setShowNew(false);

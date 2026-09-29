@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -87,7 +88,7 @@ export default function MedicationStockCheckPage() {
 
   const handleSaveCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createCheck.mutateAsync({ date: todayStr(), check_type: scForm.check_type, checked_by: "staff_darren", witnessed_by: scForm.witnessed_by || "staff_darren", status: "balanced" as StockCheckStatus, items: [], notes: scForm.notes.trim() });
+    await createCheck.mutateAsync({ date: todayStr(), check_type: scForm.check_type, checked_by: currentUserId(), witnessed_by: scForm.witnessed_by || currentUserId(), status: "balanced" as StockCheckStatus, items: [], notes: scForm.notes.trim() });
     toast.success("Stock check logged.");
     setScForm({ check_type: "weekly", witnessed_by: "", notes: "" });
     setShowNew(false);

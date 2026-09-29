@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -317,7 +318,7 @@ export default function DutyLogPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button disabled={createEntry.isPending} onClick={() => { createEntry.mutate({ date: formDate, time: formTime, shift: formShift as DutyLogShift, category: formCategory as DutyLogCategory, priority: formPriority, recorded_by: "staff_darren", young_person_ids: [], description: formDescription, action_taken: formActionTaken, follow_up_required: false, follow_up_notes: "", manager_notified: false, linked_records: [], witnessed_by: null, signed_off: false, signed_off_by: null }, { onSuccess: () => { toast.success("Duty log entry created"); setDialogOpen(false); resetForm(); }, onError: () => toast.error("Failed to create duty log entry") }); }}>{createEntry.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Entry"}</Button>
+            <Button disabled={createEntry.isPending} onClick={() => { createEntry.mutate({ date: formDate, time: formTime, shift: formShift as DutyLogShift, category: formCategory as DutyLogCategory, priority: formPriority, recorded_by: currentUserId(), young_person_ids: [], description: formDescription, action_taken: formActionTaken, follow_up_required: false, follow_up_notes: "", manager_notified: false, linked_records: [], witnessed_by: null, signed_off: false, signed_off_by: null }, { onSuccess: () => { toast.success("Duty log entry created"); setDialogOpen(false); resetForm(); }, onError: () => toast.error("Failed to create duty log entry") }); }}>{createEntry.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Entry"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

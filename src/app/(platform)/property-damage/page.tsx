@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -94,7 +95,7 @@ export default function PropertyDamagePage() {
   const handleSaveDamage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pdForm.description.trim()) { toast.error("Description is required."); return; }
-    await createRecord.mutateAsync({ date: pdForm.date, time: pdForm.time, reported_by: "staff_darren", location: pdForm.location, specific_area: pdForm.specific_area.trim(), damage_type: pdForm.damage_type, severity: pdForm.severity, status: "reported", responsible_person_id: null, responsible_person_name: "", description: pdForm.description.trim(), photographs_taken: false, estimated_cost: pdForm.estimated_cost ? parseFloat(pdForm.estimated_cost) : 0, actual_cost: null, insurance_claimed: false, insurance_ref: null, repair_details: "", repair_completed_date: null, linked_incident_id: null, behaviour_context: "", risk_assessment_updated: false, notes: "" });
+    await createRecord.mutateAsync({ date: pdForm.date, time: pdForm.time, reported_by: currentUserId(), location: pdForm.location, specific_area: pdForm.specific_area.trim(), damage_type: pdForm.damage_type, severity: pdForm.severity, status: "reported", responsible_person_id: null, responsible_person_name: "", description: pdForm.description.trim(), photographs_taken: false, estimated_cost: pdForm.estimated_cost ? parseFloat(pdForm.estimated_cost) : 0, actual_cost: null, insurance_claimed: false, insurance_ref: null, repair_details: "", repair_completed_date: null, linked_incident_id: null, behaviour_context: "", risk_assessment_updated: false, notes: "" });
     toast.success("Property damage record saved.");
     setPdForm({ date: todayStr(), time: "", location: "bedroom", damage_type: "deliberate", specific_area: "", description: "", severity: "minor", estimated_cost: "" });
     setShowNew(false);
