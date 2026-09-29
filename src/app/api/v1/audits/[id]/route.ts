@@ -29,7 +29,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "medium",
       standard_ref: "SCCIF: Health — Standard 3.4",
       action_required: "Staff to complete medication error reporting form and clinical review requested. Manager to audit MAR sheets weekly for 4 weeks.",
-      owner: "staff_ryan",
+      owner: "staff_ryan",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-3),
       status: "in_progress",
     },
@@ -42,7 +42,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "high",
       standard_ref: "Regulatory Reform (Fire Safety) Order 2005",
       action_required: "Replace both evacuation signs within 7 days. Include in monthly premises check.",
-      owner: "staff_ryan",
+      owner: "staff_ryan",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-9),
       status: "open",
     },
@@ -53,7 +53,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "high",
       standard_ref: "BS EN 14351 / CSCI Guidance",
       action_required: "Maintenance team to tighten restrictor today. Re-test and document.",
-      owner: "staff_darren",
+      owner: "staff_darren",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-16),
       status: "resolved",
     },
@@ -65,7 +65,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       description: "March petty cash reconciliation has a £12.40 discrepancy. Three receipts from the 18–21 March period are missing from the cash box.",
       severity: "medium",
       action_required: "Locate or replace missing receipts. Introduce counter-signature requirement for all petty cash disbursements over £5.",
-      owner: "staff_darren",
+      owner: "staff_darren",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-4),
       status: "open",
     },
@@ -75,7 +75,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       description: "Two activity expense claims submitted without prior manager approval as required by financial policy. Both were within budget but not pre-approved.",
       severity: "low",
       action_required: "Remind team of pre-approval policy. Add to next team meeting agenda.",
-      owner: "staff_ryan",
+      owner: "staff_ryan",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-4),
       status: "open",
     },
@@ -85,7 +85,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       description: "Emergency fund balance falls below the £100 minimum threshold set in the home's financial procedures.",
       severity: "medium",
       action_required: "Replenish emergency fund to £150. Review cash flow management procedures.",
-      owner: "staff_darren",
+      owner: "staff_darren",  // seed-actor-ok: demo audit finding — owner is the responsible assignee, not a record author
       due_date: seedDay(-9),
       status: "resolved",
     },

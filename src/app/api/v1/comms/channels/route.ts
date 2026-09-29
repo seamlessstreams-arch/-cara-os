@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
   const channel = db.commsChannels.create({
     home_id: user.home_id,
-    type: (body.type as never) ?? "home_announcements",
+    type: (body.type as never) ?? "home_announcements",  // seed-actor-ok: "home_announcements" is a channel type, not a home id
     name: (body.name as string) ?? "New Channel",
     description: (body.description as string) ?? null,
     access: (body.access as never) ?? "all_staff",
