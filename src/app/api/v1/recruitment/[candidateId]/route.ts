@@ -253,7 +253,7 @@ export async function PATCH(
   createRecruitmentAuditRecord({
     candidate_id: candidateId,
     vacancy_id: updated.vacancy_id ?? undefined,
-    actor_id: "staff_darren",
+    actor_id: auth.userId,
     event_type: body.stage ? "stage_changed" : "candidate_updated",
     entity_type: "candidate_profile",
     entity_id: candidateId,

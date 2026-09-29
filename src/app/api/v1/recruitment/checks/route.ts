@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest) {
   if (candidate_id) {
     createRecruitmentAuditRecord({
       candidate_id,
-      actor_id: "staff_darren",
+      actor_id: auth.userId,
       event_type: `check_${status ?? "updated"}`,
       entity_type: "candidate_check",
       entity_id: id,
