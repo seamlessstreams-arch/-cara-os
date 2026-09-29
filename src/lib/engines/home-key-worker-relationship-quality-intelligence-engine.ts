@@ -141,11 +141,11 @@ export interface KeyWorkerRelationshipQualityResult {
   continuity_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   child_voice_rate: number | null;
-  avg_trust_score: number;
-  avg_communication_score: number;
-  avg_responsiveness_score: number;
-  avg_emotional_attunement_score: number;
-  avg_overall_quality_score: number;
+  avg_trust_score: number | null;
+  avg_communication_score: number | null;
+  avg_responsiveness_score: number | null;
+  avg_emotional_attunement_score: number | null;
+  avg_overall_quality_score: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   session_completion_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -175,8 +175,8 @@ function toRating(score: number): KeyWorkerRating {
   return "inadequate";
 }
 
-function avg(values: number[]): number {
-  if (values.length === 0) return 0;
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null;
   return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 100) / 100;
 }
 
@@ -494,8 +494,8 @@ export function computeKeyWorkerRelationshipQuality(
   else if (meets(sessionCompletionRate, 80)) score += 1;
 
   // --- Bonus 9: avgOverallQualityScore (>=4.5: +3, >=3.5: +1) ---
-  if (avgOverallQualityScore >= 4.5) score += 3;
-  else if (avgOverallQualityScore >= 3.5) score += 1;
+  if ((avgOverallQualityScore ?? 0) >= 4.5) score += 3;
+  else if ((avgOverallQualityScore ?? 0) >= 3.5) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -559,23 +559,23 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (avgOverallQualityScore >= 4.5 && totalAssessments > 0) {
+  if ((avgOverallQualityScore ?? 0) >= 4.5 && totalAssessments > 0) {
     strengths.push(
       `Average relationship quality score ${avgOverallQualityScore}/5 — key workers demonstrate exceptional quality in their relationships with children.`,
     );
-  } else if (avgOverallQualityScore >= 3.5 && totalAssessments > 0) {
+  } else if ((avgOverallQualityScore ?? 0) >= 3.5 && totalAssessments > 0) {
     strengths.push(
       `Average relationship quality score ${avgOverallQualityScore}/5 — key workers maintain good quality relationships with children.`,
     );
   }
 
-  if (avgTrustScore >= 4.0 && totalAssessments > 0) {
+  if ((avgTrustScore ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Trust scores averaging ${avgTrustScore}/5 — children demonstrate strong trust in their key workers, which is foundational to effective care.`,
     );
   }
 
-  if (avgEmotionalAttunementScore >= 4.0 && totalAssessments > 0) {
+  if ((avgEmotionalAttunementScore ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Emotional attunement scores averaging ${avgEmotionalAttunementScore}/5 — key workers are attuned to children's emotional needs and respond sensitively.`,
     );
@@ -671,9 +671,9 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (avgLongestRelationshipDays >= 180 && totalContinuityRecords > 0) {
+  if ((avgLongestRelationshipDays ?? 0) >= 180 && totalContinuityRecords > 0) {
     strengths.push(
-      `Average longest key worker relationship is ${Math.round(avgLongestRelationshipDays)} days — children benefit from long-standing, consistent relationships with their key workers.`,
+      `Average longest key worker relationship is ${Math.round(avgLongestRelationshipDays ?? 0)} days — children benefit from long-standing, consistent relationships with their key workers.`,
     );
   }
 
@@ -755,19 +755,19 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (avgOverallQualityScore < 3.0 && totalAssessments > 0) {
+  if ((avgOverallQualityScore ?? 0) < 3.0 && totalAssessments > 0) {
     concerns.push(
       `Average relationship quality score only ${avgOverallQualityScore}/5 — key worker relationships are not providing the quality of support children need.`,
     );
   }
 
-  if (avgTrustScore < 3.0 && totalAssessments > 0) {
+  if ((avgTrustScore ?? 0) < 3.0 && totalAssessments > 0) {
     concerns.push(
       `Trust scores averaging only ${avgTrustScore}/5 — children do not sufficiently trust their key workers, which undermines the foundation of the care relationship.`,
     );
   }
 
-  if (avgEmotionalAttunementScore < 3.0 && totalAssessments > 0) {
+  if ((avgEmotionalAttunementScore ?? 0) < 3.0 && totalAssessments > 0) {
     concerns.push(
       `Emotional attunement scores averaging only ${avgEmotionalAttunementScore}/5 — key workers may not be adequately sensitive to children's emotional states and needs.`,
     );
@@ -845,9 +845,9 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (avgKeyWorkerChanges > 3 && totalContinuityRecords > 0) {
+  if ((avgKeyWorkerChanges ?? 0) > 3 && totalContinuityRecords > 0) {
     concerns.push(
-      `Average of ${Math.round(avgKeyWorkerChanges * 10) / 10} key worker changes per child — excessive changes prevent children from forming secure, trusting relationships.`,
+      `Average of ${Math.round((avgKeyWorkerChanges ?? 0) * 10) / 10} key worker changes per child — excessive changes prevent children from forming secure, trusting relationships.`,
     );
   }
 
@@ -1138,7 +1138,7 @@ export function computeKeyWorkerRelationshipQuality(
     }
   }
 
-  if (avgTrustScore < 2.5 && totalAssessments > 0) {
+  if ((avgTrustScore ?? 0) < 2.5 && totalAssessments > 0) {
     insights.push({
       text: `Trust scores averaging only ${avgTrustScore}/5. Trust is the foundation of the key worker relationship — without it, children will not share their feelings, seek help, or engage meaningfully with their care plan. This requires urgent attention.`,
       severity: "critical",
@@ -1203,7 +1203,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (avgOverallQualityScore >= 3.0 && avgOverallQualityScore < 3.5 && totalAssessments > 0) {
+  if ((avgOverallQualityScore ?? 0) >= 3.0 && (avgOverallQualityScore ?? 0) < 3.5 && totalAssessments > 0) {
     insights.push({
       text: `Average relationship quality score at ${avgOverallQualityScore}/5 — relationships are functional but not yet consistently delivering the depth of connection children need. Development in emotional attunement and trust-building would strengthen scores.`,
       severity: "warning",
@@ -1254,7 +1254,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (avgOverallQualityScore >= 4.5 && totalAssessments > 0) {
+  if ((avgOverallQualityScore ?? 0) >= 4.5 && totalAssessments > 0) {
     insights.push({
       text: `Relationship quality averaging ${avgOverallQualityScore}/5 — key workers are forming exceptionally strong, trusting, and attuned relationships with children. This is the hallmark of outstanding relationship-based care.`,
       severity: "positive",
@@ -1307,9 +1307,9 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (avgLongestRelationshipDays >= 365 && totalContinuityRecords > 0) {
+  if ((avgLongestRelationshipDays ?? 0) >= 365 && totalContinuityRecords > 0) {
     insights.push({
-      text: `Average longest key worker relationship is ${Math.round(avgLongestRelationshipDays)} days (over a year) — children benefit from deeply established relationships built over sustained time. This level of continuity supports secure attachment and emotional stability.`,
+      text: `Average longest key worker relationship is ${Math.round(avgLongestRelationshipDays ?? 0)} days (over a year) — children benefit from deeply established relationships built over sustained time. This level of continuity supports secure attachment and emotional stability.`,
       severity: "positive",
     });
   }
