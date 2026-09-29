@@ -5,12 +5,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import type { CaraEarlyWarning } from "@/types/cara-studio";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 const SEVERITY_RANK: Record<string, number> = {
   critical: 0,
   high: 1,

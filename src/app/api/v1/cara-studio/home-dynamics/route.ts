@@ -5,12 +5,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { generateHomeDynamicsSnapshot } from "@/lib/cara/cara-home-dynamics";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
