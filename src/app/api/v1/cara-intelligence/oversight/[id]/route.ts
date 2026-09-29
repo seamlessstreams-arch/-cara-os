@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -21,6 +22,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const existing = intelligenceDb.caraOversight.findById(id);
   if (!existing) return NextResponse.json({ error: "Oversight not found" }, { status: 404 });
+  // The actor on this record change is the authenticated caller; reject if unresolved.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
   const patch: Record<string, unknown> = {};
   const allowed = ["edited_version","final_version","approval_status","manager_id","quality_rating","approved_at","oversight_style"];
@@ -34,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (body.approval_status === "approved") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: (body.manager_id as string) ?? "staff_darren",
+      user_id: identity.userId,
       child_id: updated.child_id,
       action_type: "cara_oversight_approved",
       source_table: "cara_oversight",

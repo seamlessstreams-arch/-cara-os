@@ -35,6 +35,11 @@ export async function POST(req: NextRequest) {
     if (!body[field]) return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
   }
 
+  // The oversight author is the authenticated caller; reject an unresolved
+  // session. manager_id (the manager this oversight concerns) stays as supplied.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const record = intelligenceDb.caraOversight.create({
     home_id:        body.home_id ?? tenantHomeId(),
     child_id:       body.child_id,
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   intelligenceDb.caraAuditTrail.create({
     home_id:      record.home_id,
-    user_id:      body.manager_id ?? "staff_darren",
+    user_id:      identity.userId,
     child_id:     body.child_id,
     action_type:  "cara_oversight_generated",
     source_table: "cara_oversight",
@@ -68,7 +73,7 @@ export async function POST(req: NextRequest) {
     title: `Management Oversight: ${record.record_type}`,
     summary: record.ai_draft?.slice(0, 500) ?? "",
     eventType: "management_oversight",
-    createdBy: body.manager_id ?? "staff_darren",
+    createdBy: identity.userId,
   }).catch(() => {});
 
   return NextResponse.json({ data: record }, { status: 201 });

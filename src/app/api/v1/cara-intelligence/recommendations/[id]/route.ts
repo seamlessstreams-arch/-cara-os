@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -21,6 +22,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const existing = intelligenceDb.caraRecommendations.findById(id);
   if (!existing) return NextResponse.json({ error: "Recommendation not found" }, { status: 404 });
+  // The actor on this record change is the authenticated caller; reject if unresolved.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
   const allowed = ["status","task_created","task_id","deadline","assigned_role","priority"];
   const patch: Record<string, unknown> = {};
@@ -34,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (body.status === "actioned" || body.status === "task_created") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: "staff_darren",
+      user_id: identity.userId,
       child_id: updated.child_id,
       action_type: "recommendation_actioned",
       source_table: "cara_recommendations",
