@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 // GET /api/v1/cara-studio/artifacts
 // Query params: status, artifact_type, child_id, home_id, limit, offset

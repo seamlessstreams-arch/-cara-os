@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import {
@@ -24,7 +25,7 @@ import { db } from "@/lib/db/store";
 import type { Reg40TriageStatus } from "@/types/cara-studio";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 const DECISION_ACTIONS: Reg40DecisionAction[] = ["notify", "dismiss", "escalate"];
 
 export async function GET(req: NextRequest) {

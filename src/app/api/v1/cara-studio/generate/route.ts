@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { generateArtifact } from "@/lib/cara/cara-studio-service";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import type { CaraGenerationRequest } from "@/types/cara-studio";
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const guard = await requireCaraStudioPermission(req, body, {
     permission: "cara.generate_drafts",
-    homeId: (body.home_id as string) ?? "home_oak",
+    homeId: (body.home_id as string) ?? tenantHomeId(),
     childId: (body.child_id as string) ?? null,
     intent: `generate ${body.artifact_type}`,
   });
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     artifact_type: body.artifact_type as CaraGenerationRequest["artifact_type"],
     title: String(body.title),
     child_id: (body.child_id as string) ?? null,
-    home_id: (body.home_id as string) ?? "home_oak",
+    home_id: (body.home_id as string) ?? tenantHomeId(),
     staff_id: (body.staff_id as string) ?? null,
     incident_id: (body.incident_id as string) ?? null,
     linked_record_id: (body.linked_record_id as string) ?? null,

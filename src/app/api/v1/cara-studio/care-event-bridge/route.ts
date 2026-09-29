@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
@@ -23,7 +24,7 @@ import {
 } from "@/lib/cara/cara-care-event-bridge";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown> = {};
