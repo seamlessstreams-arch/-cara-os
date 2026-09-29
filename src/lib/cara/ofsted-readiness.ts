@@ -31,8 +31,11 @@ const QUALITY_STANDARDS = [
 ];
 
 function scoreFromCount(count: number, expected: number): number {
-  if (expected === 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((count / expected) * 100)));
+  // Every caller passes a fixed positive `expected` (50/15/20/12) or guards
+  // `training.length > 0`, so `expected` is never 0 here — the dead
+  // `expected === 0 ? 0` fabricated-zero branch is removed; Math.max(1, …)
+  // keeps the division defensively safe without manufacturing a 0 score.
+  return Math.max(0, Math.min(100, Math.round((count / Math.max(1, expected)) * 100)));
 }
 
 export interface ReadinessInputs {
