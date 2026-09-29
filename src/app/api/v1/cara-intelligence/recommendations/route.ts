@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   intelligenceDb.caraAuditTrail.create({
     home_id:      rec.home_id,
-    user_id:      "staff_darren",
+    user_id:      identity.userId,
     child_id:     rec.child_id,
     action_type:  "recommendation_created",
     source_table: "cara_recommendations",

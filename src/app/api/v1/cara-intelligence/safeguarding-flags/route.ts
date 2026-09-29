@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
   // Audit trail
   intelligenceDb.caraAuditTrail.create({
     home_id:      flag.home_id,
-    user_id:      "staff_darren",
+    user_id:      identity.userId,
     child_id:     flag.child_id,
     action_type:  "safeguarding_flag_raised",
     source_table: "cara_safeguarding_flags",

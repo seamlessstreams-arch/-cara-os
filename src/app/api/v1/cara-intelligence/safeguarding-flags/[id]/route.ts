@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (body.status === "reviewed" || body.status === "escalated" || body.status === "closed") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: (body.reviewed_by as string) ?? "staff_darren",
+      user_id: auth.userId,
       child_id: updated.child_id,
       action_type: "safeguarding_flag_reviewed",
       source_table: "cara_safeguarding_flags",
