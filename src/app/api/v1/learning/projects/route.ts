@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,6 +18,10 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // Practice record: the author is the authenticated caller. An unresolved
+  // live session records unattributed ('') rather than blocking or guessing.
+  const __identity = await getRequestIdentity(req);
+  const recordedBy = __identity instanceof NextResponse ? "" : __identity.userId;
   const __missing = requireFields(body, ["project_name"]);
   if (__missing) return __missing;
   const record = intelligenceDb.learningProjects.create({
@@ -28,8 +33,8 @@ export async function POST(req: NextRequest) {
     reading_level: body.reading_level ?? "standard",
     tone: body.tone ?? "professional",
     status: "active",
-    created_by: body.created_by ?? "staff_darren",
     ...body,
+    created_by: recordedBy,
   });
   return NextResponse.json({ data: record }, { status: 201 });
 }
