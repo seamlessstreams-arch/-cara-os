@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
     assigned_manager_id: null,
     notes: null,
     cv_url: null,
-    created_by: "staff_darren",
+    created_by: auth.userId,
   } as Partial<CandidateProfile>);
 
   void persistRecruitmentCandidate(created); // best-effort write-through (no-op when off)

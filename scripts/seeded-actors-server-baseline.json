@@ -1,9 +1,4 @@
 {
-  "src/app/api/v1/cara-intelligence/keywork/[id]/route.ts": 2,
-  "src/app/api/v1/cara-intelligence/resources/[id]/route.ts": 1,
-  "src/app/api/v1/intelligence/document/route.ts": 1,
-  "src/app/api/v1/recruitment/route.ts": 1,
-  "src/app/api/v1/reflective-supervision/route.ts": 1,
   "src/lib/attendance/sign-in-service.ts": 2,
   "src/lib/calendar/calendar-service.ts": 1,
   "src/lib/cara-studio/cara-studio-service.ts": 1,

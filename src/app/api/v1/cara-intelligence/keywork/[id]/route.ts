@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -18,6 +19,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
 
   const existing = intelligenceDb.keyWorkSessions.findById(id);
   if (!existing) return NextResponse.json({ error: "Session not found" }, { status: 404 });
@@ -34,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (body.status === "completed") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: (body.completed_by as string) ?? "staff_darren",
+      user_id: identity.userId,
       child_id: updated.child_id,
       action_type: "keywork_session_completed",
       source_table: "key_work_sessions",
@@ -43,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   } else if (body.status === "reviewed") {
     intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
-      user_id: (body.reviewed_by as string) ?? "staff_darren",
+      user_id: identity.userId,
       child_id: updated.child_id,
       action_type: "keywork_session_reviewed",
       source_table: "key_work_sessions",
