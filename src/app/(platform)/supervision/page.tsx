@@ -396,7 +396,7 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
 // ── Supervision card ───────────────────────────────────────────────────────────
 function SupervisionCard({ sup }: { sup: Supervision }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const router = useRouter();
   const [recording, setRecording] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -594,7 +594,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
 
 function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { staff_id?: string; type?: Supervision["type"] } }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const createSupervision = useCreateSupervision();
   const modalStaffQuery = useStaff();
   const modalAllStaff = (modalStaffQuery.data?.data ?? []).filter((s) => s.is_active);

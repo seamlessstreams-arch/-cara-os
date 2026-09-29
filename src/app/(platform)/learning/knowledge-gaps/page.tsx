@@ -198,7 +198,7 @@ function GapCard({ gap }: { gap: KnowledgeGap }) {
 // ── New gap dialog ─────────────────────────────────────────────────────────────
 function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [gapArea, setGapArea] = useState("");
   const [severity, setSeverity] = useState<KnowledgeGapSeverity>("moderate");
   const [identifiedFrom, setIdentifiedFrom] = useState("supervision");
@@ -315,7 +315,7 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function KnowledgeGapsPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [showNew, setShowNew] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "addressed">("all");
   const [search, setSearch] = useState("");

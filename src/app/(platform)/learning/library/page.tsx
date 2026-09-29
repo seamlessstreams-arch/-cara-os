@@ -195,7 +195,7 @@ type TypeFilter = "all" | string;
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ResourceLibraryPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "approved" | "pinned">("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");

@@ -234,7 +234,7 @@ export default function SupervisionDetailPage({
   const router = useRouter();
 
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const { data: sup, isLoading, isError } = useSupervision(id);
   const updateMutation = useUpdateSupervision();
   const createNeed = useCreateTrainingNeed();

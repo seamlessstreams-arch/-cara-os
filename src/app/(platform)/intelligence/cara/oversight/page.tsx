@@ -360,7 +360,7 @@ const STYLE_PARAM_MAP: Record<string, CaraOversightStyle> = {
 
 export default function OversightGeneratorPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const ypQuery = useYoungPeople("current");
   const youngPeople = (ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }));
   const [childId, setChildId] = useState("");

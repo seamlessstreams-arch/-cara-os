@@ -159,7 +159,7 @@ function SavedSetItem({ resource }: { resource: { id: string; title: string; pat
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function FlashcardsPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState<LearningPathway>("staff");
   const [difficulty, setDifficulty] = useState<"easy" | "mixed" | "hard">("mixed");

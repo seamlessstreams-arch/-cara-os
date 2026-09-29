@@ -344,7 +344,7 @@ interface EvidenceItem {
 
 function LiveEvidencePanel({ onUseContext }: { onUseContext: (text: string) => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [expandedStandards, setExpandedStandards] = useState<Set<string>>(new Set(REG45_STANDARDS.map((s) => s.id)));
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -619,7 +619,7 @@ function GenerateForm({
 }) {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [period, setPeriod] = useState("");
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
@@ -766,7 +766,7 @@ function GenerateForm({
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Reg45Page() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const { data, isLoading } = useRiReg45Evidence({ homeId: homeId });
   const records = data?.data ?? [];
   const [evidenceNotes, setEvidenceNotes] = useState("");

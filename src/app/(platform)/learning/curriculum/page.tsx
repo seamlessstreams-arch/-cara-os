@@ -144,7 +144,7 @@ function ModuleCard({ module }: { module: CurriculumModule }) {
 
 export default function CurriculumBuilderPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [topic, setTopic] = useState("");
   const [pathway, setPathway] = useState("staff");
   const [audience, setAudience] = useState("");

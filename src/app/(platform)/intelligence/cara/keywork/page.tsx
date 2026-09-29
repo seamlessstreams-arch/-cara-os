@@ -164,7 +164,7 @@ function SessionCard({ session }: { session: KeyWorkSession }) {
 
 function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; initialChildId?: string }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const ypQuery = useYoungPeople("current");
   const youngPeople = (ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }));
   const [childId, setChildId] = useState(initialChildId);
@@ -456,7 +456,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
 
 export default function KeyWorkBuilderPage() {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [paramChildId, setParamChildId] = useState("");
   const [showBuilder, setShowBuilder] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");

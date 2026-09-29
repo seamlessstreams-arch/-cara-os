@@ -544,7 +544,7 @@ const ALL_METRICS = METRIC_GROUPS.flatMap((g) => g.metrics);
 export default function ScorecardPage() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const [cara, setCara] = useState<StrategicResult | null>(null);
   const [loading, setLoading] = useState(false);
 

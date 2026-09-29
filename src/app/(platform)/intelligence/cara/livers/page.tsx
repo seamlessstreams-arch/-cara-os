@@ -946,7 +946,7 @@ function LiversGeneratorForm({
 
 export default function LiversPage() {
   const { currentUser, currentRole } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
   const access = getLiversRoleAccess(currentRole);
 
   const { data: ypData } = useYoungPeople();

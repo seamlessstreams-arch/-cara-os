@@ -608,7 +608,7 @@ function ReviewDialog({
 export default function AnnexAReadinessPage() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
+  const homeId = currentUser?.home_id ?? "";
 
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [reviewingItem, setReviewingItem] = useState<AnnexAEvidenceEnriched | null>(null);
