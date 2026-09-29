@@ -98,6 +98,10 @@ const ALLOWED = new Map([
     "src/lib/cara-practice/cara-practice-engine.ts:protective:100",
     "detectProtectiveFactors matches WEAK_PROTECTIVE, so zero hits means no unevidenced protective claims were made — guarded by the same empty-record null return",
   ],
+  [
+    "src/lib/child-voice-dimensions/dimensions-engine.ts:totalCaptures:0",
+    "child-voice 'voice_captured' dimension: 0 captures across all 5 channels (key work / reviews / meetings / feedback / advocacy) over the window is a REAL practice concern for child voice, not unmeasured — the engine deliberately pairs the 0 score with status 'needs_attention' and an explicit 'No voice recorded' note. Absence of voice capture IS the finding here; a null score would contradict the needs_attention status and hide the gap. Not converted to null.",
+  ],
 
   // ── Statement-form leaves ───────────────────────────────────────────────────
   // Sites the EMPTY_RETURN matcher flags that are NOT the bug: a score is only
