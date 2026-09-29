@@ -672,13 +672,13 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.review_turnaround_hours).toBe(4.8); // (3.5 + 6) / 2 = 4.75, rounded to 4.8
     });
 
-    it("returns 0 when no artifacts have both dates", () => {
+    it("returns null when no artifacts have both dates", () => {
       const arts = [
         makeArtifact({ id: "a1", submitted_for_review_at: null, reviewed_at: null }),
         makeArtifact({ id: "a2", submitted_for_review_at: "2026-05-20T10:00:00Z", reviewed_at: null }),
       ];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      expect(r.review_turnaround_hours).toBe(0);
+      expect(r.review_turnaround_hours).toBeNull();
     });
 
     it("excludes artifacts with only submitted_for_review_at", () => {
@@ -1576,7 +1576,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       const r = computeCaraContentQuality(baseInput({
         artifacts: [makeArtifact({ submitted_for_review_at: null, reviewed_at: null })],
       }));
-      expect(r.review_turnaround_hours).toBe(0);
+      expect(r.review_turnaround_hours).toBeNull();
     });
   });
 
