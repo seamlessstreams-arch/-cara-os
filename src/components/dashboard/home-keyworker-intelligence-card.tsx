@@ -90,7 +90,7 @@ export function HomeKeyworkerIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.keyworker_rating] ?? RATING_STYLES.insufficient_data;
   const hasLowCoverage = (d.coverage_profile.coverage_rate ?? 0) < 50;
-  const hasLowSatisfaction = d.quality_profile.avg_satisfaction < 3.0 && d.coverage_profile.total_sessions > 0;
+  const hasLowSatisfaction = (d.quality_profile.avg_satisfaction ?? 0) < 3.0 && d.coverage_profile.total_sessions > 0;
   const isAlert = hasLowCoverage || hasLowSatisfaction || d.keyworker_rating === "inadequate";
 
   return (
@@ -135,10 +135,11 @@ export function HomeKeyworkerIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Smile className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
+                  d.quality_profile.avg_satisfaction === null ? "text-slate-400" :
                   d.quality_profile.avg_satisfaction >= 4.0 ? "text-[--cs-success]" :
                   d.quality_profile.avg_satisfaction >= 3.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.quality_profile.avg_satisfaction}/5
+                  {d.quality_profile.avg_satisfaction === null ? "—" : `${d.quality_profile.avg_satisfaction}/5`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Satisfaction</p>
@@ -163,10 +164,11 @@ export function HomeKeyworkerIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Palette className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
+                  d.quality_profile.avg_themes === null ? "text-slate-400" :
                   d.quality_profile.avg_themes >= 3 ? "text-[--cs-success]" :
                   d.quality_profile.avg_themes >= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.quality_profile.avg_themes}
+                  {d.quality_profile.avg_themes === null ? "—" : d.quality_profile.avg_themes}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Themes</p>

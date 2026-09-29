@@ -52,9 +52,9 @@ export interface CoverageProfile {
 }
 
 export interface QualityProfile {
-  avg_duration: number;
-  avg_satisfaction: number;
-  avg_themes: number;
+  avg_duration: number | null;
+  avg_satisfaction: number | null;
+  avg_themes: number | null;
   adequate_duration_rate: number | null;   // % of sessions ≥ 20 minutes
 }
 
@@ -65,8 +65,8 @@ export interface EngagementProfile {
 }
 
 export interface TherapeuticProfile {
-  avg_mood_before: number;
-  avg_mood_after: number;
+  avg_mood_before: number | null;
+  avg_mood_after: number | null;
   mood_improvement_rate: number | null;    // % that improved
   sessions_with_improvement: number;
 }
@@ -117,8 +117,8 @@ function toRating(score: number): KeyworkerRating {
   return "inadequate";
 }
 
-function avg(vals: number[]): number {
-  return vals.length === 0 ? 0 : Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
+function avg(vals: number[]): number | null {
+  return vals.length === 0 ? null : Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -249,9 +249,9 @@ export function computeHomeKeyworker(
   else if (below(adequateDurationRate, 70)) score -= 2;
 
   // 4. Child satisfaction (±4)
-  if (avgSatisfaction >= 4.0) score += 4;
-  else if (avgSatisfaction >= 3.0) score += 2;
-  else if (avgSatisfaction >= 2.0) score += 0;
+  if ((avgSatisfaction ?? 0) >= 4.0) score += 4;
+  else if ((avgSatisfaction ?? 0) >= 3.0) score += 2;
+  else if ((avgSatisfaction ?? 0) >= 2.0) score += 0;
   else score -= 3;
 
   // 5. Mood improvement (±3)
@@ -279,8 +279,8 @@ export function computeHomeKeyworker(
   }
 
   // 8. Theme diversity (±3)
-  if (avgThemes >= 3) score += 3;
-  else if (avgThemes >= 2) score += 1;
+  if ((avgThemes ?? 0) >= 3) score += 3;
+  else if ((avgThemes ?? 0) >= 2) score += 1;
   else score -= 2;
 
   score = clamp(score, 0, 100);
@@ -289,7 +289,7 @@ export function computeHomeKeyworker(
   // ── Strengths ─────────────────────────────────────────────────
   const strengths: string[] = [];
   if (meets(coverageRate, 100)) strengths.push("Every child in the home is receiving keyworker sessions — full coverage achieved.");
-  if (avgSatisfaction >= 4.0) strengths.push(`Children report high satisfaction (${avgSatisfaction}/5) — sessions are meaningful to them.`);
+  if ((avgSatisfaction ?? 0) >= 4.0) strengths.push(`Children report high satisfaction (${avgSatisfaction}/5) — sessions are meaningful to them.`);
   if (meets(moodImprovementRate, 70) && validMood.length > 0) strengths.push(`${formatRate(moodImprovementRate)} of sessions show mood improvement — genuine therapeutic benefit.`);
   if ((engagementProfile.child_chose_format_rate ?? 0) >= 80) strengths.push(`Children choose session format ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — child-centred practice.`);
   if ((avgPerChild ?? 0) >= 4) strengths.push(`Average ${(avgPerChild ?? 0)} sessions per child — consistent, regular engagement.`);
@@ -298,7 +298,7 @@ export function computeHomeKeyworker(
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
   if (below(coverageRate, 50)) concerns.push(`Only ${coverageRate}% of children have had keyworker sessions — some children are not being reached.`);
-  if (avgSatisfaction < 3.0 && sessions.length > 0) concerns.push(`Average satisfaction is ${avgSatisfaction}/5 — children may not find sessions helpful.`);
+  if ((avgSatisfaction ?? 0) < 3.0 && sessions.length > 0) concerns.push(`Average satisfaction is ${avgSatisfaction}/5 — children may not find sessions helpful.`);
   if (validMood.length > 0 && below(moodImprovementRate, 50)) concerns.push(`Only ${formatRate(moodImprovementRate)} of sessions show mood improvement — review therapeutic approach.`);
   if (below(adequateDurationRate, 70)) concerns.push(`Only ${formatRate(adequateDurationRate)} of sessions reach 20 minutes — sessions may be too brief for meaningful engagement.`);
   if ((engagementProfile.child_chose_format_rate ?? 0) < 50) concerns.push(`Children choose their session format only ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — sessions may feel imposed.`);
@@ -311,7 +311,7 @@ export function computeHomeKeyworker(
   if (below(coverageRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Ensure every child has a named keyworker and receives at least weekly 1:1 sessions.", urgency: "immediate", regulatory_ref: "Reg 44" });
   }
-  if (avgSatisfaction < 3.0 && sessions.length > 0) {
+  if ((avgSatisfaction ?? 0) < 3.0 && sessions.length > 0) {
     recs.push({ rank: rank++, recommendation: `Child satisfaction averages ${avgSatisfaction}/5 — review session content, format, and whether children feel heard.`, urgency: "soon", regulatory_ref: "Reg 44" });
   }
   if (below(adequateDurationRate, 70)) {
@@ -324,7 +324,7 @@ export function computeHomeKeyworker(
   // ── Insights ──────────────────────────────────────────────────
   const insights: KeyworkerInsight[] = [];
 
-  if (meets(coverageRate, 100) && avgSatisfaction >= 4.0 && meets(moodImprovementRate, 70)) {
+  if (meets(coverageRate, 100) && (avgSatisfaction ?? 0) >= 4.0 && meets(moodImprovementRate, 70)) {
     insights.push({ text: `Keyworker practice is exemplary — every child receives sessions, satisfaction averages ${avgSatisfaction}/5, and ${formatRate(moodImprovementRate)} of sessions show mood improvement. Ofsted will recognise a home where children have consistent, meaningful relationships with trusted adults who make a tangible difference to their wellbeing.`, severity: "positive" });
   }
   if (below(coverageRate, 50)) {
@@ -333,7 +333,7 @@ export function computeHomeKeyworker(
   if (validMood.length > 0 && below(moodImprovementRate, 50)) {
     insights.push({ text: `Only ${formatRate(moodImprovementRate)} of sessions show mood improvement. When sessions don't help children feel better, it may indicate the approach needs reviewing — consider different formats, environments, or therapeutic techniques.`, severity: "warning" });
   }
-  if (avgSatisfaction < 3.0 && sessions.length > 0) {
+  if ((avgSatisfaction ?? 0) < 3.0 && sessions.length > 0) {
     insights.push({ text: `Average child satisfaction is ${avgSatisfaction}/5. Low satisfaction may indicate sessions feel like a chore rather than a support. Ask children what would make sessions more useful to them.`, severity: "warning" });
   }
 
