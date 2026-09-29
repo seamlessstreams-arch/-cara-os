@@ -14,6 +14,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
@@ -29,7 +30,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 function audit(user_id: string, note: string, child_id?: string) {
   try {
     intelligenceDb.caraAuditTrail.create({
-      home_id: "home_oak", user_id, child_id,
+      home_id: tenantHomeId(), user_id, child_id,
       action_type: "ai_record_rewrite_generated",
       source_table: "manager_assistant",
       human_edit: note,

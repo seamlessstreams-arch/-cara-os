@@ -10,6 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -40,7 +41,7 @@ export async function PUT(req: Request) {
     ...(existing ?? {}),
     ...patch,
     id: existing?.id ?? "evp_oak",
-    home_id: existing?.home_id ?? "home_oak",
+    home_id: existing?.home_id ?? tenantHomeId(),
     updated_at: new Date().toISOString(),
   } as EmployerValuesProfile;
 

@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
 
   const snapshot = intelligenceDb.childExperience.create({
     child_id: body.child_id!,
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     period_start: body.period_start!,
     period_end: body.period_end!,
     safety_score: body.safety_score!,

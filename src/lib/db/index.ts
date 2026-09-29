@@ -32,6 +32,7 @@ import {
   sbNotifications,
 } from "@/lib/supabase/care-events";
 import { sbReg44Reports } from "@/lib/supabase/reg44-reports";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db as memDb } from "./store";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 export { isSupabaseEnabled };
@@ -161,7 +162,7 @@ export const careEventsDb = {
  * TODO: Replace with auth session lookup once Supabase Auth is wired.
  */
 export function getHomeId(): string {
-  return process.env.SEED_HOME_ID ?? "home_oak";
+  return process.env.SEED_HOME_ID ?? tenantHomeId();
 }
 
 /**

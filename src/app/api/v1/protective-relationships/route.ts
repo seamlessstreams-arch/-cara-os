@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
     const e: RelationshipEntry = {
       id: generateId("rel"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? "home_oak"),
+      home_id: String(body.home_id ?? tenantHomeId()),
       name: str(body.name),
       relationship_to_child: str(body.relationship_to_child),
       category: body.category ?? "other",

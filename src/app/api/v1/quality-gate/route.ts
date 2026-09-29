@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -79,7 +80,7 @@ async function loadCollections(): Promise<Collections> {
 
 function buildInput(c: Collections): GateBoardInput {
   return {
-    homeId: "home_oak",
+    homeId: tenantHomeId(),
     asOf: todayStr(),
     incidents: mapIncidents(c.incidents),
     restraints: mapRestraints(c.restraints),

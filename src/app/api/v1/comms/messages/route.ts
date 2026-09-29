@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel, canPostChannel, type CommsUser } from "@/lib/comms/comms-access";
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
   if (priority !== "normal") {
     const recipients = (db.staff?.findAll?.() ?? []).filter((s: { id: string; home_id?: string; role?: string }) => {
       if (s.id === user.id) return false;
-      const u: CommsUser = { id: s.id, role: s.role ?? "residential_care_worker", home_id: s.home_id ?? "home_oak", shift_active: true };
+      const u: CommsUser = { id: s.id, role: s.role ?? "residential_care_worker", home_id: s.home_id ?? tenantHomeId(), shift_active: true };
       return canViewChannel(u, channel).allowed;
     });
     for (const r of recipients as Array<{ id: string }>) {

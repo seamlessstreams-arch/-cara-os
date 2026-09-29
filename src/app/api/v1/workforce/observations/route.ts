@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (__missing) return __missing;
   const obs = db.practiceObservations.create({
     ...body,
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     domains_observed: body.domains_observed ?? [],
     strengths_noted: body.strengths_noted ?? [],
     areas_for_development: body.areas_for_development ?? [],

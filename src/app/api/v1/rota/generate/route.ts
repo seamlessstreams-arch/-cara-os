@@ -5,6 +5,7 @@
 // shifts. Already-published dates and staff on approved leave / sickness are
 // skipped so the published rota reflects who is genuinely rostered.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { planShiftGeneration } from "@/lib/rota/shift-generation";
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
         notes: "Generated from shift pattern",
         status: "scheduled",
         is_open_shift: false,
-        home_id: c.shift_type ? (shiftPatternsList?.find((p) => p.id === c.pattern_id)?.home_id ?? "home_oak") : "home_oak",
+        home_id: c.shift_type ? (shiftPatternsList?.find((p) => p.id === c.pattern_id)?.home_id ?? tenantHomeId()) : tenantHomeId(),
         created_by: actor,
         updated_by: actor,
       });

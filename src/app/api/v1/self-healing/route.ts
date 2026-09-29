@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -23,7 +24,7 @@ export const dynamic = "force-dynamic";
 
 function buildInput(store: ReturnType<typeof getStore>): SelfHealingInput {
   return {
-    homeId: "home_oak",
+    homeId: tenantHomeId(),
     asOf: todayStr(),
     childIds: ((store.youngPeople ?? []) as Array<{ id: string }>).map((c) => String(c.id)),
     incidents: ((store.incidents ?? []) as unknown as Array<Record<string, unknown>>).map((i) => ({

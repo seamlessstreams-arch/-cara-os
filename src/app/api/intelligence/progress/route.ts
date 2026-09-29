@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       if (type === "goal") {
         const row = {
           id: nextFallbackId("g"),
-          home_id: (homeId as string) ?? "home_oak",
+          home_id: (homeId as string) ?? tenantHomeId(),
           child_id: payload.childId as string,
           title: (payload.title as string) ?? "",
           goal_area: (payload.goalArea as string) ?? "general",
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       if (type === "entry") {
         const row = {
           id: nextFallbackId("p"),
-          home_id: (homeId as string) ?? "home_oak",
+          home_id: (homeId as string) ?? tenantHomeId(),
           child_id: payload.childId as string,
           entry_date: (payload.entryDate as string) ?? now.slice(0, 10),
           area: (payload.area as string) ?? "general",
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
       if (type === "snapshot") {
         const row = {
           id: nextFallbackId("snap"),
-          home_id: (homeId as string) ?? "home_oak",
+          home_id: (homeId as string) ?? tenantHomeId(),
           child_id: payload.childId as string,
           snapshot_date: (payload.snapshotDate as string) ?? now.slice(0, 10),
           education_score: (payload.educationScore as number) ?? 0, education_previous_score: 0, education_trend: "stable",

@@ -2,6 +2,7 @@
 // The child's learning profile: read, and manager/staff upsert with audit.
 // Sensitive child data — every change is attributed and audit-logged.
 import { NextResponse, type NextRequest } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { LearningProfileUpsertSchema, type CaraChildLearningProfile } from "@/lib/cara-studio/cara-types";
@@ -60,7 +61,7 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ childId: st
   db.caraLearningProfiles.upsert(profile);
   void persistCaraLearningProfile(profile as unknown as { child_id: string; [key: string]: unknown }); // durable when Supabase is on
   void writeAuditLog({
-    home_id: process.env.SUPABASE_HOME_ID ?? "home_oak",
+    home_id: process.env.SUPABASE_HOME_ID ?? tenantHomeId(),
     entity_type: "cara_learning_profile",
     entity_id: profile.id,
     action: existing ? "update" : "create",

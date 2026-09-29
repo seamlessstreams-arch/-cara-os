@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadFilingCabinetIndex } from "@/lib/care-events/filing-cabinet-index";
 import { recordExport } from "@/lib/care-events/export-history";
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { /* empty allowed */ }
 
-  const homeId = body.home_id ?? "home_oak";
+  const homeId = body.home_id ?? tenantHomeId();
 
   const guard = await requireCaraStudioPermission(
     req,

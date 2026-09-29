@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { scoreRecordingQuality, scoreBatch, type RecordingInput } from "@/lib/cara/recording-quality";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? tenantHomeId();
     const childId = req.nextUrl.searchParams.get("childId");
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "7", 10);
 

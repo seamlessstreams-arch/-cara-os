@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraActor, type CaraRole } from "@/lib/cara/cara-permissions";
 import { writeAuditEvent } from "@/lib/cara/cara-service";
@@ -15,7 +16,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import type { SB } from "@/lib/supabase/loose-client";
 
 function homeIdDefault(): string {
-  return process.env.SUPABASE_HOME_ID ?? "home_oak";
+  return process.env.SUPABASE_HOME_ID ?? tenantHomeId();
 }
 
 interface TaskPayload {

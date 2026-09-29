@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { analysePatterns, type TimelineEvent } from "@/lib/cara/pattern-detection";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -66,7 +67,7 @@ function getDemoEvents(childId: string): TimelineEvent[] {
 export async function GET(req: NextRequest) {
   try {
     const childId = req.nextUrl.searchParams.get("childId") ?? "child_jordan";
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? tenantHomeId();
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "28", 10);
 
     if (!isSupabaseEnabled()) {

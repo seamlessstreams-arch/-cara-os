@@ -5,6 +5,7 @@
 // Published shifts UNION pattern projections (published wins), minus anyone on
 // approved leave / sickness, analysed against the home staffing policy.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db";
 import { generateId, todayStr } from "@/lib/utils";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     comment,
     recorded_by,
     created_at: new Date().toISOString(),
-    home_id: "home_oak",
+    home_id: tenantHomeId(),
   };
 
   // One reason per date+period — replace any existing so re-logging updates it.

@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
     const plan: StayingSafePlan = {
       id: generateId("ssp"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? "home_oak"),
+      home_id: String(body.home_id ?? tenantHomeId()),
       preferred_name: str(body.preferred_name) || getYPName(String(body.child_id)),
       communication_style: str(body.communication_style),
       theme: str(body.theme) || "blue",

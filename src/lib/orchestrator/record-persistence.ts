@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import type { SB } from "@/lib/supabase/loose-client";
 
 // Loose-typed client — these tables aren't in the generated Database types.
@@ -37,7 +38,7 @@ export async function persistRecord(record: Record<string, unknown>): Promise<{ 
       id: record.id,
       reference: record.reference,
       record_type: record.record_type,
-      home_id: record.home_id ?? "home_oak",
+      home_id: record.home_id ?? tenantHomeId(),
       child_id: record.child_id ?? null,
       staff_id: record.staff_id,
       title: record.title,
