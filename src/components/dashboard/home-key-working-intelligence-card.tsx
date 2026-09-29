@@ -199,8 +199,8 @@ export function HomeKeyWorkingIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Mood & Coverage</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Avg mood: <span className="font-medium text-slate-600">{d.mood.avg_mood_before} → {d.mood.avg_mood_after}</span></p>
-                <p>Improvement: <span className={cn("font-medium", (d.mood.avg_improvement ?? 0) > 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>+{d.mood.avg_improvement}</span></p>
+                <p>Avg mood: <span className="font-medium text-slate-600">{d.mood.avg_mood_before ?? "—"} → {d.mood.avg_mood_after ?? "—"}</span></p>
+                <p>Improvement: <span className={cn("font-medium", (d.mood.avg_improvement ?? 0) > 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.mood.avg_improvement === null ? "—" : `${d.mood.avg_improvement > 0 ? "+" : ""}${d.mood.avg_improvement}`}</span></p>
                 <p>Per child/30d: <span className={cn("font-medium", (d.sessions.avg_per_child_30d ?? 0) >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.avg_per_child_30d}</span></p>
                 {hasUncovered && (
                   <p className="text-red-600 font-medium">{d.coverage.children_without_sessions_30d.length} uncovered</p>
