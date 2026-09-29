@@ -1,6 +1,7 @@
 // POST /api/v1/doc-intelligence/:docId/approve
 // Approve AI recommendations — optionally select which tasks to create
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
@@ -12,8 +13,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  // Approval/rejection is a formal action: the actor is the authenticated
+  // caller. Reject an unresolved session rather than attribute it to a seed id.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const actor_id = identity.userId;
   const {
-    actor_id = "staff_darren",
     approved_task_ids = [] as string[],    // IDs from suggested_tasks to create
     create_evidence_link = false,
     create_chronology = false,
