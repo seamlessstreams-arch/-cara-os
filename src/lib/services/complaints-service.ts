@@ -63,7 +63,7 @@ export interface Reg40Notification {
 
 export const COMPLAINT_CATEGORIES: { category: string; label: string }[] = [
   { category: "care_quality", label: "Quality of Care" },
-  { category: "staff_conduct", label: "Staff Conduct" },
+  { category: "staff_conduct", label: "Staff Conduct" },  // seed-actor-ok: complaint category enum, not a person
   { category: "food_nutrition", label: "Food & Nutrition" },
   { category: "physical_environment", label: "Physical Environment" },
   { category: "privacy_dignity", label: "Privacy & Dignity" },
