@@ -24,7 +24,7 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-export type AttendanceBand = "excellent" | "good" | "concern" | "persistent_absence" | "severe_absence";
+export type AttendanceBand = "excellent" | "good" | "concern" | "persistent_absence" | "severe_absence" | "not_recorded";
 export type ExclusionType = "fixed_term" | "permanent" | "internal";
 export type PEPQuality = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
@@ -114,7 +114,7 @@ export interface EducationAssessment {
   supportScore: number;
 
   // Key metrics
-  attendancePercentage: number;
+  attendancePercentage: number | null; // null when no attendance records / no possible sessions (unmeasured)
   attendanceBand: AttendanceBand;
   totalExclusions: number;
   exclusionDays: number;
@@ -223,15 +223,16 @@ export function analyseEducation(input: EducationInput): EducationAssessment {
 
 // ── Attendance Calculation ──────────────────────────────────────────────────
 
-function calculateAttendance(records: AttendanceRecord[]): number {
-  if (records.length === 0) return 0;
+function calculateAttendance(records: AttendanceRecord[]): number | null {
+  if (records.length === 0) return null; // no attendance records → unmeasured
   const totalPossible = records.reduce((s, r) => s + r.possibleSessions, 0);
   const totalAttended = records.reduce((s, r) => s + r.attendedSessions, 0);
-  if (totalPossible === 0) return 0;
+  if (totalPossible === 0) return null; // no possible sessions (e.g. holidays) → 0/0 is unmeasured, not 0%
   return Math.round((totalAttended / totalPossible) * 1000) / 10; // e.g. 94.5
 }
 
-function getAttendanceBand(pct: number): AttendanceBand {
+function getAttendanceBand(pct: number | null): AttendanceBand {
+  if (pct === null) return "not_recorded"; // no attendance data → unmeasured, not "severe_absence"
   if (pct >= 97) return "excellent";
   if (pct >= 95) return "good";
   if (pct >= 90) return "concern";
@@ -241,11 +242,17 @@ function getAttendanceBand(pct: number): AttendanceBand {
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
-function scoreAttendance(pct: number, input: EducationInput): number {
+function scoreAttendance(pct: number | null, input: EducationInput): number {
   // Only a recorded NEET zeroes this. If the education status was never
   // recorded, the attendance data still exists and is still worth scoring —
   // manufacturing a zero would be as false as manufacturing a pass.
   if (input.inEducation === false) return 0; // NEET is critical
+
+  // No attendance recorded (no records, or no possible sessions in the period):
+  // unmeasured. Per the comment above, neither a zero nor a pass — a neutral
+  // midpoint so the 0.30-weighted attendance component doesn't false-red or
+  // false-reassure the overall education score on missing data.
+  if (pct === null) return 50;
 
   let score = 0;
 
@@ -370,7 +377,7 @@ function scoreSupport(input: EducationInput): number {
 
 function identifyConcerns(
   input: EducationInput,
-  attendancePct: number,
+  attendancePct: number | null,
   band: AttendanceBand,
   exclusionCount: number,
   latestPEP: PEPRecord | undefined,
@@ -624,7 +631,7 @@ function assessRegulatory(
 
 function buildRecommendations(
   input: EducationInput,
-  _attendancePct: number,
+  _attendancePct: number | null,
   band: AttendanceBand,
   exclusionCount: number,
   latestPEP: PEPRecord | undefined,
@@ -693,11 +700,13 @@ function buildRecommendations(
 function buildSummary(
   childName: string,
   rating: string,
-  attendancePct: number,
+  attendancePct: number | null,
   band: AttendanceBand,
   progress: string,
 ): string {
-  const attendDesc = band === "excellent" || band === "good"
+  const attendDesc = attendancePct === null
+    ? "attendance not recorded"
+    : band === "excellent" || band === "good"
     ? `attendance ${attendancePct}%`
     : `attendance ${attendancePct}% (${band.replace(/_/g, " ")})`;
   const progressDesc = progress.replace(/_/g, " ");

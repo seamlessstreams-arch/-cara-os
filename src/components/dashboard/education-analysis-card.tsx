@@ -27,7 +27,7 @@ interface EducationData {
   progressScore: number;
   pepScore: number;
   supportScore: number;
-  attendancePercentage: number;
+  attendancePercentage: number | null;
   attendanceBand: string;
   totalExclusions: number;
   exclusionDays: number;
@@ -59,6 +59,7 @@ const BAND_STYLES: Record<string, { text: string }> = {
   concern: { text: "text-[--cs-warning]" },
   persistent_absence: { text: "text-orange-600" },
   severe_absence: { text: "text-[--cs-risk]" },
+  not_recorded: { text: "text-[var(--cs-text-muted)]" },
 };
 
 export function EducationAnalysisCard({ childId }: EducationAnalysisCardProps) {
@@ -120,7 +121,7 @@ export function EducationAnalysisCard({ childId }: EducationAnalysisCardProps) {
           {/* Attendance */}
           <div className="rounded-lg bg-gray-50 p-2">
             <span className={cn("text-xs font-bold", bandStyle.text)}>
-              {data.attendancePercentage}%
+              {data.attendancePercentage === null ? "—" : `${data.attendancePercentage}%`}
             </span>
             <p className="text-[9px] text-[var(--cs-text-muted)]">Attend.</p>
           </div>
