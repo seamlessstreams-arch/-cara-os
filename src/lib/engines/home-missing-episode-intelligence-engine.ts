@@ -9,6 +9,8 @@
 // Care (2014).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface MissingEpisodeRecordInput {
@@ -67,7 +69,7 @@ export interface MissingEpisodeResult {
   return_interview_rate: number | null;
   return_interview_timeliness_rate: number | null;
   la_notification_rate: number | null;
-  police_report_rate_high_risk: number;
+  police_report_rate_high_risk: number | null;
   contextual_safeguarding_flag_rate: number | null;
   pattern_analysis_rate: number | null;
   average_duration_hours: number | null;
@@ -79,8 +81,9 @@ export interface MissingEpisodeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const pct = (n: number, d: number): number =>
-  d === 0 ? 0 : Math.round((n / d) * 100);
+// Rates use the shared null-safe rate() — empty denominator ⇒ unmeasured (null), never a fabricated 0%.
+// Scoring branches are guarded by the matching emptiness (insufficient_data / .length checks), so the
+// `?? 0` coercions below never actually fire.
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -193,7 +196,7 @@ export function computeMissingEpisode(
   const returnInterviewCompleted = returnedEpisodes.filter(
     (e) => e.return_interview_completed,
   ).length;
-  const returnInterviewRate = pct(
+  const returnInterviewRate = rate(
     returnInterviewCompleted,
     returnedEpisodes.length,
   );
@@ -205,11 +208,11 @@ export function computeMissingEpisode(
   const timelyInterviews = completedInterviews.filter(
     (e) => e.return_interview_within_72hrs,
   ).length;
-  const timelinessRate = pct(timelyInterviews, completedInterviews.length);
+  const timelinessRate = rate(timelyInterviews, completedInterviews.length);
 
   // LA notification rate
   const laNotified = episodes.filter((e) => e.reported_to_la).length;
-  const laRate = pct(laNotified, totalEpisodes);
+  const laRate = rate(laNotified, totalEpisodes);
 
   // Police report rate for high-risk episodes
   const highRiskEpisodes = episodes.filter(
@@ -218,19 +221,19 @@ export function computeMissingEpisode(
   const policeReportedHigh = highRiskEpisodes.filter(
     (e) => e.reported_to_police,
   ).length;
-  const policeHighRate = pct(policeReportedHigh, highRiskEpisodes.length);
+  const policeHighRate = rate(policeReportedHigh, highRiskEpisodes.length);
 
   // Contextual safeguarding flag rate among high-risk episodes
   const csFlags = highRiskEpisodes.filter(
     (e) => e.has_contextual_safeguarding_risk,
   ).length;
-  const csRate = pct(csFlags, highRiskEpisodes.length);
+  const csRate = rate(csFlags, highRiskEpisodes.length);
 
   // Pattern analysis rate
   const withPatternNotes = episodes.filter(
     (e) => e.has_pattern_notes,
   ).length;
-  const patternRate = pct(withPatternNotes, totalEpisodes);
+  const patternRate = rate(withPatternNotes, totalEpisodes);
 
   // Average duration
   const totalDuration = episodes.reduce(
@@ -270,42 +273,42 @@ export function computeMissingEpisode(
   // Modifier 2: Return interview compliance
   if (returnedEpisodes.length === 0) {
     score -= 1;
-  } else if (returnInterviewRate >= 95) {
+  } else if ((returnInterviewRate ?? 0) >= 95) {
     score += 5;
-  } else if (returnInterviewRate >= 80) {
+  } else if ((returnInterviewRate ?? 0) >= 80) {
     score += 2;
-  } else if (returnInterviewRate < 50) {
+  } else if ((returnInterviewRate ?? 0) < 50) {
     score -= 5;
   }
 
   // Modifier 3: Return interview timeliness
   if (completedInterviews.length === 0) {
     score -= 1;
-  } else if (timelinessRate >= 90) {
+  } else if ((timelinessRate ?? 0) >= 90) {
     score += 5;
-  } else if (timelinessRate >= 70) {
+  } else if ((timelinessRate ?? 0) >= 70) {
     score += 2;
-  } else if (timelinessRate < 40) {
+  } else if ((timelinessRate ?? 0) < 40) {
     score -= 4;
   }
 
   // Modifier 4: LA/Police notification
-  if (laRate >= 95 && policeHighRate >= 90) {
+  if ((laRate ?? 0) >= 95 && (policeHighRate ?? 0) >= 90) {
     score += 5;
-  } else if (laRate >= 75 || policeHighRate >= 75) {
+  } else if ((laRate ?? 0) >= 75 || (policeHighRate ?? 0) >= 75) {
     score += 2;
-  } else if (laRate < 50 || policeHighRate < 50) {
+  } else if ((laRate ?? 0) < 50 || (policeHighRate ?? 0) < 50) {
     score -= 4;
   }
 
   // Modifier 5: Pattern analysis + contextual safeguarding
   if (totalEpisodes === 0) {
     score -= 1;
-  } else if (patternRate >= 80 && csRate >= 80) {
+  } else if ((patternRate ?? 0) >= 80 && (csRate ?? 0) >= 80) {
     score += 4;
-  } else if (patternRate >= 60 || csRate >= 60) {
+  } else if ((patternRate ?? 0) >= 60 || (csRate ?? 0) >= 60) {
     score += 2;
-  } else if (patternRate < 30 && csRate < 30) {
+  } else if ((patternRate ?? 0) < 30 && (csRate ?? 0) < 30) {
     score -= 4;
   }
 
@@ -331,30 +334,30 @@ export function computeMissingEpisode(
       "No missing episodes in the last 90 days — frequency has reduced to zero.",
     );
   }
-  if (returnInterviewRate >= 95 && returnedEpisodes.length > 0) {
+  if ((returnInterviewRate ?? 0) >= 95 && returnedEpisodes.length > 0) {
     strengths.push(
       `Return interview completion at ${returnInterviewRate}% — robust follow-up after every episode.`,
     );
   }
-  if (timelinessRate >= 90 && completedInterviews.length > 0) {
+  if ((timelinessRate ?? 0) >= 90 && completedInterviews.length > 0) {
     strengths.push(
       `${timelinessRate}% of return interviews completed within 72 hours — timely engagement with children post-episode.`,
     );
   }
-  if (laRate >= 95 && totalEpisodes > 0) {
+  if ((laRate ?? 0) >= 95 && totalEpisodes > 0) {
     strengths.push(
       `LA notification rate at ${laRate}% — placing authorities consistently informed.`,
     );
   }
   if (
-    policeHighRate >= 90 &&
+    (policeHighRate ?? 0) >= 90 &&
     highRiskEpisodes.length > 0
   ) {
     strengths.push(
       `${policeHighRate}% of high-risk episodes reported to police — appropriate escalation in place.`,
     );
   }
-  if (patternRate >= 80 && totalEpisodes > 0) {
+  if ((patternRate ?? 0) >= 80 && totalEpisodes > 0) {
     strengths.push(
       `Pattern analysis documented for ${patternRate}% of episodes — evidence of analytical practice.`,
     );
@@ -385,25 +388,25 @@ export function computeMissingEpisode(
   }
   if (highRiskCount > totalEpisodes / 3 && totalEpisodes > 0) {
     concerns.push(
-      `${highRiskCount} of ${totalEpisodes} episodes are high risk (${pct(highRiskCount, totalEpisodes)}%) — disproportionate escalation level requires strategic review.`,
+      `${highRiskCount} of ${totalEpisodes} episodes are high risk (${rate(highRiskCount, totalEpisodes)}%) — disproportionate escalation level requires strategic review.`,
     );
   }
-  if (returnInterviewRate < 80 && returnedEpisodes.length > 0) {
+  if ((returnInterviewRate ?? 0) < 80 && returnedEpisodes.length > 0) {
     concerns.push(
       `Return interview completion at ${returnInterviewRate}% — statutory guidance requires an interview after every episode.`,
     );
   }
-  if (timelinessRate < 70 && completedInterviews.length > 0) {
+  if ((timelinessRate ?? 0) < 70 && completedInterviews.length > 0) {
     concerns.push(
       `Only ${timelinessRate}% of return interviews completed within 72 hours — delays reduce effectiveness and evidence quality.`,
     );
   }
-  if (laRate < 80 && totalEpisodes > 0) {
+  if ((laRate ?? 0) < 80 && totalEpisodes > 0) {
     concerns.push(
       `LA notification rate at ${laRate}% — placing authorities must be notified of every missing episode.`,
     );
   }
-  if (policeHighRate < 80 && highRiskEpisodes.length > 0) {
+  if ((policeHighRate ?? 0) < 80 && highRiskEpisodes.length > 0) {
     concerns.push(
       `Only ${policeHighRate}% of high-risk episodes reported to police — all high-risk episodes must be reported.`,
     );
@@ -413,7 +416,7 @@ export function computeMissingEpisode(
       `Average episode duration is ${avgDuration} hours — prolonged absences significantly increase safeguarding risk.`,
     );
   }
-  if (patternRate < 50 && totalEpisodes > 0) {
+  if ((patternRate ?? 0) < 50 && totalEpisodes > 0) {
     concerns.push(
       `Pattern analysis documented for only ${patternRate}% of episodes — insufficient analytical approach to understanding triggers.`,
     );
@@ -433,7 +436,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (returnInterviewRate < 80 && returnedEpisodes.length > 0) {
+  if ((returnInterviewRate ?? 0) < 80 && returnedEpisodes.length > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -453,7 +456,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (laRate < 80 && totalEpisodes > 0) {
+  if ((laRate ?? 0) < 80 && totalEpisodes > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -463,7 +466,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (policeHighRate < 80 && highRiskEpisodes.length > 0) {
+  if ((policeHighRate ?? 0) < 80 && highRiskEpisodes.length > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -473,7 +476,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (timelinessRate < 70 && completedInterviews.length > 0) {
+  if ((timelinessRate ?? 0) < 70 && completedInterviews.length > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -483,7 +486,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (patternRate < 60 && totalEpisodes > 0) {
+  if ((patternRate ?? 0) < 60 && totalEpisodes > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -553,19 +556,19 @@ export function computeMissingEpisode(
     totalEpisodes >= 3
   ) {
     insights.push({
-      text: `${pct(highRiskCount, totalEpisodes)}% of episodes are high risk. This level of escalation indicates potential exploitation, county lines involvement, or significant relationship breakdown. Multi-agency response is essential.`,
+      text: `${rate(highRiskCount, totalEpisodes)}% of episodes are high risk. This level of escalation indicates potential exploitation, county lines involvement, or significant relationship breakdown. Multi-agency response is essential.`,
       severity: "critical",
     });
   }
 
-  if (returnInterviewRate < 50 && returnedEpisodes.length > 0) {
+  if ((returnInterviewRate ?? 0) < 50 && returnedEpisodes.length > 0) {
     insights.push({
       text: `Return interview rate is critically low at ${returnInterviewRate}%. Without return interviews, the home cannot gather intelligence about where children go, who they are with, or what risks they face. This is a regulatory breach.`,
       severity: "critical",
     });
   }
 
-  if (laRate < 50 && totalEpisodes > 0) {
+  if ((laRate ?? 0) < 50 && totalEpisodes > 0) {
     insights.push({
       text: `LA notification rate is ${laRate}% — less than half of missing episodes are reported to placing authorities. This is a serious regulatory and safeguarding failure.`,
       severity: "critical",
@@ -580,8 +583,8 @@ export function computeMissingEpisode(
   }
 
   if (
-    timelinessRate < 70 &&
-    timelinessRate >= 40 &&
+    (timelinessRate ?? 0) < 70 &&
+    (timelinessRate ?? 0) >= 40 &&
     completedInterviews.length > 0
   ) {
     insights.push({
@@ -591,7 +594,7 @@ export function computeMissingEpisode(
   }
 
   if (
-    patternRate < 50 &&
+    (patternRate ?? 0) < 50 &&
     totalEpisodes >= 3
   ) {
     insights.push({
@@ -611,8 +614,8 @@ export function computeMissingEpisode(
   }
 
   if (
-    returnInterviewRate >= 95 &&
-    timelinessRate >= 90 &&
+    (returnInterviewRate ?? 0) >= 95 &&
+    (timelinessRate ?? 0) >= 90 &&
     returnedEpisodes.length > 0
   ) {
     insights.push({
@@ -622,8 +625,8 @@ export function computeMissingEpisode(
   }
 
   if (
-    laRate >= 95 &&
-    policeHighRate >= 90 &&
+    (laRate ?? 0) >= 95 &&
+    (policeHighRate ?? 0) >= 90 &&
     totalEpisodes > 0
   ) {
     insights.push({
@@ -644,8 +647,8 @@ export function computeMissingEpisode(
   }
 
   if (
-    patternRate >= 80 &&
-    csRate >= 80 &&
+    (patternRate ?? 0) >= 80 &&
+    (csRate ?? 0) >= 80 &&
     highRiskEpisodes.length > 0
   ) {
     insights.push({
