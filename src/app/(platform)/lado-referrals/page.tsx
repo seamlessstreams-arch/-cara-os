@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -370,7 +371,7 @@ export default function LADOReferralsPage() {
           {!canSubmitReferral && (
             <p className="text-xs text-amber-700">Name the staff member, the allegation type and what is alleged before submitting — a LADO referral has to say who it concerns and what happened.</p>
           )}
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button disabled={!canSubmitReferral || createMut.isPending} onClick={() => createMut.mutate({ date_allegation: ref.date_allegation, date_referred: ref.date_referred, referred_by: "staff_darren", subject_staff_id: ref.subject_staff_id, subject_staff_role: "", allegation_type: ref.allegation_type as LadoAllegationType, status: "referred" as LadoReferralStatus, outcome: "pending" as LadoOutcome, staff_action: "normal_duties" as LadoStaffAction, child_ids: ref.child_id ? [ref.child_id] : [], lado_name: ref.lado_name.trim(), lado_contact: "", allegation_summary: ref.allegation_summary.trim(), evidence_summary: ref.evidence_summary.trim() }, { onSuccess: () => { toast.success("LADO referral recorded"); setShowNew(false); setRef(EMPTY_REFERRAL); }, onError: () => toast.error("The referral did not save — nothing has been recorded") })}>{createMut.isPending ? "Submitting…" : "Submit Referral"}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button disabled={!canSubmitReferral || createMut.isPending} onClick={() => createMut.mutate({ date_allegation: ref.date_allegation, date_referred: ref.date_referred, referred_by: currentUserId(), subject_staff_id: ref.subject_staff_id, subject_staff_role: "", allegation_type: ref.allegation_type as LadoAllegationType, status: "referred" as LadoReferralStatus, outcome: "pending" as LadoOutcome, staff_action: "normal_duties" as LadoStaffAction, child_ids: ref.child_id ? [ref.child_id] : [], lado_name: ref.lado_name.trim(), lado_contact: "", allegation_summary: ref.allegation_summary.trim(), evidence_summary: ref.evidence_summary.trim() }, { onSuccess: () => { toast.success("LADO referral recorded"); setShowNew(false); setRef(EMPTY_REFERRAL); }, onError: () => toast.error("The referral did not save — nothing has been recorded") })}>{createMut.isPending ? "Submitting…" : "Submit Referral"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

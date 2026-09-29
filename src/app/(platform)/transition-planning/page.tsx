@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,7 +136,7 @@ export default function TransitionPlanningPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createGoal = useCreateTransitionPlanningRecord();
-  const [tpForm, setTpForm] = useState({ child_id: "", area: "housing" as TransitionPlanningArea, goal: "", description: "", target_date: "", key_worker: "staff_darren", notes: "" });
+  const [tpForm, setTpForm] = useState({ child_id: "", area: "housing" as TransitionPlanningArea, goal: "", description: "", target_date: "", key_worker: currentUserId(), notes: "" });
   const setTP = (k: string, v: unknown) => setTpForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateGoal = async (e: React.FormEvent) => {
@@ -144,7 +145,7 @@ export default function TransitionPlanningPage() {
     if (!tpForm.goal.trim()) { toast.error("Goal is required."); return; }
     await createGoal.mutateAsync({ child_id: tpForm.child_id, area: tpForm.area, goal: tpForm.goal.trim(), description: tpForm.description.trim(), status: "not_started", target_date: tpForm.target_date, start_date: todayStr(), key_worker: tpForm.key_worker, actions: [], progress: "", percent_complete: 0, review_date: "", notes: tpForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Transition goal created.");
-    setTpForm({ child_id: "", area: "housing", goal: "", description: "", target_date: "", key_worker: "staff_darren", notes: "" });
+    setTpForm({ child_id: "", area: "housing", goal: "", description: "", target_date: "", key_worker: currentUserId(), notes: "" });
     setShowNew(false);
   };
 

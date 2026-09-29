@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   ChevronDown,
   ChevronUp,
@@ -106,7 +107,7 @@ export default function WhistleblowingPage() {
     summary: "",
     detail: "",
     evidence: "",
-    assigned_to: "staff_darren",
+    assigned_to: currentUserId(),
   });
   const setWF = (k: keyof typeof wbForm, v: string | boolean) => setWbForm((p) => ({ ...p, [k]: v }));
 
@@ -137,7 +138,7 @@ export default function WhistleblowingPage() {
       protection_measures: [],
     });
     toast.success("Concern submitted.");
-    setWbForm({ anonymous: false, category: "", severity: "", subject_of_concern: "", summary: "", detail: "", evidence: "", assigned_to: "staff_darren" });
+    setWbForm({ anonymous: false, category: "", severity: "", subject_of_concern: "", summary: "", detail: "", evidence: "", assigned_to: currentUserId() });
     setShowDialog(false);
   };
 

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect, useChildren, useChildName } from "@/components/young-people/child-select";
 import { StaffSelect, useStaffName } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
@@ -205,7 +206,7 @@ function NewRecordDialog({
         confidence: form.confidence,
         source_ref_type: null,
         source_ref_id: null,
-        created_by: "staff_darren",
+        created_by: currentUserId(),
       });
       onClose();
       setForm((p) => ({ ...p, title: "", description: "", staff_id: "" }));

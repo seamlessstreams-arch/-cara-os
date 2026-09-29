@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -119,7 +120,7 @@ export default function YPFeedbackPage() {
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [fbForm, setFbForm] = useState({ child_id: "", category: "general" as YPFeedbackCategory, method: "verbal" as YPFeedbackMethod, sentiment: "ok" as YPFeedbackSentiment, feedback: "", collected_by: "staff_darren" });
+  const [fbForm, setFbForm] = useState({ child_id: "", category: "general" as YPFeedbackCategory, method: "verbal" as YPFeedbackMethod, sentiment: "ok" as YPFeedbackSentiment, feedback: "", collected_by: currentUserId() });
   const setFF = (k: keyof typeof fbForm, v: string) => setFbForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateFeedback = async (e: React.FormEvent) => {
@@ -128,7 +129,7 @@ export default function YPFeedbackPage() {
     if (!fbForm.feedback.trim()) { toast.error("Please enter feedback."); return; }
     await createFeedback.mutateAsync({ child_id: fbForm.child_id, date: todayStr(), category: fbForm.category, method: fbForm.method, sentiment: fbForm.sentiment, feedback: fbForm.feedback.trim(), action_taken: "", action_by: "", response_given_to_child: false, response_date: null, response_details: "", child_satisfied: null, collected_by: fbForm.collected_by, notes: "" });
     toast.success("Feedback recorded.");
-    setFbForm({ child_id: "", category: "general", method: "verbal", sentiment: "ok", feedback: "", collected_by: "staff_darren" });
+    setFbForm({ child_id: "", category: "general", method: "verbal", sentiment: "ok", feedback: "", collected_by: currentUserId() });
     setDialogOpen(false);
   };
 

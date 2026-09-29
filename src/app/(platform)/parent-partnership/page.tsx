@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -131,7 +132,7 @@ export default function ParentPartnershipPage() {
     if (!ppForm.child_id) { toast.error("Please select a young person."); return; }
     if (!ppForm.family_member_name.trim()) { toast.error("Family member name is required."); return; }
     if (!ppForm.summary.trim()) { toast.error("Summary is required."); return; }
-    await createContact.mutateAsync({ date: ppForm.date, child_id: ppForm.child_id, family_member_name: ppForm.family_member_name.trim(), relationship_type: ppForm.relationship_type, contact_type: ppForm.contact_type, engagement_level: ppForm.engagement_level, initiated_by: ppForm.initiated_by, duration: parseInt(ppForm.duration) || 0, staff_member_id: "staff_darren", summary: ppForm.summary.trim(), concerns: ppForm.concerns.trim(), positive_outcomes: ppForm.positive_outcomes ? ppForm.positive_outcomes.split("\n").map((s) => s.trim()).filter(Boolean) : [], follow_up_actions: ppForm.follow_up_actions ? ppForm.follow_up_actions.split("\n").map((s) => s.trim()).filter(Boolean) : [], sw_informed: false, notes: ppForm.notes.trim(), created_at: new Date().toISOString() });
+    await createContact.mutateAsync({ date: ppForm.date, child_id: ppForm.child_id, family_member_name: ppForm.family_member_name.trim(), relationship_type: ppForm.relationship_type, contact_type: ppForm.contact_type, engagement_level: ppForm.engagement_level, initiated_by: ppForm.initiated_by, duration: parseInt(ppForm.duration) || 0, staff_member_id: currentUserId(), summary: ppForm.summary.trim(), concerns: ppForm.concerns.trim(), positive_outcomes: ppForm.positive_outcomes ? ppForm.positive_outcomes.split("\n").map((s) => s.trim()).filter(Boolean) : [], follow_up_actions: ppForm.follow_up_actions ? ppForm.follow_up_actions.split("\n").map((s) => s.trim()).filter(Boolean) : [], sw_informed: false, notes: ppForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Contact logged.");
     setPpForm({ child_id: "", family_member_name: "", relationship_type: "birth_parent", contact_type: "phone_call", date: todayStr(), duration: "", engagement_level: "neutral", initiated_by: "home", summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
     setDialogOpen(false);

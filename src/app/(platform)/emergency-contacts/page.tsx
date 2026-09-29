@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { currentUserId } from "@/lib/auth/current-user";
 import { api } from "@/hooks/use-api";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
@@ -163,13 +164,13 @@ const shortDate = (offset: number) => {
 // ── Seed: On-call rota ────────────────────────────────────────────────────────
 
 const ON_CALL_ROTA: OnCallEntry[] = [
-  { day: weekday(0), date: shortDate(0), managerId: "staff_darren", phone: "07XXX XXXXXX" },
+  { day: weekday(0), date: shortDate(0), managerId: currentUserId(), phone: "07XXX XXXXXX" },
   { day: weekday(1), date: shortDate(1), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
-  { day: weekday(2), date: shortDate(2), managerId: "staff_darren", phone: "07XXX XXXXXX" },
+  { day: weekday(2), date: shortDate(2), managerId: currentUserId(), phone: "07XXX XXXXXX" },
   { day: weekday(3), date: shortDate(3), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
-  { day: weekday(4), date: shortDate(4), managerId: "staff_darren", phone: "07XXX XXXXXX" },
+  { day: weekday(4), date: shortDate(4), managerId: currentUserId(), phone: "07XXX XXXXXX" },
   { day: weekday(5), date: shortDate(5), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
-  { day: weekday(6), date: shortDate(6), managerId: "staff_darren", phone: "07XXX XXXXXX" },
+  { day: weekday(6), date: shortDate(6), managerId: currentUserId(), phone: "07XXX XXXXXX" },
 ];
 
 // ── Metadata ──────────────────────────────────────────────────────────────────

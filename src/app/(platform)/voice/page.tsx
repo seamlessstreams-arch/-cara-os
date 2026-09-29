@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect, useChildren, useChildName } from "@/components/young-people/child-select";
 import { StaffSelect, useStaffName } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
@@ -275,7 +276,7 @@ function NewVoiceDialog({
         voice_heeded: null,
         source_ref_type: null,
         source_ref_id: null,
-        recorded_by: "staff_darren",
+        recorded_by: currentUserId(),
       });
       onClose();
       setForm((p) => ({ ...p, direct_quote: "", paraphrase: "", action_taken: "", action_owner: "" }));

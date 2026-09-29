@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
@@ -383,7 +384,7 @@ export default function RiskAssessmentsPage() {
               child_id: childId, domain: domain as RiskDomain,
               current_level: (fd.get("level") as RiskLevel) || "medium",
               previous_level: "medium", trend: "stable", status: "current",
-              assessed_by: "staff_darren", assessed_date: d(0), review_date: fd.get("review_date") as string || d(30),
+              assessed_by: currentUserId(), assessed_date: d(0), review_date: fd.get("review_date") as string || d(30),
               triggers: (fd.get("triggers") as string || "").split("\n").filter(Boolean),
               indicators: [], mitigations: [], contingency_plan: fd.get("contingency_plan") as string || "",
               child_views: fd.get("child_views") as string || "", history_notes: "",

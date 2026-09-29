@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Target, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ const CHILD_OPTIONS = [
 ] as const;
 
 const OWNER_OPTIONS = [
-  { id: "staff_darren",    name: "Darren (RM)" },
+  { id: currentUserId(),    name: "Darren (RM)" },
   { id: "staff_ryan",      name: "Ryan" },
   { id: "staff_chervelle", name: "Naomi" },
   { id: "staff_lackson",   name: "Samuel" },
@@ -153,7 +154,7 @@ export function ActionOutcomeAddModal({
         linked_evidence: [],
         should_continue: null,
         task_id: null,
-        created_by: "staff_darren",
+        created_by: currentUserId(),
       },
       {
         onSuccess: () => {

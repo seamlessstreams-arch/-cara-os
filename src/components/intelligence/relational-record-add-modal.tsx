@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Heart, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,7 @@ export function RelationalRecordAddModal({
         staff_id:    null,
         source_ref_type: null,
         source_ref_id:   null,
-        created_by:  "staff_darren",
+        created_by:  currentUserId(),
       },
       {
         onSuccess: () => {

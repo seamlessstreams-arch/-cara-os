@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -387,7 +388,7 @@ export default function LACReviewsPage() {
               recommendations: [], outcome: null, actions_agreed: [],
               next_review_date: fd.get("next_review_date") as string || "",
               placement_stability: null, care_plan_updated: null,
-              notes: "", recorded_by: "staff_darren", home_id: "home_oak",
+              notes: "", recorded_by: currentUserId(), home_id: "home_oak",
             }, {
               onSuccess: () => { toast.success("LAC review recorded"); setShowNew(false); },
               onError: () => toast.error("Failed to save review"),

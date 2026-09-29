@@ -190,10 +190,10 @@ const SUPERVISION_EXPORT_COLS: ExportColumn<Supervision>[] = [
 // returns [] on a live tenant, so a real home sees its own empty state and only
 // the demo shows the fixtures.
 const APPRAISALS_SEED = [
-  { staffId: "staff_ryan",     date: daysFromNow(-90),  rating: "effective",   completedBy: "staff_darren", nextDue: daysFromNow(275), objectives: 4, achieved: 3 },
+  { staffId: "staff_ryan",     date: daysFromNow(-90),  rating: "effective",   completedBy: currentUserId(), nextDue: daysFromNow(275), objectives: 4, achieved: 3 },
   { staffId: "staff_anna",     date: daysFromNow(-180), rating: "developing",  completedBy: "staff_ryan",   nextDue: daysFromNow(185), objectives: 3, achieved: 2 },
   { staffId: "staff_chervelle",date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(30),  objectives: 0, achieved: 0 },
-  { staffId: "staff_edward",   date: daysFromNow(-200), rating: "exceptional", completedBy: "staff_darren", nextDue: daysFromNow(165), objectives: 5, achieved: 5 },
+  { staffId: "staff_edward",   date: daysFromNow(-200), rating: "exceptional", completedBy: currentUserId(), nextDue: daysFromNow(165), objectives: 5, achieved: 5 },
   { staffId: "staff_diane",    date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(150), objectives: 0, achieved: 0 },
 ];
 const APPRAISALS = demoSeed(APPRAISALS_SEED);

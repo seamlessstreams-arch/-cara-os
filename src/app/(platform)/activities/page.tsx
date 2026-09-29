@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -229,7 +230,7 @@ function NewActivityDialog({
     description: "",
     location: "",
     duration_minutes: 60,
-    staff_id: "staff_darren",
+    staff_id: currentUserId(),
     engagement: "willing" as ActivityEngagement,
     yp_feedback: "",
     outcome_notes: "",

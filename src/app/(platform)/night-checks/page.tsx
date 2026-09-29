@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -134,7 +135,7 @@ export default function NightChecksPage() {
     e.preventDefault();
     if (!ncForm.child_id) { toast.error("Please select a young person."); return; }
     const now = new Date();
-    await createNightCheck.mutateAsync({ date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5), child_id: ncForm.child_id, staff_id: "staff_darren", sleep_status: ncForm.sleep_status, check_type: ncForm.check_type, notes: ncForm.notes.trim(), concern_raised: false, concern_detail: "", room_temp_ok: true, door_position: ncForm.door_position, created_at: now.toISOString() });
+    await createNightCheck.mutateAsync({ date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5), child_id: ncForm.child_id, staff_id: currentUserId(), sleep_status: ncForm.sleep_status, check_type: ncForm.check_type, notes: ncForm.notes.trim(), concern_raised: false, concern_detail: "", room_temp_ok: true, door_position: ncForm.door_position, created_at: now.toISOString() });
     toast.success("Night check recorded.");
     setNcForm({ child_id: "", check_type: "scheduled", sleep_status: "sleeping", door_position: "ajar", notes: "" });
     setShowNew(false);
