@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { checkShiftSafety, type ShiftContext } from "@/lib/cara/shift-safety";
 
@@ -18,7 +19,7 @@ function getDemoContext(): ShiftContext {
   const threeDaysAgo = new Date(now.getTime() - 3 * 86400000).toISOString().slice(0, 10);
 
   return {
-    homeId: "home_oak",
+    homeId: tenantHomeId(),
     shiftType: londonHour(now) < 14 ? "day" : londonHour(now) < 22 ? "evening" : "waking_night",
     staffOnDuty: [
       {
@@ -89,7 +90,7 @@ function getDemoContext(): ShiftContext {
 
 export async function GET(req: NextRequest) {
   try {
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? tenantHomeId();
 
     // For now, always use demo context (live version would pull from rota + child records)
     const ctx = getDemoContext();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { CaraRecommendation, CaraRecommendationType, CaraRecommendationStatus } from "@/types/extended";
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const homeId  = searchParams.get("home_id") ?? "home_oak";
+  const homeId  = searchParams.get("home_id") ?? tenantHomeId();
   const status  = searchParams.get("status");
 
   let results = childId
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   const rec = intelligenceDb.caraRecommendations.create({
-    home_id:             body.home_id ?? "home_oak",
+    home_id:             body.home_id ?? tenantHomeId(),
     child_id:            body.child_id,
     source_type:         body.source_type,
     source_id:           body.source_id,

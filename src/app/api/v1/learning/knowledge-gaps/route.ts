@@ -1,10 +1,11 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const gaps = intelligenceDb.knowledgeGaps.findAll(homeId);
   return NextResponse.json({
     data: gaps,
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   const __missing = requireFields(body, ["gap_area"]);
   if (__missing) return __missing;
   const record = intelligenceDb.knowledgeGaps.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     gap_area: body.gap_area ?? "",
     severity: body.severity ?? "moderate",
     identified_from: body.identified_from ?? "supervision",

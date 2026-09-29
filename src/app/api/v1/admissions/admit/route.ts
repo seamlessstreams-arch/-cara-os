@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { createTaskRecord, createRiskAssessmentRecord } from "@/lib/supabase/care-records";
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Could not create the young person record." }, { status: 500 });
   }
   const childName = `${firstName} ${lastName}`;
-  const homeId = (child.home_id as string) || "home_oak";
+  const homeId = (child.home_id as string) || tenantHomeId();
 
   // ── 2. File the initial referral through the smart-documents pipeline ──────
   let documentSummary: { id: string; category: string; status: string; suggested_tasks: number } | null = null;

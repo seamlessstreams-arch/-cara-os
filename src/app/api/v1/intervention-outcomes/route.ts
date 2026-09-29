@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { LiversOutcomeRecord } from "@/types/extended";
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   const record = intelligenceDb.interventionOutcomes.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     intervention_session_id: body.intervention_session_id,
     child_id: body.child_id,
     child_response: body.child_response,

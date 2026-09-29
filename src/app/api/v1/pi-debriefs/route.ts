@@ -1,11 +1,12 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
 import { londonDayDiff } from "@/lib/utils";
 export async function GET(req: NextRequest) {
-  const homeId     = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId     = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const incidentId = req.nextUrl.searchParams.get("incident_id");
 
   const records = intelligenceDb.piDebriefs.findAll(homeId);
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   ]);
   if (__missing) return __missing;
   const record = intelligenceDb.piDebriefs.create({
-    home_id:     body.home_id ?? "home_oak",
+    home_id:     body.home_id ?? tenantHomeId(),
     incident_id: body.incident_id ?? "",
     technique_used:              body.technique_used,
     technique_other:             body.technique_other ?? null,

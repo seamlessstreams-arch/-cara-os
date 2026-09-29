@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
   }
 
   const entry = intelligenceDb.practiceBank.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     child_id: body.child_id!,
     category: body.category!,
     title: body.title!,

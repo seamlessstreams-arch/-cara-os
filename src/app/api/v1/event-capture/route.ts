@@ -17,6 +17,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { computeEventCapture } from "@/lib/event-capture/event-capture-engine";
@@ -32,7 +33,7 @@ export async function GET() {
   const draft = template
     ? { ...template, id: "draft-preview" }
     : {
-        id: "draft-preview", eventType: "daily_log" as const, homeId: "home_oak", childId: "yp_alex",
+        id: "draft-preview", eventType: "daily_log" as const, homeId: tenantHomeId(), childId: "yp_alex",
         occurredAt: new Date().toISOString(), createdBy: "system", summary: "Draft entry",
         structuredTags: [], riskLevel: "low" as const, requiresApproval: false,
         linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],

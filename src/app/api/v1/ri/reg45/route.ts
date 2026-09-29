@@ -1,11 +1,12 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const records = intelligenceDb.riReg45Evidence.findAll(homeId);
   return NextResponse.json({
     data: records,
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   const __missing = requireFields(body, ["report_period"]);
   if (__missing) return __missing;
   const record = intelligenceDb.riReg45Evidence.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     report_period: body.report_period ?? "",
     period_start: body.period_start ?? todayStr(),
     period_end: body.period_end ?? todayStr(),

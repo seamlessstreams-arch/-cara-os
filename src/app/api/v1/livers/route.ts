@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { LiversAnalysis } from "@/types/extended";
@@ -7,7 +8,7 @@ import { canPerformLiversAction, resolveLiversRole } from "@/lib/livers-access";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get("child_id");
-  const homeId = searchParams.get("home_id") ?? "home_oak";
+  const homeId = searchParams.get("home_id") ?? tenantHomeId();
 
   const results = childId
     ? intelligenceDb.liversAnalyses.findByChild(childId)
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   const record = intelligenceDb.liversAnalyses.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     child_id: body.child_id,
     linked_record_id: body.linked_record_id,
     linked_record_type: body.linked_record_type,

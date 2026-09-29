@@ -1,10 +1,11 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
 export async function GET(req: NextRequest) {
-  const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
+  const homeId = req.nextUrl.searchParams.get("home_id") ?? tenantHomeId();
   const projects = intelligenceDb.learningProjects.findAll(homeId);
   return NextResponse.json({
     data: projects,
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   const __missing = requireFields(body, ["project_name"]);
   if (__missing) return __missing;
   const record = intelligenceDb.learningProjects.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     project_name: body.project_name ?? "New Project",
     pathway: body.pathway ?? "staff",
     topic: body.topic ?? "",

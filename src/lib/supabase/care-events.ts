@@ -9,6 +9,7 @@
  */
 
 import { createServerClient } from "./server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import type {
   CareEvent,
   CareEventRoute,
@@ -240,7 +241,7 @@ export const sbCareEvents = {
     const id = data.id ?? generateId("ce");
     const row = {
       id,
-      home_id: data.home_id ?? "home_oak",
+      home_id: data.home_id ?? tenantHomeId(),
       child_ids: data.child_id ? [data.child_id] : [],
       shift_id: data.shift_id ?? null,
       staff_id: data.staff_id ?? "staff_darren",
