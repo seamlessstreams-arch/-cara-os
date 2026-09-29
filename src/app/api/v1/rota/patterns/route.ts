@@ -7,6 +7,7 @@
 // deputy 2-on/4-off, waking nights, …). Patterns drive the cover view and the
 // generate-&-publish flow, so editing here flows straight through.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import type { StaffMember } from "@/types";
 import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
@@ -73,7 +74,7 @@ function buildPattern(body: Record<string, unknown>, staffList: StaffMember[] | 
     start_time,
     end_time,
     active,
-    home_id: existing?.home_id ?? String(body.home_id ?? "home_oak"),
+    home_id: existing?.home_id ?? String(body.home_id ?? tenantHomeId()),
     notes: body.notes != null ? String(body.notes).slice(0, 300) : existing?.notes,
   };
   return { pattern };

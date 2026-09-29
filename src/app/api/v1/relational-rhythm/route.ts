@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const note: CircleNote = {
       id: generateId("cno"),
-      home_id: identity.homeId ?? "home_oak",
+      home_id: identity.homeId ?? tenantHomeId(),
       kind: patch.kind as CircleKind,
       date: patch.date,
       facilitated_by: identity.userId,

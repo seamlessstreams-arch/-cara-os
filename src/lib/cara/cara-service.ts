@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import {
   CARA_PROFESSIONAL_IDENTITY_PROMPT,
   CARA_WRITING_STYLE_PROMPT,
@@ -1698,7 +1699,7 @@ export async function writeAuditEvent(args: WriteAuditEventArgs): Promise<void> 
   await supabase.from("cara_audit_events").insert({
     id: `cara_aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     organisation_id: process.env.SUPABASE_ORG_ID ?? "org_default",
-    home_id: process.env.SUPABASE_HOME_ID ?? "home_oak",
+    home_id: process.env.SUPABASE_HOME_ID ?? tenantHomeId(),
     event_type: args.eventType,
     action: args.eventType,
     actor_id: args.actorUserId,

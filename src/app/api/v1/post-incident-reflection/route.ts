@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
       id: generateId("pir"),
       incident_id: String(body.incident_id),
       child_id: childId,
-      home_id: String(body.home_id ?? "home_oak"),
+      home_id: String(body.home_id ?? tenantHomeId()),
       incident_date: str(body.incident_date) || incident?.date || now.slice(0, 10),
       severity: str(body.severity) || String(incident?.severity ?? "moderate"),
       what_happened: str(body.what_happened) || str(incident?.description),

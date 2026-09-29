@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { CaraAuditEntry, AuditActionType } from "@/types/extended";
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const homeId  = searchParams.get("home_id") ?? "home_oak";
+  const homeId  = searchParams.get("home_id") ?? tenantHomeId();
   const limit   = parseInt(searchParams.get("limit") ?? "100", 10);
 
   let results = childId
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   if (!body.action_type) return NextResponse.json({ error: "Missing required field: action_type" }, { status: 400 });
 
   const entry = intelligenceDb.caraAuditTrail.create({
-    home_id:        body.home_id ?? "home_oak",
+    home_id:        body.home_id ?? tenantHomeId(),
     user_id:        body.user_id,
     child_id:       body.child_id,
     action_type:    body.action_type as AuditActionType,

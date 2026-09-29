@@ -5,6 +5,7 @@
 //          as an UploadedDocument with a full ai_result. Deterministic (no AI
 //          key needed); the actions can then be tracked as tasks.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { generateId, todayStr } from "@/lib/utils";
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
     file_size: text.length,
     uploaded_by: actor,
     uploaded_at: now,
-    linked_home_id: "home_oak",
+    linked_home_id: tenantHomeId(),
     linked_child_id: null,
     linked_staff_id: null,
     linked_incident_id: null,

@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import {
   generateRiskAssessmentQualityIntelligence,
@@ -226,7 +227,7 @@ export async function GET() {
       regularReview: false,
     };
     const result = generateRiskAssessmentQualityIntelligence(
-      [], emptyPolicy, [], "home_oak", "2026-04-01", "2026-05-20",
+      [], emptyPolicy, [], tenantHomeId(), "2026-04-01", "2026-05-20",
     );
     return NextResponse.json({
       data: {

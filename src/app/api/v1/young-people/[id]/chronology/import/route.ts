@@ -6,6 +6,7 @@
 // marked `imported`, so they slot into the live per-child chronology by date.
 // Deterministic parse always; the saved entries auto-merge with live sources.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { safeList } from "@/lib/api/safe-list";
 import { dal } from "@/lib/db/dal";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
@@ -15,7 +16,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 
 async function importChronology(req: Request, { params }: { params: Promise<{ id: string }> }) {

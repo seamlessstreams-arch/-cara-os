@@ -2,12 +2,13 @@
 // Reads or upserts home-level branding.
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const homeId = searchParams.get("home_id") ?? "home_oak";
+  const homeId = searchParams.get("home_id") ?? tenantHomeId();
   const branding = db.branding.getHome(homeId);
   return NextResponse.json({ data: branding });
 }
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const homeId = (body.home_id as string | undefined) ?? "home_oak";
+  const homeId = (body.home_id as string | undefined) ?? tenantHomeId();
   const orgId = (body.organisation_id as string | undefined) ?? "org_oak";
   if (!homeId) {
     return NextResponse.json({ error: "home_id required" }, { status: 400 });

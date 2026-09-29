@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { careEventsDb } from "@/lib/db";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateId, todayStr } from "@/lib/utils";
@@ -75,7 +76,7 @@ const TIME_SAVED_BY_ROUTE: Partial<Record<RouteType, number>> = {
 
 // ── Home ID constant (seed data) ──────────────────────────────────────────────
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 // ── Phase 1: create-in-store + best-effort Supabase mirror ──────────────────
 // The processor is a sync orchestrator; these wrappers keep the in-memory write

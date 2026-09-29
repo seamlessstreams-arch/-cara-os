@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { loadRoutingHealth, retryJob } from "@/lib/care-events/routing-health";
@@ -20,7 +21,7 @@ import { retryFailedRoutes, persistProcessorState } from "@/lib/care-events/proc
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

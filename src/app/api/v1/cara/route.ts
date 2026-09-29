@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import {
   CARA_WRITING_STYLE_PROMPT,
   applyCaraPostprocessor,
@@ -149,7 +150,7 @@ function deterministicPatternScan() {
       requires_oversight: Boolean(x.requires_oversight),
       oversight_by: (x.oversight_by as string | null) ?? null,
       oversight_at: (x.oversight_at as string | null) ?? null,
-      home_id: String(x.home_id ?? "home_oak"),
+      home_id: String(x.home_id ?? tenantHomeId()),
     };
   });
   const homes = [...new Set(incidents.map((i) => i.home_id))];

@@ -1,11 +1,12 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { HomeClimateSnapshot } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const homeId = searchParams.get("home_id") ?? "home_oak";
+  const homeId = searchParams.get("home_id") ?? tenantHomeId();
 
   const latest = intelligenceDb.homeClimate.findLatest(homeId);
   const history = intelligenceDb.homeClimate.findHistory(homeId, 8);
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 
   const snapshot = intelligenceDb.homeClimate.create({
-    home_id: body.home_id ?? "home_oak",
+    home_id: body.home_id ?? tenantHomeId(),
     period_start: body.period_start!,
     period_end: body.period_end!,
     staffing_consistency_score: body.staffing_consistency_score ?? 75,

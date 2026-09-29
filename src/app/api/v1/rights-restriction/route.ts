@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { safeList } from "@/lib/api/safe-list";
 import type { YoungPerson } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
     // Identity + home come from the validated session in activated mode (never the
     // client body); demo mode (identity.homeId null) keeps the header/body convention.
     const actor = identity.homeId != null ? identity.userId : String(req.headers.get("x-user-id") ?? body.created_by ?? "staff_unknown");
-    const homeId = identity.homeId ?? String(body.home_id ?? child?.home_id ?? "home_oak");
+    const homeId = identity.homeId ?? String(body.home_id ?? child?.home_id ?? tenantHomeId());
 
     const review: RestrictionReview = {
       id: generateId("rr"),

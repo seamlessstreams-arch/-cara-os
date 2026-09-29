@@ -22,6 +22,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
@@ -152,7 +153,7 @@ function denied(
   // that mock the store).
   try {
     db.caraStudioAuditLog.create({
-      home_id: ctx.homeId ?? "home_oak",
+      home_id: ctx.homeId ?? tenantHomeId(),
       actor_id: actor.userId,
       action_type: "artifact_generated", // closest enum value for "attempt"
       artifact_id: null,

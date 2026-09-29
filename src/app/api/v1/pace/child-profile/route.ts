@@ -3,6 +3,7 @@
 //   PUT  /api/v1/pace/child-profile { childId, … } (requires edit_young_people)
 // Permission-controlled + auditable (updatedBy/updatedAt). Sensitive child data.
 import { NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -36,7 +37,7 @@ export async function PUT(req: Request) {
   const existing = db.childPaceProfiles.findByChild(childId);
   const profile: ChildPACEProfile = {
     childId,
-    homeId: String(body.homeId ?? existing?.homeId ?? "home_oak"),
+    homeId: String(body.homeId ?? existing?.homeId ?? tenantHomeId()),
     knownTriggers: arr(body.knownTriggers, existing?.knownTriggers),
     calmingApproaches: arr(body.calmingApproaches, existing?.calmingApproaches),
     trustedAdults: arr(body.trustedAdults, existing?.trustedAdults),

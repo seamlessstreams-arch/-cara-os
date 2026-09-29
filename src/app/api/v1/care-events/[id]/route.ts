@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
 import { careEventsDb } from "@/lib/db";
 import { processCareEvent, retryFailedRoutes, persistProcessorState } from "@/lib/care-events/processor";
@@ -16,7 +17,7 @@ import type {
 } from "@/types/care-events";
 import { readJsonBody } from "@/lib/http/read-json";
 
-const HOME_ID = "home_oak";
+const HOME_ID = tenantHomeId();
 
 // ── Notification helper ───────────────────────────────────────────────────────
 

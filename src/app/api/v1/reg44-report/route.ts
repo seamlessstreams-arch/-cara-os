@@ -27,6 +27,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { readJsonBody } from "@/lib/http/read-json";
 import { reg44ReportsDb, isSupabaseEnabled } from "@/lib/db";
@@ -45,7 +46,7 @@ function scope(identity: { userId: string; homeId: string | null }, requested: s
   if (isSupabaseEnabled()) {
     return { homeId: identity.homeId ?? "", actor: identity.userId, live: true };
   }
-  return { homeId: String(requested || "home_oak"), actor: headerActor || identity.userId || "staff_unknown", live: false };
+  return { homeId: String(requested || tenantHomeId()), actor: headerActor || identity.userId || "staff_unknown", live: false };
 }
 
 export async function GET(req: NextRequest) {
