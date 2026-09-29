@@ -23,7 +23,6 @@
   "src/app/api/v1/cara-intelligence/safeguarding-flags/[id]/route.ts": 1,
   "src/app/api/v1/cara-intelligence/safeguarding-flags/route.ts": 3,
   "src/app/api/v1/cara-prompt-bank/route.ts": 1,
-  "src/app/api/v1/cara-recording-assistant/route.ts": 1,
   "src/app/api/v1/cara-studio/annex-a-snapshot/route.ts": 1,
   "src/app/api/v1/cara-studio/artifacts/route.ts": 1,
   "src/app/api/v1/cara-studio/care-event-bridge/route.ts": 1,
