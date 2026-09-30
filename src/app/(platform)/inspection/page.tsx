@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
@@ -81,7 +82,9 @@ function useActionOutcomes(params?: {
   });
 }
 
-function useHomeClimate(homeId = "home_oak") {
+function useHomeClimate(homeIdArg?: string) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdArg ?? sessionHome;
   return useQuery({
     queryKey: ["intelligence", "home-climate", homeId],
     queryFn: () =>

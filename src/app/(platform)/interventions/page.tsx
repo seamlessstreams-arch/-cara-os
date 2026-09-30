@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
@@ -32,7 +33,9 @@ import { api } from "@/hooks/use-api";
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
-function useAllInterventions(homeId = "home_oak") {
+function useAllInterventions(homeIdArg?: string) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdArg ?? sessionHome;
   return useQuery({
     queryKey: ["intelligence", "interventions", "home", homeId],
     queryFn: () =>
@@ -578,7 +581,7 @@ function NewInterventionDialog({
 type ViewTab = "active" | "all" | "completed" | "review_due";
 
 export default function InterventionsPage() {
-  const interventionsQuery = useAllInterventions("home_oak");
+  const interventionsQuery = useAllInterventions();
   const createIntervention = useCreateIntervention();
   const updateIntervention = useUpdateIntervention();
 

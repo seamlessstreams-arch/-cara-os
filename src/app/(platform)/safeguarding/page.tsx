@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -903,7 +904,7 @@ function MFCTab() {
   const [logPending, setLogPending] = useState(false);
   const mfcYpQuery = useYoungPeople();
   const mfcAllYP = mfcYpQuery.data?.data ?? [];
-  const { data: mfcResult } = useMissingEpisodes({ homeId: "home_oak" });
+  const { data: mfcResult } = useMissingEpisodes({ homeId: useHomeId() });
   const MFC_EPISODES = mfcResult?.data ?? [];
 
   const alexEpisodes = MFC_EPISODES.filter((e) => e.child_id === "yp_alex");
@@ -1614,7 +1615,7 @@ export default function SafeguardingPage() {
   const [logConcernOpen, setLogConcernOpen] = useState(false);
   const query = useIncidents({ status: "open" });
   const concernYpQuery = useYoungPeople();
-  const { data: mfcTopResult } = useMissingEpisodes({ homeId: "home_oak" });
+  const { data: mfcTopResult } = useMissingEpisodes({ homeId: useHomeId() });
   const MFC_EPISODES = mfcTopResult?.data ?? [];
 
   const openSafeguarding = (query.data?.data ?? []).filter((i) =>

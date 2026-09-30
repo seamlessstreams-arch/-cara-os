@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -592,7 +593,7 @@ function CarePlanCard({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function CarePlansPage() {
-  const plansQuery  = useCarePlans({ homeId: "home_oak" });
+  const plansQuery  = useCarePlans({ homeId: useHomeId() });
   const updatePlan  = useUpdateCarePlan();
 
   const plans = useMemo(() => plansQuery.data?.data ?? [], [plansQuery.data]);
