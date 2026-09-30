@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
-import { ChildSelect } from "@/components/young-people/child-select";
+import { ChildSelect, useChildren } from "@/components/young-people/child-select";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -123,6 +123,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function ContactSupervisionPage() {
+  const { children: liveChildren } = useChildren();
   const homeName = useHomeName();
   const { data, isLoading } = useQuery<{ data: ContactSupervisionSession[] }>({
     queryKey: ["contact-supervision-sessions"],
@@ -268,7 +269,7 @@ export default function ContactSupervisionPage() {
 
       {/* ── per-child summary ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {["yp_alex", "yp_jordan", "yp_casey"].map((ypId) => {
+        {liveChildren.map((c) => c.id).map((ypId) => {
           const ypSessions = sessions.filter((s) => s.child_id === ypId);
           const pos = ypSessions.filter((s) => s.outcome === "positive").length;
           const nextDate = ypSessions.map((s) => s.next_contact_date).filter(Boolean).sort()[0];

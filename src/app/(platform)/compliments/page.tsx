@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import {
   Award,
@@ -58,6 +59,7 @@ const SOURCE_LABELS: Record<ComplimentSource, string> = {
 };
 
 const CATEGORIES: ComplimentCategory[] = [
+  // seed-actor-ok: "staff_conduct" is a compliment category enum, not a staff id
   "care_quality", "staff_conduct", "environment", "communication",
   "activities", "education_support", "health_support", "family_contact",
   "overall_experience", "specific_staff",
@@ -72,6 +74,7 @@ const CATEGORY_LABELS: Record<ComplimentCategory, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ComplimentsPage() {
+  const { children: liveChildren } = useChildren();
   const { data: cmpData, isLoading, isError, refetch } = useQuery({
     queryKey: ["compliments"],
     queryFn: () => api.get<ListResponse>("/compliments"),
@@ -346,7 +349,7 @@ export default function ComplimentsPage() {
               <Label htmlFor="3c51-related-young-person">Related Young Person</Label>
               <select id="3c51-related-young-person" name="related_yp" className="w-full rounded-md border px-3 py-2 text-sm">
                 <option value="">None</option>
-                {["yp_alex", "yp_jordan", "yp_casey"].map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}
+                {liveChildren.map((c) => c.id).map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}
               </select>
             </div>
             <div>

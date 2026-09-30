@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,7 @@ const RESULT_CONFIG: Record<FireDrillResult, { label: string; colour: string }> 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function FireDrillsPage() {
+  const { children: liveChildren } = useChildren();
   const { currentUser } = useAuthContext();
   const qc = useQueryClient();
 
@@ -163,7 +165,7 @@ export default function FireDrillsPage() {
       evacuation_time_seconds: nEvacTime ? parseInt(nEvacTime) : null,
       result: nResult as FireDrillResult,
       all_present: true,
-      children_present: ["yp_alex", "yp_jordan", "yp_casey"],
+      children_present: liveChildren.map((c) => c.id),
       staff_present: [currentUser?.id || currentUserId()],
       issues: nIssues,
       actions_taken: nActions,
