@@ -40,6 +40,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useMemo, useState, useEffect } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -55,7 +56,9 @@ import type { ChildExperienceSnapshot, HomeClimateSnapshot, PatternAlert, Action
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
-function useHomeClimate(homeId = "home_oak") {
+function useHomeClimate(homeIdArg?: string) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdArg ?? sessionHome;
   return useQuery({
     queryKey: ["intelligence", "home-climate", homeId],
     queryFn: () =>

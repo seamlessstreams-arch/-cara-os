@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import {
@@ -172,7 +173,7 @@ export default function Reg45Page() {
   
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg45Reviews();
-  const { data: evidenceData, isError, refetch } = useReg45Evidence({ homeId: "home_oak" });
+  const { data: evidenceData, isError, refetch } = useReg45Evidence({ homeId: useHomeId() });
   const updateReview = useUpdateReg45Review();
   const [draftingSection, setDraftingSection] = useState<string | null>(null);
   const [showLinkMap, setShowLinkMap] = useState(false);

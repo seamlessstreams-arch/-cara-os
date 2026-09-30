@@ -40,6 +40,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useMemo, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
@@ -55,7 +56,9 @@ import type { HomeClimateSnapshot, PatternAlert, Intervention, VoiceRecord, Acti
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
-function useHomeClimate(homeId = "home_oak") {
+function useHomeClimate(homeIdArg?: string) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdArg ?? sessionHome;
   return useQuery({
     queryKey: ["intelligence", "home-climate", homeId],
     queryFn: () =>
@@ -87,7 +90,9 @@ function useInterventions(childId: string) {
   });
 }
 
-function useAllInterventions(homeId = "home_oak") {
+function useAllInterventions(homeIdArg?: string) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdArg ?? sessionHome;
   return useQuery({
     queryKey: ["intelligence", "interventions", "home", homeId],
     queryFn: () =>
