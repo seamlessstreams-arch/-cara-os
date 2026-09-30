@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
@@ -121,6 +122,7 @@ const EXPORT_COLS: ExportColumn<RiskAssessment>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function RiskAssessmentsPage() {
+  const homeId = useHomeId();
   const { data: raData, isLoading, isError, refetch } = useRiskAssessments();
   const createRA = useCreateRiskAssessment();
   const assessments = useMemo(() => raData?.data ?? [], [raData]);
@@ -388,7 +390,7 @@ export default function RiskAssessmentsPage() {
               triggers: (fd.get("triggers") as string || "").split("\n").filter(Boolean),
               indicators: [], mitigations: [], contingency_plan: fd.get("contingency_plan") as string || "",
               child_views: fd.get("child_views") as string || "", history_notes: "",
-              linked_incidents: [], home_id: "home_oak", created_at: new Date().toISOString(),
+              linked_incidents: [], home_id: homeId, created_at: new Date().toISOString(),
             }, {
               onSuccess: () => {
                 toast.success("Risk assessment created");

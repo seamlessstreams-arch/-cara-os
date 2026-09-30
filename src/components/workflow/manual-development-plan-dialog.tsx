@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useId, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +30,15 @@ import { api } from "@/hooks/use-api";
 import { PATHWAY_STAGE_LABELS, PATHWAY_STAGE_ORDER, type PathwayStage } from "@/types/extended";
 
 export function ManualDevelopmentPlanDialog({
-  open, onOpenChange, staff, homeId = "home_oak",
+  open, onOpenChange, staff, homeId: homeIdProp,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   staff: { id: string; full_name: string }[];
   homeId?: string;
 }) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdProp ?? sessionHome;
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");
