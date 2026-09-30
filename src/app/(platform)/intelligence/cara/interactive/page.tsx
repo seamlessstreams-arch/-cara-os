@@ -700,7 +700,7 @@ export default function InteractiveSessionsPage() {
   const [activeSession, setActiveSession] = useState<InteractiveSession | null>(null);
   const [sessionResponses, setSessionResponses] = useState<InteractiveSessionResponse[]>([]);
   const [showSummary, setShowSummary] = useState(false);
-  const [historyChild, setHistoryChild] = useState("yp_casey");
+  const [historyChild, setHistoryChild] = useState("");
 
   const { data: sessionsData, isLoading } = useInteractiveSessions(historyChild);
   const sessions: InteractiveSession[] = useMemo(() => sessionsData?.data ?? [], [sessionsData]);
@@ -794,6 +794,7 @@ export default function InteractiveSessionsPage() {
                   onChange={(e) => setHistoryChild(e.target.value)}
                   className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-teal-300"
                 >
+                  <option value="">Select a child…</option>
                   {youngPeople.map((yp) => (
                     <option key={yp.id} value={yp.id}>{yp.name}</option>
                   ))}

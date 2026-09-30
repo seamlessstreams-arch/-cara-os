@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { ChildSelect } from "@/components/young-people/child-select";
+import { ChildSelect, useChildren } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -193,7 +193,7 @@ function NewTransactionDialog({
   onSubmit: (tx: Partial<PocketMoneyTransaction>) => void;
 }) {
   const { currentUser } = useAuthContext();
-  const [childId, setChildId] = useState("yp_alex");
+  const [childId, setChildId] = useState("");
   const [type, setType] = useState<PocketMoneyTransactionType>("spending");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -305,9 +305,11 @@ export default function PocketMoneyPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
 
+  const { children: allChildren } = useChildren();
+
   // Balances per child
   const balances = useMemo(() => {
-    const ypIds = ["yp_alex", "yp_casey", "yp_jordan"];
+    const ypIds = allChildren.map((c) => c.id);
     return ypIds.map((id) => {
       const txs = data.filter((t) => t.child_id === id);
       let wallet = 0;
@@ -322,7 +324,7 @@ export default function PocketMoneyPage() {
       const totalOut = txs.filter((t) => !isIncome(t.type)).reduce((s, t) => s + t.amount, 0);
       return { id, name: getYPName(id), wallet: Math.max(0, wallet), savings, totalIn, totalOut, txCount: txs.length };
     });
-  }, [data]);
+  }, [data, allChildren]);
 
   // Filtered + sorted
   const filtered = useMemo(() => {
