@@ -325,7 +325,7 @@ function BrandingTab() {
   });
 
   const homeQ = useQuery<HomeBranding | null>({
-    queryKey: BRANDING_KEYS.home("home_oak"),
+    queryKey: BRANDING_KEYS.home((currentUser?.home_id ?? "")),
     queryFn: async () => {
       const res = await fetch(`/api/v1/branding/home?home_id=home_oak`);
       if (!res.ok) throw new Error("Failed to load home branding");
@@ -433,7 +433,7 @@ function BrandingTab() {
 
   async function saveSystem() { try { await updateSystem.mutateAsync({ ...sysForm, updated_by: currentUser?.id }); toast.success("System branding saved"); } catch { toast.error("Failed to save system branding"); } }
   async function saveOrg() { try { await updateOrg.mutateAsync({ ...orgForm, organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Organisation branding saved"); } catch { toast.error("Failed to save organisation branding"); } }
-  async function saveHome() { try { await updateHome.mutateAsync({ ...homeForm2, home_id: "home_oak", organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Home branding saved"); } catch { toast.error("Failed to save home branding"); } }
+  async function saveHome() { try { await updateHome.mutateAsync({ ...homeForm2, home_id: (currentUser?.home_id ?? ""), organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Home branding saved"); } catch { toast.error("Failed to save home branding"); } }
 
   const previewPrimary = orgForm.primary_colour || sysForm.primary_colour;
   const previewSecondary = orgForm.secondary_colour || sysForm.secondary_colour;

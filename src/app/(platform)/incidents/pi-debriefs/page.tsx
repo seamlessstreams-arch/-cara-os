@@ -446,7 +446,7 @@ export default function PIDebriefsPage() {
 
   // Inlined usePIDebriefs
   const debriefsQuery = useQuery({
-    queryKey: ["pi-debriefs", "home_oak"],
+    queryKey: ["pi-debriefs", (currentUser?.home_id ?? "")],
     queryFn: () =>
       api.get<{ data: PIDebrief[]; meta: { total: number; pending: number; incomplete: number; overdue: number } }>(
         `/pi-debriefs?home_id=home_oak`

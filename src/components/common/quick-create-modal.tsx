@@ -279,7 +279,7 @@ export function QuickCreateModal({
         linked_incident_id: taskForm.linked_incident_id || undefined,
         requires_sign_off: taskForm.requires_sign_off,
         status: "not_started",
-        home_id: "home_oak",
+        home_id: (currentUser?.home_id ?? ""),
         created_by: currentUser?.id ?? "",
       },
       {
@@ -305,7 +305,7 @@ export function QuickCreateModal({
         linked_child_id: careForm.linked_child_id || undefined,
         linked_staff_id: careForm.linked_staff_id || undefined,
         linked_incident_id: careForm.linked_incident_id || undefined,
-        home_id: "home_oak",
+        home_id: (currentUser?.home_id ?? ""),
         created_by: currentUser?.id ?? "",
         status: "draft",
       },
