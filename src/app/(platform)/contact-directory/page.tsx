@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,7 @@ export default function ContactDirectoryPage() {
   const [nNotes, setNNotes] = useState("");
   const [nEmergency, setNEmergency] = useState(false);
 
-  const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const childIds = useChildren().children.map((c) => c.id);
 
   if (isLoading) return <PageShell title="Contact Directory" subtitle="Professional contacts and emergency numbers"><div /></PageShell>;
 

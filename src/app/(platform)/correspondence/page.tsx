@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CorrespondenceEntry, CorrespondenceDirection, CorrespondenceMethod, CorrespondencePriority, CorrespondenceStatus } from "@/types/extended";
@@ -126,7 +127,7 @@ export default function CorrespondencePage() {
   const [nAction, setNAction] = useState("");
   const [nChild, setNChild] = useState("");
 
-  const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const childIds = useChildren().children.map((c) => c.id);
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {

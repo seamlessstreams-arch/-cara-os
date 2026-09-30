@@ -40,6 +40,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useMemo, useState } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -674,14 +675,10 @@ function PatternAlertsSection() {
   );
 }
 
-// ─── Hardcoded child IDs for cross-child hooks ────────────────────────────────
-// In production these would come from the home's children list
-
-const CHILD_IDS = ["yp_casey", "yp_alex", "yp_jordan"];
-
 // ─── Recent Interventions Section ─────────────────────────────────────────────
 
 function RecentInterventionsSection() {
+  const CHILD_IDS = useChildren().children.map((c) => c.id);
   const q1 = useInterventions(CHILD_IDS[0]);
   const q2 = useInterventions(CHILD_IDS[1]);
   const q3 = useInterventions(CHILD_IDS[2]);
@@ -848,6 +845,7 @@ function RecentInterventionsSection() {
 // ─── Voice Coverage Section ───────────────────────────────────────────────────
 
 function VoiceCoverageSection() {
+  const CHILD_IDS = useChildren().children.map((c) => c.id);
   const q1 = useVoiceRecords(CHILD_IDS[0]);
   const q2 = useVoiceRecords(CHILD_IDS[1]);
   const q3 = useVoiceRecords(CHILD_IDS[2]);
