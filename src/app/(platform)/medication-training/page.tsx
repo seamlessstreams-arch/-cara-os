@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useStaff } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -58,9 +59,9 @@ const BORDER_ST: Record<MedCompetencyStatus, string> = { competent: "border-l-gr
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const STAFF_IDS = ["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_lackson", "staff_mirela"];
 
 export default function MedicationTrainingPage() {
+  const STAFF_IDS = useStaff().staff.map((s) => s.id);
   const { data: res, isLoading } = useMedTrainingRecords();
   const data: MedTrainingRecord[] = useMemo(() => res?.data ?? [], [res]);
 

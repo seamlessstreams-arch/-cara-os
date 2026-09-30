@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -140,7 +141,7 @@ export default function ParentPartnershipPage() {
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
-  const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const childIds = useChildren().children.map((c) => c.id);
 
   const filtered = useMemo(() => {
     let out = [...data];

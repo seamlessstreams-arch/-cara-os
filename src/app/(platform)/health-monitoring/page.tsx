@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -91,7 +92,7 @@ export default function HealthMonitoringPage() {
     return out;
   }, [records, search, childFilter, typeFilter, statusFilter, sortBy]);
 
-  const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const childIds = useChildren().children.map((c) => c.id);
   const overdue = records.filter(r => r.status === "overdue").length;
   const scheduled = records.filter(r => r.status === "scheduled").length;
   const completed = records.filter(r => r.status === "completed").length;

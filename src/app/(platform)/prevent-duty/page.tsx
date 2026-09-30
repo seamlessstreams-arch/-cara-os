@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -194,7 +195,7 @@ export default function PreventDutyPage() {
     "staff_darren", "staff_ryan", "staff_anna", "staff_edward",
     "staff_chervelle", "staff_lackson", "staff_mirela",
   ];
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const ypIds = useChildren().children.map((c) => c.id);
 
   if (isLoading) {
     return (
