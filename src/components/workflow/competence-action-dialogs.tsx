@@ -20,6 +20,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useId, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +52,7 @@ const errText = (e: unknown) => (e instanceof Error && e.message ? e.message : "
 /* ── Schedule a supervision ────────────────────────────────────────────────── */
 
 export function ScheduleSupervisionDialog({
-  open, onOpenChange, staff, supervisorId, homeId = "home_oak",
+  open, onOpenChange, staff, supervisorId, homeId: homeIdProp,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -59,6 +60,8 @@ export function ScheduleSupervisionDialog({
   supervisorId: string;
   homeId?: string;
 }) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdProp ?? sessionHome;
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");

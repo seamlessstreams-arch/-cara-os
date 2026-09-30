@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -120,6 +121,7 @@ const EXPORT_COLS: ExportColumn<LACReview>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function LACReviewsPage() {
+  const homeId = useHomeId();
   const { data: lacData, isLoading, isError, refetch } = useLACReviews();
   const createReview = useCreateLACReview();
   const reviews = useMemo(() => lacData?.data ?? [], [lacData]);
@@ -388,7 +390,7 @@ export default function LACReviewsPage() {
               recommendations: [], outcome: null, actions_agreed: [],
               next_review_date: fd.get("next_review_date") as string || "",
               placement_stability: null, care_plan_updated: null,
-              notes: "", recorded_by: currentUserId(), home_id: "home_oak",
+              notes: "", recorded_by: currentUserId(), home_id: homeId,
             }, {
               onSuccess: () => { toast.success("LAC review recorded"); setShowNew(false); },
               onError: () => toast.error("Failed to save review"),

@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useId, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,8 +69,10 @@ export function CreateTaskDialog(props: CreateTaskDialogProps) {
 }
 
 function CreateTaskDialogForm({
-  open, onOpenChange, heading, blurb, defaults, staff, homeId = "home_oak",
+  open, onOpenChange, heading, blurb, defaults, staff, homeId: homeIdProp,
 }: CreateTaskDialogProps) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdProp ?? sessionHome;
   const uid = useId();
   const qc = useQueryClient();
 

@@ -21,6 +21,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useId, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,6 @@ import {
   type ObservationOutcome, type QualificationStatus,
 } from "@/types/extended";
 
-const HOME_ID = "home_oak";
 
 export interface StaffOption { id: string; full_name: string }
 
@@ -135,6 +135,7 @@ const OUTCOMES: { value: ObservationOutcome; label: string }[] = [
 export function NewObservationDialog({
   open, onOpenChange, staff, observerId,
 }: { open: boolean; onOpenChange: (v: boolean) => void; staff: StaffOption[]; observerId: string }) {
+  const HOME_ID = useHomeId();
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");
@@ -265,6 +266,7 @@ const QUAL_STATUSES: { value: QualificationStatus; label: string }[] = [
 export function NewQualificationDialog({
   open, onOpenChange, staff,
 }: { open: boolean; onOpenChange: (v: boolean) => void; staff: StaffOption[] }) {
+  const HOME_ID = useHomeId();
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");
@@ -375,6 +377,7 @@ const APPRAISAL_TYPES: { value: AppraisalType; label: string }[] = [
 export function NewAppraisalDialog({
   open, onOpenChange, staff, appraiserId,
 }: { open: boolean; onOpenChange: (v: boolean) => void; staff: StaffOption[]; appraiserId: string }) {
+  const HOME_ID = useHomeId();
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");
@@ -455,6 +458,7 @@ export function NewAppraisalDialog({
 export function NewInductionDialog({
   open, onOpenChange, staff, lineManagerId,
 }: { open: boolean; onOpenChange: (v: boolean) => void; staff: StaffOption[]; lineManagerId: string }) {
+  const HOME_ID = useHomeId();
   const uid = useId();
   const qc = useQueryClient();
   const [staffId, setStaffId] = useState("");
