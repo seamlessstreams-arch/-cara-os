@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useChildren } from "@/components/young-people/child-select";
+import { useStaff } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -191,10 +192,7 @@ export default function PreventDutyPage() {
     setDialogOpen(false);
   };
 
-  const staffIds = [
-    "staff_darren", "staff_ryan", "staff_anna", "staff_edward",
-    "staff_chervelle", "staff_lackson", "staff_mirela",
-  ];
+  const staffIds = useStaff().staff.map((s) => s.id);
   const ypIds = useChildren().children.map((c) => c.id);
 
   if (isLoading) {
