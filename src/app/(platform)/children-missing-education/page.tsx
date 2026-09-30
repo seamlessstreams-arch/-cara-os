@@ -1,6 +1,7 @@
 "use client";
 
 import { formatRate } from "@/lib/metrics/rate";
+import { useChildren } from "@/components/young-people/child-select";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -67,6 +68,7 @@ const BORDER_STATUS: Record<CMEStatus, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildrenMissingEducationPage() {
+  const { children: liveChildren } = useChildren();
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: CMERecord[] }>({
     queryKey: ["cme-records"],
@@ -392,7 +394,7 @@ export default function ChildrenMissingEducationPage() {
             }}
           >
             <div className="grid grid-cols-2 gap-4">
-              <div><Label htmlFor="63d3-young-person">Young Person</Label><Select name="child_id"><SelectTrigger id="63d3-young-person"><SelectValue placeholder="Select young person..." /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
+              <div><Label htmlFor="63d3-young-person">Young Person</Label><Select name="child_id"><SelectTrigger id="63d3-young-person"><SelectValue placeholder="Select young person..." /></SelectTrigger><SelectContent>{liveChildren.map((c) => (<SelectItem key={c.id} value={c.id}>{c.preferred_name ?? c.first_name ?? c.id}</SelectItem>))}</SelectContent></Select></div>
               <div><Label htmlFor="63d3-school-setting">School / Setting</Label><Input id="63d3-school-setting" name="school" placeholder="School name" /></div>
               <div><Label htmlFor="63d3-year-group">Year Group</Label><Input id="63d3-year-group" name="year_group" placeholder="e.g. Year 9" /></div>
               <div><Label htmlFor="63d3-current-status">Current Status</Label><Select name="current_status"><SelectTrigger id="63d3-current-status"><SelectValue placeholder="Select status..." /></SelectTrigger><SelectContent>{(Object.keys(CME_STATUS_LABEL) as CMEStatus[]).map((k) => (<SelectItem key={k} value={k}>{CME_STATUS_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>

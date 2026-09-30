@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { use, useState } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { api } from "@/hooks/use-api";
@@ -195,7 +196,7 @@ export default function CaraStudioDetailPage({
     updateMutation.mutate({
       id,
       action: "edit",
-      actor_id: "staff_anna",
+      actor_id: currentUserId(),
       generated_content: editedContent!,
       change_summary: changeSummary || "Content edited",
     });
@@ -204,23 +205,23 @@ export default function CaraStudioDetailPage({
   }
 
   function handleSubmit() {
-    updateMutation.mutate({ id, action: "submit", actor_id: "staff_anna" });
+    updateMutation.mutate({ id, action: "submit", actor_id: currentUserId() });
   }
 
   function handleApprove() {
-    updateMutation.mutate({ id, action: "approve", actor_id: "staff_anna", comment: approveComment });
+    updateMutation.mutate({ id, action: "approve", actor_id: currentUserId(), comment: approveComment });
     setApproveDialog(false);
     setApproveComment("");
   }
 
   function handleRequestChanges() {
-    updateMutation.mutate({ id, action: "request_changes", actor_id: "staff_anna", changes: requestedChanges });
+    updateMutation.mutate({ id, action: "request_changes", actor_id: currentUserId(), changes: requestedChanges });
     setChangesDialog(false);
     setRequestedChanges("");
   }
 
   function handleReject() {
-    updateMutation.mutate({ id, action: "reject", actor_id: "staff_anna", reason: rejectReason });
+    updateMutation.mutate({ id, action: "reject", actor_id: currentUserId(), reason: rejectReason });
     setRejectDialog(false);
     setRejectReason("");
   }
@@ -231,7 +232,7 @@ export default function CaraStudioDetailPage({
   }
 
   function handleCommit() {
-    updateMutation.mutate({ id, action: "commit", actor_id: "staff_anna" });
+    updateMutation.mutate({ id, action: "commit", actor_id: currentUserId() });
     setCommitDialog(false);
   }
 
