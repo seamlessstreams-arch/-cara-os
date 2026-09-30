@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ClipboardCheck, Loader2, ShieldQuestion, AlertTriangle, Ban } from "lucide-react";
@@ -21,7 +22,7 @@ import { api } from "@/hooks/use-api";
 const REG44_REPORT_INTELLIGENCE_KEY = "reg44-report-intelligence";
 const REG44_REPORT_INTELLIGENCE_URL = "/api/v1/reg44-report-intelligence";
 
-function useReg44ReportIntelligence(homeId = "home_oak", month?: string, spokenTo?: number) {
+function useReg44ReportIntelligence(homeId = "", month?: string, spokenTo?: number) {
   const params = new URLSearchParams({ home_id: homeId });
   if (month) params.set("month", month);
   if (typeof spokenTo === "number") params.set("spoken_to", String(spokenTo));
@@ -122,7 +123,9 @@ function AssembledDraft({ assembly }: { assembly: NonNullable<ReturnType<typeof 
   );
 }
 
-export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { homeId?: string; month?: string }) {
+export function Reg44ReportIntelligencePanel({ homeId: homeIdProp, month }: { homeId?: string; month?: string }) {
+  const sessionHome = useHomeId();
+  const homeId = homeIdProp ?? sessionHome;
   const { data, isLoading, isError } = useReg44ReportIntelligence(homeId, month);
   const a = data?.data?.assessment;
   const assembly = data?.data?.assembly;

@@ -934,7 +934,7 @@ export default function DailyLogPage() {
           className="mt-2"
         />
       </div>
-      <CaraPracticePanel sourceType="daily_record" homeId="home_oak" title="Run Cara on this log" />
+      <CaraPracticePanel sourceType="daily_record" title="Run Cara on this log" />
       <div className="mt-4">
         <WritingToChildPanel defaultRecordType="daily_log" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this log entry" />
       </div>

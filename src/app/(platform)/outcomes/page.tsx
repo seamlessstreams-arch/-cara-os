@@ -813,7 +813,6 @@ function TargetCard({
               sourceType="outcome_target"
               sourceId={target.id}
               childId={target.child_id}
-              homeId="home_oak"
               category={target.domain}
             />
           </FlatListRowDetail>
