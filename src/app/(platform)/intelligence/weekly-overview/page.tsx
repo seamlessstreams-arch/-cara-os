@@ -40,6 +40,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useMemo, useState, useEffect } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery } from "@tanstack/react-query";
@@ -263,9 +264,10 @@ function HeaderStatCards() {
   const climate = useHomeClimate();
   const alerts  = usePatternAlerts({ status: "active" });
   const overdue = useActionOutcomes({ status: "overdue" });
-  const vCasey = useVoiceRecords("yp_casey");
-  const vAlex  = useVoiceRecords("yp_alex");
-  const vJordan    = useVoiceRecords("yp_jordan");
+  const kids = useChildren().children;
+  const vCasey = useVoiceRecords(kids[0]?.id ?? "");
+  const vAlex  = useVoiceRecords(kids[1]?.id ?? "");
+  const vJordan    = useVoiceRecords(kids[2]?.id ?? "");
   const { data: ypData } = useYoungPeople("current");
   const ypTotal = (ypData?.data ?? []).length || 3;
 
@@ -893,22 +895,23 @@ function BulkComputeSection() {
   const [error, setError]   = useState<string | null>(null);
 
   const createSnapshot = useCreateChildExperienceSnapshot();
+  const kids = useChildren().children;
 
-  const vCasey  = useVoiceRecords("yp_casey");
-  const vAlex   = useVoiceRecords("yp_alex");
-  const vJordan = useVoiceRecords("yp_jordan");
+  const vCasey  = useVoiceRecords(kids[0]?.id ?? "");
+  const vAlex   = useVoiceRecords(kids[1]?.id ?? "");
+  const vJordan = useVoiceRecords(kids[2]?.id ?? "");
 
-  const snapCasey  = useChildExperienceLatest("yp_casey");
-  const snapAlex   = useChildExperienceLatest("yp_alex");
-  const snapJordan = useChildExperienceLatest("yp_jordan");
+  const snapCasey  = useChildExperienceLatest(kids[0]?.id ?? "");
+  const snapAlex   = useChildExperienceLatest(kids[1]?.id ?? "");
+  const snapJordan = useChildExperienceLatest(kids[2]?.id ?? "");
 
-  const intCasey  = useInterventions("yp_casey");
-  const intAlex   = useInterventions("yp_alex");
-  const intJordan = useInterventions("yp_jordan");
+  const intCasey  = useInterventions(kids[0]?.id ?? "");
+  const intAlex   = useInterventions(kids[1]?.id ?? "");
+  const intJordan = useInterventions(kids[2]?.id ?? "");
 
-  const pbCasey  = usePracticeBank("yp_casey");
-  const pbAlex   = usePracticeBank("yp_alex");
-  const pbJordan = usePracticeBank("yp_jordan");
+  const pbCasey  = usePracticeBank(kids[0]?.id ?? "");
+  const pbAlex   = usePracticeBank(kids[1]?.id ?? "");
+  const pbJordan = usePracticeBank(kids[2]?.id ?? "");
 
   async function handleBulkCompute() {
     setState("running");
@@ -917,21 +920,21 @@ function BulkComputeSection() {
 
     const CHILD_DATA = [
       {
-        id: "yp_casey", name: "Casey",
+        id: kids[0]?.id ?? "", name: kids[0]?.preferred_name ?? kids[0]?.first_name ?? "",
         voices: vCasey.data?.data ?? [],
         snap: snapCasey.data?.data ?? null,
         interventions: intCasey.data?.data ?? [],
         practices: pbCasey.data?.data ?? [],
       },
       {
-        id: "yp_alex", name: "Alex",
+        id: kids[1]?.id ?? "", name: kids[1]?.preferred_name ?? kids[1]?.first_name ?? "",
         voices: vAlex.data?.data ?? [],
         snap: snapAlex.data?.data ?? null,
         interventions: intAlex.data?.data ?? [],
         practices: pbAlex.data?.data ?? [],
       },
       {
-        id: "yp_jordan", name: "Jordan",
+        id: kids[2]?.id ?? "", name: kids[2]?.preferred_name ?? kids[2]?.first_name ?? "",
         voices: vJordan.data?.data ?? [],
         snap: snapJordan.data?.data ?? null,
         interventions: intJordan.data?.data ?? [],

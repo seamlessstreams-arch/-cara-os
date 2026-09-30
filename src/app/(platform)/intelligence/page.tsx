@@ -291,14 +291,15 @@ function HomeClimateSection() {
   const { data, isLoading, isError } = useHomeClimate();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "";
+  const kids = useChildren().children;
   const climate: HomeClimateSnapshot | null = data?.data?.latest ?? null;
 
   const { data: alertsData }     = usePatternAlerts({ status: "active" });
   const { data: intData }        = useAllInterventions();
   const { data: actionsData }    = useActionOutcomes();
-  const { data: voiceCasey }     = useVoiceRecords("yp_casey");
-  const { data: voiceAlex }      = useVoiceRecords("yp_alex");
-  const { data: voiceJordan }    = useVoiceRecords("yp_jordan");
+  const { data: voiceCasey }     = useVoiceRecords(kids[0]?.id ?? "");
+  const { data: voiceAlex }      = useVoiceRecords(kids[1]?.id ?? "");
+  const { data: voiceJordan }    = useVoiceRecords(kids[2]?.id ?? "");
 
   const createClimate = useCreateHomeClimate();
   const [computeState, setComputeState] = useState<"idle" | "computing" | "success" | "error">("idle");
@@ -1081,6 +1082,7 @@ function CaraPatternScanSection() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "";
+  const kids = useChildren().children;
   const [scanning, setScanning]           = useState(false);
   const [patterns, setPatterns]           = useState<ScannedPattern[] | null>(null);
   const [saveStates, setSaveStates]       = useState<Record<number, "idle" | "saving" | "saved">>({});
@@ -1089,9 +1091,9 @@ function CaraPatternScanSection() {
   // Pull current data to build context
   const { data: alertsData }         = usePatternAlerts({ status: "active" });
   const { data: interventionsData }  = useAllInterventions();
-  const { data: voiceCaseyData }     = useVoiceRecords("yp_casey");
-  const { data: voiceAlexData }      = useVoiceRecords("yp_alex");
-  const { data: voiceJordanData }    = useVoiceRecords("yp_jordan");
+  const { data: voiceCaseyData }     = useVoiceRecords(kids[0]?.id ?? "");
+  const { data: voiceAlexData }      = useVoiceRecords(kids[1]?.id ?? "");
+  const { data: voiceJordanData }    = useVoiceRecords(kids[2]?.id ?? "");
   const { data: actionsData }        = useActionOutcomes();
 
   const createAlert = useCreatePatternAlert();
@@ -1107,10 +1109,11 @@ function CaraPatternScanSection() {
       const existingAlerts = alertsData?.data ?? [];
       const interventions  = interventionsData?.data ?? [];
       const actions        = actionsData?.data ?? [];
+      const kidLabel = (c?: (typeof kids)[number]) => c ? `${c.preferred_name ?? c.first_name ?? c.id} (${c.id})` : "";
       const voices         = [
-        ...(voiceCaseyData?.data ?? []).map(v => ({ ...v, child: "Casey (yp_casey)" })),
-        ...(voiceAlexData?.data ?? []).map(v => ({ ...v, child: "Alex (yp_alex)" })),
-        ...(voiceJordanData?.data ?? []).map(v => ({ ...v, child: "Jordan (yp_jordan)" })),
+        ...(voiceCaseyData?.data ?? []).map(v => ({ ...v, child: kidLabel(kids[0]) })),
+        ...(voiceAlexData?.data ?? []).map(v => ({ ...v, child: kidLabel(kids[1]) })),
+        ...(voiceJordanData?.data ?? []).map(v => ({ ...v, child: kidLabel(kids[2]) })),
       ];
 
       const now = new Date();
