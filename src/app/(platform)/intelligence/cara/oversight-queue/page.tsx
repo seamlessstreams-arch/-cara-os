@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import type { ReactNode } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +68,6 @@ function useAcknowledgeAmendment() {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_TONE: Record<ManagerOversightItem["severity"], string> = {
   high: "bg-rose-100 text-rose-800",
@@ -88,6 +88,7 @@ const KIND_ICON: Record<ManagerOversightItem["kind"], ReactNode> = {
 };
 
 export default function OversightQueuePage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const { data, isLoading, refetch, isFetching } = useManagementOversight(HOME_ID);

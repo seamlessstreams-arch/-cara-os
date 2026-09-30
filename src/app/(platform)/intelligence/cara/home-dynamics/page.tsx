@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,6 @@ interface GenerateInput {
   actor_role?: string;
 }
 
-const HOME_ID = "home_oak";
 
 const STATUS_TONE: Record<CaraIndicatorStatus, string> = {
   green: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -79,6 +79,7 @@ function IndicatorTile({ ind }: { ind: CaraHomeDynamicsIndicator }) {
 }
 
 export default function HomeDynamicsPage() {
+  const HOME_ID = useHomeId();
   const auth = useAuthContext();
   const qc = useQueryClient();
   const [windowDays, setWindowDays] = useState(28);

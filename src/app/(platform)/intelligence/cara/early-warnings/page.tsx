@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -140,7 +141,6 @@ function useUpdateEarlyWarning() {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_TONE: Record<CaraPatternSeverity, string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
@@ -262,6 +262,7 @@ function WarningCard({
 }
 
 export default function EarlyWarningsPage() {
+  const HOME_ID = useHomeId();
   const auth = useAuthContext();
   const [showAll, setShowAll] = useState(false);
   const patternsQ = useSafeguardingPatterns(HOME_ID, showAll ? undefined : "open");

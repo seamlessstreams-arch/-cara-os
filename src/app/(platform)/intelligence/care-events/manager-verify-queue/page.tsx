@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -78,7 +79,6 @@ function useManagerBulkReturn(homeId: string) {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const PRIORITY_TONE: Record<ManagerVerifyPriority, string> = {
   critical: "bg-rose-100 text-rose-800 border-rose-300",
@@ -88,6 +88,7 @@ const PRIORITY_TONE: Record<ManagerVerifyPriority, string> = {
 };
 
 export default function ManagerVerifyQueuePage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useManagerVerifyQueue(HOME_ID);
   const verifyMut = useManagerBulkVerify(HOME_ID);
   const returnMut = useManagerBulkReturn(HOME_ID);

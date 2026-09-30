@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +25,9 @@ import type {
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 
-const HOME_ID = "home_oak";
 
 export default function RoutingHealthPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const qc = useQueryClient();

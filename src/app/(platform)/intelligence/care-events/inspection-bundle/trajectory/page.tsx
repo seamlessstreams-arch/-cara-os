@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, LineChart, BellRing } from "lucide-react";
@@ -16,7 +17,6 @@ import type { TrajectoryAlert } from "@/lib/care-events/inspection-trajectory";
 import type { TrajectorySummary } from "@/lib/care-events/inspection-trajectory";
 import type { TrajectoryAlertAck } from "@/lib/db/store";
 
-const HOME_ID = "home_oak";
 
 interface TrajectoryResponse { data: TrajectorySummary }
 
@@ -53,6 +53,7 @@ function useAckTrajectoryAlert(homeId: string) {
 }
 
 export default function InspectionTrajectoryPage() {
+  const HOME_ID = useHomeId();
   const q = useQuery({
     queryKey: ["inspection-trajectory", HOME_ID ?? ""],
     enabled: !!HOME_ID,
@@ -261,6 +262,7 @@ function AlertsCard({ alerts }: { alerts: TrajectoryAlert[] }) {
 }
 
 function AlertRow({ alert }: { alert: TrajectoryAlert }) {
+  const HOME_ID = useHomeId();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const ack = useAckTrajectoryAlert(HOME_ID);

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,10 +63,10 @@ function useFetchPersistedReg44Pack() {
   });
 }
 
-const HOME_ID = "home_oak";
 const WINDOW_OPTIONS = [7, 30, 90] as const;
 
 export default function Reg44PackPage() {
+  const HOME_ID = useHomeId();
   const gen = useGenerateAndPersistReg44Pack(HOME_ID);
   const history = usePersistedReg44Packs(HOME_ID);
   const fetchOne = useFetchPersistedReg44Pack();

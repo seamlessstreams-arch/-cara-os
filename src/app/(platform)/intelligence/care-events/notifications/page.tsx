@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,6 @@ function useNotificationAction(homeId: string) {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_TONE: Record<NotificationSeverity, string> = {
   critical: "bg-rose-100 text-rose-800 border-rose-300",
@@ -101,6 +101,7 @@ const AUDIENCE_LABEL: Record<NotificationAudience, string> = {
 const SEVERITY_ORDER: NotificationSeverity[] = ["critical", "warning", "info"];
 
 export default function NotificationsPage() {
+  const HOME_ID = useHomeId();
   const [includeDismissed, setIncludeDismissed] = useState(false);
   const { data, refetch, isFetching, isLoading } = useCareEventsNotifications(
     HOME_ID,

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,6 @@ import type {
   ExportAbuseReport,
 } from "@/lib/care-events/export-abuse";
 
-const HOME_ID = "home_oak";
 
 const KIND_LABEL: Record<ExportAbuseFlagKind, string> = {
   high_volume_24h:      "High volume (24h)",
@@ -45,6 +45,7 @@ const SEVERITY_BADGE: Record<ExportAbuseSeverity, string> = {
 };
 
 export default function ExportAbusePage() {
+  const HOME_ID = useHomeId();
   interface Response { data: ExportAbuseReport }
   const { data, refetch, isFetching, isLoading } = useQuery({
     queryKey: ["export-abuse", HOME_ID],

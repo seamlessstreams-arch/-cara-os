@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import type {
 } from "@/types/cara-studio";
 
 import { api } from "@/hooks/use-api";
-const HOME_ID = "home_oak";
 
 const READINESS_TONE: Record<CaraAnnexAReadiness, string> = {
   green: "bg-emerald-100 text-emerald-800 border-emerald-300",
@@ -149,6 +149,7 @@ function SnapshotPanel({
 }
 
 export default function AnnexASnapshotPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const qc = useQueryClient();

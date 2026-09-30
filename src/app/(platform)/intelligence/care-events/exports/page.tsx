@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,6 @@ import { apiFetch } from "@/hooks/use-api";
 import type { ExportHistoryEntry, ExportHistoryKind } from "@/lib/db/store";
 import type { ExportHistorySummary } from "@/lib/care-events/export-history";
 
-const HOME_ID = "home_oak";
 
 const KIND_LABEL: Record<ExportHistoryKind, string> = {
   inspection_snapshot: "Inspection Snapshot",
@@ -30,6 +30,7 @@ const KIND_LABEL: Record<ExportHistoryKind, string> = {
 interface SummaryResponse { data: ExportHistorySummary }
 
 export default function ExportHistoryPage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useQuery({
     queryKey: ["export-history", HOME_ID],
     queryFn: () =>

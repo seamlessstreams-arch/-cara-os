@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,6 @@ function useOversightInbox(homeId: string) {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const PRIORITY_TONE: Record<OversightPriority, string> = {
   critical: "bg-rose-100 text-rose-800 border-rose-300",
@@ -64,6 +64,7 @@ const SOURCE_ORDER: OversightItemSource[] = [
 ];
 
 export default function OversightInboxPage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useOversightInbox(HOME_ID);
   const summary = data?.data;
 

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,9 +25,9 @@ interface SnapshotExportResponse {
   data: { export: ExportHistoryEntry; payload: InspectionSnapshot };
 }
 
-const HOME_ID = "home_oak";
 
 export default function InspectionSnapshotPage() {
+  const HOME_ID = useHomeId();
   const qc = useQueryClient();
   const list = useQuery({
     queryKey: ["inspection-snapshots", HOME_ID],

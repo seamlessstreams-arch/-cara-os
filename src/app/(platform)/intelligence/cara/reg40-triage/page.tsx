@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
@@ -39,7 +40,6 @@ interface ScanResponse {
   data: { created: CaraReg40Triage[] };
 }
 
-const HOME_ID = "home_oak";
 
 const STATUS_TONE: Record<Reg40TriageStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -210,6 +210,7 @@ function DecidedCard({ rec }: { rec: CaraReg40Triage }) {
 }
 
 export default function Reg40TriagePage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const qc = useQueryClient();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");

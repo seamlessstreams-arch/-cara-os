@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,9 +29,9 @@ interface InspectionBundleExportResponse {
   data: { export: ExportHistoryEntry; bundle: InspectionBundle };
 }
 
-const HOME_ID = "home_oak";
 
 export default function InspectionBundlePage() {
+  const HOME_ID = useHomeId();
   const exportBundle = useMutation({
     mutationFn: (input: { homeId: string; reason?: string }) =>
       apiFetch<InspectionBundleExportResponse>(
