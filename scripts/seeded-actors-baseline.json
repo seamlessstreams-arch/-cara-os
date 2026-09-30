@@ -1,5 +1,4 @@
 {
-  "src/app/(platform)/activities/page.tsx": 8,
   "src/app/(platform)/behaviour-support-plans/page.tsx": 1,
   "src/app/(platform)/cara/incident-mode/page.tsx": 2,
   "src/app/(platform)/care-plans/page.tsx": 1,
@@ -62,8 +61,6 @@
   "src/app/(platform)/relational/page.tsx": 1,
   "src/app/(platform)/risk-assessments/page.tsx": 2,
   "src/app/(platform)/safeguarding/page.tsx": 10,
-  "src/app/(platform)/shift-notes/page.tsx": 1,
-  "src/app/(platform)/significant-events/page.tsx": 1,
   "src/app/(platform)/sleep-in-log/page.tsx": 2,
   "src/app/(platform)/staff-competency/page.tsx": 1,
   "src/app/(platform)/staff-reflections/page.tsx": 1,

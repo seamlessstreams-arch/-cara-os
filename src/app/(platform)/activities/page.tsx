@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -319,14 +320,7 @@ function NewActivityDialog({
             </div>
             <div>
               <label htmlFor="4350-staff-member" className="text-xs text-slate-500 font-medium mb-1 block">Staff member</label>
-              <Select value={form.staff_id} onValueChange={(v) => setForm((p) => ({ ...p, staff_id: v }))}>
-                <SelectTrigger id="4350-staff-member" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
-                    <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <StaffSelect value={form.staff_id} onChange={(v) => setForm((p) => ({ ...p, staff_id: v }))} />
             </div>
           </div>
 
