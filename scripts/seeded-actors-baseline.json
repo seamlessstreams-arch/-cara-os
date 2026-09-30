@@ -1,10 +1,7 @@
 {
   "src/app/(platform)/behaviour-support-plans/page.tsx": 1,
-  "src/app/(platform)/children/progress/page.tsx": 1,
-  "src/app/(platform)/complaints/page.tsx": 1,
-  "src/app/(platform)/emergency-contacts/page.tsx": 2,
+  "src/app/(platform)/emergency-contacts/page.tsx": 1,
   "src/app/(platform)/house-meetings/page.tsx": 1,
-  "src/app/(platform)/incidents/learning-review/page.tsx": 2,
   "src/app/(platform)/lac-reviews/page.tsx": 1,
   "src/app/(platform)/pathway-plan-16plus/page.tsx": 2,
   "src/app/(platform)/recruitment/page.tsx": 1,

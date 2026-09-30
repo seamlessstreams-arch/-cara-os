@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { api } from "@/hooks/use-api";
 
@@ -190,10 +191,11 @@ export default function EmergencyContactsPage() {
   const updateMutation = useUpdateEmergencyChildContact();
   const contacts = query.data?.data ?? [];
   const childIds = [...new Set(contacts.map((c) => c.child_id))];
+  const homeId = useHomeId();
 
   const { data: homeContactsResult } = useQuery<{ data: HomeEmergencyContact[] }>({
-    queryKey: ["home-emergency-contacts", "home_oak"],
-    queryFn: () => api.get<{ data: HomeEmergencyContact[] }>("/api/v1/home-emergency-contacts?home_id=home_oak"),
+    queryKey: ["home-emergency-contacts", homeId],
+    queryFn: () => api.get<{ data: HomeEmergencyContact[] }>(`/api/v1/home-emergency-contacts?home_id=${homeId}`),
   });
   const HOME_CONTACTS = homeContactsResult?.data ?? [];
 
