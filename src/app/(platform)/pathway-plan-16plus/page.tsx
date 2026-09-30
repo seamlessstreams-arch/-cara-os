@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { currentUserId } from "@/lib/auth/current-user";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -66,6 +67,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { EmptyState } from "@/components/ui/empty-state";
+const SENIOR_ON_RECORD = "staff_ryan"; // seed-actor-ok: demo continuity-record senior (getStaffName -> Unknown on live)
 const PATHWAY_PLANS_KEY = "pathway-plans";
 
 async function pathwayFetchRecords(childId?: string): Promise<{ data: PathwayPlan[] }> {
@@ -504,8 +506,8 @@ export default function PathwayPlan16PlusPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         Maintained by {homeName} continuity record (RM:{" "}
-                        <strong>{getStaffName("staff_darren")}</strong>, Senior:{" "}
-                        <strong>{getStaffName("staff_ryan")}</strong>)
+                        <strong>{getStaffName(currentUserId())}</strong>, Senior:{" "}
+                        <strong>{getStaffName(SENIOR_ON_RECORD)}</strong>)
                       </span>
                     </div>
                   </CardContent>

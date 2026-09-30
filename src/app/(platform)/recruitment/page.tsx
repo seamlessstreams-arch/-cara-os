@@ -37,6 +37,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+const STAFF_REFERRAL_SOURCE = "staff_referral"; // seed-actor-ok: recruitment referral-source enum, not a staff id
 
 // ── Inlined from use-recruitment ─────────────────────────────────────────────
 
@@ -1206,7 +1207,7 @@ export default function RecruitmentPage() {
                 <option value="indeed">Indeed</option>
                 <option value="totaljobs">TotalJobs</option>
                 <option value="reed">Reed</option>
-                <option value="staff_referral">Staff referral</option>
+                <option value={STAFF_REFERRAL_SOURCE}>Staff referral</option>
                 <option value="agency">Agency</option>
                 <option value="walk_in">Walk-in</option>
                 <option value="linkedin">LinkedIn</option>

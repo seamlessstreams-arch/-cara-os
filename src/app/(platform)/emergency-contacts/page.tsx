@@ -564,7 +564,7 @@ export default function EmergencyContactsPage() {
               All emergency contacts must be reviewed monthly and kept accurate at all times.
               The Reg 44 independent visitor should verify the accuracy of this board during each visit.
               Any changes to key contacts should be updated immediately and the review date recorded.
-              Last updated by {getStaffName("staff_darren")} on {formatDate(LAST_REVIEWED)}.
+              Last updated by {getStaffName(currentUserId())} on {formatDate(LAST_REVIEWED)}.
             </p>
           </div>
         </div>
