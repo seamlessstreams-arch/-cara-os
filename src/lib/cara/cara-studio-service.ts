@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import type {
   CaraGenerationRequest, CaraGenerationResult, CaraArtifact,
   CaraStructuredContent, CaraArtifactType, CaraFramework, CaraTone,
@@ -58,7 +59,7 @@ export async function generateArtifact(
     artifactType: request.artifact_type,
     title: request.title,
     childId: request.child_id,
-    homeId: request.home_id,
+    homeId: (request.home_id ?? tenantHomeId()),
     framework: request.framework,
     tone: request.tone,
     creativeMode: request.creative_mode,
@@ -123,7 +124,7 @@ export async function generateArtifact(
     title: request.title,
     status: "draft",
     child_id: request.child_id,
-    home_id: request.home_id,
+    home_id: (request.home_id ?? tenantHomeId()),
     staff_id: request.staff_id,
     incident_id: request.incident_id,
     linked_record_id: request.linked_record_id,
@@ -173,7 +174,7 @@ export async function generateArtifact(
 
   // 8. Write audit log
   db.caraStudioAuditLog.create({
-    home_id: request.home_id,
+    home_id: (request.home_id ?? tenantHomeId()),
     actor_id: request.requested_by,
     action_type: "artifact_generated",
     artifact_id: artifact.id,
@@ -188,7 +189,7 @@ export async function generateArtifact(
 
   // 9. Persist gaps
   const persistedGaps = gaps.map((gap) => db.caraGaps.create({
-    home_id: request.home_id,
+    home_id: (request.home_id ?? tenantHomeId()),
     child_id: gap.child_id,
     staff_id: null,
     gap_type: gap.gap_type,

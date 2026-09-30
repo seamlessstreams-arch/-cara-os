@@ -150,7 +150,6 @@ export function VoiceCaptureModal({
     createVoiceRecord(
       {
         child_id:       childId,
-        home_id:        "home_oak",
         recorded_at:    new Date().toISOString(),
         theme:          theme as VoiceTheme,
         capture_method: captureMethod as CaptureMethod,

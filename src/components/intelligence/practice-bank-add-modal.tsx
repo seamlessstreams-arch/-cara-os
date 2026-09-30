@@ -172,7 +172,6 @@ export function PracticeBankAddModal({
     createEntry(
       ({
         child_id: childId,
-        home_id: "home_oak",
         category,
         title: title.trim(),
         description: description.trim(),

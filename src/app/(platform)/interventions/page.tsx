@@ -466,7 +466,6 @@ function NewInterventionDialog({
     try {
       await onSave({
         ...form,
-        home_id: "home_oak",
         started_at: todayStr(),
         review_date: form.review_date || null,
         agreed_by: currentUserId(),

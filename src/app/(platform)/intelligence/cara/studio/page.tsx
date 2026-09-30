@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, Suspense } from "react";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/hooks/use-api";
@@ -325,8 +326,7 @@ function CaraStudioPageInner() {
       artifact_type: selectedType,
       title: formData.title || CARA_ARTIFACT_TYPE_LABELS[selectedType],
       child_id: formData.child_id && formData.child_id !== "__home" ? formData.child_id : null,
-      home_id: "home_oak",
-      staff_id: "staff_anna",
+      staff_id: currentUserId(),
       incident_id: null,
       linked_record_id: null,
       linked_record_type: null,
@@ -335,7 +335,7 @@ function CaraStudioPageInner() {
       creative_mode: formData.creative_mode,
       source_ids: [],
       additional_context: formData.additional_context,
-      requested_by: "staff_anna",
+      requested_by: currentUserId(),
       date_range_from: null,
       date_range_to: null,
     };
@@ -348,11 +348,11 @@ function CaraStudioPageInner() {
   }
 
   function handleSubmit(artifactId: string) {
-    updateMutation.mutate({ id: artifactId, action: "submit", actor_id: "staff_anna" });
+    updateMutation.mutate({ id: artifactId, action: "submit", actor_id: currentUserId() });
   }
 
   function handleArchive(artifactId: string) {
-    updateMutation.mutate({ id: artifactId, action: "archive", actor_id: "staff_anna" });
+    updateMutation.mutate({ id: artifactId, action: "archive", actor_id: currentUserId() });
   }
 
   function handleDelete(artifactId: string) {
@@ -360,7 +360,7 @@ function CaraStudioPageInner() {
   }
 
   function handleRecover(artifactId: string) {
-    updateMutation.mutate({ id: artifactId, action: "recover", actor_id: "staff_anna" });
+    updateMutation.mutate({ id: artifactId, action: "recover", actor_id: currentUserId() });
   }
 
   return (

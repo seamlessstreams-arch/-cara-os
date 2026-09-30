@@ -395,7 +395,6 @@ function ExperienceScoresPanel({ childId }: { childId: string }) {
 
       await createSnapshot.mutateAsync({
         child_id:              childId,
-        home_id:               "home_oak",
         period_start:          periodStart,
         period_end:            periodEnd,
         safety_score:          Number(parsed.safety_score        ?? 50),

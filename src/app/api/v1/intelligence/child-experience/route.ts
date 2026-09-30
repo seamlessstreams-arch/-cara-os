@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   if (denied) return denied;
 
   const required = [
-    "child_id", "home_id", "period_start", "period_end",
+    "child_id", "period_start", "period_end",
     "safety_score", "belonging_score", "regulation_score", "engagement_score",
     "relationships_score", "participation_score", "health_score", "education_score",
     "stability_score", "achievement_score", "overall_score", "narrative",
