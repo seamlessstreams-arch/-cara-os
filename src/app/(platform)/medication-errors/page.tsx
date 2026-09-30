@@ -739,7 +739,7 @@ function NewErrorDialog({
   }
 
   function resetForm() {
-    setChildId("yp_alex");
+    setChildId("");
     setDateOccurred("");
     setTimeOccurred("");
     setErrorType("wrong_dose");

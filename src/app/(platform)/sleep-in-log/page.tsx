@@ -76,7 +76,7 @@ export default function SleepInLogPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const createSleepIn = useCreateSleepInRecord();
-  const [siForm, setSiForm] = useState({ date: todayStr(), staff_member: currentUserId(), start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "staff_ryan" });
+  const [siForm, setSiForm] = useState({ date: todayStr(), staff_member: currentUserId(), start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "" });
   const setSI = (k: keyof typeof siForm, v: string) => setSiForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateSleepIn = async (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export default function SleepInLogPage() {
     if (!siForm.handover_notes.trim()) { toast.error("Handover notes are required."); return; }
     await createSleepIn.mutateAsync({ date: siForm.date, staff_member: siForm.staff_member, start_time: siForm.start_time, end_time: siForm.end_time, room_used: siForm.room_used, disturbances: [], total_disturbance_minutes: 0, rest_achieved: true, handover_notes: siForm.handover_notes.trim(), handover_to: siForm.handover_to, room_condition: "clean", safety_check_completed: true, alarms_working: true, issues_reported: [], compensatory_rest: false, compensatory_rest_date: null, status: "completed", notes: "" });
     toast.success("Sleep-in logged.");
-    setSiForm({ date: todayStr(), staff_member: currentUserId(), start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "staff_ryan" });
+    setSiForm({ date: todayStr(), staff_member: currentUserId(), start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "" });
     setDialogOpen(false);
   };
 

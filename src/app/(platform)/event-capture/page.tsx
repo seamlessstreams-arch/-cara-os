@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CaptureOutcome } from "@/lib/event-capture/capture-event-service";
@@ -134,10 +135,10 @@ export default function EventCapturePage() {
 // ── The real capture-once write path: a form is a thin view over the spine ──────
 
 const EVENT_TYPES = ["daily_log", "keywork", "incident", "safeguarding", "medication", "education", "health", "physical_intervention"] as const;
-const CHILDREN = [{ id: "yp_alex", name: "Alex" }, { id: "yp_jordan", name: "Jordan" }, { id: "yp_casey", name: "Casey" }];
 const RISKS = ["low", "medium", "high", "critical"] as const;
 
 function CaptureEventForm() {
+  const CHILDREN = useChildren().children;
   const qc = useQueryClient();
   const SPINE_VIEWS = [
     "event-stream", "event-intelligence", "event-capture",
@@ -151,7 +152,7 @@ function CaptureEventForm() {
     },
   });
   const [eventType, setEventType] = useState<string>("daily_log");
-  const [childId, setChildId] = useState<string>("yp_alex");
+  const [childId, setChildId] = useState<string>("");
   const [riskLevel, setRiskLevel] = useState<string>("low");
   const [summary, setSummary] = useState<string>("");
 
@@ -177,7 +178,7 @@ function CaptureEventForm() {
           </label>
           <label className="text-xs space-y-1 block"><span className="text-[var(--cs-text-muted)]">Child</span>
             <select className={fieldCls} value={childId} onChange={(e) => setChildId(e.target.value)}>
-              {CHILDREN.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {CHILDREN.map((c) => <option key={c.id} value={c.id}>{c.preferred_name ?? c.first_name ?? c.id}</option>)}
             </select>
           </label>
           <label className="text-xs space-y-1 block"><span className="text-[var(--cs-text-muted)]">Risk level</span>
