@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -770,14 +771,7 @@ function NewErrorDialog({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label htmlFor="091d-young-person" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person *</label>
-              <Select value={child_id} onValueChange={setChildId}>
-                <SelectTrigger id="091d-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <ChildSelect value={child_id} onChange={setChildId} />
             </div>
             <div>
               <label htmlFor="091d-date-occurred" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Date Occurred *</label>

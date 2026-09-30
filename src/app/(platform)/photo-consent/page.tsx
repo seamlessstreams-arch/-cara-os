@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -19,7 +20,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
-  Filter,
   ChevronDown,
   ChevronUp,
   AlertTriangle,
@@ -143,7 +143,7 @@ export default function PhotoConsentPage() {
         </div>
 
         <div className="flex gap-3 mb-6">
-          <Select value={filterChild} onValueChange={setFilterChild}><SelectTrigger className="w-[180px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Children</SelectItem><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select>
+          <ChildSelect value={filterChild} onChange={setFilterChild} />
         </div>
 
         <div className="space-y-4">

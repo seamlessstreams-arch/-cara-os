@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -336,17 +337,7 @@ export default function EmergencyMedicationProtocolsPage() {
           />
         </div>
 
-        <Select value={ypFilter} onValueChange={setYpFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Young Person" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Young People</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={ypFilter} onChange={setYpFilter} />
 
         <Select value={triggerFilter} onValueChange={setTriggerFilter}>
           <SelectTrigger className="w-[200px]">

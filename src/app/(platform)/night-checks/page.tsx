@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -271,15 +272,7 @@ export default function NightChecksPage() {
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <Input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
-        <Select value={childFilter} onValueChange={setChildFilter}>
-          <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Young person" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={childFilter} onChange={setChildFilter} />
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as NightCheckSleepStatus | "all")}>
           <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>

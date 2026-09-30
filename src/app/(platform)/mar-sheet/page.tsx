@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -13,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Filter, ArrowUpDown, ChevronDown, ChevronUp,
+  ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, XCircle, Clock, Pill, ShieldCheck, Loader2,
 } from "lucide-react";
 import { cn, todayStr, londonDayDiff } from "@/lib/utils";
@@ -178,15 +179,7 @@ export default function MarSheetPage() {
       )}
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Select value={ypFilter} onValueChange={setYpFilter}>
-          <SelectTrigger className="h-8 text-xs w-[160px]"><Filter className="h-3 w-3 mr-1 text-[var(--cs-text-muted)]" /><SelectValue placeholder="Young person" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Young People</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={ypFilter} onChange={setYpFilter} />
         <Select value={dateFilter} onValueChange={setDateFilter}>
           <SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue placeholder="Date" /></SelectTrigger>
           <SelectContent>

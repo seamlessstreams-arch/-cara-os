@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -151,15 +152,7 @@ export default function ChildCorrespondenceIncomingPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Select value={filterYP} onValueChange={setFilterYP}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Children" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={filterYP} onChange={setFilterYP} />
         <Select value={filterSender} onValueChange={setFilterSender}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Senders" /></SelectTrigger>
           <SelectContent>

@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { StaffSelect } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -269,17 +270,7 @@ export default function PocketMoneyAccountsPage() {
               className="pl-9 h-9 text-sm"
             />
           </div>
-          <Select value={childFilter} onValueChange={setChildFilter}>
-            <SelectTrigger className="w-[170px] h-9 text-sm">
-              <SelectValue placeholder="All Children" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Children</SelectItem>
-              <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-              <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-              <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-            </SelectContent>
-          </Select>
+          <ChildSelect value={childFilter} onChange={setChildFilter} />
           <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as PocketMoneyAccountTxType | "all")}>
             <SelectTrigger className="w-[160px] h-9 text-sm">
               <SelectValue placeholder="All Types" />
@@ -502,14 +493,7 @@ function NewTransactionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="96ff-young-person" className="text-xs">Young Person</Label>
-              <Select value={childId} onValueChange={setChildId}>
-                <SelectTrigger id="96ff-young-person" className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <ChildSelect value={childId} onChange={setChildId} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="96ff-type" className="text-xs">Type</Label>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -188,15 +189,7 @@ export default function ImmunisationRecordPage() {
       )}
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Select value={ypFilter} onValueChange={setYpFilter}>
-          <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="Young person" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All young people</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={ypFilter} onChange={setYpFilter} />
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[200px] h-9"><SelectValue placeholder="Vaccine status" /></SelectTrigger>
