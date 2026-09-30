@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
@@ -323,17 +324,7 @@ export default function AnnualDevelopmentReviewsPage() {
           <div className="space-y-3">
             <div>
               <Label htmlFor="0e3e-staff-member">Staff Member</Label>
-              <Select value={formStaffId} onValueChange={setFormStaffId}>
-                <SelectTrigger id="0e3e-staff-member"><SelectValue placeholder="Select staff" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                  <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  <SelectItem value="staff_edward">{getStaffName("staff_edward")}</SelectItem>
-                  <SelectItem value="staff_chervelle">{getStaffName("staff_chervelle")}</SelectItem>
-                  <SelectItem value="staff_lackson">{getStaffName("staff_lackson")}</SelectItem>
-                  <SelectItem value="staff_mirela">{getStaffName("staff_mirela")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <StaffSelect value={formStaffId} onChange={setFormStaffId} id="0e3e-staff-member" placeholder="Select staff" />
             </div>
             <div><Label htmlFor="0e3e-review-date">Review Date</Label><Input id="0e3e-review-date" type="date" name="review_date" /></div>
             <div><Label htmlFor="0e3e-review-period">Review Period</Label><Input id="0e3e-review-period" placeholder="e.g. April 2024 – March 2025" name="period" /></div>
