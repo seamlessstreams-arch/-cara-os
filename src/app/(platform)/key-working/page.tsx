@@ -639,7 +639,7 @@ export default function KeyWorkingPage() {
         days={28}
         defaultCollapsed
       />
-      <CaraPracticePanel sourceType="key_work" homeId="home_oak" title="Run Cara on this session" />
+      <CaraPracticePanel sourceType="key_work" title="Run Cara on this session" />
       <div className="mt-4">
         <WritingToChildPanel defaultRecordType="key_work" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this session record" />
       </div>

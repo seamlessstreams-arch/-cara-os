@@ -1508,7 +1508,7 @@ export default function IncidentsPage() {
           defaultCollapsed
         />
       </div>
-      <CaraPracticePanel sourceType="incident" homeId="home_oak" title="Run Cara on this incident" />
+      <CaraPracticePanel sourceType="incident" title="Run Cara on this incident" />
       <div className="mt-4">
         <WritingToChildPanel defaultRecordType="incident" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this incident record" />
       </div>

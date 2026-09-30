@@ -1272,7 +1272,7 @@ export default function SupervisionPage() {
         recordType="supervision"
         className="mt-6"
       />
-      <CaraPracticePanel sourceType="supervision" homeId="home_oak" title="Run Cara on this supervision" />
+      <CaraPracticePanel sourceType="supervision" title="Run Cara on this supervision" />
     </PageShell>
     </>
   );

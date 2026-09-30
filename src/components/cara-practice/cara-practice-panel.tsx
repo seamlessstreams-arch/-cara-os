@@ -6,6 +6,7 @@
 // recommendations, next-best-actions).
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,7 @@ export interface CaraPracticePanelProps {
 
 export function CaraPracticePanel(props: CaraPracticePanelProps) {
   const [text, setText] = useState(props.text ?? "");
+  const sessionHomeId = useHomeId();
   const analyse = useCaraPracticeAnalyse();
   const out = analyse.data?.data;
 
@@ -82,7 +84,7 @@ export function CaraPracticePanel(props: CaraPracticePanelProps) {
       sourceId: props.sourceId,
       childId: props.childId,
       staffId: props.staffId,
-      homeId: props.homeId,
+      homeId: props.homeId ?? sessionHomeId,
     };
     analyse.mutate(input);
   };

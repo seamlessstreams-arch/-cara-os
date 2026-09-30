@@ -516,7 +516,7 @@ export default function Reg44VisitorReportsPage() {
     >
       <div id="print-area" className="space-y-6">
 
-        <Reg44ReportIntelligencePanel homeId="home_oak" />
+        <Reg44ReportIntelligencePanel />
 
         {/* -- Summary stats -------------------------------------------------- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -458,7 +458,7 @@ export default function RiskAssessmentsPage() {
         days={28}
         defaultCollapsed
       />
-      <CaraPracticePanel sourceType="risk_assessment" homeId="home_oak" title="Run Cara on this assessment" />
+      <CaraPracticePanel sourceType="risk_assessment" title="Run Cara on this assessment" />
       <div className="mt-4">
         <WritingToChildPanel defaultRecordType="risk_assessment" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this assessment" />
       </div>
