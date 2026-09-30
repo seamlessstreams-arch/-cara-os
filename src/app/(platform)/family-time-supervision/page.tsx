@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import {
   ChevronDown,
   ChevronUp,
@@ -192,15 +193,7 @@ export default function FamilyTimeSupervisionPage() {
           />
         </div>
 
-        <Select value={filterChild} onValueChange={setFilterChild}>
-          <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Children</SelectItem>
-            {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
-              <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <ChildSelect value={filterChild} onChange={setFilterChild} />
 
         <Select value={filterLevel} onValueChange={setFilterLevel}>
           <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue /></SelectTrigger>

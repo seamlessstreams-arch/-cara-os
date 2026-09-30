@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { ChildSelect } from "@/components/young-people/child-select";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -452,9 +453,7 @@ export default function ContactSupervisionPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="bc07-young-person" className="text-sm font-medium">Young Person</label>
-                <Select value={formChildId} onValueChange={setFormChildId}><SelectTrigger id="bc07-young-person" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
-                </Select>
+                <ChildSelect value={formChildId} onChange={setFormChildId} />
               </div>
               <div>
                 <label htmlFor="bc07-contact-type" className="text-sm font-medium">Contact Type</label>

@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { StaffSelect } from "@/components/staff/staff-select";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
@@ -664,18 +665,7 @@ export default function TransportLogPage() {
             </div>
             <div>
               <Label htmlFor="21f0-passengers-yp-ids-comma-separated" className="text-sm font-medium mb-1 block">Passengers (YP IDs, comma separated)</Label>
-              <Select value={nPassengers} onValueChange={setNPassengers}>
-                <SelectTrigger id="21f0-passengers-yp-ids-comma-separated"><SelectValue placeholder="Select young person" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                  <SelectItem value="yp_alex,yp_jordan">{getYPName("yp_alex")} & {getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_alex,yp_casey">{getYPName("yp_alex")} & {getYPName("yp_casey")}</SelectItem>
-                  <SelectItem value="yp_jordan,yp_casey">{getYPName("yp_jordan")} & {getYPName("yp_casey")}</SelectItem>
-                  <SelectItem value="yp_alex,yp_jordan,yp_casey">All Young People</SelectItem>
-                </SelectContent>
-              </Select>
+              <ChildSelect value={nPassengers} onChange={setNPassengers} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

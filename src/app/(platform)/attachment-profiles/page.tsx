@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -456,9 +457,7 @@ export default function AttachmentProfilesPage() {
           <div className="space-y-3 py-2">
             <div>
               <label htmlFor="693a-young-person" className="text-sm font-medium">Young Person</label>
-              <Select value={nChild} onValueChange={setNChild}><SelectTrigger id="693a-young-person" className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
-              </Select>
+              <ChildSelect value={nChild} onChange={setNChild} />
             </div>
             <div>
               <label htmlFor="693a-primary-attachment-style" className="text-sm font-medium">Primary Attachment Style</label>

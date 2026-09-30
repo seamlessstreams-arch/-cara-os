@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -293,18 +294,7 @@ export default function DrugAndAlcoholScreeningPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={filterChild} onValueChange={setFilterChild}>
-            <SelectTrigger className="w-[150px]">
-              <Filter className="h-4 w-4 mr-1" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Children</SelectItem>
-              <SelectItem value="yp_alex">Alex</SelectItem>
-              <SelectItem value="yp_jordan">Jordan</SelectItem>
-              <SelectItem value="yp_casey">Casey</SelectItem>
-            </SelectContent>
-          </Select>
+          <ChildSelect value={filterChild} onChange={setFilterChild} />
           <Select value={filterTool} onValueChange={setFilterTool}>
             <SelectTrigger className="w-[200px]">
               <Filter className="h-4 w-4 mr-1" />

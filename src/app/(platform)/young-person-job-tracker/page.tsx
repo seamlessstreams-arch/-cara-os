@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -85,7 +86,7 @@ export default function YoungPersonJobTrackerPage() {
         <p className="text-sm text-amber-800">Children working under 16 require a Local Authority work permit. Hours capped per child employment regulations. Schoolwork prioritised. Earnings belong to the child. We support, never push, into work.</p>
       </div>
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Select value={filterYP} onValueChange={setFilterYP}><SelectTrigger className="w-[160px]"><SelectValue placeholder="All Children" /></SelectTrigger><SelectContent><SelectItem value="all">All Children</SelectItem><SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem><SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem><SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem></SelectContent></Select>
+        <ChildSelect value={filterYP} onChange={setFilterYP} />
         <div className="flex items-center gap-1"><ArrowUpDown className="h-4 w-4 text-muted-foreground" /><Select value={sortBy} onValueChange={setSortBy}><SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="date">Most Recent</SelectItem></SelectContent></Select></div>
       </div>
       <div className="space-y-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -147,15 +148,7 @@ export default function AfterSchoolClubTrackerPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Select value={filterYP} onValueChange={setFilterYP}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Children" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={filterYP} onChange={setFilterYP} />
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
           <SelectContent>

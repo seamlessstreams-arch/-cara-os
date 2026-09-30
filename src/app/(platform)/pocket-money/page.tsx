@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { ChildSelect } from "@/components/young-people/child-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -232,14 +233,7 @@ function NewTransactionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="6a93-young-person" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person</label>
-              <Select value={childId} onValueChange={setChildId}>
-                <SelectTrigger id="6a93-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <ChildSelect value={childId} onChange={setChildId} />
             </div>
             <div>
               <label htmlFor="6a93-type" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Type</label>
@@ -435,15 +429,7 @@ export default function PocketMoneyPage() {
           <Input placeholder="Search transactions…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
         <Filter className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
-        <Select value={childFilter} onValueChange={setChildFilter}>
-          <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Child" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <ChildSelect value={childFilter} onChange={setChildFilter} />
         <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as PocketMoneyTransactionType | "all")}>
           <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
