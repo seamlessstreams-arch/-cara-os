@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +18,9 @@ import { api } from "@/hooks/use-api";
 import type { PersistedInspectionBundleRow } from "@/lib/care-events/inspection-bundle";
 import type { InspectionBundleDiff } from "@/lib/care-events/inspection-bundle-diff";
 
-const HOME_ID = "home_oak";
 
 export default function InspectionBundleDiffPage() {
+  const HOME_ID = useHomeId();
   const list = useQuery({
     queryKey: ["inspection-bundles", HOME_ID],
     queryFn: () =>

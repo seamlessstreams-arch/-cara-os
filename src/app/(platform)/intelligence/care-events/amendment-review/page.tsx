@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,6 @@ import type {
   AmendmentReviewSummary,
 } from "@/lib/care-events/amendment-review";
 
-const HOME_ID = "home_oak";
 
 const FLAG_META: Record<AmendmentSensitiveFlag, { label: string; icon: React.ReactNode; tone: string }> = {
   safeguarding: { label: "Safeguarding", icon: <Shield className="h-3 w-3" />, tone: "bg-rose-100 text-rose-800" },
@@ -37,6 +37,7 @@ interface Response {
 }
 
 export default function AmendmentReviewPage() {
+  const HOME_ID = useHomeId();
   const { data, isLoading, refetch, isFetching } = useQuery<Response>({
     queryKey: ["amendment-review", HOME_ID],
     queryFn: () =>

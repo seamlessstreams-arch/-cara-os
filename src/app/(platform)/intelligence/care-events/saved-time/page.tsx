@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import { api } from "@/hooks/use-api";
 import { ROUTE_TYPE_LABEL } from "@/types/care-events";
 import type { SavedTimeDashboard, SavedTimeWindow } from "@/lib/care-events/saved-time-dashboard";
 
-const HOME_ID = "home_oak";
 
 interface SavedTimeDashboardResponse { data: SavedTimeDashboard }
 
@@ -30,6 +30,7 @@ function useSavedTimeDashboard(homeId: string) {
 }
 
 export default function SavedTimeDashboardPage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useSavedTimeDashboard(HOME_ID);
   const dash = data?.data;
 

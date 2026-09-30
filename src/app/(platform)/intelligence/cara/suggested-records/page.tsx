@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
@@ -233,7 +234,6 @@ function useAmendCommittedRecord() {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const STATUS_TONE: Record<CaraSuggestedRecord["status"], string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -550,6 +550,7 @@ function CommittedCard({
 }
 
 export default function SuggestedRecordsPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 

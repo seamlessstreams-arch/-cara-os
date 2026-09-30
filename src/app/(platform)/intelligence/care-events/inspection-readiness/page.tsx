@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,6 @@ import { RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck, HelpCircle } from 
 import { api } from "@/hooks/use-api";
 import type { ReadinessSeverity, InspectionReadinessReport } from "@/lib/care-events/inspection-readiness";
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_META: Record<ReadinessSeverity, { label: string; tone: string; icon: React.ReactNode }> = {
   ready:             { label: "Inspection-ready",  tone: "bg-emerald-100 text-emerald-800", icon: <ShieldCheck className="h-4 w-4" /> },
@@ -28,6 +28,7 @@ const SEVERITY_META: Record<ReadinessSeverity, { label: string; tone: string; ic
 };
 
 export default function InspectionReadinessPage() {
+  const HOME_ID = useHomeId();
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["inspection-readiness", HOME_ID],
     queryFn: () =>

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,6 @@ interface Response {
   data: JobQueueStatus;
 }
 
-const HOME_ID = "home_oak";
 
 const STATUS_TONE: Record<string, string> = {
   pending:        "bg-slate-100 text-slate-700 border-slate-300",
@@ -46,6 +46,7 @@ function pretty(s: string): string {
 const JOB_STATUS_ORDER: JobStatus[] = ["pending", "processing", "completed", "failed", "retry_required"];
 
 export default function JobQueuePage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useQuery({
     queryKey: ["job-queue-status", HOME_ID],
     queryFn: () =>

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { ReturnedAgeBand, ReturnedRecordRow, ReturnedRecordsSummary } from "@/lib/care-events/returned-records";
 
-const HOME_ID = "home_oak";
 
 interface ReturnedRecordsResponse {
   data: ReturnedRecordsSummary;
@@ -44,6 +44,7 @@ const BAND_META: Record<ReturnedAgeBand, { label: string; tone: string }> = {
 const BAND_ORDER: ReturnedAgeBand[] = ["today", "1_3_days", "4_7_days", "over_7_days"];
 
 export default function ReturnedRecordsPage() {
+  const HOME_ID = useHomeId();
   const { data, isLoading, refetch, isFetching } = useReturnedRecords(HOME_ID);
   const summary = data?.data;
 

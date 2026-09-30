@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,6 @@ interface SnapshotResponse {
   data: CaraReg45Snapshot;
 }
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_TONE: Record<CaraReg45EvidenceItem["severity"], string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
@@ -112,6 +112,7 @@ function EvidenceCard({
 }
 
 export default function Reg45EvidencePage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const qc = useQueryClient();

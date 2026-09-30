@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert } from "lucide-react";
@@ -20,7 +21,6 @@ import { api } from "@/hooks/use-api";
 import type { TrajectoryRiEscalation } from "@/lib/care-events/inspection-trajectory";
 import type { TrajectoryRiEscalationAck } from "@/lib/db/store";
 
-const HOME_ID = "home_oak";
 
 interface ListResponse {
   data: {
@@ -59,6 +59,7 @@ function useAckTrajectoryRiEscalation(homeId: string) {
 }
 
 export default function RiEscalationsPage() {
+  const HOME_ID = useHomeId();
   const q = useTrajectoryRiEscalations(HOME_ID);
   const escalations = q.data?.data.escalations ?? [];
   const acks = q.data?.data.acks_recent ?? [];
@@ -100,6 +101,7 @@ export default function RiEscalationsPage() {
 }
 
 function EscalationRow({ escalation }: { escalation: TrajectoryRiEscalation }) {
+  const HOME_ID = useHomeId();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const ack = useAckTrajectoryRiEscalation(HOME_ID);

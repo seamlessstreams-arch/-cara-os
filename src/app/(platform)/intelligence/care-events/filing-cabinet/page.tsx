@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { PageShell } from "@/components/layout/page-shell";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,6 @@ import type { FilingCabinetIndex } from "@/lib/care-events/filing-cabinet-index"
 import type { FilingCategory } from "@/types/care-events";
 import type { ExportHistoryEntry } from "@/lib/db/store";
 
-const HOME_ID = "home_oak";
 
 function pretty(category: string): string {
   return category.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -34,6 +34,7 @@ interface FilingExportResponse {
 }
 
 export default function FilingCabinetIndexPage() {
+  const HOME_ID = useHomeId();
   const { data, refetch, isFetching, isLoading } = useQuery({
     queryKey: ["filing-cabinet-index", HOME_ID],
     queryFn: () =>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { api } from "@/hooks/use-api";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -25,7 +26,6 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type { CaraReg45Report, CaraReg45Theme } from "@/types/cara-studio";
 
-const HOME_ID = "home_oak";
 
 const STATUS_TONE: Record<CaraReg45Report["status"], string> = {
   draft: "bg-slate-100 text-slate-700",
@@ -35,6 +35,7 @@ const STATUS_TONE: Record<CaraReg45Report["status"], string> = {
 };
 
 export default function Reg45ReportPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 

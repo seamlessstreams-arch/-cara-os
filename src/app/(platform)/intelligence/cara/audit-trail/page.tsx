@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo, useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +35,6 @@ import { CARA_AUDIT_ACTION_LABELS } from "@/lib/cara/cara-audit-trail";
 import type { CaraAuditAction, CaraStudioAuditLog } from "@/types/cara-studio";
 
 import { api } from "@/hooks/use-api";
-const HOME_ID = "home_oak";
 
 const ACTION_VALUES: CaraAuditAction[] = [
   "source_indexed",
@@ -93,6 +93,7 @@ function isDenied(entry: CaraStudioAuditLog): boolean {
 }
 
 export default function CaraAuditTrailPage() {
+  const HOME_ID = useHomeId();
   const [actor, setActor] = useState<string>("");
   const [action, setAction] = useState<CaraAuditAction | "">("");
   const [showDeniedOnly, setShowDeniedOnly] = useState(false);

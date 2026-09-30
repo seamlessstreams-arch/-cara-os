@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +87,6 @@ function useCareEventPatterns(
   });
 }
 
-const HOME_ID = "home_oak";
 
 const TYPE_ICONS: Record<CareEventPatternType, React.ReactNode> = {
   frequency_cluster:    <Activity className="h-4 w-4" />,
@@ -111,6 +111,7 @@ const SEVERITY_TONES: Record<CareEventPatternSeverity, string> = {
 };
 
 export default function CareEventPatternsPage() {
+  const HOME_ID = useHomeId();
   const [lookbackDays, setLookbackDays] = useState(30);
   const [minCluster, setMinCluster] = useState(3);
   const { data, isLoading, refetch, isFetching } = useCareEventPatterns(HOME_ID, {

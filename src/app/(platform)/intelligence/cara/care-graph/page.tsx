@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
@@ -65,7 +66,6 @@ function useRebuildCareGraph() {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const SEVERITY_TONE: Record<CaraPatternSeverity, string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
@@ -162,6 +162,7 @@ function NodeRow({
 }
 
 export default function CareGraphPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(
     currentUser?.role ?? "registered_manager",

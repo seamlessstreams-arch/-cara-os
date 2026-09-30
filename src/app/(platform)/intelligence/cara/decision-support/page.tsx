@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,6 @@ function useUpdateFormulation() {
   });
 }
 
-const HOME_ID = "home_oak";
 
 const PRIORITY_TONE: Record<CaraDecisionPriority, string> = {
   p1: "bg-rose-50 text-rose-800 border-rose-300",
@@ -306,6 +306,7 @@ function RecommendationCard({
 }
 
 export default function DecisionSupportPage() {
+  const HOME_ID = useHomeId();
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(
     currentUser?.role ?? "registered_manager",
