@@ -715,7 +715,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`}
             className="px-3 py-1.5 text-sm rounded-lg shadow-none"
           />
-          <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: (currentUser?.home_id ?? "") }} />
           <Link href={`/intelligence/cara/relationship-intelligence?child=${id}`}>
             <Button variant="outline" size="sm" className="gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold,#b45309)]" />Relationship Intelligence

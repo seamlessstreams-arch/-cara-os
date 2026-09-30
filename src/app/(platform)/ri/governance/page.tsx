@@ -344,7 +344,7 @@ function NewReportDialog({
     const now = new Date().toISOString();
     const report: LocalReport = {
       id: `rigr_local_${Date.now()}`,
-      home_id: "home_oak",
+      home_id: (currentUser?.home_id ?? ""),
       report_type: reportType,
       report_period: period || undefined,
       generated_by_cara: false,
@@ -475,7 +475,7 @@ function NewReportDialog({
 
 export default function GovernanceReportsPage() {
   const { currentUser } = useAuthContext();
-  const { data: reportsResult } = useRiGovernanceReports("home_oak");
+  const { data: reportsResult } = useRiGovernanceReports((currentUser?.home_id ?? ""));
   const reports = useMemo(() => (reportsResult?.data ?? []) as LocalReport[], [reportsResult]);
   const createMutation = useCreateRiGovernanceReport();
   const updateMutation = useUpdateRiGovernanceReport();

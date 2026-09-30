@@ -408,7 +408,7 @@ type SortKey = "newest" | "oldest";
 
 export default function Reg44Page() {
   const { currentUser } = useAuthContext();
-  const visitsQuery = useReg44Visits({ homeId: "home_oak" });
+  const visitsQuery = useReg44Visits({ homeId: (currentUser?.home_id ?? "") });
   const updateVisit = useUpdateReg44Visit();
 
   const [search, setSearch] = useState("");

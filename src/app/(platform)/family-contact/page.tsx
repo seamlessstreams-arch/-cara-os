@@ -841,7 +841,7 @@ function UnapprovedPersonsBanner({ arrangements }: { arrangements: EnrichedArran
 
 export default function FamilyContactPage() {
   const { currentUser } = useAuthContext();
-  const homeId = "home_oak";
+  const homeId = (currentUser?.home_id ?? "");
   const qc = useQueryClient();
 
   const arrangementsQuery = useQuery({
