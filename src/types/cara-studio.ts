@@ -1124,7 +1124,8 @@ export interface CaraGenerationRequest {
   artifact_type: CaraArtifactType;
   title: string;
   child_id: string | null;
-  home_id: string;
+  /** Optional: when omitted the server assigns the session tenant home (tenantHomeId()). */
+  home_id?: string;
   staff_id: string | null;
   incident_id: string | null;
   linked_record_id: string | null;

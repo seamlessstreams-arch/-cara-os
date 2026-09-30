@@ -89,10 +89,9 @@ function formFrom(p: ShiftPatternRow): FormState {
 function PatternPreview({ form }: { form: FormState }) {
   const { cells, worked } = useMemo(() => {
     const candidate: ShiftPattern = {
-      id: "preview", staff_id: form.staff_id || "preview", name: "preview", kind: form.kind,
+      id: "preview", staff_id: form.staff_id || "preview", name: "preview", kind: form.kind, home_id: "",
       weekdays: form.weekdays, cycle_on: form.cycle_on, cycle_off: form.cycle_off, anchor_date: form.anchor_date,
-      shift_type: form.shift_type, start_time: form.start_time, end_time: form.end_time, active: true, home_id: "home_oak",
-    };
+      shift_type: form.shift_type, start_time: form.start_time, end_time: form.end_time, active: true,    };
     const valid = form.kind === "weekly" ? form.weekdays.length > 0 : form.cycle_on >= 1 && !!form.anchor_date;
     const todayDate = todayStr();
     const todayMs = Date.parse(`${todayDate}T00:00:00Z`);

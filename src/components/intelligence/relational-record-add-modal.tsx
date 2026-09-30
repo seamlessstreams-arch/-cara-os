@@ -112,7 +112,6 @@ export function RelationalRecordAddModal({
     createRecord(
       {
         child_id:    childId,
-        home_id:     "home_oak",
         record_type: recordType as RelationalRecordType,
         title:       title.trim(),
         description: description.trim(),

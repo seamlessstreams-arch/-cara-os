@@ -263,7 +263,6 @@ function NewVoiceDialog({
     setSaving(true);
     try {
       await onSave({
-        home_id: "home_oak",
         child_id: form.child_id,
         recorded_at: new Date().toISOString(),
         theme: form.theme,

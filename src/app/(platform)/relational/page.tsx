@@ -196,7 +196,6 @@ function NewRecordDialog({
     setSaving(true);
     try {
       await onSave({
-        home_id: "home_oak",
         child_id: form.child_id,
         record_type: form.record_type,
         title: form.title,

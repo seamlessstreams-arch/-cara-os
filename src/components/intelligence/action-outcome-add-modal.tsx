@@ -127,7 +127,6 @@ export function ActionOutcomeAddModal({
 
     createActionOutcome.mutate(
       {
-        home_id: "home_oak",
         title: title.trim(),
         what_was_agreed: whatWasAgreed.trim(),
         why_it_matters: whyItMatters.trim(),

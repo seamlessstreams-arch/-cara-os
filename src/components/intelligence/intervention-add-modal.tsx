@@ -197,7 +197,6 @@ export function InterventionAddModal({
     createIntervention(
       ({
         child_id: childId,
-        home_id: "home_oak",
         title: title.trim(),
         category,
         description: description.trim(),
