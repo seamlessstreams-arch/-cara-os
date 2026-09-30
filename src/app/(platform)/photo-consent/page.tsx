@@ -20,7 +20,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
-  Filter,
   ChevronDown,
   ChevronUp,
   AlertTriangle,

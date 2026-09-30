@@ -14,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Filter, ArrowUpDown, ChevronDown, ChevronUp,
+  ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, XCircle, Clock, Pill, ShieldCheck, Loader2,
 } from "lucide-react";
 import { cn, todayStr, londonDayDiff } from "@/lib/utils";
