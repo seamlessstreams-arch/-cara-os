@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
@@ -112,6 +113,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function YPFeedbackPage() {
+  const { children: liveChildren } = useChildren();
   const { data: fbData, isLoading } = useYPFeedback();
   const createFeedback = useCreateYPFeedback();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -204,7 +206,7 @@ export default function YPFeedbackPage() {
 
       {/* sentiment overview per child */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {["yp_alex", "yp_jordan", "yp_casey"].map((ypId) => {
+        {liveChildren.map((c) => c.id).map((ypId) => {
           const entries = data.filter((f) => f.child_id === ypId);
           const sentCounts = entries.reduce((acc, f) => { acc[f.sentiment] = (acc[f.sentiment] || 0) + 1; return acc; }, {} as Record<string, number>);
           return (

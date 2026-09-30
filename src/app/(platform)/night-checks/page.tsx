@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ChildSelect } from "@/components/young-people/child-select";
+import { ChildSelect, useChildren } from "@/components/young-people/child-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -123,6 +123,7 @@ function CheckRow({ check }: { check: NightCheck }) {
 }
 
 export default function NightChecksPage() {
+  const { children: liveChildren } = useChildren();
   const { data: res, isLoading } = useNightChecks();
   const checks: NightCheck[] = useMemo(() => res?.data ?? [], [res]);
 
@@ -181,13 +182,13 @@ export default function NightChecksPage() {
 
   const ypSummary = useMemo(() => {
     const dateChecks = checks.filter((c) => c.date === dateFilter);
-    return ["yp_alex", "yp_casey", "yp_jordan"].map((id) => {
+    return liveChildren.map((c) => c.id).map((id) => {
       const yc = dateChecks.filter((c) => c.child_id === id);
       const hasConcern = yc.some((c) => c.concern_raised);
       const lastCheck = yc.sort((a, b) => b.time.localeCompare(a.time))[0];
       return { id, name: getYPName(id), checkCount: yc.length, hasConcern, lastCheck };
     });
-  }, [checks, dateFilter]);
+  }, [checks, dateFilter, liveChildren]);
 
   const hasFilters = search || childFilter !== "all" || statusFilter !== "all";
 
