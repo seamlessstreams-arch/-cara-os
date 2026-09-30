@@ -1,6 +1,7 @@
 "use client";
 
 import { formatRate } from "@/lib/metrics/rate";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useState, useMemo } from "react";
 import {
   ChevronDown,
@@ -432,7 +433,7 @@ export default function StaffCompetencyPage() {
                       {hasNotAssessed && <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-600">Gaps</span>}
                       {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Competent</span>}
                     </div>
-                    <p className="text-xs text-muted-foreground">{comp}/{total} competencies ({pct}%) · Assessed by {getStaffName("staff_darren")}</p>
+                    <p className="text-xs text-muted-foreground">{comp}/{total} competencies ({pct}%) · Assessed by {getStaffName(currentUserId())}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">

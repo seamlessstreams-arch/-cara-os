@@ -24,6 +24,7 @@ import { STAFF_REFLECTION_TYPE_LABEL, STAFF_REFLECTION_MOOD_LABEL } from "@/type
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+const REFLECTION_SOURCE_TYPE = "staff_reflection"; // seed-actor-ok: EntryAssist source-record-type enum, not a staff id
 
 /* ── data hooks (inlined from use-staff-reflection-records) ──────────────── */
 
@@ -237,7 +238,7 @@ export default function StaffReflectionsPage() {
               <div><Label htmlFor="bcfb-type">Type</Label><Select value={rfForm.type} onValueChange={(v) => setRF("type", v)}><SelectTrigger id="bcfb-type" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_TYPE_LABEL) as [StaffReflectionType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
               <div><Label htmlFor="bcfb-mood">Mood</Label><Select value={rfForm.mood} onValueChange={(v) => setRF("mood", v)}><SelectTrigger id="bcfb-mood" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_MOOD_LABEL) as [StaffReflectionMood, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             </div>
-            <div><Label htmlFor="bcfb-what-happened">What Happened</Label><Textarea id="bcfb-what-happened" className="mt-1" rows={3} value={rfForm.what_happened} onChange={(e) => setRF("what_happened", e.target.value)} /><EntryAssist value={rfForm.what_happened} onChange={(v) => setRF("what_happened", v)} sourceRecordType="staff_reflection" className="mt-1" /></div>
+            <div><Label htmlFor="bcfb-what-happened">What Happened</Label><Textarea id="bcfb-what-happened" className="mt-1" rows={3} value={rfForm.what_happened} onChange={(e) => setRF("what_happened", e.target.value)} /><EntryAssist value={rfForm.what_happened} onChange={(v) => setRF("what_happened", v)} sourceRecordType={REFLECTION_SOURCE_TYPE} className="mt-1" /></div>
             <div><Label htmlFor="bcfb-what-i-felt">What I Felt</Label><Textarea id="bcfb-what-i-felt" className="mt-1" rows={2} value={rfForm.what_i_felt} onChange={(e) => setRF("what_i_felt", e.target.value)} /></div>
             <div><Label htmlFor="bcfb-what-i-learned">What I Learned</Label><Textarea id="bcfb-what-i-learned" className="mt-1" rows={2} value={rfForm.what_i_learned} onChange={(e) => setRF("what_i_learned", e.target.value)} /></div>
             <div><Label htmlFor="bcfb-what-i-would-do-differently">What I Would Do Differently</Label><Textarea id="bcfb-what-i-would-do-differently" className="mt-1" rows={2} value={rfForm.what_i_would_do_differently} onChange={(e) => setRF("what_i_would_do_differently", e.target.value)} /></div>
