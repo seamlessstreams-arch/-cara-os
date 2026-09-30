@@ -97,7 +97,7 @@ export default function ShiftNotesPage() {
     if (!snForm.general_notes.trim()) { toast.error("General notes are required."); return; }
     const meta = SHIFT_META[snForm.shift];
     const [start, end] = meta.times.split(" – ");
-    await createNote.mutateAsync({ date: snForm.date, shift: snForm.shift, start_time: start || "19:00", end_time: end || "22:00", staff_on_duty: ["staff_darren"], child_notes: [], general_notes: snForm.general_notes.trim(), maintenance_issues: "", visitors_log: "", handover_priorities: snForm.handover ? snForm.handover.split("\n").map((s) => s.trim()).filter(Boolean) : [], incidents_ref: [], completed_tasks: [], outstanding_tasks: snForm.outstanding ? snForm.outstanding.split("\n").map((s) => s.trim()).filter(Boolean) : [], recorded_by: currentUserId(), created_at: new Date().toISOString() });
+    await createNote.mutateAsync({ date: snForm.date, shift: snForm.shift, start_time: start || "19:00", end_time: end || "22:00", staff_on_duty: [currentUserId()], child_notes: [], general_notes: snForm.general_notes.trim(), maintenance_issues: "", visitors_log: "", handover_priorities: snForm.handover ? snForm.handover.split("\n").map((s) => s.trim()).filter(Boolean) : [], incidents_ref: [], completed_tasks: [], outstanding_tasks: snForm.outstanding ? snForm.outstanding.split("\n").map((s) => s.trim()).filter(Boolean) : [], recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Shift note saved.");
     setSnForm({ date: todayStr(), shift: "evening", general_notes: "", handover: "", outstanding: "" });
     setShowNew(false);

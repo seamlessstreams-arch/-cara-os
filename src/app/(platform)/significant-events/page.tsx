@@ -134,7 +134,7 @@ export default function SignificantEventsPage() {
     e.preventDefault();
     if (!seForm.child_id) { toast.error("Please select a young person."); return; }
     if (!seForm.title.trim()) { toast.error("Title is required."); return; }
-    await createEvent.mutateAsync({ child_id: seForm.child_id, date: seForm.date, time: seForm.time, category: seForm.category, severity: seForm.severity, title: seForm.title.trim(), description: seForm.description.trim(), immediate_action: seForm.immediate_action.trim(), staff_present: ["staff_darren"], witnessed_by: [], child_response: seForm.child_response.trim(), outcome: "", notifications: [], follow_up_required: false, follow_up_actions: "", follow_up_date: "", linked_documents: [], recorded_by: currentUserId(), created_at: new Date().toISOString() });
+    await createEvent.mutateAsync({ child_id: seForm.child_id, date: seForm.date, time: seForm.time, category: seForm.category, severity: seForm.severity, title: seForm.title.trim(), description: seForm.description.trim(), immediate_action: seForm.immediate_action.trim(), staff_present: [currentUserId()], witnessed_by: [], child_response: seForm.child_response.trim(), outcome: "", notifications: [], follow_up_required: false, follow_up_actions: "", follow_up_date: "", linked_documents: [], recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Significant event recorded.");
     setSeForm({ child_id: "", date: todayStr(), time: new Date().toTimeString().slice(0, 5), category: "other", severity: "routine", title: "", description: "", immediate_action: "", child_response: "" });
     setShowNew(false);
