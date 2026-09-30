@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { StaffSelect } from "@/components/staff/staff-select";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -632,14 +633,7 @@ export default function TransportLogPage() {
               </div>
               <div>
                 <Label htmlFor="21f0-driver" className="text-sm font-medium mb-1 block">Driver *</Label>
-                <Select value={nDriver} onValueChange={setNDriver}>
-                  <SelectTrigger id="21f0-driver"><SelectValue placeholder="Select driver" /></SelectTrigger>
-                  <SelectContent>
-                    {["staff_darren", "staff_ryan", "staff_edward", "staff_anna", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"].map(id => (
-                      <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <StaffSelect value={nDriver} onChange={setNDriver} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

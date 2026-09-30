@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -571,26 +572,11 @@ function NewTransactionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="96ff-authorised-by" className="text-xs">Authorised By</Label>
-              <Select value={authorisedBy} onValueChange={setAuthorisedBy}>
-                <SelectTrigger id="96ff-authorised-by" className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_lackson", "staff_mirela"].map((s) => (
-                    <SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <StaffSelect value={authorisedBy} onChange={setAuthorisedBy} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="96ff-witnessed-by" className="text-xs">Witnessed By</Label>
-              <Select value={witnessedBy} onValueChange={setWitnessedBy}>
-                <SelectTrigger id="96ff-witnessed-by" className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  {["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_lackson", "staff_mirela"].map((s) => (
-                    <SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <StaffSelect value={witnessedBy} onChange={setWitnessedBy} />
             </div>
           </div>
 

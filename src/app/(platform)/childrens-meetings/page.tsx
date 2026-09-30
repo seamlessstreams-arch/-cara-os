@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import {
   ChevronDown,
   ChevronUp,
@@ -409,10 +410,7 @@ export default function ChildrensMeetingsPage() {
             </div>
             <div>
               <label htmlFor="16fa-facilitated-by" className="text-sm font-medium">Facilitated By</label>
-              <Select value={formFacilitator} onValueChange={setFormFacilitator}>
-                <SelectTrigger id="16fa-facilitated-by" className="mt-1"><SelectValue placeholder="Select staff" /></SelectTrigger>
-                <SelectContent>{["staff_darren","staff_ryan","staff_anna","staff_chervelle","staff_edward"].map((id) => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent>
-              </Select>
+              <StaffSelect value={formFacilitator} onChange={setFormFacilitator} />
             </div>
             <div>
               <label htmlFor="16fa-snack-meal" className="text-sm font-medium">Snack / Meal</label>

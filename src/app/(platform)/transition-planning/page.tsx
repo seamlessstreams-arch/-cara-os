@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -454,14 +455,7 @@ export default function TransitionPlanningPage() {
             </div>
             <div>
               <label htmlFor="de18-key-worker" className="text-sm font-medium">Key Worker</label>
-              <Select value={tpForm.key_worker} onValueChange={(v) => setTP("key_worker", v)}><SelectTrigger id="de18-key-worker"><SelectValue placeholder="Assign key worker" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                  <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                  <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  <SelectItem value="staff_chervelle">{getStaffName("staff_chervelle")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <StaffSelect value={tpForm.key_worker} onChange={(v) => setTP("key_worker", v)} />
             </div>
             <div>
               <label htmlFor="de18-initial-notes" className="text-sm font-medium">Initial Notes</label>

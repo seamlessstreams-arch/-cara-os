@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -369,23 +370,11 @@ export default function HouseMeetingsPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="c419-chair" className="text-sm font-medium">Chair</label>
-                <Select value={hmForm.chair_person} onValueChange={(v) => setHM("chair_person", v)}><SelectTrigger id="c419-chair"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                    <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                    <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <StaffSelect value={hmForm.chair_person} onChange={(v) => setHM("chair_person", v)} />
               </div>
               <div>
                 <label htmlFor="c419-minutes-taker" className="text-sm font-medium">Minutes Taker</label>
-                <Select value={hmForm.minutes_taker} onValueChange={(v) => setHM("minutes_taker", v)}><SelectTrigger id="c419-minutes-taker"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                    <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                    <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <StaffSelect value={hmForm.minutes_taker} onChange={(v) => setHM("minutes_taker", v)} />
               </div>
             </div>
             <div>
