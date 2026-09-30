@@ -90,9 +90,9 @@ type WeekFilter = "this_week" | "last_week" | "this_month";
 
 // Clock log — reflects today's clock-in activity using real staff IDs
 const CLOCK_LOG = [
-  { staffId: "staff_ryan",      clockIn: "07:02", clockOut: null,    break: null,    status: "clocked_in", shiftStart: "07:00", shiftEnd: "15:00" },
+  { staffId: "staff_ryan",      clockIn: "07:02", clockOut: null,    break: null,    status: "clocked_in", shiftStart: "07:00", shiftEnd: "15:00" },  // seed-actor-ok: demo clock-log fixture — page-local seed staff id, empty on live
   { staffId: "staff_chervelle", clockIn: "14:55", clockOut: null,    break: null,    status: "clocked_in", shiftStart: "15:00", shiftEnd: "23:00" },
-  { staffId: "staff_anna",      clockIn: "08:45", clockOut: "17:10", break: "30min", status: "completed",  shiftStart: "09:00", shiftEnd: "17:00" },
+  { staffId: "staff_anna",      clockIn: "08:45", clockOut: "17:10", break: "30min", status: "completed",  shiftStart: "09:00", shiftEnd: "17:00" },  // seed-actor-ok: demo clock-log fixture — page-local seed staff id, empty on live
   { staffId: "staff_diane",     clockIn: null,    clockOut: null,    break: null,    status: "scheduled",  shiftStart: "23:00", shiftEnd: "07:00" },
 ];
 
