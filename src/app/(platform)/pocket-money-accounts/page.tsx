@@ -10,7 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { ChildSelect } from "@/components/young-people/child-select";
+import { ChildSelect, useChildren } from "@/components/young-people/child-select";
 import { StaffSelect } from "@/components/staff/staff-select";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -116,6 +116,7 @@ export default function PocketMoneyAccountsPage() {
   const { data = [], isLoading } = usePocketMoneyAccounts();
   const createTx = useCreatePocketMoneyAccount();
   const [showNew, setShowNew] = useState(false);
+  const { children: allChildren } = useChildren();
 
   // Filters
   const [childFilter, setChildFilter] = useState("all");
@@ -126,7 +127,7 @@ export default function PocketMoneyAccountsPage() {
   // ── Per-child account summaries ─────────────────────────────────────────────
 
   const accountSummaries = useMemo(() => {
-    const ypIds = ["yp_alex", "yp_jordan", "yp_casey"] as const;
+    const ypIds = allChildren.map((c) => c.id);
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
 
@@ -151,7 +152,7 @@ export default function PocketMoneyAccountsPage() {
         transactionCount: txs.length,
       };
     });
-  }, [data]);
+  }, [data, allChildren]);
 
   // ── Filtered transaction list ───────────────────────────────────────────────
 
@@ -429,13 +430,13 @@ function NewTransactionDialog({
   onSubmit: (tx: Partial<PocketMoneyAccount>) => void;
   transactions: PocketMoneyAccount[];
 }) {
-  const [childId, setChildId] = useState("yp_alex");
+  const [childId, setChildId] = useState("");
   const [transactionType, setTransactionType] = useState<PocketMoneyAccountTxType>("credit");
   const [category, setCategory] = useState<PocketMoneyAccountCategory>("weekly_allowance");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [receiptRef, setReceiptRef] = useState("");
-  const [authorisedBy, setAuthorisedBy] = useState("staff_darren");
+  const [authorisedBy, setAuthorisedBy] = useState("");
   const [witnessedBy, setWitnessedBy] = useState("");
   const [notes, setNotes] = useState("");
 

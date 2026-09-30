@@ -7,6 +7,8 @@
 
 import React, { useState } from "react";
 import { currentUserId } from "@/lib/auth/current-user";
+import { ChildSelect } from "@/components/young-people/child-select";
+import { StaffSelect } from "@/components/staff/staff-select";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Target, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,19 +40,6 @@ interface ActionOutcomeAddModalProps {
 }
 
 // ── Static options ────────────────────────────────────────────────────────────
-
-const CHILD_OPTIONS = [
-  { id: "yp_casey", name: "Casey" },
-  { id: "yp_alex",  name: "Alex" },
-  { id: "yp_jordan",    name: "Jordan" },
-] as const;
-
-const OWNER_OPTIONS = [
-  { id: currentUserId(),    name: "Darren (RM)" },
-  { id: "staff_ryan",      name: "Ryan" },
-  { id: "staff_chervelle", name: "Naomi" },
-  { id: "staff_lackson",   name: "Samuel" },
-] as const;
 
 // ── Field label helper ────────────────────────────────────────────────────────
 
@@ -90,7 +79,7 @@ export function ActionOutcomeAddModal({
   const [whyItMatters, setWhyItMatters] = useState("");
   const [selectedChild, setSelectedChild] = useState(childId ?? "");
   const [dueDate, setDueDate] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState("staff_darren");
+  const [selectedOwner, setSelectedOwner] = useState(currentUserId());
 
   // Validation
   const [errors, setErrors] = useState<{
@@ -109,7 +98,7 @@ export function ActionOutcomeAddModal({
     setWhyItMatters("");
     setSelectedChild(childId ?? "");
     setDueDate("");
-    setSelectedOwner("staff_darren");
+    setSelectedOwner(currentUserId());
     setErrors({});
     setSaveError(null);
     setSubmitted(false);
@@ -322,17 +311,7 @@ export function ActionOutcomeAddModal({
                   {/* Child */}
                   <div>
                     <FieldLabel htmlFor="ao-child">Child</FieldLabel>
-                    <select
-                      id="ao-child"
-                      value={selectedChild}
-                      onChange={(e) => setSelectedChild(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow"
-                    >
-                      <option value="">— None —</option>
-                      {CHILD_OPTIONS.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
+                    <ChildSelect id="ao-child" value={selectedChild} onChange={setSelectedChild} placeholder="— None —" />
                   </div>
 
                   {/* Due date */}
@@ -351,16 +330,7 @@ export function ActionOutcomeAddModal({
                 {/* Owner */}
                 <div>
                   <FieldLabel htmlFor="ao-owner">Owner</FieldLabel>
-                  <select
-                    id="ao-owner"
-                    value={selectedOwner}
-                    onChange={(e) => setSelectedOwner(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow"
-                  >
-                    {OWNER_OPTIONS.map((o) => (
-                      <option key={o.id} value={o.id}>{o.name}</option>
-                    ))}
-                  </select>
+                  <StaffSelect id="ao-owner" value={selectedOwner} onChange={setSelectedOwner} />
                 </div>
               </div>
 

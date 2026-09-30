@@ -893,10 +893,10 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
   );
 }
 
-const EMPTY_LOG_FORM = { yp_id: "yp_alex", date: "", time: "", risk: "medium" as string, location: "" };
+const EMPTY_LOG_FORM = { yp_id: "", date: "", time: "", risk: "medium" as string, location: "" };
 
 function MFCTab() {
-  const [filterChild, setFilterChild] = useState("yp_alex");
+  const [filterChild, setFilterChild] = useState("all");
   const [logOpen, setLogOpen] = useState(false);
   const [logForm, setLogForm] = useState(EMPTY_LOG_FORM);
   const [logError, setLogError] = useState("");
@@ -917,6 +917,7 @@ function MFCTab() {
   const hasPattern = alexEpisodes.length >= 3;
 
   async function handleLogEpisodeSubmit() {
+    if (!logForm.yp_id) { setLogError("Young person is required"); return; }
     if (!logForm.date) { setLogError("Date missing is required"); return; }
     setLogError("");
     setLogPending(true);
@@ -1041,6 +1042,7 @@ function MFCTab() {
                   onChange={(e) => setLogForm((f) => ({ ...f, yp_id: e.target.value }))}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
                 >
+                  <option value="">— Select young person —</option>
                   {mfcAllYP.map((yp) => (
                     <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name}</option>
                   ))}
@@ -1113,7 +1115,7 @@ function MFCTab() {
 const EMPTY_ENTRY_FORM = { category: "meeting" as string, significance: "routine" as string, title: "", description: "" };
 
 function ChronologyTab() {
-  const [selectedChild, setSelectedChild] = useState("yp_alex");
+  const [selectedChild, setSelectedChild] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [addEntryOpen, setAddEntryOpen] = useState(false);
   const [entryForm, setEntryForm] = useState(EMPTY_ENTRY_FORM);
@@ -1177,6 +1179,7 @@ function ChronologyTab() {
             onChange={(e) => setSelectedChild(e.target.value)}
             className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
           >
+            <option value="">— Select a child —</option>
             {chronAllYP.map((yp) => (
               <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name} {yp.last_name}</option>
             ))}
