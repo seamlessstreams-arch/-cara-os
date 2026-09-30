@@ -135,7 +135,7 @@ const RISK_META: Record<string, { label: string; on: string; off: string }> = {
 const QUICK_NOTES: { label: string; entry_type: string; text: string }[] = [
   { label: "Space offered", entry_type: "deescalation_attempt", text: "Staff offered space to regulate." },
   { label: "Reassurance given", entry_type: "deescalation_attempt", text: "Staff offered calm reassurance." },
-  { label: "Demands reduced", entry_type: "staff_action", text: "Staff reduced demands." },
+  { label: "Demands reduced", entry_type: "staff_action", text: "Staff reduced demands." },  // seed-actor-ok: staff_action is an incident entry-type enum, not a staff id
   { label: "Second staff supporting", entry_type: "staff_action", text: "A second staff member is supporting." },
   { label: "Other children safe", entry_type: "safety_update", text: "Other children are safe and supported." },
 ];

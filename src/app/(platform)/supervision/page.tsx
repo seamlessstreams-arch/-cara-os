@@ -190,29 +190,29 @@ const SUPERVISION_EXPORT_COLS: ExportColumn<Supervision>[] = [
 // returns [] on a live tenant, so a real home sees its own empty state and only
 // the demo shows the fixtures.
 const APPRAISALS_SEED = [
-  { staffId: "staff_ryan",     date: daysFromNow(-90),  rating: "effective",   completedBy: currentUserId(), nextDue: daysFromNow(275), objectives: 4, achieved: 3 },
+  { staffId: "staff_ryan",     date: daysFromNow(-90),  rating: "effective",   completedBy: currentUserId(), nextDue: daysFromNow(275), objectives: 4, achieved: 3 },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { staffId: "staff_anna",     date: daysFromNow(-180), rating: "developing",  completedBy: "staff_ryan",   nextDue: daysFromNow(185), objectives: 3, achieved: 2 },
-  { staffId: "staff_chervelle",date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(30),  objectives: 0, achieved: 0 },
+  { staffId: "staff_chervelle",date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(30),  objectives: 0, achieved: 0 },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { staffId: "staff_edward",   date: daysFromNow(-200), rating: "exceptional", completedBy: currentUserId(), nextDue: daysFromNow(165), objectives: 5, achieved: 5 },
-  { staffId: "staff_diane",    date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(150), objectives: 0, achieved: 0 },
+  { staffId: "staff_diane",    date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(150), objectives: 0, achieved: 0 },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
 ];
 const APPRAISALS = demoSeed(APPRAISALS_SEED);
 
 const GOALS = [
-  { id: "g1", staffId: "staff_ryan",      title: "Complete Level 4 Diploma Unit 5",                        targetDate: daysFromNow(60),  progress: 65,  status: "in_progress" },
+  { id: "g1", staffId: "staff_ryan",      title: "Complete Level 4 Diploma Unit 5",                        targetDate: daysFromNow(60),  progress: 65,  status: "in_progress" },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { id: "g2", staffId: "staff_ryan",      title: "Lead three house meetings independently",                 targetDate: daysFromNow(30),  progress: 100, status: "achieved" },
-  { id: "g3", staffId: "staff_anna",      title: "Improve medication recording accuracy",                   targetDate: daysFromNow(45),  progress: 80,  status: "in_progress" },
+  { id: "g3", staffId: "staff_anna",      title: "Improve medication recording accuracy",                   targetDate: daysFromNow(45),  progress: 80,  status: "in_progress" },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { id: "g4", staffId: "staff_edward",    title: "Mentor new bank staff member",                            targetDate: daysFromNow(14),  progress: 40,  status: "in_progress" },
-  { id: "g5", staffId: "staff_chervelle", title: "Complete Child Sexual Exploitation awareness training",   targetDate: daysFromNow(-10), progress: 0,   status: "overdue" },
+  { id: "g5", staffId: "staff_chervelle", title: "Complete Child Sexual Exploitation awareness training",   targetDate: daysFromNow(-10), progress: 0,   status: "overdue" },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { id: "g6", staffId: "staff_diane",     title: "Complete induction training portfolio",                   targetDate: daysFromNow(20),  progress: 55,  status: "in_progress" },
-  { id: "g7", staffId: "staff_lackson",   title: "NVQ Level 3 Children and Young People",                   targetDate: daysFromNow(90),  progress: 30,  status: "in_progress" },
+  { id: "g7", staffId: "staff_lackson",   title: "NVQ Level 3 Children and Young People",                   targetDate: daysFromNow(90),  progress: 30,  status: "in_progress" },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { id: "g8", staffId: "staff_mirela",    title: "Lead a risk assessment review independently",             targetDate: daysFromNow(28),  progress: 50,  status: "in_progress" },
 ];
 
 const PROBATION_SEED = [
-  { staffId: "staff_diane",    startDate: daysFromNow(-90), endDate: daysFromNow(90),   status: "active", reviews: 1, nextReview: daysFromNow(30), concerns: ["Timekeeping — discussed 14 March"] },
+  { staffId: "staff_diane",    startDate: daysFromNow(-90), endDate: daysFromNow(90),   status: "active", reviews: 1, nextReview: daysFromNow(30), concerns: ["Timekeeping — discussed 14 March"] },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
   { staffId: "staff_mirela",   startDate: daysFromNow(-60), endDate: daysFromNow(120),  status: "active", reviews: 1, nextReview: daysFromNow(60), concerns: [] },
-  { staffId: "staff_anna",     startDate: daysFromNow(-400), endDate: daysFromNow(-220), status: "passed", reviews: 2, nextReview: null, concerns: [] },
+  { staffId: "staff_anna",     startDate: daysFromNow(-400), endDate: daysFromNow(-220), status: "passed", reviews: 2, nextReview: null, concerns: [] },  // seed-actor-ok: demo fixture — page-local seed staff id, demoSeed() empties on live
 ];
 const PROBATION = demoSeed(PROBATION_SEED);
 

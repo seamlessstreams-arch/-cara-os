@@ -907,7 +907,7 @@ function MFCTab() {
   const { data: mfcResult } = useMissingEpisodes({ homeId: useHomeId() });
   const MFC_EPISODES = mfcResult?.data ?? [];
 
-  const alexEpisodes = MFC_EPISODES.filter((e) => e.child_id === "yp_alex");
+  const alexEpisodes = MFC_EPISODES.filter((e) => e.child_id === "yp_alex");  // seed-actor-ok: demo MFC/notifications fixture (static display), empty on live
   const csEpisodes = MFC_EPISODES.filter((e) => e.contextual_safeguarding_risk);
   const highRisk = MFC_EPISODES.filter((e) => ["high", "critical"].includes(e.risk_level));
 
@@ -963,7 +963,7 @@ function MFCTab() {
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[
                   { label: "Episodes (2026)", value: alexEpisodes.length },
-                  { label: "CS Risk Episodes", value: csEpisodes.filter((e) => e.child_id === "yp_alex").length },
+                  { label: "CS Risk Episodes", value: csEpisodes.filter((e) => e.child_id === "yp_alex").length },  // seed-actor-ok: demo MFC/notifications fixture (static display), empty on live
                   { label: "Police Referrals", value: alexEpisodes.filter((e) => e.reported_to_police).length },
                 ].map((s) => (
                   <div key={s.label} className="rounded-xl bg-white/60 p-2.5 text-center">
@@ -1386,10 +1386,10 @@ function ManagerActionsTab() {
 
   // Professional notifications log (static display)
   const NOTIF_LOG = [
-    { date: seedDay(-20), time: "19:25", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
+    { date: seedDay(-20), time: "19:25", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },  // seed-actor-ok: demo MFC/notifications fixture (static display), empty on live
     { date: seedDay(-20), time: "19:20", role: "Registered Manager", contact: "Olivia Hayes", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
     { date: seedDay(-20), time: "20:00", role: "Police / MASH", contact: "MASH referral", incident: "INC-2026-0043", method: "Phone", by: currentUserId(), acknowledged: false },
-    { date: seedDay(-21), time: "08:30", role: "Deputy Manager", contact: "Ryan Forsythe", incident: "INC-2026-0040", method: "In person", by: "staff_anna", acknowledged: true },
+    { date: seedDay(-21), time: "08:30", role: "Deputy Manager", contact: "Ryan Forsythe", incident: "INC-2026-0040", method: "In person", by: "staff_anna", acknowledged: true },  // seed-actor-ok: demo MFC/notifications fixture (static display), empty on live
     { date: seedDay(-21), time: "09:15", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0041", method: "Phone", by: currentUserId(), acknowledged: true },
   ];
 

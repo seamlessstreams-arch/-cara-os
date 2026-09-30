@@ -165,11 +165,11 @@ const shortDate = (offset: number) => {
 
 const ON_CALL_ROTA: OnCallEntry[] = [
   { day: weekday(0), date: shortDate(0), managerId: currentUserId(), phone: "07XXX XXXXXX" },
-  { day: weekday(1), date: shortDate(1), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
+  { day: weekday(1), date: shortDate(1), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },  // seed-actor-ok: demo on-call rota fixture — page-local seed staff id, empty on live
   { day: weekday(2), date: shortDate(2), managerId: currentUserId(), phone: "07XXX XXXXXX" },
-  { day: weekday(3), date: shortDate(3), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
+  { day: weekday(3), date: shortDate(3), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },  // seed-actor-ok: demo on-call rota fixture — page-local seed staff id, empty on live
   { day: weekday(4), date: shortDate(4), managerId: currentUserId(), phone: "07XXX XXXXXX" },
-  { day: weekday(5), date: shortDate(5), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },
+  { day: weekday(5), date: shortDate(5), managerId: "staff_ryan",   phone: "07XXX XXXXXX" },  // seed-actor-ok: demo on-call rota fixture — page-local seed staff id, empty on live
   { day: weekday(6), date: shortDate(6), managerId: currentUserId(), phone: "07XXX XXXXXX" },
 ];
 
