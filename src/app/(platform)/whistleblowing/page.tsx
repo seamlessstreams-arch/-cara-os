@@ -121,7 +121,7 @@ export default function WhistleblowingPage() {
     await createRecord.mutateAsync({
       reference: ref,
       date_raised: todayStr(),
-      raised_by: wbForm.anonymous ? "Anonymous" : "staff_darren",
+      raised_by: wbForm.anonymous ? "Anonymous" : currentUserId(),
       anonymous: wbForm.anonymous,
       category: wbForm.category as WhistleblowingCategory,
       severity: wbForm.severity as WhistleblowingSeverity,
