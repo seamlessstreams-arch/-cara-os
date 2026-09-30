@@ -9,6 +9,7 @@
 // ==============================================================================
 
 import { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
@@ -820,18 +821,7 @@ export default function BehaviourSupportPlansPage() {
               </div>
               <div>
                 <Label htmlFor="bsp-created-by">Created By</Label>
-                <Select value={bsp.created_by} onValueChange={(v) => setB("created_by", v)}>
-                  <SelectTrigger id="bsp-created-by">
-                    <SelectValue placeholder="Select staff" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                    <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                    <SelectItem value="staff_edward">{getStaffName("staff_edward")}</SelectItem>
-                    <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                    <SelectItem value="staff_chervelle">{getStaffName("staff_chervelle")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <StaffSelect value={bsp.created_by} onChange={(v) => setB("created_by", v)} />
               </div>
             </div>
           </div>

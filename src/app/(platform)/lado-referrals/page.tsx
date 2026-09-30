@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { StaffSelect } from "@/components/staff/staff-select";
 import { currentUserId } from "@/lib/auth/current-user";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -361,7 +362,7 @@ export default function LADOReferralsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div><Label htmlFor="6c8e-date-of-allegation">Date of Allegation</Label><Input id="6c8e-date-of-allegation" type="date" max={todayStr()} value={ref.date_allegation} onChange={(e) => setR("date_allegation", e.target.value)} /></div>
             <div><Label htmlFor="6c8e-date-referred">Date Referred</Label><Input id="6c8e-date-referred" type="date" max={todayStr()} value={ref.date_referred} onChange={(e) => setR("date_referred", e.target.value)} /></div>
-            <div><Label htmlFor="6c8e-subject-staff-member">Subject Staff Member</Label><Select value={ref.subject_staff_id} onValueChange={(v) => setR("subject_staff_id", v)}><SelectTrigger id="6c8e-subject-staff-member"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="staff_anna">Priya</SelectItem><SelectItem value="staff_edward">Daniel</SelectItem><SelectItem value="staff_ryan">Marcus</SelectItem><SelectItem value="staff_chervelle">Naomi</SelectItem><SelectItem value="staff_lackson">Samuel</SelectItem><SelectItem value="staff_mirela">Elena</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-subject-staff-member">Subject Staff Member</Label><StaffSelect value={ref.subject_staff_id} onChange={(v) => setR("subject_staff_id", v)} /></div>
             <div><Label htmlFor="6c8e-allegation-type">Allegation Type</Label><Select value={ref.allegation_type} onValueChange={(v) => setR("allegation_type", v as LadoAllegationType)}><SelectTrigger id="6c8e-allegation-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LADO_ALLEGATION_TYPE_LABEL) as LadoAllegationType[]).map((k) => (<SelectItem key={k} value={k}>{LADO_ALLEGATION_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div><Label htmlFor="6c8e-child-involved">Child Involved</Label><Select value={ref.child_id} onValueChange={(v) => setR("child_id", v)}><SelectTrigger id="6c8e-child-involved"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
             <div><Label htmlFor="6c8e-lado-name">LADO Name</Label><Input id="6c8e-lado-name" placeholder="LADO officer name" value={ref.lado_name} onChange={(e) => setR("lado_name", e.target.value)} /></div>
