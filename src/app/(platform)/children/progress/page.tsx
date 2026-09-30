@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { todayStr } from "@/lib/utils";
@@ -170,6 +171,7 @@ export default function ChildProgressPage() {
   const { data: entriesData } = useProgressEntries(selectedChild);
   const { data: snapshotsData } = useProgressSnapshots(selectedChild);
   const createRecord = useCreateProgressRecord();
+  const homeId = useHomeId();
   const [copied, setCopied] = useState(false);
 
   const goals = useMemo<Goal[]>(
@@ -494,7 +496,7 @@ export default function ChildProgressPage() {
                         createRecord.mutate({
                           type: "entry",
                           childId: selectedChild,
-                          homeId: "home_oak",
+                          homeId,
                           entryDate: todayStr(),
                           area: "general",
                           whatHappened: summaryText,

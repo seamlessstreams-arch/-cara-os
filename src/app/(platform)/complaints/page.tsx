@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { currentUserId } from "@/lib/auth/current-user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -526,9 +527,10 @@ function NewComplaintDialog({
 
 export default function ComplaintsPage() {
   const qc = useQueryClient();
+  const homeId = useHomeId();
   const complaintsQuery = useQuery({
-    queryKey: ["complaints", "home_oak", false],
-    queryFn:  () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=home_oak`),
+    queryKey: ["complaints", homeId, false],
+    queryFn:  () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=${homeId}`),
   });
   const createComplaint = useMutation({
     mutationFn: (data: Partial<Complaint>) =>

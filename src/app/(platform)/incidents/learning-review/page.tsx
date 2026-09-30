@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useHomeId } from "@/lib/auth/use-home-id";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -165,6 +166,7 @@ export default function IncidentLearningReviewPage() {
   /* ── API hook (live data via intelligence-layer fallback store) ─────────── */
   const { data: apiData } = useLearningReviews();
   const updateReview = useUpdateLearningReview();
+  const homeId = useHomeId();
   const openTask = (incident: Incident, kind: TaskKind) => setTaskFor({ incident, kind });
 
   // Server rows derived; the manager's optimistic status flips live in an
@@ -435,7 +437,7 @@ export default function IncidentLearningReviewPage() {
                             onClick={() => {
                               updateReview.mutate({
                                 id: incident.id,
-                                homeId: "home_oak",
+                                homeId,
                                 reviewStatus: "completed",
                                 learningSummary: `NFA: ${currentNfa}`,
                               });
@@ -489,7 +491,7 @@ export default function IncidentLearningReviewPage() {
                         onClick={() => {
                           updateReview.mutate({
                             id: incident.id,
-                            homeId: "home_oak",
+                            homeId,
                             reviewStatus: "in_progress" as ReviewStatus,
                             learningSummary: currentLearning,
                           });
