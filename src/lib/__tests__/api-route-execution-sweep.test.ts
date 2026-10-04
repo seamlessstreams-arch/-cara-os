@@ -160,9 +160,11 @@ const postRoutes = [...walk(API_DIR)]
   .filter((f) => /export (async function|function|const) POST/.test(fs.readFileSync(f, "utf8")))
   .sort();
 
-describe("POST handlers reject a body that says nothing", () => {
-  it("no unlisted route creates a record from {}", { timeout: 900_000 }, async () => {
+describe("POST handlers reject a body that says nothing, and don't crash", () => {
+  it("no unlisted route creates a record from {}, throws, or 5xxes", { timeout: 900_000 }, async () => {
     const created: string[] = [];
+    const threw: string[] = [];
+    const failed: string[] = [];
 
     for (const file of postRoutes) {
       const { urlPath, params } = file.includes("[")
@@ -172,7 +174,6 @@ describe("POST handlers reject a body that says nothing", () => {
               "/" + path.relative(path.join(ROOT, "src/app"), path.dirname(file)).split(path.sep).join("/"),
             params: {},
           };
-      if (POST_EMPTY_BODY_ALLOWED.has(urlPath)) continue;
       const spec =
         "@/" + path.relative(path.join(ROOT, "src"), file).split(path.sep).join("/").replace(/\.ts$/, "");
 
@@ -188,14 +189,24 @@ describe("POST handlers reject a body that says nothing", () => {
         const res = file.includes("[")
           ? await mod.POST(req, { params: Promise.resolve(params) })
           : await mod.POST(req);
-        if (res.status === 201) created.push(urlPath);
-      } catch {
-        // Throwing is covered by the GET sweep's sibling concern; this leg is
-        // only about silently writing a record.
+        // The fabrication check is scoped to the handlers that are supposed to
+        // reject an empty body; the analysis endpoints in the allow-list run the
+        // whole home and legitimately answer 2xx without one.
+        if (res.status === 201 && !POST_EMPTY_BODY_ALLOWED.has(urlPath)) created.push(urlPath);
+        // A crash check, in contrast, applies to EVERY POST handler. Nothing
+        // else in the pipeline executes one — the GET sweep covers GET only — so
+        // a POST that throws, or 5xxes for a reason other than the honest
+        // Supabase refusal, on its first request is otherwise ungated.
+        else if (res.status >= 500) {
+          const body = await res.text().catch(() => "");
+          if (!SUPABASE_REQUIRED.test(body)) failed.push(`${urlPath} -> ${res.status} ${body.slice(0, 120)}`);
+        }
+      } catch (e) {
+        threw.push(`${urlPath} -> ${(e as Error)?.message?.slice(0, 140)}`);
       }
     }
 
-    expect(created).toEqual([]);
+    expect({ created, threw, failed }).toEqual({ created: [], threw: [], failed: [] });
   });
 });
 
