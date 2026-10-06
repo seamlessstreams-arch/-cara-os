@@ -39,7 +39,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark } from "@/types/extended";
+import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark, AccidentNotification } from "@/types/extended";
 
 import { api } from "@/hooks/use-api";
 import { BodyMapDiagram, BodyMarkList } from "@/components/body-map/body-map-diagram";
@@ -57,6 +57,20 @@ const STATUS_LABEL: Record<AccidentStatus, string> = { open: "Open", first_aid_g
 const STATUS_CLR: Record<AccidentStatus, string> = { open: "bg-blue-100 text-blue-800", first_aid_given: "bg-green-100 text-green-800", medical_treatment: "bg-yellow-100 text-yellow-800", hospital: "bg-red-100 text-red-800", investigated: "bg-purple-100 text-purple-800", closed: "bg-slate-100 text-[var(--cs-navy)]" };
 
 const BORDER_SEV: Record<AccidentSeverity, string> = { minor: "border-l-green-400", moderate: "border-l-yellow-400", major: "border-l-orange-500", riddor_reportable: "border-l-red-600" };
+
+const NOTIFICATION_OPTIONS: { key: AccidentNotification; label: string }[] = [
+  { key: "parent_carer", label: "Parent/carer" },
+  { key: "social_worker", label: "Social worker" },
+  { key: "manager", label: "Manager" },
+  { key: "keyworker", label: "Keyworker" },
+  { key: "dsl", label: "DSL" },
+  { key: "lado", label: "LADO" },
+  { key: "iro", label: "IRO" },
+  { key: "placing_authority", label: "Placing authority" },
+];
+const NOTIFICATION_LABEL: Record<AccidentNotification, string> = Object.fromEntries(
+  NOTIFICATION_OPTIONS.map((o) => [o.key, o.label]),
+) as Record<AccidentNotification, string>;
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
@@ -97,6 +111,15 @@ export default function AccidentBookPage() {
     first_aid_details: "",
     root_cause: "",
     preventive_measures: "",
+    // safeguarding & notification additions
+    child_account: "",
+    injury_consistent: "" as "" | "yes" | "no" | "unsure",
+    medical_outcome: "",
+    notifiable_event: false,
+    happened_before: false,
+    previously_reported_to: "",
+    care_plan_updated: false,
+    notifications: [] as AccidentNotification[],
   };
   const [form, setForm] = useState(EMPTY_FORM);
   const [injuryMarks, setInjuryMarks] = useState<BodyMark[]>([]);
@@ -169,6 +192,13 @@ export default function AccidentBookPage() {
     { header: "Location", accessor: (r: AccidentRecord) => r.location },
     { header: "Description", accessor: (r: AccidentRecord) => r.description },
     { header: "Injury Details", accessor: (r: AccidentRecord) => r.injury_details },
+    { header: "Child's Account", accessor: (r: AccidentRecord) => r.child_account ?? "" },
+    { header: "Injury Consistent", accessor: (r: AccidentRecord) => r.injury_consistent === true ? "Yes" : r.injury_consistent === false ? "No" : "" },
+    { header: "Medical Outcome", accessor: (r: AccidentRecord) => r.medical_outcome ?? "" },
+    { header: "Notified", accessor: (r: AccidentRecord) => (r.notifications ?? []).map((n) => NOTIFICATION_LABEL[n] ?? n).join("; ") },
+    { header: "Reg 40 Notifiable", accessor: (r: AccidentRecord) => r.notifiable_event ? "Yes" : "No" },
+    { header: "Happened Before", accessor: (r: AccidentRecord) => r.happened_before ? (r.previously_reported_to ? `Yes (${r.previously_reported_to})` : "Yes") : "No" },
+    { header: "Care Plan Updated", accessor: (r: AccidentRecord) => r.care_plan_updated ? "Yes" : "No" },
     { header: "First Aid", accessor: (r: AccidentRecord) => r.first_aid_given ? "Yes" : "No" },
     { header: "First Aid By", accessor: (r: AccidentRecord) => r.first_aid_by ? getStaffName(r.first_aid_by) : "" },
     { header: "Medical Attention", accessor: (r: AccidentRecord) => r.medical_attention ? "Yes" : "No" },
@@ -294,6 +324,36 @@ export default function AccidentBookPage() {
                       </div>
                     </div>
 
+                    {/* safeguarding & notifications */}
+                    {(r.child_account || r.medical_outcome || r.injury_consistent === true || r.injury_consistent === false || (r.notifications && r.notifications.length > 0) || r.notifiable_event || r.happened_before || r.care_plan_updated) && (
+                      <div className="rounded-lg border bg-muted/20 p-3 space-y-2 text-xs">
+                        {r.child_account && (
+                          <div><p className="font-medium">Child&apos;s account</p><p className="text-muted-foreground italic">{r.child_account}</p></div>
+                        )}
+                        {(r.injury_consistent === true || r.injury_consistent === false) && (
+                          <p>Account {r.injury_consistent ? <span className="font-medium text-[--cs-success]">consistent</span> : <span className="font-medium text-rose-600">inconsistent</span>} with the injury</p>
+                        )}
+                        {r.medical_outcome && (
+                          <div><p className="font-medium">Medical advice / outcome</p><p className="text-muted-foreground">{r.medical_outcome}</p></div>
+                        )}
+                        {r.notifications && r.notifications.length > 0 && (
+                          <div>
+                            <p className="font-medium">Notified</p>
+                            <div className="flex flex-wrap gap-1 mt-0.5">
+                              {r.notifications.map((n) => <span key={n} className="rounded-full bg-muted px-2 py-0.5">{NOTIFICATION_LABEL[n] ?? n}</span>)}
+                            </div>
+                          </div>
+                        )}
+                        {(r.notifiable_event || r.happened_before || r.care_plan_updated) && (
+                          <div className="flex flex-wrap gap-2 pt-0.5">
+                            {r.notifiable_event && <Badge variant="outline" className="bg-amber-50 text-amber-800">Reg 40 notifiable</Badge>}
+                            {r.happened_before && <Badge variant="outline">Happened before{r.previously_reported_to ? ` — ${r.previously_reported_to}` : ""}</Badge>}
+                            {r.care_plan_updated && <Badge variant="outline">Care plan / RA updated</Badge>}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* first aid */}
                     {r.first_aid_given && (
                       <div className="bg-green-50 rounded-lg p-3">
@@ -413,13 +473,89 @@ export default function AccidentBookPage() {
             <div className="col-span-2"><Label htmlFor="4f1d-first-aid-given">First Aid Given</Label><Textarea id="4f1d-first-aid-given" placeholder="First aid details…" rows={2} value={form.first_aid_details} onChange={(e) => setF("first_aid_details", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} value={form.root_cause} onChange={(e) => setF("root_cause", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} value={form.preventive_measures} onChange={(e) => setF("preventive_measures", e.target.value)} /></div>
+
+            {/* safeguarding & notifications */}
+            <div className="col-span-2 rounded-lg border bg-muted/20 p-3 space-y-3">
+              <p className="text-sm font-semibold">Safeguarding &amp; notifications</p>
+
+              {form.person_type === "child" && (
+                <div>
+                  <Label htmlFor="4f1d-child-account">Child&apos;s account (their words)</Label>
+                  <Textarea id="4f1d-child-account" placeholder="What the child said happened, in their own words…" rows={2} value={form.child_account} onChange={(e) => setF("child_account", e.target.value)} />
+                </div>
+              )}
+
+              <div>
+                <Label className="mb-1 block">Is the injury consistent with the account?</Label>
+                <div className="flex gap-1.5">
+                  {([["yes", "Consistent"], ["no", "Inconsistent"], ["unsure", "Not sure"]] as const).map(([val, lbl]) => (
+                    <button key={val} type="button" onClick={() => setF("injury_consistent", form.injury_consistent === val ? "" : val)} aria-pressed={form.injury_consistent === val}
+                      className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                        form.injury_consistent === val ? (val === "no" ? "bg-rose-600 text-white border-transparent" : "bg-[var(--cs-navy,#1e293b)] text-white border-transparent") : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+                {form.injury_consistent === "no" && (
+                  <p className="text-[11px] text-rose-600 mt-1">Inconsistent account — consider a safeguarding referral.</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="4f1d-medical-outcome">Medical advice / outcome</Label>
+                <Input id="4f1d-medical-outcome" placeholder="e.g. GP / 111 / A&amp;E — advice given, treatment, follow-up" value={form.medical_outcome} onChange={(e) => setF("medical_outcome", e.target.value)} />
+              </div>
+
+              <div>
+                <Label className="mb-1 block">Who was notified?</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {NOTIFICATION_OPTIONS.map(({ key, label }) => {
+                    const on = form.notifications.includes(key);
+                    return (
+                      <button key={key} type="button" onClick={() => setF("notifications", on ? form.notifications.filter((n) => n !== key) : [...form.notifications, key])} aria-pressed={on}
+                        className={cn("rounded-full px-2.5 py-1 text-xs font-medium border transition-colors",
+                          on ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-start gap-2">
+                <button type="button" onClick={() => setF("notifiable_event", !form.notifiable_event)} aria-pressed={form.notifiable_event}
+                  className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    form.notifiable_event ? "bg-amber-600 text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                  Reg 40 notifiable event
+                </button>
+                {form.notifiable_event && (
+                  <p className="text-[11px] text-amber-700 flex-1 min-w-[180px]">Notify Ofsted and the placing authority without undue delay (within 24h), and record the notification.</p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => setF("happened_before", !form.happened_before)} aria-pressed={form.happened_before}
+                  className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    form.happened_before ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                  Happened before
+                </button>
+                {form.happened_before && (
+                  <Input placeholder="Previously reported to…" aria-label="Previously reported to" value={form.previously_reported_to} onChange={(e) => setF("previously_reported_to", e.target.value)} className="h-8 w-auto flex-1 min-w-[160px]" />
+                )}
+                <button type="button" onClick={() => setF("care_plan_updated", !form.care_plan_updated)} aria-pressed={form.care_plan_updated}
+                  className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    form.care_plan_updated ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                  Care plan / RA updated
+                </button>
+              </div>
+            </div>
           </div>
           {!canSaveAccident && (
             <p className="text-xs text-[var(--cs-text-muted)]">Person injured, category, severity and description are needed before this can be saved — an accident record that asserts a severity nobody chose is worse than no record.</p>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowNew(false); setInjuryMarks([]); }}>Cancel</Button>
-            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: form.medical_outcome.trim() !== "", medical_outcome: form.medical_outcome.trim(), hospital_attendance: false, hospital_name: null, parent_carer_notified: form.notifications.includes("parent_carer"), parent_notified_time: null, social_worker_notified: form.notifications.includes("social_worker"), notifications: form.notifications, notifiable_event: form.notifiable_event, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), happened_before: form.happened_before, previously_reported_to: form.happened_before ? form.previously_reported_to.trim() : "", care_plan_updated: form.care_plan_updated, child_account: form.child_account.trim(), injury_consistent: form.injury_consistent === "" ? null : form.injury_consistent === "yes", follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
