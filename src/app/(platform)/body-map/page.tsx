@@ -57,6 +57,9 @@ import {
 
 import { api } from "@/hooks/use-api";
 import { BodyMapDiagram, REGION_LABELS } from "@/components/body-map/body-map-diagram";
+import { ChildAccountField } from "@/components/safeguarding/child-account-field";
+import { ConsistencyToggle } from "@/components/safeguarding/consistency-toggle";
+import { ChipMultiSelect } from "@/components/safeguarding/chip-multi-select";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const MARK_TYPE_CONFIG: Record<MarkType, { label: string; colour: string }> = {
@@ -80,19 +83,19 @@ const COLOUR_LABELS: Record<MarkColour, string> = {
 
 // Actions / notifications after a mark is observed. Order runs from immediate
 // care through to the safeguarding escalations.
-const ACTION_OPTIONS: { action: BodyMapAction; label: string }[] = [
-  { action: "first_aid",             label: "First aid given" },
-  { action: "medical_attention",     label: "Medical attention" },
-  { action: "manager_informed",      label: "Manager informed" },
-  { action: "parent_informed",       label: "Parent/carer informed" },
-  { action: "social_worker_informed",label: "Social worker informed" },
-  { action: "safeguarding_referral", label: "Safeguarding referral made" },
-  { action: "lado_referral",         label: "LADO referral" },
-  { action: "police_informed",       label: "Police informed" },
-  { action: "photograph_taken",      label: "Photograph taken" },
+const ACTION_OPTIONS: { key: BodyMapAction; label: string }[] = [
+  { key: "first_aid",             label: "First aid given" },
+  { key: "medical_attention",     label: "Medical attention" },
+  { key: "manager_informed",      label: "Manager informed" },
+  { key: "parent_informed",       label: "Parent/carer informed" },
+  { key: "social_worker_informed",label: "Social worker informed" },
+  { key: "safeguarding_referral", label: "Safeguarding referral made" },
+  { key: "lado_referral",         label: "LADO referral" },
+  { key: "police_informed",       label: "Police informed" },
+  { key: "photograph_taken",      label: "Photograph taken" },
 ];
 const ACTION_LABEL: Record<BodyMapAction, string> = Object.fromEntries(
-  ACTION_OPTIONS.map((o) => [o.action, o.label]),
+  ACTION_OPTIONS.map((o) => [o.key, o.label]),
 ) as Record<BodyMapAction, string>;
 
 // A mark while it's being edited in the dialog: location (from the diagram) +
@@ -787,15 +790,13 @@ export default function BodyMapPage() {
             </div>
 
             {/* child explanation */}
-            <div>
-              <label htmlFor="e1de-child-apos-s-explanation" className="text-sm font-medium mb-1 block">Child&apos;s Explanation</label>
-              <Textarea id="e1de-child-apos-s-explanation"
-                placeholder="Record what the child said about how the mark occurred, in their own words..."
-                value={nChildExp}
-                onChange={e => setNChildExp(e.target.value)}
-                rows={2}
-              />
-            </div>
+            <ChildAccountField
+              id="e1de-child-apos-s-explanation"
+              label="Child's Explanation"
+              placeholder="Record what the child said about how the mark occurred, in their own words..."
+              value={nChildExp}
+              onChange={setNChildExp}
+            />
 
             {/* staff observation */}
             <div>
@@ -815,53 +816,12 @@ export default function BodyMapPage() {
               </p>
 
               {/* consistency judgement */}
-              <div>
-                <label className="text-xs font-medium mb-1 block">Is the account consistent with the mark?</label>
-                <div className="flex gap-1.5">
-                  {([["yes", "Consistent"], ["no", "Inconsistent"], ["unsure", "Not sure"]] as const).map(([val, lbl]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setNConsistent(nConsistent === val ? "" : val)}
-                      aria-pressed={nConsistent === val}
-                      className={cn(
-                        "rounded-md px-3 py-1 text-xs font-medium border transition-colors",
-                        nConsistent === val
-                          ? (val === "no" ? "bg-rose-600 text-white border-transparent" : "bg-[var(--cs-navy,#1e293b)] text-white border-transparent")
-                          : "bg-background text-muted-foreground border-border hover:bg-muted",
-                      )}
-                    >
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-                {nConsistent === "no" && (
-                  <p className="text-[11px] text-rose-600 mt-1">Inconsistent account — consider a safeguarding referral.</p>
-                )}
-              </div>
+              <ConsistencyToggle value={nConsistent} onChange={setNConsistent} />
 
               {/* actions / notifications */}
               <div>
                 <label className="text-xs font-medium mb-1 block">Actions taken &amp; people notified</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ACTION_OPTIONS.map(({ action, label }) => {
-                    const on = nActions.includes(action);
-                    return (
-                      <button
-                        key={action}
-                        type="button"
-                        onClick={() => setNActions(on ? nActions.filter(a => a !== action) : [...nActions, action])}
-                        aria-pressed={on}
-                        className={cn(
-                          "rounded-full px-2.5 py-1 text-xs font-medium border transition-colors",
-                          on ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted",
-                        )}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <ChipMultiSelect options={ACTION_OPTIONS} value={nActions} onChange={setNActions} ariaLabel="Actions taken and people notified" />
               </div>
 
               {/* follow-up */}
