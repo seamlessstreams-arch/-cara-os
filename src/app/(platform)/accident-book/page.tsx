@@ -43,6 +43,9 @@ import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentSt
 
 import { api } from "@/hooks/use-api";
 import { BodyMapDiagram, BodyMarkList } from "@/components/body-map/body-map-diagram";
+import { ChildAccountField } from "@/components/safeguarding/child-account-field";
+import { ConsistencyToggle } from "@/components/safeguarding/consistency-toggle";
+import { ChipMultiSelect } from "@/components/safeguarding/chip-multi-select";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const PERSON_TYPE_LABEL: Record<AccidentPersonType, string> = { child: "Child", staff: "Staff", visitor: "Visitor", contractor: "Contractor" };
@@ -479,27 +482,14 @@ export default function AccidentBookPage() {
               <p className="text-sm font-semibold">Safeguarding &amp; notifications</p>
 
               {form.person_type === "child" && (
-                <div>
-                  <Label htmlFor="4f1d-child-account">Child&apos;s account (their words)</Label>
-                  <Textarea id="4f1d-child-account" placeholder="What the child said happened, in their own words…" rows={2} value={form.child_account} onChange={(e) => setF("child_account", e.target.value)} />
-                </div>
+                <ChildAccountField id="4f1d-child-account" value={form.child_account} onChange={(v) => setF("child_account", v)} />
               )}
 
-              <div>
-                <Label className="mb-1 block">Is the injury consistent with the account?</Label>
-                <div className="flex gap-1.5">
-                  {([["yes", "Consistent"], ["no", "Inconsistent"], ["unsure", "Not sure"]] as const).map(([val, lbl]) => (
-                    <button key={val} type="button" onClick={() => setF("injury_consistent", form.injury_consistent === val ? "" : val)} aria-pressed={form.injury_consistent === val}
-                      className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
-                        form.injury_consistent === val ? (val === "no" ? "bg-rose-600 text-white border-transparent" : "bg-[var(--cs-navy,#1e293b)] text-white border-transparent") : "bg-background text-muted-foreground border-border hover:bg-muted")}>
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-                {form.injury_consistent === "no" && (
-                  <p className="text-[11px] text-rose-600 mt-1">Inconsistent account — consider a safeguarding referral.</p>
-                )}
-              </div>
+              <ConsistencyToggle
+                value={form.injury_consistent}
+                onChange={(v) => setF("injury_consistent", v)}
+                label="Is the injury consistent with the account?"
+              />
 
               <div>
                 <Label htmlFor="4f1d-medical-outcome">Medical advice / outcome</Label>
@@ -508,18 +498,7 @@ export default function AccidentBookPage() {
 
               <div>
                 <Label className="mb-1 block">Who was notified?</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {NOTIFICATION_OPTIONS.map(({ key, label }) => {
-                    const on = form.notifications.includes(key);
-                    return (
-                      <button key={key} type="button" onClick={() => setF("notifications", on ? form.notifications.filter((n) => n !== key) : [...form.notifications, key])} aria-pressed={on}
-                        className={cn("rounded-full px-2.5 py-1 text-xs font-medium border transition-colors",
-                          on ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <ChipMultiSelect options={NOTIFICATION_OPTIONS} value={form.notifications} onChange={(v) => setF("notifications", v)} ariaLabel="Who was notified" />
               </div>
 
               <div className="flex flex-wrap items-start gap-2">
