@@ -39,7 +39,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark, AccidentNotification } from "@/types/extended";
+import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark, AccidentNotification, NotifiableEvent, NotifiableNotification } from "@/types/extended";
 
 import { api } from "@/hooks/use-api";
 import { BodyMapDiagram, BodyMarkList } from "@/components/body-map/body-map-diagram";
@@ -88,6 +88,40 @@ export default function AccidentBookPage() {
       api.post("/api/v1/accident-book", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["accident-book"] }),
   });
+  // Reg 40 loop: turn an accident flagged notifiable into the actual (pending)
+  // Ofsted/placing notification record, pre-filled from the accident, so it is
+  // tracked in Notifiable Events rather than only flagged here.
+  const createNotifiable = useMutation({
+    mutationFn: (payload: Partial<NotifiableEvent>) =>
+      api.post("/api/v1/notifiable-events", payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifiable-events"] }),
+  });
+  const [createdReg40, setCreatedReg40] = useState<Set<string>>(new Set());
+  const buildReg40Payload = (r: AccidentRecord): Partial<NotifiableEvent> => {
+    const detail = [r.description, r.injury_details].map((s) => (s || "").trim()).filter(Boolean).join(" — ") || "See the linked accident record.";
+    const blank = (): NotifiableNotification => ({ body: detail, notified_date: null, method: "", reference: null });
+    return {
+      date: r.date,
+      event_type: "serious_injury",
+      child_id: null,
+      summary: `Accident / injury — ${r.person_name || "unnamed"}${r.category ? ` (${CAT_LABEL[r.category]})` : ""}`,
+      detail: `${detail}\n\nCreated from the accident book (${r.date}).`,
+      immediate_action: (r.first_aid_details || "").trim(),
+      reported_by: currentUserId(),
+      ofsted_status: "pending",
+      ofsted: blank(),
+      local_authority: blank(),
+      placing: blank(),
+      follow_up: "",
+      lesson_learned: "",
+    };
+  };
+  const createReg40 = (r: AccidentRecord) => {
+    createNotifiable.mutate(buildReg40Payload(r), {
+      onSuccess: () => { setCreatedReg40((s) => new Set(s).add(r.id)); toast.success("Reg 40 notification created — complete it in Notifiable Events."); },
+      onError: () => toast.error("Could not create the notification"),
+    });
+  };
   const data = useMemo(() => result?.data ?? [], [result]);
 
   const [search, setSearch] = useState("");
@@ -350,6 +384,10 @@ export default function AccidentBookPage() {
                         {(r.notifiable_event || r.happened_before || r.care_plan_updated) && (
                           <div className="flex flex-wrap gap-2 pt-0.5">
                             {r.notifiable_event && <Badge variant="outline" className="bg-amber-50 text-amber-800">Reg 40 notifiable</Badge>}
+                            {r.notifiable_event && (createdReg40.has(r.id)
+                              ? <Badge variant="outline" className="bg-green-50 text-green-800">Reg 40 notification created</Badge>
+                              : <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" disabled={createNotifiable.isPending} onClick={() => createReg40(r)}>Create Reg 40 notification</Button>
+                            )}
                             {r.happened_before && <Badge variant="outline">Happened before{r.previously_reported_to ? ` — ${r.previously_reported_to}` : ""}</Badge>}
                             {r.care_plan_updated && <Badge variant="outline">Care plan / RA updated</Badge>}
                           </div>
