@@ -34,6 +34,24 @@ export const REGION_LABELS: Record<BodyRegion, string> = {
   left_foot: "Left Foot", right_foot: "Right Foot",
 };
 
+/**
+ * Body regions that are recognised common sites for NON-ACCIDENTAL injury —
+ * soft, protected or concealed areas (face/ears, neck, trunk front and back,
+ * upper/inner arms), as opposed to the bony prominences typical of accidental
+ * injury (forehead, elbows, hips, knees, shins). Used only to PROMPT staff to
+ * review consistency / consider a referral — never to conclude anything. A
+ * mark here is not evidence of abuse; a mark elsewhere does not rule it out.
+ */
+export const NON_ACCIDENTAL_SITES: ReadonlySet<BodyRegion> = new Set<BodyRegion>([
+  "face", "neck", "chest", "abdomen", "upper_back", "lower_back",
+  "left_upper_arm", "right_upper_arm",
+]);
+
+/** Whether a region is a recognised common site for non-accidental injury. */
+export function isNonAccidentalSite(region: BodyRegion): boolean {
+  return NON_ACCIDENTAL_SITES.has(region);
+}
+
 // SVG canvas. Width 120, height 260 — a standing figure.
 const VB_W = 120;
 const VB_H = 260;
@@ -274,6 +292,22 @@ export function BodyMapDiagram({
           );
         })}
       </svg>
+
+      {(() => {
+        const concern = [...new Set(
+          marks.filter((m) => isNonAccidentalSite(m.region)).map((m) => REGION_LABELS[m.region]),
+        )];
+        if (concern.length === 0) return null;
+        const one = concern.length === 1;
+        return (
+          <div className="rounded-md border border-amber-300 bg-amber-100 px-3 py-2 text-[11px] leading-snug text-amber-900">
+            <span className="font-semibold">Safeguarding prompt:</span>{" "}
+            {concern.join(", ")} {one ? "is a recognised common site" : "are recognised common sites"} for
+            non-accidental injury. Review whether the explanation is consistent and consider a safeguarding
+            referral. This is a prompt, not a conclusion.
+          </div>
+        );
+      })()}
 
       {!readOnly && (
         <p className="text-[11px] text-muted-foreground text-center">
