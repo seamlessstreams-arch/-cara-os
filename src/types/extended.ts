@@ -2798,6 +2798,12 @@ export interface AccidentRecord {
   location: string;
   description: string;
   injury_details: string;
+  /**
+   * Injuries marked on the body outline for this accident. Optional — older
+   * records and accidents with no bodily injury (e.g. property-only) have none.
+   * When present, `body_map_completed` is set true.
+   */
+  injury_marks?: BodyMark[];
   first_aid_given: boolean;
   first_aid_by: string | null;
   first_aid_details: string;
@@ -2950,6 +2956,15 @@ export interface BodyMapEntry {
   time: string;
   recorded_by: string;
   body_region: BodyRegion;
+  /**
+   * Exact position of the mark on the body outline, as a percentage of the
+   * diagram (0–100 on each axis) plus which view it was placed on. Optional:
+   * records created before the visual body map (or via the region dropdown)
+   * carry only `body_region`, and the diagram falls back to the region centroid.
+   */
+  coord_x?: number;
+  coord_y?: number;
+  body_view?: BodyView;
   mark_type: MarkType;
   mark_colour: MarkColour;
   size_cm: string;
@@ -2962,6 +2977,28 @@ export interface BodyMapEntry {
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_at: string;
+}
+
+/** Which side of the body outline a mark sits on. */
+export type BodyView = "front" | "back";
+
+/**
+ * A single mark placed on the interactive body outline. Shared by the body-map
+ * page (one mark per record) and accident records (an accident can produce
+ * several injuries, so `injury_marks` is an array of these). `region` is the
+ * clinical body region derived from the click point (patient-left/right aware),
+ * so existing region-based filters and stats keep working.
+ */
+export interface BodyMark {
+  id: string;
+  view: BodyView;
+  /** 0–100, percentage of the diagram width (resolution-independent). */
+  x: number;
+  /** 0–100, percentage of the diagram height. */
+  y: number;
+  region: BodyRegion;
+  type?: MarkType;
+  note?: string;
 }
 
 /* ── Activities & Enrichment ────────────────────────────────────────── */
