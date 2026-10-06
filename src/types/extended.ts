@@ -2784,6 +2784,17 @@ export type AccidentCategory =
   | "medication_related" | "other";
 export type AccidentStatus = "open" | "first_aid_given" | "medical_treatment" | "hospital" | "investigated" | "closed";
 
+/** People/bodies that may need notifying after an accident or injury. */
+export type AccidentNotification =
+  | "parent_carer"
+  | "social_worker"
+  | "manager"
+  | "keyworker"
+  | "dsl"
+  | "lado"
+  | "iro"
+  | "placing_authority";
+
 export interface AccidentRecord {
   id: string;
   date: string;
@@ -2804,6 +2815,23 @@ export interface AccidentRecord {
    * When present, `body_map_completed` is set true.
    */
   injury_marks?: BodyMark[];
+  // ── Safeguarding & notification additions (all optional; no migration) ──
+  /** The child's own account of what happened, in their words (person_type === "child"). */
+  child_account?: string;
+  /** Staff judgement: is the injury consistent with the account? true/false, null = not judged. */
+  injury_consistent?: boolean | null;
+  /** Advice / outcome from any medical professional seen (GP / 111 / A&E). */
+  medical_outcome?: string;
+  /** Who was notified (supersedes the single parent/social-worker booleans, which are derived from this). */
+  notifications?: AccidentNotification[];
+  /** Flagged as a Regulation 40 notifiable event (to Ofsted / placing authority). */
+  notifiable_event?: boolean;
+  /** Has an accident of this type happened before (pattern / recurrence)? */
+  happened_before?: boolean;
+  /** If it happened before, who was it previously reported to? */
+  previously_reported_to?: string;
+  /** Did this accident lead to a care plan / risk assessment update? */
+  care_plan_updated?: boolean;
   first_aid_given: boolean;
   first_aid_by: string | null;
   first_aid_details: string;
