@@ -389,8 +389,10 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
       ? `On a positive note, there ${positiveCount === 1 ? "is" : "are"} ${positiveCount} positive development${positiveCount > 1 ? "s" : ""} to celebrate.`
       : "");
 
-  // Get home name
-  const { data: homeData } = await (sb.from("cs_homes") as SB)
+  // Get home name. The home lives in `homes` (live, typed); `cs_homes` has no
+  // migration, so the old read returned null and the briefing's home name was
+  // blank on a live tenant.
+  const { data: homeData } = await (sb.from("homes") as SB)
     .select("name")
     .eq("id", homeId)
     .single();
