@@ -34,7 +34,7 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry, BodyMark } from "@/types/extended";
+import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry, BodyMark, BodyMapAction } from "@/types/extended";
 import {
   Search,
   ArrowUpDown,
@@ -77,6 +77,23 @@ const COLOUR_LABELS: Record<MarkColour, string> = {
   green: "Green", brown: "Brown", black: "Black", mixed: "Mixed",
   not_applicable: "N/A",
 };
+
+// Actions / notifications after a mark is observed. Order runs from immediate
+// care through to the safeguarding escalations.
+const ACTION_OPTIONS: { action: BodyMapAction; label: string }[] = [
+  { action: "first_aid",             label: "First aid given" },
+  { action: "medical_attention",     label: "Medical attention" },
+  { action: "manager_informed",      label: "Manager informed" },
+  { action: "parent_informed",       label: "Parent/carer informed" },
+  { action: "social_worker_informed",label: "Social worker informed" },
+  { action: "safeguarding_referral", label: "Safeguarding referral made" },
+  { action: "lado_referral",         label: "LADO referral" },
+  { action: "police_informed",       label: "Police informed" },
+  { action: "photograph_taken",      label: "Photograph taken" },
+];
+const ACTION_LABEL: Record<BodyMapAction, string> = Object.fromEntries(
+  ACTION_OPTIONS.map((o) => [o.action, o.label]),
+) as Record<BodyMapAction, string>;
 
 const STATUS_CONFIG: Record<BodyMapStatus, { label: string; colour: string }> = {
   draft:              { label: "Draft",              colour: "bg-yellow-100 text-yellow-700" },
@@ -136,6 +153,10 @@ export default function BodyMapPage() {
   const [nStaffObs, setNStaffObs] = useState("");
   const [nLinkedInc, setNLinkedInc] = useState("");
   const [nMark, setNMark] = useState<BodyMark | null>(null);
+  const [nConsistent, setNConsistent] = useState<"" | "yes" | "no" | "unsure">("");
+  const [nActions, setNActions] = useState<BodyMapAction[]>([]);
+  const [nFollowUp, setNFollowUp] = useState(false);
+  const [nFollowUpDate, setNFollowUpDate] = useState("");
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -217,6 +238,9 @@ export default function BodyMapPage() {
     { header: "Description", accessor: (r) => r.description },
     { header: "Child Explanation", accessor: (r) => r.child_explanation },
     { header: "Staff Observation", accessor: (r) => r.staff_observation },
+    { header: "Account Consistent", accessor: (r) => r.explanation_consistent === true ? "Yes" : r.explanation_consistent === false ? "No" : "" },
+    { header: "Actions Taken", accessor: (r) => (r.actions_taken ?? []).map(a => ACTION_LABEL[a] ?? a).join("; ") },
+    { header: "Follow-up", accessor: (r) => r.follow_up_required ? (r.follow_up_date ? `Yes (by ${r.follow_up_date})` : "Yes") : "No" },
     { header: "Status", accessor: (r) => STATUS_CONFIG[r.status].label },
     { header: "Linked Incident", accessor: (r) => r.linked_incident_id || "" },
     { header: "Photos", accessor: (r) => r.photos_attached ? "Yes" : "No" },
@@ -241,9 +265,13 @@ export default function BodyMapPage() {
       description: nDesc,
       child_explanation: nChildExp,
       staff_observation: nStaffObs,
+      explanation_consistent: nConsistent === "" ? null : nConsistent === "yes",
+      actions_taken: nActions,
+      follow_up_required: nFollowUp,
+      follow_up_date: nFollowUp ? (nFollowUpDate || null) : null,
       status: nLinkedInc ? "linked_to_incident" : "draft",
       linked_incident_id: nLinkedInc || null,
-      photos_attached: false,
+      photos_attached: nActions.includes("photograph_taken"),
       reviewed_by: null,
       reviewed_at: null,
     });
@@ -252,6 +280,7 @@ export default function BodyMapPage() {
     setNChild(""); setNRegion(""); setNType(""); setNColour("");
     setNSize(""); setNDesc(""); setNChildExp(""); setNStaffObs(""); setNLinkedInc("");
     setNMark(null);
+    setNConsistent(""); setNActions([]); setNFollowUp(false); setNFollowUpDate("");
   };
 
   /* ── mark as reviewed ───────────────────────────────────────────────────── */
@@ -533,6 +562,35 @@ export default function BodyMapPage() {
                     <p className="text-sm">{entry.staff_observation || "Not recorded"}</p>
                   </div>
 
+                  {/* safeguarding review */}
+                  {(entry.explanation_consistent === true || entry.explanation_consistent === false ||
+                    (entry.actions_taken && entry.actions_taken.length > 0) || entry.follow_up_required) && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Safeguarding Review</p>
+                      <div className="space-y-1.5">
+                        {(entry.explanation_consistent === true || entry.explanation_consistent === false) && (
+                          <p className="text-sm">
+                            Account {entry.explanation_consistent
+                              ? <span className="font-medium text-[--cs-success]">consistent</span>
+                              : <span className="font-medium text-rose-600">inconsistent</span>} with the mark
+                          </p>
+                        )}
+                        {entry.actions_taken && entry.actions_taken.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {entry.actions_taken.map(a => (
+                              <span key={a} className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">{ACTION_LABEL[a] ?? a}</span>
+                            ))}
+                          </div>
+                        )}
+                        {entry.follow_up_required && (
+                          <p className="text-sm text-muted-foreground">
+                            Follow-up required{entry.follow_up_date ? ` by ${formatDate(entry.follow_up_date)}` : ""}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* meta */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -723,6 +781,87 @@ export default function BodyMapPage() {
                 onChange={e => setNStaffObs(e.target.value)}
                 rows={2}
               />
+            </div>
+
+            {/* safeguarding review */}
+            <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+              <p className="text-sm font-semibold flex items-center gap-1.5">
+                <Shield className="h-4 w-4 text-[--cs-info]" /> Safeguarding review
+              </p>
+
+              {/* consistency judgement */}
+              <div>
+                <label className="text-xs font-medium mb-1 block">Is the account consistent with the mark?</label>
+                <div className="flex gap-1.5">
+                  {([["yes", "Consistent"], ["no", "Inconsistent"], ["unsure", "Not sure"]] as const).map(([val, lbl]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setNConsistent(nConsistent === val ? "" : val)}
+                      aria-pressed={nConsistent === val}
+                      className={cn(
+                        "rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                        nConsistent === val
+                          ? (val === "no" ? "bg-rose-600 text-white border-transparent" : "bg-[var(--cs-navy,#1e293b)] text-white border-transparent")
+                          : "bg-background text-muted-foreground border-border hover:bg-muted",
+                      )}
+                    >
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+                {nConsistent === "no" && (
+                  <p className="text-[11px] text-rose-600 mt-1">Inconsistent account — consider a safeguarding referral.</p>
+                )}
+              </div>
+
+              {/* actions / notifications */}
+              <div>
+                <label className="text-xs font-medium mb-1 block">Actions taken &amp; people notified</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {ACTION_OPTIONS.map(({ action, label }) => {
+                    const on = nActions.includes(action);
+                    return (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => setNActions(on ? nActions.filter(a => a !== action) : [...nActions, action])}
+                        aria-pressed={on}
+                        className={cn(
+                          "rounded-full px-2.5 py-1 text-xs font-medium border transition-colors",
+                          on ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* follow-up */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNFollowUp(!nFollowUp)}
+                  aria-pressed={nFollowUp}
+                  className={cn(
+                    "rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    nFollowUp ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted",
+                  )}
+                >
+                  Follow-up required
+                </button>
+                {nFollowUp && (
+                  <Input
+                    type="date"
+                    aria-label="Follow-up date"
+                    value={nFollowUpDate}
+                    onChange={e => setNFollowUpDate(e.target.value)}
+                    className="w-auto h-8"
+                  />
+                )}
+              </div>
             </div>
 
             {/* linked incident */}

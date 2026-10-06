@@ -2949,6 +2949,18 @@ export type MarkType = "bruise" | "scratch" | "cut" | "burn" | "swelling" | "red
 export type MarkColour = "red" | "purple" | "blue" | "yellow" | "green" | "brown" | "black" | "mixed" | "not_applicable";
 export type BodyMapStatus = "draft" | "completed" | "reviewed" | "linked_to_incident";
 
+/** Actions taken / people notified after a mark is observed (safeguarding response). */
+export type BodyMapAction =
+  | "first_aid"
+  | "medical_attention"
+  | "manager_informed"
+  | "social_worker_informed"
+  | "parent_informed"
+  | "safeguarding_referral"
+  | "lado_referral"
+  | "police_informed"
+  | "photograph_taken";
+
 export interface BodyMapEntry {
   id: string;
   child_id: string;
@@ -2971,6 +2983,18 @@ export interface BodyMapEntry {
   description: string;
   child_explanation: string;
   staff_observation: string;
+  /**
+   * Staff judgement on whether the account (child's explanation / staff
+   * observation) is consistent with the mark. true = consistent, false =
+   * inconsistent (safeguarding concern), null/undefined = not yet judged.
+   * Optional — older records predate the safeguarding-review fields.
+   */
+  explanation_consistent?: boolean | null;
+  /** Actions taken / people notified in response to the mark. */
+  actions_taken?: BodyMapAction[];
+  /** Whether a follow-up (e.g. re-observe a bruise as it changes) is needed. */
+  follow_up_required?: boolean;
+  follow_up_date?: string | null;
   status: BodyMapStatus;
   linked_incident_id: string | null;
   photos_attached: boolean;
