@@ -34,7 +34,7 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry, BodyMark, BodyMapAction } from "@/types/extended";
+import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry, BodyMark, BodyMapAction, BodyMapMark, BodyView } from "@/types/extended";
 import {
   Search,
   ArrowUpDown,
@@ -95,6 +95,20 @@ const ACTION_LABEL: Record<BodyMapAction, string> = Object.fromEntries(
   ACTION_OPTIONS.map((o) => [o.action, o.label]),
 ) as Record<BodyMapAction, string>;
 
+// A mark while it's being edited in the dialog: location (from the diagram) +
+// its own clinical detail. type/colour are "" until the recorder sets them.
+type EditMark = {
+  id: string;
+  view: BodyView;
+  x: number;
+  y: number;
+  region: BodyRegion;
+  mark_type: MarkType | "";
+  mark_colour: MarkColour | "";
+  size_cm: string;
+  description: string;
+};
+
 const STATUS_CONFIG: Record<BodyMapStatus, { label: string; colour: string }> = {
   draft:              { label: "Draft",              colour: "bg-yellow-100 text-yellow-700" },
   completed:          { label: "Completed",          colour: "bg-[--cs-info-bg] text-[--cs-info]"     },
@@ -144,19 +158,33 @@ export default function BodyMapPage() {
 
   /* ── new entry form ─────────────────────────────────────────────────────── */
   const [nChild, setNChild] = useState("");
-  const [nRegion, setNRegion] = useState<BodyRegion | "">("");
-  const [nType, setNType] = useState<MarkType | "">("");
-  const [nColour, setNColour] = useState<MarkColour | "">("");
-  const [nSize, setNSize] = useState("");
-  const [nDesc, setNDesc] = useState("");
+  const [nMarks, setNMarks] = useState<EditMark[]>([]);
   const [nChildExp, setNChildExp] = useState("");
   const [nStaffObs, setNStaffObs] = useState("");
   const [nLinkedInc, setNLinkedInc] = useState("");
-  const [nMark, setNMark] = useState<BodyMark | null>(null);
   const [nConsistent, setNConsistent] = useState<"" | "yes" | "no" | "unsure">("");
   const [nActions, setNActions] = useState<BodyMapAction[]>([]);
   const [nFollowUp, setNFollowUp] = useState(false);
   const [nFollowUpDate, setNFollowUpDate] = useState("");
+
+  // Reconcile the diagram's marks with the per-mark clinical detail, keeping
+  // existing marks' type/colour/size/description and blanking new ones.
+  const handleMarksChange = (bmarks: BodyMark[]) =>
+    setNMarks((prev) =>
+      bmarks.map((bm) => {
+        const existing = prev.find((p) => p.id === bm.id);
+        return existing
+          ? { ...existing, view: bm.view, x: bm.x, y: bm.y, region: bm.region }
+          : { id: bm.id, view: bm.view, x: bm.x, y: bm.y, region: bm.region, mark_type: "" as const, mark_colour: "" as const, size_cm: "", description: "" };
+      }),
+    );
+  const updateMark = (id: string, patch: Partial<EditMark>) =>
+    setNMarks((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  const marksValid = nMarks.length > 0 && nMarks.every((m) => m.mark_type && m.mark_colour && m.description.trim());
+  const resetForm = () => {
+    setNChild(""); setNMarks([]); setNChildExp(""); setNStaffObs(""); setNLinkedInc("");
+    setNConsistent(""); setNActions([]); setNFollowUp(false); setNFollowUpDate("");
+  };
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -236,6 +264,9 @@ export default function BodyMapPage() {
     { header: "Colour", accessor: (r) => COLOUR_LABELS[r.mark_colour] },
     { header: "Size (cm)", accessor: (r) => r.size_cm },
     { header: "Description", accessor: (r) => r.description },
+    { header: "All Marks", accessor: (r) => (r.marks && r.marks.length > 1)
+      ? r.marks.map((m, i) => `${i + 1}. ${REGION_LABELS[m.region]} (${m.view}) ${MARK_TYPE_CONFIG[m.mark_type].label}/${COLOUR_LABELS[m.mark_colour]}${m.size_cm && m.size_cm !== "N/A" ? ` ${m.size_cm}` : ""}${m.description ? ` — ${m.description}` : ""}`).join(" | ")
+      : "" },
     { header: "Child Explanation", accessor: (r) => r.child_explanation },
     { header: "Staff Observation", accessor: (r) => r.staff_observation },
     { header: "Account Consistent", accessor: (r) => r.explanation_consistent === true ? "Yes" : r.explanation_consistent === false ? "No" : "" },
@@ -249,20 +280,30 @@ export default function BodyMapPage() {
 
   /* ── create entry ───────────────────────────────────────────────────────── */
   const handleCreate = () => {
-    if (!nChild || !nRegion || !nType || !nColour || !nDesc) return;
+    if (!nChild || !marksValid) return;
+    const marks: BodyMapMark[] = nMarks.map((m) => ({
+      id: m.id, view: m.view, x: m.x, y: m.y, region: m.region,
+      mark_type: m.mark_type as MarkType,
+      mark_colour: m.mark_colour as MarkColour,
+      size_cm: m.size_cm.trim() || "N/A",
+      description: m.description.trim(),
+    }));
+    const primary = marks[0];
     createEntry.mutate({
       child_id: nChild,
       date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
       recorded_by: currentUser?.id || currentUserId(),
-      body_region: nRegion as BodyRegion,
-      coord_x: nMark?.x,
-      coord_y: nMark?.y,
-      body_view: nMark?.view,
-      mark_type: nType as MarkType,
-      mark_colour: nColour as MarkColour,
-      size_cm: nSize || "N/A",
-      description: nDesc,
+      // top-level mirrors the first mark so single-mark readers keep working
+      body_region: primary.region,
+      coord_x: primary.x,
+      coord_y: primary.y,
+      body_view: primary.view,
+      mark_type: primary.mark_type,
+      mark_colour: primary.mark_colour,
+      size_cm: primary.size_cm,
+      description: primary.description,
+      marks,
       child_explanation: nChildExp,
       staff_observation: nStaffObs,
       explanation_consistent: nConsistent === "" ? null : nConsistent === "yes",
@@ -275,12 +316,9 @@ export default function BodyMapPage() {
       reviewed_by: null,
       reviewed_at: null,
     });
-    toast.success("Body map record saved");
+    toast.success(marks.length > 1 ? `Body map saved — ${marks.length} marks` : "Body map record saved");
     setShowNew(false);
-    setNChild(""); setNRegion(""); setNType(""); setNColour("");
-    setNSize(""); setNDesc(""); setNChildExp(""); setNStaffObs(""); setNLinkedInc("");
-    setNMark(null);
-    setNConsistent(""); setNActions([]); setNFollowUp(false); setNFollowUpDate("");
+    resetForm();
   };
 
   /* ── mark as reviewed ───────────────────────────────────────────────────── */
@@ -508,6 +546,7 @@ export default function BodyMapPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
+                    {entry.marks && entry.marks.length > 1 ? `${entry.marks.length} marks · ` : ""}
                     {REGION_LABELS[entry.body_region]} · {entry.size_cm} · {COLOUR_LABELS[entry.mark_colour]} · {formatDate(entry.date)} at {entry.time}
                   </p>
                 </div>
@@ -523,32 +562,48 @@ export default function BodyMapPage() {
               {/* expanded detail */}
               {isOpen && (
                 <FlatListRowDetail>
-                  {/* body map location (if marked on the outline) */}
-                  {entry.coord_x != null && entry.coord_y != null && entry.body_view && (
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Location on Body</p>
-                      <div className="rounded-lg border bg-muted/20 p-2 w-fit">
-                        <BodyMapDiagram
-                          mode="single"
-                          initialView={entry.body_view}
-                          marks={[{
-                            id: entry.id,
-                            view: entry.body_view,
-                            x: entry.coord_x,
-                            y: entry.coord_y,
-                            region: entry.body_region,
-                            type: entry.mark_type,
-                          }]}
-                        />
+                  {/* body map marks */}
+                  {(() => {
+                    const marks: BodyMapMark[] = (entry.marks && entry.marks.length > 0)
+                      ? entry.marks
+                      : (entry.coord_x != null && entry.coord_y != null && entry.body_view
+                          ? [{ id: entry.id, view: entry.body_view, x: entry.coord_x, y: entry.coord_y, region: entry.body_region, mark_type: entry.mark_type, mark_colour: entry.mark_colour, size_cm: entry.size_cm, description: entry.description }]
+                          : []);
+                    if (marks.length === 0) {
+                      // legacy region-only record (no coordinates)
+                      return (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Mark</p>
+                          <p className="text-sm"><span className="font-medium">{REGION_LABELS[entry.body_region]}</span> — {entry.description}</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">{marks.length > 1 ? `Marks (${marks.length})` : "Location on Body"}</p>
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                          <div className="rounded-lg border bg-muted/20 p-2 w-fit shrink-0">
+                            <BodyMapDiagram
+                              initialView={marks[0].view}
+                              marks={marks.map(m => ({ id: m.id, view: m.view, x: m.x, y: m.y, region: m.region, type: m.mark_type }))}
+                            />
+                          </div>
+                          <ol className="space-y-1.5 text-sm flex-1">
+                            {marks.map((m, i) => (
+                              <li key={m.id} className="flex items-baseline gap-2">
+                                <span className="inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 text-[11px] font-semibold min-w-[18px] h-[18px] px-1 shrink-0">{i + 1}</span>
+                                <span>
+                                  <span className="font-medium">{REGION_LABELS[m.region]}</span>
+                                  <span className="text-muted-foreground"> · {MARK_TYPE_CONFIG[m.mark_type].label} · {COLOUR_LABELS[m.mark_colour]}{m.size_cm && m.size_cm !== "N/A" ? ` · ${m.size_cm}` : ""}</span>
+                                  {m.description ? <> — {m.description}</> : null}
+                                </span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* description */}
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Description of Mark</p>
-                    <p className="text-sm">{entry.description}</p>
-                  </div>
+                    );
+                  })()}
 
                   {/* child explanation */}
                   <div>
@@ -660,7 +715,7 @@ export default function BodyMapPage() {
       </>)}
 
       {/* ══ New Entry Dialog ══════════════════════════════════════════════════ */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
+      <Dialog open={showNew} onOpenChange={(o) => { setShowNew(o); if (!o) resetForm(); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Body Map Observation</DialogTitle>
@@ -677,88 +732,58 @@ export default function BodyMapPage() {
               </Select>
             </div>
 
-            {/* body map — click the outline to mark the exact location */}
+            {/* body map — click the outline to add each mark */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Where is the mark? *</label>
+              <label className="text-sm font-medium mb-1 block">
+                Marks * <span className="font-normal text-muted-foreground">— click the outline to add each mark</span>
+              </label>
               <div className="rounded-lg border bg-muted/30 p-3">
                 <BodyMapDiagram
-                  mode="single"
-                  marks={nMark ? [nMark] : []}
-                  onChange={(ms) => {
-                    const m = ms[0] ?? null;
-                    setNMark(m);
-                    if (m) setNRegion(m.region);
-                  }}
+                  mode="multi"
+                  marks={nMarks.map((m) => ({ id: m.id, view: m.view, x: m.x, y: m.y, region: m.region, type: (m.mark_type || undefined) as MarkType | undefined }))}
+                  onChange={handleMarksChange}
                 />
-                <p className="text-xs text-center mt-1">
-                  {nMark ? (
-                    <>Marked: <span className="font-semibold text-foreground">{REGION_LABELS[nMark.region]}</span>{" "}
-                    <span className="text-muted-foreground">({nMark.view})</span></>
-                  ) : nRegion ? (
-                    <>Region: <span className="font-semibold text-foreground">{REGION_LABELS[nRegion]}</span></>
-                  ) : (
-                    <span className="text-muted-foreground">No location marked yet</span>
-                  )}
-                </p>
+                {nMarks.length === 0 && (
+                  <p className="text-xs text-center mt-1 text-muted-foreground">No marks placed yet — click the body outline for each mark.</p>
+                )}
               </div>
-              <div className="mt-2">
-                <label htmlFor="e1de-body-region" className="text-xs text-muted-foreground mb-1 block">Or choose the region from a list</label>
-                <Select value={nRegion} onValueChange={(v) => { setNRegion(v as BodyRegion); setNMark(null); }}>
-                  <SelectTrigger id="e1de-body-region"><SelectValue placeholder="Select region" /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.entries(REGION_LABELS) as [BodyRegion, string][]).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            {/* mark type & colour */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="e1de-mark-type" className="text-sm font-medium mb-1 block">Mark Type *</label>
-                <Select value={nType} onValueChange={(v) => setNType(v as MarkType)}>
-                  <SelectTrigger id="e1de-mark-type"><SelectValue placeholder="Type" /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.entries(MARK_TYPE_CONFIG) as [MarkType, { label: string }][]).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label htmlFor="e1de-colour" className="text-sm font-medium mb-1 block">Colour *</label>
-                <Select value={nColour} onValueChange={(v) => setNColour(v as MarkColour)}>
-                  <SelectTrigger id="e1de-colour"><SelectValue placeholder="Colour" /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.entries(COLOUR_LABELS) as [MarkColour, string][]).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* size */}
-            <div>
-              <label htmlFor="e1de-size-cm" className="text-sm font-medium mb-1 block">Size (cm)</label>
-              <Input id="e1de-size-cm"
-                placeholder="e.g. 3x2"
-                value={nSize}
-                onChange={e => setNSize(e.target.value)}
-              />
-            </div>
-
-            {/* description */}
-            <div>
-              <label htmlFor="e1de-description-of-mark" className="text-sm font-medium mb-1 block">Description of Mark *</label>
-              <Textarea id="e1de-description-of-mark"
-                placeholder="Detailed description of the mark — location, appearance, colour, edges, swelling..."
-                value={nDesc}
-                onChange={e => setNDesc(e.target.value)}
-                rows={3}
-              />
+              {/* per-mark detail */}
+              {nMarks.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {nMarks.map((m, i) => (
+                    <div key={m.id} className="rounded-lg border p-2.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 text-[11px] font-semibold min-w-[18px] h-[18px] px-1">{i + 1}</span>
+                          {REGION_LABELS[m.region]} <span className="text-muted-foreground font-normal">({m.view})</span>
+                        </p>
+                        <button type="button" onClick={() => setNMarks(prev => prev.filter(x => x.id !== m.id))} className="text-xs text-muted-foreground hover:text-rose-600">Remove</button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Select value={m.mark_type} onValueChange={(v) => updateMark(m.id, { mark_type: v as MarkType })}>
+                          <SelectTrigger aria-label={`Mark ${i + 1} type`} className="h-9"><SelectValue placeholder="Type *" /></SelectTrigger>
+                          <SelectContent>
+                            {(Object.entries(MARK_TYPE_CONFIG) as [MarkType, { label: string }][]).map(([k, v]) => (
+                              <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={m.mark_colour} onValueChange={(v) => updateMark(m.id, { mark_colour: v as MarkColour })}>
+                          <SelectTrigger aria-label={`Mark ${i + 1} colour`} className="h-9"><SelectValue placeholder="Colour *" /></SelectTrigger>
+                          <SelectContent>
+                            {(Object.entries(COLOUR_LABELS) as [MarkColour, string][]).map(([k, v]) => (
+                              <SelectItem key={k} value={k}>{v}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Input aria-label={`Mark ${i + 1} size (cm)`} placeholder="Size (cm) — e.g. 3x2" value={m.size_cm} onChange={e => updateMark(m.id, { size_cm: e.target.value })} className="h-9" />
+                      <Textarea aria-label={`Mark ${i + 1} description`} placeholder="Description of this mark — appearance, colour, edges, swelling..." value={m.description} onChange={e => updateMark(m.id, { description: e.target.value })} rows={2} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* child explanation */}
@@ -879,10 +904,10 @@ export default function BodyMapPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowNew(false); resetForm(); }}>Cancel</Button>
             <Button
               onClick={handleCreate}
-              disabled={!nChild || !nRegion || !nType || !nColour || !nDesc}
+              disabled={!nChild || !marksValid}
             >
               Save Record
             </Button>

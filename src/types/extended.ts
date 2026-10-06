@@ -2981,6 +2981,15 @@ export interface BodyMapEntry {
   mark_colour: MarkColour;
   size_cm: string;
   description: string;
+  /**
+   * All marks recorded in this observation. A body map is one outline that can
+   * carry several numbered marks (as the paper forms do). The top-level
+   * body_region / coord / mark_type / mark_colour / size_cm / description fields
+   * mirror the FIRST mark (the "primary"), so every existing single-mark reader
+   * keeps working; `marks` holds the full set. Optional — older records have one
+   * mark and no array.
+   */
+  marks?: BodyMapMark[];
   child_explanation: string;
   staff_observation: string;
   /**
@@ -3023,6 +3032,25 @@ export interface BodyMark {
   region: BodyRegion;
   type?: MarkType;
   note?: string;
+}
+
+/**
+ * A body-map mark with its clinical detail — the per-mark shape stored in
+ * `BodyMapEntry.marks`. It is a mark location (view + coords + region) plus the
+ * mark's own type, colour, size and description, so one body map can carry
+ * several distinct marks (e.g. a bruise and a scratch) rather than one shared
+ * classification.
+ */
+export interface BodyMapMark {
+  id: string;
+  view: BodyView;
+  x: number;
+  y: number;
+  region: BodyRegion;
+  mark_type: MarkType;
+  mark_colour: MarkColour;
+  size_cm: string;
+  description: string;
 }
 
 /* ── Activities & Enrichment ────────────────────────────────────────── */
