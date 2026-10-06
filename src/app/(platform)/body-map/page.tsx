@@ -34,7 +34,7 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry } from "@/types/extended";
+import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry, BodyMark } from "@/types/extended";
 import {
   Search,
   ArrowUpDown,
@@ -56,22 +56,8 @@ import {
 } from "lucide-react";
 
 import { api } from "@/hooks/use-api";
+import { BodyMapDiagram, REGION_LABELS } from "@/components/body-map/body-map-diagram";
 // ── Config ────────────────────────────────────────────────────────────────────
-
-const REGION_LABELS: Record<BodyRegion, string> = {
-  head_front: "Head (Front)", head_back: "Head (Back)", head_left: "Head (Left)", head_right: "Head (Right)",
-  face: "Face", neck: "Neck",
-  chest: "Chest", abdomen: "Abdomen", upper_back: "Upper Back", lower_back: "Lower Back",
-  left_shoulder: "Left Shoulder", right_shoulder: "Right Shoulder",
-  left_upper_arm: "Left Upper Arm", right_upper_arm: "Right Upper Arm",
-  left_forearm: "Left Forearm", right_forearm: "Right Forearm",
-  left_hand: "Left Hand", right_hand: "Right Hand",
-  left_hip: "Left Hip", right_hip: "Right Hip",
-  left_thigh: "Left Thigh", right_thigh: "Right Thigh",
-  left_knee: "Left Knee", right_knee: "Right Knee",
-  left_shin: "Left Shin", right_shin: "Right Shin",
-  left_foot: "Left Foot", right_foot: "Right Foot",
-};
 
 const MARK_TYPE_CONFIG: Record<MarkType, { label: string; colour: string }> = {
   bruise:        { label: "Bruise",        colour: "bg-purple-100 text-purple-700" },
@@ -149,6 +135,7 @@ export default function BodyMapPage() {
   const [nChildExp, setNChildExp] = useState("");
   const [nStaffObs, setNStaffObs] = useState("");
   const [nLinkedInc, setNLinkedInc] = useState("");
+  const [nMark, setNMark] = useState<BodyMark | null>(null);
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -245,6 +232,9 @@ export default function BodyMapPage() {
       time: new Date().toTimeString().slice(0, 5),
       recorded_by: currentUser?.id || currentUserId(),
       body_region: nRegion as BodyRegion,
+      coord_x: nMark?.x,
+      coord_y: nMark?.y,
+      body_view: nMark?.view,
       mark_type: nType as MarkType,
       mark_colour: nColour as MarkColour,
       size_cm: nSize || "N/A",
@@ -261,6 +251,7 @@ export default function BodyMapPage() {
     setShowNew(false);
     setNChild(""); setNRegion(""); setNType(""); setNColour("");
     setNSize(""); setNDesc(""); setNChildExp(""); setNStaffObs(""); setNLinkedInc("");
+    setNMark(null);
   };
 
   /* ── mark as reviewed ───────────────────────────────────────────────────── */
@@ -503,6 +494,27 @@ export default function BodyMapPage() {
               {/* expanded detail */}
               {isOpen && (
                 <FlatListRowDetail>
+                  {/* body map location (if marked on the outline) */}
+                  {entry.coord_x != null && entry.coord_y != null && entry.body_view && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Location on Body</p>
+                      <div className="rounded-lg border bg-muted/20 p-2 w-fit">
+                        <BodyMapDiagram
+                          mode="single"
+                          initialView={entry.body_view}
+                          marks={[{
+                            id: entry.id,
+                            view: entry.body_view,
+                            x: entry.coord_x,
+                            y: entry.coord_y,
+                            region: entry.body_region,
+                            type: entry.mark_type,
+                          }]}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* description */}
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Description of Mark</p>
@@ -607,17 +619,41 @@ export default function BodyMapPage() {
               </Select>
             </div>
 
-            {/* body region */}
+            {/* body map — click the outline to mark the exact location */}
             <div>
-              <label htmlFor="e1de-body-region" className="text-sm font-medium mb-1 block">Body Region *</label>
-              <Select value={nRegion} onValueChange={(v) => setNRegion(v as BodyRegion)}>
-                <SelectTrigger id="e1de-body-region"><SelectValue placeholder="Select region" /></SelectTrigger>
-                <SelectContent>
-                  {(Object.entries(REGION_LABELS) as [BodyRegion, string][]).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-1 block">Where is the mark? *</label>
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <BodyMapDiagram
+                  mode="single"
+                  marks={nMark ? [nMark] : []}
+                  onChange={(ms) => {
+                    const m = ms[0] ?? null;
+                    setNMark(m);
+                    if (m) setNRegion(m.region);
+                  }}
+                />
+                <p className="text-xs text-center mt-1">
+                  {nMark ? (
+                    <>Marked: <span className="font-semibold text-foreground">{REGION_LABELS[nMark.region]}</span>{" "}
+                    <span className="text-muted-foreground">({nMark.view})</span></>
+                  ) : nRegion ? (
+                    <>Region: <span className="font-semibold text-foreground">{REGION_LABELS[nRegion]}</span></>
+                  ) : (
+                    <span className="text-muted-foreground">No location marked yet</span>
+                  )}
+                </p>
+              </div>
+              <div className="mt-2">
+                <label htmlFor="e1de-body-region" className="text-xs text-muted-foreground mb-1 block">Or choose the region from a list</label>
+                <Select value={nRegion} onValueChange={(v) => { setNRegion(v as BodyRegion); setNMark(null); }}>
+                  <SelectTrigger id="e1de-body-region"><SelectValue placeholder="Select region" /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.entries(REGION_LABELS) as [BodyRegion, string][]).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* mark type & colour */}

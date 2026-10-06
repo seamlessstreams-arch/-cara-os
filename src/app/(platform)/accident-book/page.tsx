@@ -39,9 +39,10 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord } from "@/types/extended";
+import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark } from "@/types/extended";
 
 import { api } from "@/hooks/use-api";
+import { BodyMapDiagram, BodyMarkList } from "@/components/body-map/body-map-diagram";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const PERSON_TYPE_LABEL: Record<AccidentPersonType, string> = { child: "Child", staff: "Staff", visitor: "Visitor", contractor: "Contractor" };
@@ -98,6 +99,7 @@ export default function AccidentBookPage() {
     preventive_measures: "",
   };
   const [form, setForm] = useState(EMPTY_FORM);
+  const [injuryMarks, setInjuryMarks] = useState<BodyMark[]>([]);
   const setF = <K extends keyof typeof EMPTY_FORM>(k: K, v: (typeof EMPTY_FORM)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -321,6 +323,17 @@ export default function AccidentBookPage() {
                       </div>
                     </div>
 
+                    {/* body map marks */}
+                    {r.injury_marks && r.injury_marks.length > 0 && (
+                      <div>
+                        <p className="font-medium mb-1">Body Map — {r.injury_marks.length} {r.injury_marks.length === 1 ? "injury" : "injuries"} marked</p>
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 rounded-lg border bg-muted/20 p-3">
+                          <BodyMapDiagram marks={r.injury_marks} initialView={r.injury_marks[0].view} className="sm:w-1/2 max-w-[200px]" />
+                          <BodyMarkList marks={r.injury_marks} className="sm:w-1/2" />
+                        </div>
+                      </div>
+                    )}
+
                     {/* body map / photos */}
                     <div className="flex gap-4 text-xs">
                       {r.body_map_completed && <Badge variant="outline" className="bg-blue-50">Body Map Completed</Badge>}
@@ -369,7 +382,7 @@ export default function AccidentBookPage() {
       </div>
 
       {/* ── new entry dialog ───────────────────────────────────────────────── */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
+      <Dialog open={showNew} onOpenChange={(o) => { setShowNew(o); if (!o) setInjuryMarks([]); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Accident / Injury</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
@@ -382,6 +395,21 @@ export default function AccidentBookPage() {
             <div className="col-span-2"><Label htmlFor="4f1d-location">Location</Label><Input id="4f1d-location" placeholder="Where the accident happened" value={form.location} onChange={(e) => setF("location", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-description">Description *</Label><Textarea id="4f1d-description" placeholder="What happened…" rows={3} value={form.description} onChange={(e) => setF("description", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-injury-details">Injury Details</Label><Textarea id="4f1d-injury-details" placeholder="Describe the injury…" rows={2} value={form.injury_details} onChange={(e) => setF("injury_details", e.target.value)} /></div>
+            <div className="col-span-2">
+              <Label>Body Map — mark where the injuries are</Label>
+              <div className="rounded-lg border bg-muted/30 p-3 mt-1 flex flex-col sm:flex-row sm:items-start gap-4">
+                <BodyMapDiagram mode="multi" marks={injuryMarks} onChange={setInjuryMarks} className="sm:w-1/2" />
+                <div className="sm:w-1/2">
+                  {injuryMarks.length > 0 ? (
+                    <BodyMarkList marks={injuryMarks} />
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Click the outline to mark each injury. Each mark is numbered and recorded with the body region. Leave blank if there was no bodily injury.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
             <div className="col-span-2"><Label htmlFor="4f1d-first-aid-given">First Aid Given</Label><Textarea id="4f1d-first-aid-given" placeholder="First aid details…" rows={2} value={form.first_aid_details} onChange={(e) => setF("first_aid_details", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} value={form.root_cause} onChange={(e) => setF("root_cause", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} value={form.preventive_measures} onChange={(e) => setF("preventive_measures", e.target.value)} /></div>
@@ -390,8 +418,8 @@ export default function AccidentBookPage() {
             <p className="text-xs text-[var(--cs-text-muted)]">Person injured, category, severity and description are needed before this can be saved — an accident record that asserts a severity nobody chose is worse than no record.</p>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button variant="outline" onClick={() => { setShowNew(false); setInjuryMarks([]); }}>Cancel</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
