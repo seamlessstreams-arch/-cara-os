@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { regionAtPoint } from "../body-map-diagram";
+import { regionAtPoint, isNonAccidentalSite } from "../body-map-diagram";
 
 // regionAtPoint maps a click (0–100% of the diagram) to a clinical body region.
 // The bands are tuned to where each part is drawn in FigureOutline, so these
@@ -47,5 +47,18 @@ describe("regionAtPoint", () => {
     expect(regionAtPoint("front", 47, 80)).toBe("right_knee");
     expect(regionAtPoint("front", 47, 90)).toBe("right_shin");
     expect(regionAtPoint("front", 47, 97)).toBe("right_foot");
+  });
+});
+
+describe("isNonAccidentalSite", () => {
+  it("flags soft / concealed sites common for non-accidental injury", () => {
+    for (const r of ["face", "neck", "chest", "abdomen", "upper_back", "lower_back", "left_upper_arm", "right_upper_arm"] as const) {
+      expect(isNonAccidentalSite(r)).toBe(true);
+    }
+  });
+  it("does not flag the bony prominences typical of accidental injury", () => {
+    for (const r of ["head_front", "left_forearm", "left_knee", "right_knee", "left_shin", "right_shin", "left_hip", "right_hip", "left_hand", "right_hand"] as const) {
+      expect(isNonAccidentalSite(r)).toBe(false);
+    }
   });
 });
