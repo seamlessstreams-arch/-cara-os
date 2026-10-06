@@ -45,34 +45,43 @@ const VB_H = 260;
  * right; on the back view they coincide.
  */
 export function regionAtPoint(view: BodyView, x: number, y: number): BodyRegion {
-  const childSide = (nx: number): "left" | "right" =>
-    view === "front" ? (nx < 50 ? "right" : "left") : nx < 50 ? "left" : "right";
-  const side = childSide(x);
+  // The figure's left is the CHILD's left: on the front view the child's right
+  // is on the viewer's left; on the back view they coincide.
+  const side: "left" | "right" =
+    view === "front" ? (x < 50 ? "right" : "left") : x < 50 ? "left" : "right";
+  const pick = (l: BodyRegion, r: BodyRegion): BodyRegion => (side === "left" ? l : r);
 
-  // Head / neck (midline)
-  if (y < 16) return view === "front" ? "face" : "head_back";
-  if (y < 19) return "neck";
+  // Bands are tuned to where each part is actually drawn in FigureOutline
+  // (viewBox 120×260), expressed as 0–100 percentages of the diagram:
+  //   head circle ≈ y 3–17 · neck ≈ 17–20 · torso 18–57 · arms (x 20–32 /
+  //   68–80) y 20–55 · hands ≈ y 55–60 · legs y 54–96 · feet ≈ 95–99.
 
-  const inTrunk = x >= 35 && x <= 65;
+  // Head & neck (midline)
+  if (y < 17) return view === "front" ? "face" : "head_back";
+  if (y < 20) return "neck";
 
-  // Arms & hands sit outside the trunk column
-  if (!inTrunk && y >= 19 && y < 54) {
-    if (y < 27) return side === "left" ? "left_shoulder" : "right_shoulder";
-    if (y < 41) return side === "left" ? "left_upper_arm" : "right_upper_arm";
-    if (y < 53) return side === "left" ? "left_forearm" : "right_forearm";
-    return side === "left" ? "left_hand" : "right_hand";
+  // Arms run down the outer columns, clear of the trunk (x 34–66).
+  const inArmColumn = x < 34 || x > 66;
+
+  // Shoulders: the top band, at the arm line or the outer top of the trunk.
+  if (y < 25 && (inArmColumn || x < 42 || x > 58)) return pick("left_shoulder", "right_shoulder");
+
+  if (inArmColumn) {
+    if (y < 40) return pick("left_upper_arm", "right_upper_arm");
+    if (y < 55) return pick("left_forearm", "right_forearm");
+    return pick("left_hand", "right_hand"); // hand circle sits at y ≈ 55–60
   }
 
-  // Trunk
-  if (inTrunk && y < 40) return view === "front" ? "chest" : "upper_back";
-  if (inTrunk && y < 54) return view === "front" ? "abdomen" : "lower_back";
-  if (y < 60) return side === "left" ? "left_hip" : "right_hip";
+  // Trunk (x 34–66)
+  if (y < 38) return view === "front" ? "chest" : "upper_back";
+  if (y < 52) return view === "front" ? "abdomen" : "lower_back";
+  if (y < 58) return pick("left_hip", "right_hip");
 
   // Legs & feet
-  if (y < 77) return side === "left" ? "left_thigh" : "right_thigh";
-  if (y < 84) return side === "left" ? "left_knee" : "right_knee";
-  if (y < 93) return side === "left" ? "left_shin" : "right_shin";
-  return side === "left" ? "left_foot" : "right_foot";
+  if (y < 77) return pick("left_thigh", "right_thigh");
+  if (y < 85) return pick("left_knee", "right_knee");
+  if (y < 94) return pick("left_shin", "right_shin");
+  return pick("left_foot", "right_foot");
 }
 
 function newMarkId(): string {
