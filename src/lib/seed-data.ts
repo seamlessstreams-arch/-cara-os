@@ -18,6 +18,8 @@ import type {
 import { daysFromNow, todayStr } from "./utils";
 
 import { seedDay } from "@/lib/seed-date";
+import { cachedStaff, cachedChild } from "@/lib/people/people-cache";
+import { childDisplayName } from "@/lib/people/child-display-name";
 const today = todayStr();
 const yesterday = daysFromNow(-1);
 const twoDaysAgo = daysFromNow(-2);
@@ -219,19 +221,38 @@ export const LEAVE_REQUESTS: LeaveRequest[] = [
 // ── Helper: get staff name by ID ─────────────────────────────────────────────
 
 export function getStaffById(id: string): StaffMember | undefined {
+  // Live tenant: the real staff_members row is published to the people cache by
+  // PeopleCacheProvider; prefer it so a Supabase uuid resolves instead of
+  // missing the demo seed. Falls back to the seed (demo / server / pre-load).
+  const live = cachedStaff(id);
+  if (live) return live as unknown as StaffMember;
   return STAFF.find((s) => s.id === id);
 }
 
 export function getStaffName(id: string): string {
-  return getStaffById(id)?.full_name || "Unknown";
+  const live = cachedStaff(id);
+  if (live) {
+    const full = (live.full_name ?? "").toString().trim();
+    if (full) return full;
+    const parts = [live.first_name, live.last_name].filter(Boolean).join(" ").trim();
+    if (parts) return parts;
+  }
+  return STAFF.find((s) => s.id === id)?.full_name || "Unknown";
 }
 
 export function getYPById(id: string): YoungPerson | undefined {
+  const live = cachedChild(id);
+  if (live) return live as unknown as YoungPerson;
   return YOUNG_PEOPLE.find((yp) => yp.id === id);
 }
 
 export function getYPName(id: string): string {
-  const yp = getYPById(id);
+  // childDisplayName is the one place that decides what to call a child
+  // (preferred, else first+last, never the id); use it for the live row so the
+  // name matches every picker. Seed fallback preserves the demo.
+  const live = cachedChild(id);
+  if (live) return childDisplayName(live, "Unknown");
+  const yp = YOUNG_PEOPLE.find((y) => y.id === id);
   return yp?.preferred_name || yp?.first_name || "Unknown";
 }
 
