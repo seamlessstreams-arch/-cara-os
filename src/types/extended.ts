@@ -2795,6 +2795,16 @@ export type AccidentNotification =
   | "iro"
   | "placing_authority";
 
+/** Type of RIDDOR-reportable event (RIDDOR 2013). */
+export type RiddorCategory =
+  | "specified_injury"
+  | "over_7_day"
+  | "non_worker_hospital"
+  | "dangerous_occurrence"
+  | "occupational_disease"
+  | "death"
+  | "other";
+
 export interface AccidentRecord {
   id: string;
   date: string;
@@ -2843,6 +2853,10 @@ export interface AccidentRecord {
   social_worker_notified: boolean;
   riddor_reported: boolean;
   riddor_ref: string | null;
+  /** Type of RIDDOR-reportable event, when riddor_reported is true. */
+  riddor_category?: RiddorCategory;
+  /** Days the injured person was incapacitated (drives the over-3-day record / over-7-day report thresholds). */
+  days_incapacitated?: number;
   witnesses: string[];
   root_cause: string;
   preventive_measures: string;

@@ -39,7 +39,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark, AccidentNotification, NotifiableEvent, NotifiableNotification } from "@/types/extended";
+import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord, BodyMark, AccidentNotification, NotifiableEvent, NotifiableNotification, RiddorCategory } from "@/types/extended";
 
 import { api } from "@/hooks/use-api";
 import { BodyMapDiagram, BodyMarkList } from "@/components/body-map/body-map-diagram";
@@ -75,6 +75,19 @@ const NOTIFICATION_OPTIONS: { key: AccidentNotification; label: string }[] = [
 const NOTIFICATION_LABEL: Record<AccidentNotification, string> = Object.fromEntries(
   NOTIFICATION_OPTIONS.map((o) => [o.key, o.label]),
 ) as Record<AccidentNotification, string>;
+
+const RIDDOR_CATEGORY_OPTIONS: { value: RiddorCategory; label: string }[] = [
+  { value: "specified_injury", label: "Specified injury (fracture, amputation, etc.)" },
+  { value: "over_7_day", label: "Over-7-day incapacitation" },
+  { value: "non_worker_hospital", label: "Non-worker taken to hospital" },
+  { value: "dangerous_occurrence", label: "Dangerous occurrence" },
+  { value: "occupational_disease", label: "Occupational disease" },
+  { value: "death", label: "Death" },
+  { value: "other", label: "Other" },
+];
+const RIDDOR_CATEGORY_LABEL: Record<RiddorCategory, string> = Object.fromEntries(
+  RIDDOR_CATEGORY_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<RiddorCategory, string>;
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
@@ -159,6 +172,10 @@ export default function AccidentBookPage() {
     previously_reported_to: "",
     care_plan_updated: false,
     notifications: [] as AccidentNotification[],
+    riddor_reported: false,
+    riddor_category: "" as "" | RiddorCategory,
+    days_incapacitated: "",
+    riddor_ref: "",
   };
   const [form, setForm] = useState(EMPTY_FORM);
   const [injuryMarks, setInjuryMarks] = useState<BodyMark[]>([]);
@@ -244,6 +261,8 @@ export default function AccidentBookPage() {
     { header: "Medical Attention", accessor: (r: AccidentRecord) => r.medical_attention ? "Yes" : "No" },
     { header: "Hospital", accessor: (r: AccidentRecord) => r.hospital_attendance ? "Yes" : "No" },
     { header: "RIDDOR", accessor: (r: AccidentRecord) => r.riddor_reported ? `Yes (${r.riddor_ref})` : "No" },
+    { header: "RIDDOR Category", accessor: (r: AccidentRecord) => r.riddor_category ? RIDDOR_CATEGORY_LABEL[r.riddor_category] : "" },
+    { header: "Days Incapacitated", accessor: (r: AccidentRecord) => r.days_incapacitated != null ? String(r.days_incapacitated) : "" },
     { header: "Status", accessor: (r: AccidentRecord) => STATUS_LABEL[r.status] },
     { header: "Root Cause", accessor: (r: AccidentRecord) => r.root_cause },
     { header: "Preventive Measures", accessor: (r: AccidentRecord) => r.preventive_measures },
@@ -423,7 +442,7 @@ export default function AccidentBookPage() {
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">RIDDOR Reported</p>
-                        <p className="text-xs text-muted-foreground">{r.riddor_reported ? `Yes — ${r.riddor_ref}` : "No"}</p>
+                        <p className="text-xs text-muted-foreground">{r.riddor_reported ? `Yes${r.riddor_ref ? ` (${r.riddor_ref})` : ""}` : "No"}{r.days_incapacitated ? ` · ${r.days_incapacitated}d incap.` : ""}</p>
                       </div>
                     </div>
 
@@ -571,13 +590,51 @@ export default function AccidentBookPage() {
                 </button>
               </div>
             </div>
+
+            {/* RIDDOR */}
+            <div className="col-span-2 rounded-lg border bg-muted/20 p-3 space-y-3">
+              <p className="text-sm font-semibold">RIDDOR (work-related injury reporting)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="4f1d-days-incap">Days incapacitated</Label>
+                  <Input id="4f1d-days-incap" type="number" min={0} placeholder="0" value={form.days_incapacitated} onChange={(e) => setF("days_incapacitated", e.target.value)} />
+                </div>
+                <div className="flex items-end pb-1">
+                  {Number(form.days_incapacitated) > 7
+                    ? <p className="text-[11px] text-amber-700">Over 7 days — report to HSE within 10 days.</p>
+                    : Number(form.days_incapacitated) > 3
+                    ? <p className="text-[11px] text-muted-foreground">Over 3 days — must be recorded (RIDDOR).</p>
+                    : null}
+                </div>
+              </div>
+              <button type="button" onClick={() => setF("riddor_reported", !form.riddor_reported)} aria-pressed={form.riddor_reported}
+                className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                  form.riddor_reported ? "bg-red-600 text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                RIDDOR reportable
+              </button>
+              {form.riddor_reported && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="4f1d-riddor-category" className="mb-1 block">RIDDOR category</Label>
+                    <Select value={form.riddor_category} onValueChange={(v) => setF("riddor_category", v as RiddorCategory)}>
+                      <SelectTrigger id="4f1d-riddor-category" aria-label="RIDDOR category"><SelectValue placeholder="Select…" /></SelectTrigger>
+                      <SelectContent>{RIDDOR_CATEGORY_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="4f1d-riddor-ref">HSE reference</Label>
+                    <Input id="4f1d-riddor-ref" placeholder="F2508 reference…" value={form.riddor_ref} onChange={(e) => setF("riddor_ref", e.target.value)} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           {!canSaveAccident && (
             <p className="text-xs text-[var(--cs-text-muted)]">Person injured, category, severity and description are needed before this can be saved — an accident record that asserts a severity nobody chose is worse than no record.</p>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowNew(false); setInjuryMarks([]); }}>Cancel</Button>
-            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: form.person_id || null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: form.medical_outcome.trim() !== "", medical_outcome: form.medical_outcome.trim(), hospital_attendance: false, hospital_name: null, parent_carer_notified: form.notifications.includes("parent_carer"), parent_notified_time: null, social_worker_notified: form.notifications.includes("social_worker"), notifications: form.notifications, notifiable_event: form.notifiable_event, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), happened_before: form.happened_before, previously_reported_to: form.happened_before ? form.previously_reported_to.trim() : "", care_plan_updated: form.care_plan_updated, child_account: form.child_account.trim(), injury_consistent: form.injury_consistent === "" ? null : form.injury_consistent === "yes", follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: form.person_id || null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: form.medical_outcome.trim() !== "", medical_outcome: form.medical_outcome.trim(), hospital_attendance: false, hospital_name: null, parent_carer_notified: form.notifications.includes("parent_carer"), parent_notified_time: null, social_worker_notified: form.notifications.includes("social_worker"), notifications: form.notifications, notifiable_event: form.notifiable_event, riddor_reported: form.riddor_reported, riddor_ref: form.riddor_ref.trim() || null, riddor_category: form.riddor_reported && form.riddor_category !== "" ? form.riddor_category : undefined, days_incapacitated: form.days_incapacitated ? Number(form.days_incapacitated) : undefined, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), happened_before: form.happened_before, previously_reported_to: form.happened_before ? form.previously_reported_to.trim() : "", care_plan_updated: form.care_plan_updated, child_account: form.child_account.trim(), injury_consistent: form.injury_consistent === "" ? null : form.injury_consistent === "yes", follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
