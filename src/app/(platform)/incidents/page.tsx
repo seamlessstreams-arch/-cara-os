@@ -1059,9 +1059,20 @@ function LogIncidentTab() {
   function handleSubmit() {
     if (!form.child_id || !form.type || !form.description || !form.immediate_action) return;
 
+    // child_account is sent ONLY when the child actually gave an account. An
+    // empty value is omitted (the column is nullable — null means "not asked /
+    // no account given", never a "" stand-in). Omitting it also keeps a normal
+    // incident independent of the child_account column: a create without a
+    // child account never references the column, so it cannot fail on a missing
+    // or not-yet-cached column — only an incident that records a child account
+    // needs it present.
+    const { child_account, ...rest } = form;
+    const childAccount = child_account.trim();
+
     createIncident.mutate(
       {
-        ...form,
+        ...rest,
+        ...(childAccount ? { child_account: childAccount } : {}),
         type: form.type as Incident["type"],
         severity: form.severity as Incident["severity"],
         reported_by: currentUser?.id ?? "",
