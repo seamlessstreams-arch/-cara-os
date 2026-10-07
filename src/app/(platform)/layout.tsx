@@ -18,6 +18,7 @@ import { PrivacyToggle } from "@/components/privacy/privacy-toggle";
 import { GlobalEmergencyBanner } from "@/components/staffing/global-emergency-banner";
 import { GlobalStaffingBanner } from "@/components/staffing/global-staffing-banner";
 import { PageTransition } from "@/components/layout/page-transition";
+import { PeopleCacheProvider } from "@/components/people/people-cache-provider";
 
 /**
  * Realtime subscription for care events using Supabase Realtime.
@@ -217,7 +218,9 @@ function PlatformContent({ children }: { children: React.ReactNode }) {
         <GlobalEmergencyBanner />
         <GlobalStaffingBanner />
       </div>
-      <PageTransition>{children}</PageTransition>
+      <PageTransition>
+        <PeopleCacheProvider>{children}</PeopleCacheProvider>
+      </PageTransition>
     </div>
   );
 }
