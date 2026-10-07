@@ -7,6 +7,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PacePanel } from "@/components/pace/pace-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+import { ChildAccountField } from "@/components/safeguarding/child-account-field";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
@@ -119,7 +120,7 @@ export default function RestraintLogPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRestraint = useCreateRestraint();
-  const [rlForm, setRlForm] = useState({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "" });
+  const [rlForm, setRlForm] = useState({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "", medical_check_completed: false, child_debriefed: false, child_debrief_notes: "", staff_debriefed: false });
   const setRL = (k: string, v: unknown) => setRlForm((p) => ({ ...p, [k]: v }));
 
   const rlHeartRecord = useMemo<CaraPracticeRecord | null>(() => {
@@ -144,9 +145,9 @@ export default function RestraintLogPage() {
     if (!rlForm.child_id) { toast.error("Please select a young person."); return; }
     if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
     const minutesBetween = (a: string, b: string) => { const [ah, am] = a.split(":").map(Number); const [bh, bm] = b.split(":").map(Number); if ([ah, am, bh, bm].some(Number.isNaN)) return 0; const d = (bh * 60 + bm) - (ah * 60 + am); return d < 0 ? d + 1440 : d; };
-    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: minutesBetween(rlForm.start_time, rlForm.end_time), child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "other", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: currentUserId(), created_at: new Date().toISOString() });
+    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: minutesBetween(rlForm.start_time, rlForm.end_time), child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "other", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: rlForm.child_debriefed || rlForm.child_debrief_notes.trim() !== "", child_debrief_notes: rlForm.child_debrief_notes.trim(), staff_debriefed: rlForm.staff_debriefed, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: rlForm.medical_check_completed, recorded_by: currentUserId(), created_at: new Date().toISOString() });
     toast.success("Restraint record saved.");
-    setRlForm({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
+    setRlForm({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "", medical_check_completed: false, child_debriefed: false, child_debrief_notes: "", staff_debriefed: false });
     setShowNew(false);
   };
 
@@ -376,6 +377,34 @@ export default function RestraintLogPage() {
               <label htmlFor="8d22-description" className="text-sm font-medium">Description *</label>
               <Textarea id="8d22-description" placeholder="Detailed description of the intervention…" rows={3} value={rlForm.description} onChange={(e) => setRL("description", e.target.value)} />
               <WritingAssistantInline value={rlForm.description} onApplyText={(t) => setRL("description", t)} recordType="incident" fieldName="description" childId={rlForm.child_id || undefined} mode="standard" />
+            </div>
+
+            {/* post-intervention: medical check, debriefs, child's voice */}
+            <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+              <p className="text-sm font-semibold">Post-intervention</p>
+              <div className="flex flex-wrap gap-1.5">
+                {([["medical_check_completed", "Medical check offered/completed"], ["child_debriefed", "Child debriefed"], ["staff_debriefed", "Staff debriefed"]] as const).map(([k, label]) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-pressed={rlForm[k]}
+                    onClick={() => setRL(k, !rlForm[k])}
+                    className={cn(
+                      "rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                      rlForm[k] ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <ChildAccountField
+                id="8d22-child-debrief"
+                label="Child's debrief — in their words"
+                placeholder="What the young person said during the debrief, in their own words…"
+                value={rlForm.child_debrief_notes}
+                onChange={(v) => setRL("child_debrief_notes", v)}
+              />
             </div>
             <InlineCaraHeartPanel record={rlHeartRecord} />
             <DialogFooter>
