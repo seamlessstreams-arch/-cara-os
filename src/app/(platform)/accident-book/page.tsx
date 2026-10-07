@@ -47,6 +47,7 @@ import { ChildAccountField } from "@/components/safeguarding/child-account-field
 import { ConsistencyToggle } from "@/components/safeguarding/consistency-toggle";
 import { ChipMultiSelect } from "@/components/safeguarding/chip-multi-select";
 import { ChildSelect, useChildName } from "@/components/young-people/child-select";
+import { StaffSelect } from "@/components/staff/staff-select";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const PERSON_TYPE_LABEL: Record<AccidentPersonType, string> = { child: "Child", staff: "Staff", visitor: "Visitor", contractor: "Contractor" };
@@ -176,6 +177,14 @@ export default function AccidentBookPage() {
     riddor_category: "" as "" | RiddorCategory,
     days_incapacitated: "",
     riddor_ref: "",
+    // treatment & follow-up (the record's detail view already displays these,
+    // but the form previously hardcoded them away on save)
+    first_aid_by: "",
+    hospital_attendance: false,
+    hospital_name: "",
+    photographs_taken: false,
+    witnesses_text: "",
+    follow_up_date: "",
   };
   const [form, setForm] = useState(EMPTY_FORM);
   const [injuryMarks, setInjuryMarks] = useState<BodyMark[]>([]);
@@ -539,6 +548,45 @@ export default function AccidentBookPage() {
             <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} value={form.root_cause} onChange={(e) => setF("root_cause", e.target.value)} /></div>
             <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} value={form.preventive_measures} onChange={(e) => setF("preventive_measures", e.target.value)} /></div>
 
+            {/* treatment, hospital & follow-up — the detail view already shows
+                these; the form used to hardcode them away on save */}
+            <div className="col-span-2 rounded-lg border bg-muted/20 p-3 space-y-3">
+              <p className="text-sm font-semibold">Treatment &amp; follow-up</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="4f1d-first-aid-by">First aid given by</Label>
+                  <StaffSelect id="4f1d-first-aid-by" value={form.first_aid_by} placeholder="Select staff member" onChange={(id) => setF("first_aid_by", id)} />
+                </div>
+                <div>
+                  <Label htmlFor="4f1d-follow-up-date">Follow-up date</Label>
+                  <Input id="4f1d-follow-up-date" type="date" value={form.follow_up_date} onChange={(e) => setF("follow_up_date", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => setF("hospital_attendance", !form.hospital_attendance)} aria-pressed={form.hospital_attendance}
+                  className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    form.hospital_attendance ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                  Attended hospital
+                </button>
+                {form.hospital_attendance && (
+                  <Input placeholder="Hospital name" aria-label="Hospital name" value={form.hospital_name} onChange={(e) => setF("hospital_name", e.target.value)} className="h-8 w-auto flex-1 min-w-[160px]" />
+                )}
+                <button type="button" onClick={() => setF("photographs_taken", !form.photographs_taken)} aria-pressed={form.photographs_taken}
+                  className={cn("rounded-md px-3 py-1 text-xs font-medium border transition-colors",
+                    form.photographs_taken ? "bg-[var(--cs-navy,#1e293b)] text-white border-transparent" : "bg-background text-muted-foreground border-border hover:bg-muted")}>
+                  Photographs taken
+                </button>
+              </div>
+
+              <div>
+                <Label htmlFor="4f1d-witnesses">Witnesses</Label>
+                <Textarea id="4f1d-witnesses" placeholder="One name per line" rows={2} value={form.witnesses_text} onChange={(e) => setF("witnesses_text", e.target.value)} />
+                <p className="text-[11px] text-muted-foreground mt-1">One per line. Leave blank if there were none.</p>
+              </div>
+            </div>
+
             {/* safeguarding & notifications */}
             <div className="col-span-2 rounded-lg border bg-muted/20 p-3 space-y-3">
               <p className="text-sm font-semibold">Safeguarding &amp; notifications</p>
@@ -634,7 +682,7 @@ export default function AccidentBookPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowNew(false); setInjuryMarks([]); }}>Cancel</Button>
-            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: form.person_id || null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: form.medical_outcome.trim() !== "", medical_outcome: form.medical_outcome.trim(), hospital_attendance: false, hospital_name: null, parent_carer_notified: form.notifications.includes("parent_carer"), parent_notified_time: null, social_worker_notified: form.notifications.includes("social_worker"), notifications: form.notifications, notifiable_event: form.notifiable_event, riddor_reported: form.riddor_reported, riddor_ref: form.riddor_ref.trim() || null, riddor_category: form.riddor_reported && form.riddor_category !== "" ? form.riddor_category : undefined, days_incapacitated: form.days_incapacitated ? Number(form.days_incapacitated) : undefined, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), happened_before: form.happened_before, previously_reported_to: form.happened_before ? form.previously_reported_to.trim() : "", care_plan_updated: form.care_plan_updated, child_account: form.child_account.trim(), injury_consistent: form.injury_consistent === "" ? null : form.injury_consistent === "yes", follow_up_date: null, photographs_taken: false, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: currentUserId(), person_type: form.person_type, person_id: form.person_id || null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "" || form.first_aid_by !== "", first_aid_by: form.first_aid_by || null, first_aid_details: form.first_aid_details.trim(), medical_attention: form.medical_outcome.trim() !== "" || form.hospital_attendance, medical_outcome: form.medical_outcome.trim(), hospital_attendance: form.hospital_attendance, hospital_name: form.hospital_attendance && form.hospital_name.trim() ? form.hospital_name.trim() : null, parent_carer_notified: form.notifications.includes("parent_carer"), parent_notified_time: null, social_worker_notified: form.notifications.includes("social_worker"), notifications: form.notifications, notifiable_event: form.notifiable_event, riddor_reported: form.riddor_reported, riddor_ref: form.riddor_ref.trim() || null, riddor_category: form.riddor_reported && form.riddor_category !== "" ? form.riddor_category : undefined, days_incapacitated: form.days_incapacitated ? Number(form.days_incapacitated) : undefined, witnesses: form.witnesses_text.split("\n").map((s) => s.trim()).filter(Boolean), root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), happened_before: form.happened_before, previously_reported_to: form.happened_before ? form.previously_reported_to.trim() : "", care_plan_updated: form.care_plan_updated, child_account: form.child_account.trim(), injury_consistent: form.injury_consistent === "" ? null : form.injury_consistent === "yes", follow_up_date: form.follow_up_date || null, photographs_taken: form.photographs_taken, injury_marks: injuryMarks, body_map_completed: injuryMarks.length > 0, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); setInjuryMarks([]); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
