@@ -43,6 +43,7 @@ import { careToast } from "@/lib/toast";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+import { ChildAccountField } from "@/components/safeguarding/child-account-field";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import { InlineNeuroProfilePanel } from "@/components/neurodiversity/inline-neuro-profile-panel";
 import type { CaraPracticeRecord, CaraPracticeRecordType, ImmediateRisk, RecordSeverity } from "@/lib/cara-heart/types";
@@ -874,6 +875,13 @@ function OversightQueueTab() {
                 </div>
               )}
 
+              {inc.child_account && (
+                <div>
+                  <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-1.5">Child&apos;s Account (their words)</div>
+                  <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{inc.child_account}</p>
+                </div>
+              )}
+
               {/* Notifications */}
               {inc.notifications.length > 0 && (
                 <div>
@@ -999,6 +1007,7 @@ const EMPTY_FORM = {
   location: "",
   description: "",
   immediate_action: "",
+  child_account: "",
   notifications: [] as Array<{ role: string; name: string; method: string }>,
   body_map_required: false,
 };
@@ -1306,6 +1315,15 @@ function LogIncidentTab() {
           fieldName="immediate_action"
           childId={form.child_id || undefined}
           mode="standard"
+        />
+
+        <ChildAccountField
+          id="inc-child-account"
+          label="Child's account — what they say happened (their words)"
+          placeholder="Record the child's own account, in their words. Leave blank if they were not asked or gave none — never fill in on their behalf."
+          rows={3}
+          value={form.child_account}
+          onChange={(v) => setForm((p) => ({ ...p, child_account: v }))}
         />
       </div>
 
