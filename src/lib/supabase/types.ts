@@ -210,6 +210,7 @@ export interface Database {
           location: string | null;
           description: string;
           immediate_action: string;
+          child_account: string | null;
           reported_by: string;
           witnesses: string[];
           body_map_required: boolean;

@@ -168,6 +168,8 @@ export interface Incident extends AuditFields {
   location: string | null;
   description: string;
   immediate_action: string;
+  /** The child's own account of the incident, in their words. Optional — null/absent means they were not asked or gave no account, never a stand-in. */
+  child_account?: string | null;
   reported_by: string;
   witnesses: string[];
   body_map_required: boolean;

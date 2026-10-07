@@ -410,7 +410,9 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "incidents",
     migration: "00000000000000_lean_live_baseline.sql",
-    columns: [],
+    columns: [
+      { name: "child_account", migration: "20261007120000_incident_child_account.sql" },
+    ],
   },
   {
     table: "learning_resources",
