@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const body = MaterialRequestSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: body.error.issues[0]?.message ?? "Invalid request" }, { status: 422 });
 
-  const ctx = loadContext(body.data.childId, body.data.theme);
+  const ctx = await loadContext(body.data.childId, body.data.theme);
   if (!ctx.childId) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
   const { output, review } = generateCaraInteractiveMaterial({ ctx, ...body.data });

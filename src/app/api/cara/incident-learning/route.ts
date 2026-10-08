@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     if (incident) summary = `${incident.type}: ${incident.description}`;
   }
 
-  const ctx = loadContext(body.data.childId, summary);
+  const ctx = await loadContext(body.data.childId, summary);
   if (!ctx.childId) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
   const { output, review } = convertIncidentToLearning({ ctx, ...body.data, incidentSummary: summary });

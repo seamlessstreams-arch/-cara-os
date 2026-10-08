@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const body = CurriculumRequestSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: body.error.issues[0]?.message ?? "Invalid request" }, { status: 422 });
 
-  const ctx = loadContext(body.data.childId, body.data.desiredOutcomes.join(" ") || "learning pathway");
+  const ctx = await loadContext(body.data.childId, body.data.desiredOutcomes.join(" ") || "learning pathway");
   if (!ctx.childId) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
   const { output, review } = generateCaraCurriculumMap({ ctx, ...body.data });
