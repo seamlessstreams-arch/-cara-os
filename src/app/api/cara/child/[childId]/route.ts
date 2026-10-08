@@ -2,15 +2,24 @@
 // The child's Cara workspace: learning profile + all saved outputs by module.
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { getCaraStudioOutputsByChild } from "@/lib/supabase/cara-persist";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ childId: string }> }) {
   const { childId } = await ctx.params;
-  const child = db.youngPeople.findById(childId);
+  // Live: resolve via the dal — the in-memory store is emptied on a live tenant,
+  // so db.youngPeople misses every real uuid and the workspace 404s.
+  const child = await dal.youngPeople.findById(childId);
   if (!child) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
-  const outputs = db.caraStudioOutputs.findByChild(childId);
+  // Live: read the child's drafts from the durable cara_studio_outputs table
+  // (persistCaraStudioOutput wrote them there); demo: the in-memory store.
+  const outputs = isSupabaseEnabled()
+    ? await getCaraStudioOutputsByChild(childId)
+    : db.caraStudioOutputs.findByChild(childId);
   const byModule = (m: string) => outputs.filter((o) => o.module === m).sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return NextResponse.json({

@@ -12,6 +12,7 @@ import type {
   CaraSavedOutput,
   CaraAiRun,
   CaraGuardrailEvent,
+  CaraChildLearningProfile,
 } from "@/lib/cara-studio/cara-types";
 
 // The generated Database type doesn't know the 411/412 tables yet — use a
@@ -73,6 +74,48 @@ export async function persistCaraStudioReview(o: CaraSavedOutput): Promise<void>
       .eq("id", o.id);
   } catch {
     // best-effort
+  }
+}
+
+/** Read a child's Cara Studio outputs from the durable table (live only).
+ *  The in-memory store is emptied on a live tenant, so the child workspace must
+ *  read these back from cara_studio_outputs where persistCaraStudioOutput wrote
+ *  them — otherwise the page 404s (no child in the store) or shows no drafts. */
+export async function getCaraStudioOutputsByChild(childId: string): Promise<CaraSavedOutput[]> {
+  if (!isSupabaseEnabled()) return [];
+  const c = createServerClient();
+  if (!c) return [];
+  try {
+    const { data } = await raw(c)
+      .from("cara_studio_outputs")
+      .select("id, module, child_id, title, output, status, manager_review_status, manager_review_reasons, guardrail_severity, guardrail_flags, llm_used, created_by, reviewed_by, reviewed_at, review_note, created_at, updated_at")
+      .eq("home_id", homeId())
+      .eq("child_id", childId)
+      .order("created_at", { ascending: false });
+    return (data ?? []) as unknown as CaraSavedOutput[];
+  } catch {
+    return [];
+  }
+}
+
+/** Read a child's learning profile from the durable table (live only), or null.
+ *  Counterpart to persistCaraLearningProfile — same table, cara_child_learning_profiles. */
+export async function getCaraLearningProfileByChild(childId: string): Promise<CaraChildLearningProfile | null> {
+  if (!isSupabaseEnabled()) return null;
+  const c = createServerClient();
+  if (!c) return null;
+  try {
+    const { data } = await raw(c)
+      .from("cara_child_learning_profiles")
+      .select("*")
+      .eq("home_id", homeId())
+      .eq("child_id", childId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    const row = Array.isArray(data) ? data[0] : null;
+    return (row as unknown as CaraChildLearningProfile) ?? null;
+  } catch {
+    return null;
   }
 }
 
