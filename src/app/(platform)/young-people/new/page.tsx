@@ -29,6 +29,9 @@ import type { ReferralExtraction } from "@/lib/referral-extraction/referral-extr
 import type { YoungPerson } from "@/types";
 import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
 import { LEGAL_STATUSES } from "@/lib/young-people/field-options";
+import { useChildren } from "@/components/young-people/child-select";
+import { findLikelyDuplicates } from "@/lib/young-people/find-duplicate";
+import { childDisplayName } from "@/lib/people/child-display-name";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -142,6 +145,10 @@ export default function NewYoungPersonPage() {
     local_authority: "",
     legal_status: LEGAL_STATUSES[0],
   });
+  // Soft duplicate check: young_people has no uniqueness constraint, so warn
+  // (never block) when the entered name already exists on record.
+  const { children: existingChildren } = useChildren({ includeFormer: true });
+  const possibleDuplicates = findLikelyDuplicates(existingChildren, form);
   const [referralText, setReferralText] = useState("");
   const [referralFileName, setReferralFileName] = useState<string | null>(null);
   const [needs, setNeeds] = useState<string[]>([]);
@@ -352,6 +359,30 @@ export default function NewYoungPersonPage() {
             <Input value={form.last_name} onChange={set("last_name")} />
           </label>
         </div>
+
+        {possibleDuplicates.length > 0 && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+            <p className="font-semibold">Possible duplicate — check before admitting</p>
+            <p className="mt-0.5">
+              {possibleDuplicates.length === 1
+                ? "A young person with this name is already on record:"
+                : "Young people with this name are already on record:"}
+            </p>
+            <ul className="mt-1 space-y-0.5">
+              {possibleDuplicates.map((c) => (
+                <li key={c.id}>
+                  • {childDisplayName(c)}
+                  {c.status === "ended" ? " (former)" : ""}
+                  {c.dob_matches ? " — same date of birth" : ""}{" "}
+                  <a href={`/young-people/${c.id}`} className="underline" target="_blank" rel="noreferrer">open record</a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1">
+              If this is the same child, open their record instead of admitting again. If it&rsquo;s a different young person who happens to share the name, carry on.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1">
