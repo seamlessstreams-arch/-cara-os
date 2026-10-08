@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
-import { getCaraStudioOutputsByChild } from "@/lib/supabase/cara-persist";
+import { getCaraStudioOutputsByChild, getCaraLearningProfileByChild } from "@/lib/supabase/cara-persist";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +22,14 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ childId: s
     : db.caraStudioOutputs.findByChild(childId);
   const byModule = (m: string) => outputs.filter((o) => o.module === m).sort((a, b) => b.created_at.localeCompare(a.created_at));
 
+  const learningProfile = isSupabaseEnabled()
+    ? await getCaraLearningProfileByChild(childId)
+    : db.caraLearningProfiles.findByChild(childId) ?? null;
+
   return NextResponse.json({
     data: {
       child: { id: child.id, name: `${child.first_name} ${child.last_name}`, preferred_name: child.preferred_name },
-      learning_profile: db.caraLearningProfiles.findByChild(childId) ?? null,
+      learning_profile: learningProfile,
       curriculum: byModule("curriculum"),
       sessions: byModule("session_plan"),
       materials: byModule("material"),
