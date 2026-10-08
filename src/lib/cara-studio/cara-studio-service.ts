@@ -12,8 +12,10 @@
 
 import "server-only";
 import type { z } from "zod";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { getCaraLearningProfileByChild } from "@/lib/supabase/cara-persist";
 import { generateId, todayStr } from "@/lib/utils";
 import {
   persistCaraStudioOutput,
@@ -47,12 +49,12 @@ export function canApprove(actor: CaraActor): boolean {
 }
 
 export async function loadContext(childId: string | null, theme: string): Promise<CaraChildContext> {
-  const store = getStore();
   // ★ Live: the in-memory store is emptied at load, so db.youngPeople /
   // db.incidents miss every real uuid — the caller then 404s "Child not found"
-  // and Cara Studio produces nothing. Resolve the child and their incidents
-  // through the dual-mode dal (the real tables on a live tenant, the store in
-  // demo) so generation is grounded in the actual child.
+  // and Cara Studio produces nothing. Resolve the child, incidents, learning
+  // profile and key-work themes through live-safe readers (the real tables on a
+  // live tenant, the store in demo) so generation is genuinely grounded in the
+  // actual child rather than a generic template with a name dropped in.
   const child = childId ? await dal.youngPeople.findById(childId) : null;
   const incidentRows = childId ? await dal.incidents.findAll({ child_id: childId }) : [];
   const incidents = incidentRows
@@ -60,19 +62,19 @@ export async function loadContext(childId: string | null, theme: string): Promis
     .sort((a, b) => (b.date > a.date ? 1 : -1))
     .slice(0, 3)
     .map((i) => ({ date: i.date, type: String(i.type), severity: String(i.severity), description: i.description }));
-  // Enrichment-only collections have no simple live reader yet — best-effort
-  // from the store (empty on live means a less-grounded draft, never a 404).
-  const profile = childId ? db.caraLearningProfiles.findByChild(childId) ?? null : null;
-  const keywork = childId
-    ? (store.keyWorkingSessions ?? [])
-        .filter((k) => (k as { child_id?: string }).child_id === childId)
-        .slice(-5)
-        .map((k) => {
-          const r = k as { topic?: string; theme?: string; title?: string };
-          return r.topic || r.theme || r.title || "";
-        })
-        .filter(Boolean)
-    : [];
+  // Learning profile — the richest grounding input (learning style → activity,
+  // SEND/sensory → adaptations, triggers → caution + manager review, calming
+  // strategies → breaks, trusted adults → named). Live reads cara_child_learning_profiles.
+  const profile = childId
+    ? (isSupabaseEnabled() ? await getCaraLearningProfileByChild(childId) : db.caraLearningProfiles.findByChild(childId) ?? null)
+    : null;
+  // Key-work themes via the dual-mode dal projection (cs_key_work_sessions on
+  // live), most recent first — each session can carry several topics.
+  const keyworkSessions = childId ? await dal.keyWorkingSessions.findByChild(childId) : [];
+  const keywork = keyworkSessions
+    .slice(0, 5)
+    .flatMap((k) => k.topics ?? [])
+    .filter(Boolean);
   return buildChildContext({
     child: child
       ? { id: child.id, first_name: child.first_name, preferred_name: child.preferred_name, date_of_birth: child.date_of_birth }
@@ -80,6 +82,11 @@ export async function loadContext(childId: string | null, theme: string): Promis
     profile,
     recentIncidents: incidents,
     keyworkThemes: [...new Set(keywork)] as string[],
+    // Approved library resources stay best-effort from the store (empty on a
+    // live tenant => no library match, never a crash). This only sets the
+    // "used an approved resource" flag and a couple of matched references, so
+    // it is the lowest-value grounding input; a cara_resource_library reader
+    // can promote it later without touching this shape.
     approvedResources: db.caraLibraryResources.findApproved(),
     theme,
     today: todayStr(),
