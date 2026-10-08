@@ -4,31 +4,38 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateId } from "@/lib/utils";
 import { LearningProfileUpsertSchema, type CaraChildLearningProfile } from "@/lib/cara-studio/cara-types";
 import { actorFromHeaders } from "@/lib/cara-studio/cara-studio-service";
-import { persistCaraLearningProfile } from "@/lib/supabase/cara-persist";
+import { persistCaraLearningProfile, getCaraLearningProfileByChild } from "@/lib/supabase/cara-persist";
 import { writeAuditLog } from "@/lib/supabase/audit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ childId: string }> }) {
   const { childId } = await ctx.params;
-  if (!db.youngPeople.findById(childId)) return NextResponse.json({ error: "Child not found" }, { status: 404 });
-  return NextResponse.json({ data: { profile: db.caraLearningProfiles.findByChild(childId) ?? null } });
+  if (!(await dal.youngPeople.findById(childId))) return NextResponse.json({ error: "Child not found" }, { status: 404 });
+  const profile = isSupabaseEnabled()
+    ? await getCaraLearningProfileByChild(childId)
+    : db.caraLearningProfiles.findByChild(childId) ?? null;
+  return NextResponse.json({ data: { profile } });
 }
 
 export async function PUT(req: NextRequest, ctx: { params: Promise<{ childId: string }> }) {
   const { childId } = await ctx.params;
   const actor = actorFromHeaders(req.headers);
-  if (!db.youngPeople.findById(childId)) return NextResponse.json({ error: "Child not found" }, { status: 404 });
+  if (!(await dal.youngPeople.findById(childId))) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
   const body = LearningProfileUpsertSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) {
     return NextResponse.json({ error: body.error.issues[0]?.message ?? "Invalid profile" }, { status: 422 });
   }
 
-  const existing = db.caraLearningProfiles.findByChild(childId);
+  const existing = isSupabaseEnabled()
+    ? await getCaraLearningProfileByChild(childId)
+    : db.caraLearningProfiles.findByChild(childId);
   const now = new Date().toISOString();
   const profile: CaraChildLearningProfile = {
     id: existing?.id ?? generateId("clp"),
