@@ -69,6 +69,10 @@ export async function POST(req: NextRequest) {
     local_authority: localAuthority,
     legal_status: (b.legal_status as string) || undefined,
     status: "current",
+    // Who admitted the child — the authenticated caller resolved above. Records
+    // the admission in the child's own audit trail (the column existed but no
+    // create path set it, so every admitted child read created_by null).
+    created_by: actorId,
   }));
   const child = (yp);
   if (!child?.id) {
