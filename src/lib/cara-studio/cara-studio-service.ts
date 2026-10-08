@@ -13,6 +13,7 @@
 import "server-only";
 import type { z } from "zod";
 import { db, getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { generateId, todayStr } from "@/lib/utils";
 import {
   persistCaraStudioOutput,
@@ -45,18 +46,23 @@ export function canApprove(actor: CaraActor): boolean {
   return APPROVER_ROLES.has(actor.role);
 }
 
-export function loadContext(childId: string | null, theme: string): CaraChildContext {
+export async function loadContext(childId: string | null, theme: string): Promise<CaraChildContext> {
   const store = getStore();
-  const child = childId ? db.youngPeople.findById(childId) ?? null : null;
+  // ★ Live: the in-memory store is emptied at load, so db.youngPeople /
+  // db.incidents miss every real uuid — the caller then 404s "Child not found"
+  // and Cara Studio produces nothing. Resolve the child and their incidents
+  // through the dual-mode dal (the real tables on a live tenant, the store in
+  // demo) so generation is grounded in the actual child.
+  const child = childId ? await dal.youngPeople.findById(childId) : null;
+  const incidentRows = childId ? await dal.incidents.findAll({ child_id: childId }) : [];
+  const incidents = incidentRows
+    .slice()
+    .sort((a, b) => (b.date > a.date ? 1 : -1))
+    .slice(0, 3)
+    .map((i) => ({ date: i.date, type: String(i.type), severity: String(i.severity), description: i.description }));
+  // Enrichment-only collections have no simple live reader yet — best-effort
+  // from the store (empty on live means a less-grounded draft, never a 404).
   const profile = childId ? db.caraLearningProfiles.findByChild(childId) ?? null : null;
-  const incidents = childId
-    ? db.incidents
-        .findAll()
-        .filter((i) => i.child_id === childId)
-        .sort((a, b) => (b.date > a.date ? 1 : -1))
-        .slice(0, 3)
-        .map((i) => ({ date: i.date, type: String(i.type), severity: String(i.severity), description: i.description }))
-    : [];
   const keywork = childId
     ? (store.keyWorkingSessions ?? [])
         .filter((k) => (k as { child_id?: string }).child_id === childId)
