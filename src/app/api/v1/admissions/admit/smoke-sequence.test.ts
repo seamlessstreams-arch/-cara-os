@@ -44,7 +44,7 @@ describe("admit smoke sequence (harness parity)", () => {
     // 1. Admit
     const admitRes = await admit({
       first_name: "ZZ-Smoke", last_name: "Test-DELETE", date_of_birth: "2012-01-01",
-      placement_start: "2099-08-01", local_authority: "SMOKE TEST",
+      placement_start: "2099-08-01", local_authority: "SMOKE TEST", legal_status: "Section 20 (voluntary accommodation)",
       referral_text: REFERRAL, referral_file_name: "zz-smoke.txt",
     });
     expect(admitRes.status).toBe(200);
@@ -93,7 +93,7 @@ describe("admit smoke sequence (harness parity)", () => {
   it("PATCH /young-people/:id edits in place and refuses immutable / derived fields", async () => {
     const admitRes = await admit({
       first_name: "ZZ-Patch", last_name: "Check", date_of_birth: "2012-01-01",
-      placement_start: "2099-08-01", local_authority: "SMOKE TEST",
+      placement_start: "2099-08-01", local_authority: "SMOKE TEST", legal_status: "Section 20 (voluntary accommodation)",
     });
     const childId: string = admitRes.body.data.young_person.id;
     const homeBefore: string = admitRes.body.data.young_person.home_id;
@@ -122,7 +122,7 @@ describe("admit smoke sequence (harness parity)", () => {
     // the existing row (200) instead of creating a second one (was 201).
     const admitRes = await admit({
       first_name: "ZZ-Dup", last_name: "Check", date_of_birth: "2012-01-01",
-      placement_start: "2099-08-01", local_authority: "SMOKE TEST",
+      placement_start: "2099-08-01", local_authority: "SMOKE TEST", legal_status: "Section 20 (voluntary accommodation)",
     });
     const childId: string = admitRes.body.data.young_person.id;
 
