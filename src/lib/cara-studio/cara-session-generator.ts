@@ -11,11 +11,12 @@
 import type { CaraSessionPlanOutput } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import {
-  PACE_OPENINGS, PACE_VALIDATIONS, PACE_CURIOSITY, PACE_REPAIR,
+  PACE_OPENINGS, PACE_CURIOSITY, PACE_REPAIR,
   RECORDING_PROMPTS, STAFF_REGULATION_REMINDERS,
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
 import { safetyPlanConversationPrompts } from "@/lib/cara/practice-frameworks";
+import { asLead, softLower, tidy } from "./cara-text";
 
 const SAFETY_THEME_RE = /safe|calm|regulat|crisis|overwhelm|missing|self.?harm|de-?escalat|melt ?down|big feelings|anger/i;
 
@@ -77,7 +78,6 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
   ];
 
   const opening = pick(PACE_OPENINGS, theme + name);
-  const validation = pick(PACE_VALIDATIONS, theme + name, 7);
   const reflective = [pick(PACE_CURIOSITY, theme, 1), pick(PACE_CURIOSITY, theme, 5), pick(PACE_REPAIR, theme, 3)];
   // Safety / regulation themes: weave in the child's own safety-plan building.
   const safetyTheme = SAFETY_THEME_RE.test(`${theme} ${input.aim}`);
@@ -101,14 +101,14 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
   });
 
   const output: CaraSessionPlanOutput = {
-    title: `${theme} — ${durationMinutes}-minute ${micro ? "micro-session" : brief ? "conversation" : "key-work session"} for ${name}`,
-    childFriendlyTitle: micro ? `A quick two minutes about ${theme.toLowerCase()}` : `Some time for us: ${theme.toLowerCase()}`,
-    purpose: input.aim,
-    aims: [input.aim, `Strengthen ${name}'s sense that adults here are safe and on their side`, "Leave the door open for the next conversation", ...(safetyTheme ? [`Begin building ${name}'s own safety plan — what helps, the early warning signs, and who to go to`] : [])],
+    title: `${tidy(theme)} — ${durationMinutes}-minute ${micro ? "micro-session" : brief ? "conversation" : "key-work session"} for ${name}`,
+    childFriendlyTitle: micro ? `A quick two minutes about ${softLower(theme)}` : `Some time for us: ${softLower(theme)}`,
+    purpose: asLead(input.aim),
+    aims: [asLead(input.aim), `Strengthen ${name}'s sense that adults here are safe and on their side`, "Leave the door open for the next conversation", ...(safetyTheme ? [`Begin building ${name}'s own safety plan — what helps, the early warning signs, and who to go to`] : [])],
     emotionalSafetyCheck: `Before starting: is ${name} regulated, fed and not mid-crisis? ${ctx.triggerMatch ? `CAUTION — this theme overlaps known triggers (${ctx.profile?.emotional_triggers}). Pair with a trusted adult${ctx.profile?.trusted_adults ? ` (${ctx.profile.trusted_adults})` : ""} and have an exit plan.` : "If anything feels off, do the warm five-minute version instead and try the rest another day."}`,
     resourcesNeeded: activity.name === "Card sort" ? ["Theme cards (make or print)", "Flat space", "Drink/snack"] : activity.name === "Draw it out" ? ["Big paper", "Pens", "Drink/snack"] : ["Just you, time and a drink"],
     sessionStructure: structure,
-    openingScript: `"${opening}" …then bridge: "I wanted a few minutes about ${theme.toLowerCase()} — not because you're in trouble. ${validation}"`,
+    openingScript: `"${opening}" …then bridge: "I wanted a few minutes with you about ${softLower(theme)} — not because you're in trouble, just because it matters to me how you're doing."`,
     mainActivity: activity.description,
     reflectiveQuestions: [...reflective, ...safetyPlanPrompts.slice(0, 2)],
     regulationBreaks: [
@@ -116,7 +116,7 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
       ctx.profile?.calming_strategies ? `Their known calmer: ${ctx.profile.calming_strategies}` : "Step outside / music / movement for two minutes",
     ],
     closingScript: `"Thanks for giving that a go — seriously. ${pick(PACE_REPAIR, name, 2)} Right — ${micro ? "let's get back to it" : "what shall we do now"}?"`,
-    childFriendlySummary: `We spent a bit of time on ${theme.toLowerCase()}. Nothing was a test, nothing goes on a naughty list — it's about us understanding things together.`,
+    childFriendlySummary: `We spent a bit of time on ${softLower(theme)}. Nothing was a test, nothing goes on a naughty list — it's about us understanding things together.`,
     staffGuidance: `${pick(STAFF_REGULATION_REMINDERS, theme, 4)} ${input.staffConfidence === "low" ? "You don't have to be the expert — curiosity is the skill. If it gets bigger than expected, pause and bring in a senior; that IS good practice." : "Follow their pace. The plan serves the child, not the other way round."}`,
     adaptationNotes: adaptations,
     safeguardingNotes: ctx.riskThemes.length

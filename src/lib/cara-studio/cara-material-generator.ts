@@ -11,6 +11,7 @@ import type { CaraInteractiveMaterialOutput, CaraMaterialType } from "./cara-typ
 import type { CaraChildContext } from "./cara-context-builder";
 import { RECORDING_PROMPTS, PACE_REPAIR, PACE_VALIDATIONS } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { softLower, tidy } from "./cara-text";
 
 export interface MaterialGenInput {
   ctx: CaraChildContext;
@@ -23,9 +24,10 @@ export interface MaterialGenInput {
 type Blocks = CaraInteractiveMaterialOutput["blocks"];
 
 function blocksFor(input: MaterialGenInput): { blocks: Blocks; visualPrompt: string | null; audio: string | null } {
-  const { theme, ctx } = input;
+  const { ctx } = input;
+  const theme = tidy(input.theme);
   const name = ctx.name;
-  const t = theme.toLowerCase();
+  const t = softLower(input.theme);
 
   switch (input.materialType) {
     case "visual_card":
@@ -175,7 +177,7 @@ export function generateCaraInteractiveMaterial(input: MaterialGenInput): { outp
 
   const output: CaraInteractiveMaterialOutput = {
     materialType: input.materialType,
-    title: `${theme} — ${input.materialType.replace(/_/g, " ")} for ${ctx.name}`,
+    title: `${tidy(theme)} — ${input.materialType.replace(/_/g, " ")} for ${ctx.name}`,
     childFriendlyIntro: `This is for you. No marks, no tests, no trick questions — you can talk, draw, point or pass.`,
     blocks,
     printableText: printable,
