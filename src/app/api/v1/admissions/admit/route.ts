@@ -43,9 +43,14 @@ export async function POST(req: NextRequest) {
   const dob = (b.date_of_birth as string) || "";
   const placementStart = (b.placement_start as string) || "";
   const localAuthority = ((b.local_authority as string) || "").trim();
-  if (!firstName || !lastName || !dob || !placementStart || !localAuthority) {
+  // legal_status is NOT NULL on young_people with no default, and a child's
+  // legal basis must never be guessed — so require it (a clear 400) rather than
+  // default it or let the insert fail with an opaque 500. The admit form always
+  // sends it; only a malformed caller hits this.
+  const legalStatus = ((b.legal_status as string) || "").trim();
+  if (!firstName || !lastName || !dob || !placementStart || !localAuthority || !legalStatus) {
     return NextResponse.json(
-      { error: "first_name, last_name, date_of_birth, placement_start and local_authority are required." },
+      { error: "first_name, last_name, date_of_birth, placement_start, local_authority and legal_status are required." },
       { status: 400 },
     );
   }
@@ -67,7 +72,7 @@ export async function POST(req: NextRequest) {
     gender: ((b.gender as string) || "").trim() || undefined,
     placement_start: placementStart,
     local_authority: localAuthority,
-    legal_status: (b.legal_status as string) || undefined,
+    legal_status: legalStatus,
     status: "current",
     // Who admitted the child — the authenticated caller resolved above. Records
     // the admission in the child's own audit trail (the column existed but no
