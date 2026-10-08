@@ -900,6 +900,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             <div className="rounded-2xl border bg-white p-4 space-y-2">
               <SectionHeading icon={MapPin} label="Placement Details" />
               <InfoRow label="Placement start"  value={formatDate(yp.placement_start)} />
+              {yp.created_by && <InfoRow label="Admitted by" value={getStaffName(yp.created_by)} />}
               {yp.placement_end && <InfoRow label="Placement end"   value={formatDate(yp.placement_end)} />}
               <InfoRow label="Placement type"   value={yp.placement_type} />
               <InfoRow label="Legal status"     value={yp.legal_status} />
