@@ -56,11 +56,16 @@ const RISK_THEME_SIGNALS: { theme: string; keywords: string[] }[] = [
   { theme: "family", keywords: ["family contact", "contact session", "sibling contact"] },
 ];
 
-/** Risk themes implied by a child's incidents, most frequent first. Exported for tests. */
-export function draftRiskThemes(incidents: { type: string; description: string }[]): string[] {
+// Risk themes are derived from the incident TYPE (a controlled field), not the
+// free-text description: on live, descriptions are often pasted form templates
+// full of category labels/checkboxes ("exploitation? online? substance?"), so
+// scanning them made a single missing-from-care incident imply seven themes.
+// The type ("missing_from_care" → missing) is the honest, noise-free signal.
+/** Risk themes implied by a child's incident types, most frequent first. Exported for tests. */
+export function draftRiskThemes(incidents: { type: string }[]): string[] {
   const counts = new Map<string, number>();
   for (const inc of incidents) {
-    const hay = `${inc.type.replace(/_/g, " ")} ${inc.description}`.toLowerCase();
+    const hay = inc.type.replace(/_/g, " ").toLowerCase();
     for (const { theme, keywords } of RISK_THEME_SIGNALS) {
       if (containsAnyKeyword(hay, keywords)) counts.set(theme, (counts.get(theme) ?? 0) + 1);
     }
@@ -87,12 +92,14 @@ export async function draftLearningProfileFromRecords(childId: string): Promise<
 
   const draft: LearningProfileDraft = {};
 
-  // Age — from date of birth.
+  // Age — from date of birth, but only if it lands in a plausible range for a
+  // child in care (the profile schema allows 4–25). A corrupt DOB (e.g. a
+  // mis-typed "0014-10-10") would otherwise draft a nonsense age like 2011.
   const age = ageFromDob(child.date_of_birth, todayStr());
-  if (age != null) draft.age = { value: age, source: "From date of birth" };
+  if (age != null && age >= 4 && age <= 25) draft.age = { value: age, source: "From date of birth" };
 
-  // Risk themes — from the child's own incidents.
-  const themes = draftRiskThemes(childIncidents.map((i) => ({ type: String(i.type), description: i.description ?? "" })));
+  // Risk themes — from the child's own incident types.
+  const themes = draftRiskThemes(childIncidents.map((i) => ({ type: String(i.type) })));
   if (themes.length) {
     draft.risk_themes = {
       value: themes,
