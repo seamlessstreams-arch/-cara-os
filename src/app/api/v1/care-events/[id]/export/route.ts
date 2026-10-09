@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { CareEvent, CareEventRoute, CareEventAuditLog, Reg45EvidenceItem, AnnexAEvidenceItem } from "@/types/care-events";
@@ -34,7 +35,9 @@ export async function GET(
 
   const { id } = await params;
 
-  const event = db.careEvents.findById(id);
+  // Live-safe reads: care-events pipeline via careEventsDb, people via dal.
+  // The in-memory store is emptied on a live tenant, which made every export 404.
+  const event = await careEventsDb.careEvents.findById(id);
   if (!event) {
     return NextResponse.json({ error: "Care event not found" }, { status: 404 });
   }
@@ -43,22 +46,20 @@ export async function GET(
 
   // ── Collect evidence bundle ─────────────────────────────────────────────────
 
-  const routes: CareEventRoute[] = db.careEventRoutes.findByCareEvent(id);
-  const auditLog: CareEventAuditLog[] = db.careEventAuditLog.findByCareEvent(id);
-  const reg45Items: Reg45EvidenceItem[] = db.reg45EvidenceQueue
-    .findAll()
+  const routes: CareEventRoute[] = await careEventsDb.careEventRoutes.findByCareEvent(id);
+  const auditLog: CareEventAuditLog[] = await careEventsDb.careEventAuditLog.findByCareEvent(id);
+  const reg45Items: Reg45EvidenceItem[] = (await careEventsDb.reg45EvidenceQueue.findAll())
     .filter((e) => e.care_event_id === id);
-  const annexAItems: AnnexAEvidenceItem[] = db.annexAEvidenceQueue
-    .findAll()
+  const annexAItems: AnnexAEvidenceItem[] = (await careEventsDb.annexAEvidenceQueue.findAll())
     .filter((e) => e.care_event_id === id);
 
   // Lookup names for display
-  const staff = event.staff_id ? db.staff.findById(event.staff_id) : null;
-  const child = event.child_id ? db.youngPeople.findById(event.child_id) : null;
-  const verifier = event.verified_by ? db.staff.findById(event.verified_by) : null;
+  const staff = event.staff_id ? await dal.staff.findById(event.staff_id) : null;
+  const child = event.child_id ? await dal.youngPeople.findById(event.child_id) : null;
+  const verifier = event.verified_by ? await dal.staff.findById(event.verified_by) : null;
 
   // Audit this export
-  db.careEventAuditLog.append({
+  await careEventsDb.careEventAuditLog.append({
     care_event_id: id,
     home_id: event.home_id,
     actor_staff_id: userId,
