@@ -1,45 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
-import { facilityStore } from "@/lib/db/facility-store";
+import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
+import type { Shift, Task, YoungPerson, DailyLogEntry, MedicationAdministration, Incident } from "@/types";
+import type { Building, BuildingCheck, Vehicle, VehicleCheck, Notification, HandoverEntry } from "@/types/extended";
 
 // Staff dashboard — shift-level operational view
-// ?staff_id=staff_edward  (defaults to staff_darren)
+// ?staff_id=staff_edward  (defaults to staff_darren in demo)
+//
+// ★ Every read goes through the dual-mode `dal` so the dashboard works on a
+// live tenant — the in-memory store is emptied on live, which made the whole
+// screen 404 ("Staff member not found") and under-report meds/checks/incidents.
+// The specialised store filters (open shifts, scheduled meds, due/overdue
+// checks, vehicle defects, open + oversight-needing incidents) are applied
+// in-route over `dal.*.findAll()` using the EXACT predicates the store methods
+// used, so operational semantics are unchanged.
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const staffId = req.nextUrl.searchParams.get("staff_id") ?? "staff_darren";
   const today = todayStr();
 
-  const staff = db.staff.findActive().find((s) => s.id === staffId);
+  const activeStaff = await dal.staff.findActive();
+  const staff = activeStaff.find((s) => s.id === staffId);
   if (!staff) {
     return NextResponse.json({ error: "Staff member not found" }, { status: 404 });
   }
 
+  const [
+    todayShifts,
+    allShifts,
+    allTasks,
+    allHandovers,
+    currentYP,
+    todayLogEntries,
+    allMeds,
+    buildingChecks,
+    buildings,
+    vehicles,
+    allVehicleChecks,
+    allIncidents,
+    myNotifications,
+  ] = await Promise.all([
+    dal.shifts.findToday(),
+    dal.shifts.findAll(),
+    dal.tasks.findAll(),
+    dal.handovers.findAll(),
+    dal.youngPeople.findCurrent(),
+    dal.dailyLog.findAll({ date: today }),
+    dal.medicationAdministrations.findAll(),
+    dal.buildingChecks.findAll(),
+    dal.buildings.findAll(),
+    dal.vehicles.findAll(),
+    dal.vehicleChecks.findAll(),
+    dal.incidents.findAll(),
+    dal.notifications.findForUser(staffId),
+  ]) as [
+    Shift[], Shift[], Task[], HandoverEntry[], YoungPerson[], DailyLogEntry[],
+    MedicationAdministration[], BuildingCheck[], Building[], Vehicle[], VehicleCheck[],
+    Incident[], Notification[],
+  ];
+
+  // store.handovers.findLatest = most recent by created_at
+  const latestHandover = allHandovers
+    .slice()
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+
   // ── Shift ────────────────────────────────────────────────────────────────────
-  const todayShifts = db.shifts.findToday();
   const myShift = todayShifts.find((s) => s.staff_id === staffId) ?? null;
   const coWorkers = todayShifts
     .filter((s) => s.staff_id && s.staff_id !== staffId && !s.is_open_shift)
-    .map((s) => {
-      const colleague = db.staff.findActive().find((m) => m.id === s.staff_id);
-      return { shift: s, staff: colleague ?? null };
-    });
-  const openShifts = db.shifts.findOpen();
+    .map((s) => ({ shift: s, staff: activeStaff.find((m) => m.id === s.staff_id) ?? null }));
+  // store.shifts.findOpen = is_open_shift && date >= today
+  const openShifts = allShifts.filter((s) => s.is_open_shift && s.date >= today);
 
   // ── My Tasks ─────────────────────────────────────────────────────────────────
-  const allTasks = db.tasks.findAll();
   const myTasks = allTasks.filter(
-    (t) =>
-      t.assigned_to === staffId &&
-      t.status !== "completed" &&
-      t.status !== "cancelled"
+    (t) => t.assigned_to === staffId && t.status !== "completed" && t.status !== "cancelled"
   );
   const myOverdueTasks = myTasks.filter((t) => t.due_date && t.due_date < today);
   const myTodayTasks = myTasks.filter((t) => t.due_date === today);
   const urgentTasks = myTasks.filter((t) => t.priority === "urgent" || t.priority === "high");
 
   // ── Handover ─────────────────────────────────────────────────────────────────
-  const latestHandover = db.handovers.findLatest();
   const handoverItems = latestHandover?.child_updates ?? [];
   const handoverFlags = latestHandover
     ? latestHandover.flags.map((f) => ({ type: "flag", text: f }))
@@ -49,43 +92,37 @@ export async function GET(req: NextRequest) {
     && !(latestHandover.sign_offs ?? []).some((s) => s.staff_id === staffId);
 
   // ── Due Recordings ───────────────────────────────────────────────────────────
-  // Young people I'm key worker / secondary worker for
-  const currentYP = db.youngPeople.findCurrent();
   const myYP = currentYP.filter(
     (yp) => yp.key_worker_id === staffId || yp.secondary_worker_id === staffId
   );
-  const todayLogEntries = db.dailyLog.findToday();
   const loggedYPIds = new Set(todayLogEntries.map((e) => e.child_id));
   const logsNeeded = myYP.filter((yp) => !loggedYPIds.has(yp.id));
 
-  // Medication rounds due now
-  const scheduledMeds = db.medicationAdministrations.findScheduled();
-  const todayScheduled = scheduledMeds.filter((a) => a.scheduled_time.startsWith(today));
+  // store.medicationAdministrations.findScheduled = status === "scheduled"
+  const todayScheduled = allMeds.filter((a) => a.status === "scheduled" && a.scheduled_time.startsWith(today));
   const medsDueNow = todayScheduled.slice(0, 5);
 
   // ── Home Checks ──────────────────────────────────────────────────────────────
-  const dueChecks = facilityStore.buildingChecks.findDue();
-  const overdueChecks = facilityStore.buildingChecks.findOverdue();
-  const buildings = facilityStore.buildings.findAll();
+  // store.buildingChecks.findDue = status in {due, overdue}; findOverdue = overdue
+  const dueChecks = buildingChecks.filter((c) => c.status === "due" || c.status === "overdue");
+  const overdueChecks = buildingChecks.filter((c) => c.status === "overdue");
 
   // ── Vehicle Checks ───────────────────────────────────────────────────────────
-  const vehicles = facilityStore.vehicles.findAll();
-  // Check if a daily safety check has been done today for each vehicle
   const vehiclesNeedingCheck = vehicles.filter((v) => {
-    const todayChecks = facilityStore.vehicleChecks.findByVehicle(v.id).filter(
-      (c) => c.check_date === today
-    );
+    const todayChecks = allVehicleChecks.filter((c) => c.vehicle_id === v.id && c.check_date === today);
     return todayChecks.length === 0 && v.status !== "off_road";
   });
-  const vehicleDefects = facilityStore.vehicleChecks.findDefects();
+  // store.vehicleChecks.findDefects = overall_result in {fail, advisory}
+  const vehicleDefects = allVehicleChecks.filter((c) => c.overall_result === "fail" || c.overall_result === "advisory");
 
   // ── Incidents Needing Action ──────────────────────────────────────────────────
-  const openIncidents = db.incidents.findOpen();
+  // store.incidents.findOpen = status === "open";
+  // findNeedingOversight = requires_oversight && !oversight_by
+  const openIncidents = allIncidents.filter((i) => i.status === "open");
   const incidentsByMe = openIncidents.filter((i) => i.reported_by === staffId);
-  const awaitingOversight = db.incidents.findNeedingOversight();
+  const awaitingOversight = allIncidents.filter((i) => i.requires_oversight && !i.oversight_by);
 
   // ── Upcoming Appointments / Events ───────────────────────────────────────────
-  // Tasks with categories that represent care plan or professional activities
   const upcomingAppointments = allTasks.filter(
     (t) =>
       (t.category === "young_person_plans" || t.category === "professional_communication") &&
@@ -94,9 +131,6 @@ export async function GET(req: NextRequest) {
       t.status !== "completed" &&
       t.status !== "cancelled"
   ).slice(0, 5);
-
-  // ── Notifications ─────────────────────────────────────────────────────────────
-  const myNotifications = db.notifications.findForUser(staffId);
 
   // ── Quick summary numbers ────────────────────────────────────────────────────
   const actionCount =
