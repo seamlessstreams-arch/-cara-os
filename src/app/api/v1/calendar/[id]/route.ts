@@ -36,7 +36,7 @@ export async function PATCH(req: Request, { params }: Params) {
   // RSVP branch: { rsvp: { attendee_id, response } }
   const rsvp = RsvpSchema.safeParse(body);
   if (rsvp.success) {
-    const updated = setAttendeeResponse(id, rsvp.data.rsvp.attendee_id, rsvp.data.rsvp.response);
+    const updated = await setAttendeeResponse(id, rsvp.data.rsvp.attendee_id, rsvp.data.rsvp.response);
     if (!updated) return NextResponse.json({ error: "Event not found" }, { status: 404 });
     return NextResponse.json({ data: { event: updated } });
   }
@@ -48,14 +48,14 @@ export async function PATCH(req: Request, { params }: Params) {
       { status: 400 },
     );
   }
-  const updated = updateCalendarEvent(id, parsed.data);
+  const updated = await updateCalendarEvent(id, parsed.data);
   if (!updated) return NextResponse.json({ error: "Event not found" }, { status: 404 });
   return NextResponse.json({ data: { event: updated } });
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
   const { id } = await params;
-  const updated = updateCalendarEvent(id, { status: "cancelled" });
+  const updated = await updateCalendarEvent(id, { status: "cancelled" });
   if (!updated) return NextResponse.json({ error: "Event not found" }, { status: 404 });
   return NextResponse.json({ data: { event: updated } });
 }

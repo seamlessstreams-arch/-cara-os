@@ -360,12 +360,16 @@ export function createCalendarEvent(input: CreateEventInput): CalendarEvent {
   return event;
 }
 
-export function updateCalendarEvent(id: string, patch: z.infer<typeof UpdateEventSchema>): CalendarEvent | null {
-  const before = db.calendarEvents.findById(id);
+// ★ Live-safe: read + write through the dual-mode dal (Supabase on a live
+// tenant, store in demo). These used db.calendarEvents.findById, which is empty
+// on live, so every reschedule / cancel / RSVP / invite 404'd. dal.update
+// persists to Supabase on live, so the separate persistCalendarEvent call is no
+// longer needed here.
+export async function updateCalendarEvent(id: string, patch: z.infer<typeof UpdateEventSchema>): Promise<CalendarEvent | null> {
+  const before = await dal.calendarEvents.findById(id);
   if (!before) return null;
-  const updated = db.calendarEvents.update(id, patch);
+  const updated = await dal.calendarEvents.update(id, patch);
   if (!updated) return null;
-  void persistCalendarEvent(updated);
   // Reschedule/cancel are worth telling attendees about.
   if (patch.start && patch.start !== before.start) {
     void notifyStaff(updated, "Meeting rescheduled", `${updated.title} → ${updated.start.replace("T", " ").slice(0, 16)}`);
@@ -376,26 +380,24 @@ export function updateCalendarEvent(id: string, patch: z.infer<typeof UpdateEven
   return updated;
 }
 
-export function setAttendeeResponse(
+export async function setAttendeeResponse(
   id: string,
   attendeeId: string,
   response: CalendarAttendee["response"],
-): CalendarEvent | null {
-  const event = db.calendarEvents.findById(id);
+): Promise<CalendarEvent | null> {
+  const event = await dal.calendarEvents.findById(id);
   if (!event) return null;
   const attendees = event.attendees.map((a) => (a.id === attendeeId ? { ...a, response } : a));
-  const updated = db.calendarEvents.update(id, { attendees });
-  if (updated) void persistCalendarEvent(updated);
+  const updated = await dal.calendarEvents.update(id, { attendees });
   return updated;
 }
 
 /** Mark an invite as sent and notify internal staff. Returns count notified. */
-export function markInviteSent(id: string): { event: CalendarEvent; notified: number } | null {
-  const event = db.calendarEvents.findById(id);
+export async function markInviteSent(id: string): Promise<{ event: CalendarEvent; notified: number } | null> {
+  const event = await dal.calendarEvents.findById(id);
   if (!event) return null;
-  const updated = db.calendarEvents.update(id, { invite_sent: true });
+  const updated = await dal.calendarEvents.update(id, { invite_sent: true });
   if (!updated) return null;
-  void persistCalendarEvent(updated);
   // The recipient count is the same list notifyStaff walks; take it here so
   // this stays synchronous while the writes go out best-effort.
   const notified = notifiableStaffIds(updated).length;
