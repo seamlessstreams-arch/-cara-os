@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { careEventsDb } from "@/lib/db";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { CareEventJob, JobType } from "@/types/care-events";
+import type { Task } from "@/types";
 import { readJsonBody } from "@/lib/http/read-json";
 
 /**
@@ -115,7 +117,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Audit
-      db.careEventAuditLog.append({
+      await careEventsDb.careEventAuditLog.append({
         care_event_id: job.care_event_id,
         home_id: job.home_id,
         action: "care_event_routed",
@@ -139,7 +141,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Audit failure
-      db.careEventAuditLog.append({
+      await careEventsDb.careEventAuditLog.append({
         care_event_id: job.care_event_id,
         home_id: job.home_id,
         action: exhausted ? "care_event_route_failed" : "care_event_route_retried",
@@ -189,13 +191,13 @@ async function runJob(job: CareEventJob): Promise<Record<string, unknown>> {
   }
 }
 
-function runReg45SummaryUpdate(job: CareEventJob): Record<string, unknown> {
-  const event = db.careEvents.findById(job.care_event_id);
+async function runReg45SummaryUpdate(job: CareEventJob): Promise<Record<string, unknown>> {
+  const event = await careEventsDb.careEvents.findById(job.care_event_id);
   if (!event) throw new Error(`Care event ${job.care_event_id} not found`);
 
   // Tally queue for this home
-  const pending = db.reg45EvidenceQueue.findPending();
-  const total = db.reg45EvidenceQueue.findAll().length;
+  const pending = await careEventsDb.reg45EvidenceQueue.findPending();
+  const total = (await careEventsDb.reg45EvidenceQueue.findAll()).length;
 
   return {
     job_type: "reg45_summary_update",
@@ -207,12 +209,12 @@ function runReg45SummaryUpdate(job: CareEventJob): Record<string, unknown> {
   };
 }
 
-function runAnnexASnapshotUpdate(job: CareEventJob): Record<string, unknown> {
-  const event = db.careEvents.findById(job.care_event_id);
+async function runAnnexASnapshotUpdate(job: CareEventJob): Promise<Record<string, unknown>> {
+  const event = await careEventsDb.careEvents.findById(job.care_event_id);
   if (!event) throw new Error(`Care event ${job.care_event_id} not found`);
 
-  const pending = db.annexAEvidenceQueue.findPending();
-  const total = db.annexAEvidenceQueue.findAll().length;
+  const pending = await careEventsDb.annexAEvidenceQueue.findPending();
+  const total = (await careEventsDb.annexAEvidenceQueue.findAll()).length;
 
   return {
     job_type: "annex_a_snapshot_update",
@@ -224,10 +226,10 @@ function runAnnexASnapshotUpdate(job: CareEventJob): Record<string, unknown> {
   };
 }
 
-function runInspectionReadinessUpdate(job: CareEventJob): Record<string, unknown> {
+async function runInspectionReadinessUpdate(job: CareEventJob): Promise<Record<string, unknown>> {
   // Tally key readiness signals
-  const openTasks = db.tasks.findAll().filter((t) => t.status !== "completed").length;
-  const unreviewedEvents = db.careEvents.findNeedingManagerReview().length;
+  const openTasks = (await dal.tasks.findAll()).filter((t: Task) => t.status !== "completed").length;
+  const unreviewedEvents = (await careEventsDb.careEvents.findNeedingManagerReview()).length;
 
   return {
     job_type: "inspection_readiness_update",
@@ -239,11 +241,11 @@ function runInspectionReadinessUpdate(job: CareEventJob): Record<string, unknown
   };
 }
 
-function runSavedTimeMetrics(job: CareEventJob): Record<string, unknown> {
-  const event = db.careEvents.findById(job.care_event_id);
+async function runSavedTimeMetrics(job: CareEventJob): Promise<Record<string, unknown>> {
+  const event = await careEventsDb.careEvents.findById(job.care_event_id);
   if (!event) throw new Error(`Care event ${job.care_event_id} not found`);
 
-  const routes = db.careEventRoutes.findByCareEvent(job.care_event_id);
+  const routes = await careEventsDb.careEventRoutes.findByCareEvent(job.care_event_id);
   const completedRoutes = routes.filter((r) => r.status === "completed");
   const totalMinutes = completedRoutes.reduce((sum, r) => sum + r.time_saved_minutes, 0);
 
@@ -256,14 +258,13 @@ function runSavedTimeMetrics(job: CareEventJob): Record<string, unknown> {
   };
 }
 
-function runPatternAnalysis(job: CareEventJob): Record<string, unknown> {
+async function runPatternAnalysis(job: CareEventJob): Promise<Record<string, unknown>> {
   // Lightweight pattern: count categories in last 28 days
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 28);
   const cutoffStr = cutoff.toISOString().slice(0, 10);
 
-  const recent = db.careEvents
-    .findCurrent()
+  const recent = (await careEventsDb.careEvents.findCurrent())
     .filter((e) => e.event_date >= cutoffStr);
 
   const categoryCounts: Record<string, number> = {};
@@ -281,7 +282,9 @@ function runPatternAnalysis(job: CareEventJob): Record<string, unknown> {
   };
 }
 
-function runFilingCabinetIndexRebuild(job: CareEventJob): Record<string, unknown> {
+async function runFilingCabinetIndexRebuild(job: CareEventJob): Promise<Record<string, unknown>> {
+  // filingCabinet has no live-safe reader yet — empty on a live tenant (reports
+  // 0 indexed, never throws). Promote when the filing cabinet is live-backed.
   const items = db.filingCabinet.findAll();
   return {
     job_type: "filing_cabinet_index_rebuild",
@@ -291,14 +294,14 @@ function runFilingCabinetIndexRebuild(job: CareEventJob): Record<string, unknown
   };
 }
 
-function runEvidencePackExport(job: CareEventJob, format: "html" | "json"): Record<string, unknown> {
-  const event = db.careEvents.findById(job.care_event_id);
+async function runEvidencePackExport(job: CareEventJob, format: "html" | "json"): Promise<Record<string, unknown>> {
+  const event = await careEventsDb.careEvents.findById(job.care_event_id);
   if (!event) throw new Error(`Care event ${job.care_event_id} not found`);
 
-  const routes = db.careEventRoutes.findByCareEvent(job.care_event_id);
-  const auditLog = db.careEventAuditLog.findByCareEvent(job.care_event_id);
-  const reg45Items = db.reg45EvidenceQueue.findAll().filter((e) => e.care_event_id === job.care_event_id);
-  const annexAItems = db.annexAEvidenceQueue.findAll().filter((e) => e.care_event_id === job.care_event_id);
+  const routes = await careEventsDb.careEventRoutes.findByCareEvent(job.care_event_id);
+  const auditLog = await careEventsDb.careEventAuditLog.findByCareEvent(job.care_event_id);
+  const reg45Items = (await careEventsDb.reg45EvidenceQueue.findAll()).filter((e) => e.care_event_id === job.care_event_id);
+  const annexAItems = (await careEventsDb.annexAEvidenceQueue.findAll()).filter((e) => e.care_event_id === job.care_event_id);
 
   // Record the export URL for retrieval
   const exportUrl = `/api/v1/care-events/${job.care_event_id}/export?format=${format}`;
