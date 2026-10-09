@@ -57,7 +57,7 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function POST(_req: Request, { params }: Params) {
   const { id } = await params;
-  const result = markInviteSent(id);
+  const result = await markInviteSent(id);
   if (!result) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
   const { childName } = await resolveNames(result.event.child_id, result.event.organiser_id);
