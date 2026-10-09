@@ -8,6 +8,7 @@ import { generateCaraInteractiveMaterial } from "../cara-material-generator";
 import { generateStaffDebrief } from "../cara-debrief-builder";
 import { adaptCaraContent } from "../cara-adaptation-engine";
 import { runCaraGuardrails } from "../cara-guardrails";
+import { PACE_VALIDATIONS } from "../cara-prompt-library";
 import {
   CaraSessionPlanOutputSchema,
   CaraCurriculumMapOutputSchema,
@@ -257,5 +258,45 @@ describe("debrief builder", () => {
     const { output } = generateStaffDebrief({ incidentSummary: "De-escalation after a difficult phone call" });
     expect(output.whatTheChildMayHaveBeenCommunicating.some((x) => /R-Domain/i.test(x))).toBe(true);
     expect(output.supervisionQuestions.some((q) => /recognise themselves/i.test(q))).toBe(true);
+  });
+});
+
+describe("output-quality normalisation (regression)", () => {
+  // The seeded theme bank contains a standalone "I"; the generators used to
+  // flatten it to "i" via theme.toLowerCase(), and the session opener bolted a
+  // PACE validation onto the bridge as a non-sequitur. These lock the fix.
+  const ANGER = "What happens in my body when I get angry";
+
+  it("session plan keeps the pronoun upright in every child-facing field", () => {
+    const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: ANGER, aim: "help him name what i can do when i feel angry", durationMinutes: 20, childReadiness: "medium", emotionalIntensity: "low", staffConfidence: "medium" });
+    for (const field of [output.title, output.childFriendlyTitle, output.openingScript, output.childFriendlySummary]) {
+      expect(field).toMatch(/when I get angry/);
+      expect(field).not.toMatch(/when i get angry/);
+    }
+  });
+
+  it("session plan reframes a lowercase first-person aim as a clean sentence", () => {
+    const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: ANGER, aim: "help him name what i can do when i feel angry", durationMinutes: 20, childReadiness: "medium", emotionalIntensity: "low", staffConfidence: "medium" });
+    expect(output.purpose).toBe("Help him name what I can do when I feel angry");
+    expect(output.aims[0]).toBe(output.purpose);
+  });
+
+  it("session opening script no longer bolts a PACE validation onto the bridge", () => {
+    const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: ANGER, aim: "a small step", durationMinutes: 20, childReadiness: "medium", emotionalIntensity: "low", staffConfidence: "medium" });
+    for (const v of PACE_VALIDATIONS) expect(output.openingScript).not.toContain(v);
+    expect(output.openingScript).toMatch(/not because you're in trouble, just because/);
+  });
+
+  it("materials keep the pronoun upright in child-facing prose", () => {
+    const { output } = generateCaraInteractiveMaterial({ ctx: ctx(), materialType: "social_story", theme: ANGER, difficulty: "gentle" });
+    expect(output.printableText).toMatch(/when I get angry/);
+    expect(output.printableText).not.toMatch(/when i get angry/);
+  });
+
+  it("conversation coach keeps the pronoun upright in the embedded recent context", () => {
+    const { output } = generateCaraConversationBlueprint({ ctx: ctx(), conversationTopic: "staying safe", reasonForConversation: "quieter lately", emotionalRisk: "low", recentContext: "he and i had a fall-out" });
+    const lines = output.openingLines.join(" ");
+    expect(lines).toMatch(/he and I had a fall-out/);
+    expect(lines).not.toMatch(/he and i had/);
   });
 });

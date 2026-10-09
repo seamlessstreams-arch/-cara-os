@@ -15,6 +15,7 @@ import {
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
 import { safetyPlanConversationPrompts } from "@/lib/cara/practice-frameworks";
+import { softLower } from "./cara-text";
 
 const SAFETY_TOPIC_RE = /safe|calm|regulat|upset|angr|overwhelm|crisis|missing|self.?harm|hurt|de-?escalat|melt ?down/i;
 
@@ -55,7 +56,7 @@ export function generateCaraConversationBlueprint(input: ConversationGenInput): 
         : "Know who the child's most trusted adult on shift is — consider whether it should be them having this conversation.",
       input.emotionalRisk === "high" ? "High emotional risk: agree the plan with a manager first and make sure another adult knows the conversation is happening." : "Let the shift know roughly when you're taking the moment, so you're not interrupted.",
     ],
-    openingLines: [PACE_OPENINGS[0], PACE_OPENINGS[3], `"I've noticed ${input.recentContext ? input.recentContext.toLowerCase() : "things have felt a bit heavier lately"} — and I care more about you than about any rule."`],
+    openingLines: [PACE_OPENINGS[0], PACE_OPENINGS[3], `"I've noticed ${input.recentContext ? softLower(input.recentContext) : "things have felt a bit heavier lately"} — and I care more about you than about any rule."`],
     validationStatements: [PACE_VALIDATIONS[0], PACE_VALIDATIONS[2], PACE_VALIDATIONS[3]],
     curiosityQuestions: [...PACE_CURIOSITY.slice(0, 4)],
     reflectivePrompts: [PACE_REPAIR[0], PACE_REPAIR[1]],
