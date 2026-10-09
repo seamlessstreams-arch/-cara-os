@@ -721,6 +721,14 @@ export const dal = {
       if (c) return asApp<MissingEpisode[]>(await sq.getMissingEpisodes(c, homeId(), filters));
       return db.missingEpisodes.findAll();
     },
+    async findById(id: string): Promise<MissingEpisode | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await c.from("missing_episodes").select("*").eq("id", id).maybeSingle();
+        return (data as unknown as MissingEpisode | null) ?? null;
+      }
+      return db.missingEpisodes.findById(id) ?? null;
+    },
     async create(data: Parameters<typeof db.missingEpisodes.create>[0]) {
       const c = sb();
       if (c) return sq.createMissingEpisode(c, { ...data, home_id: homeId() } as Parameters<typeof sq.createMissingEpisode>[1]);

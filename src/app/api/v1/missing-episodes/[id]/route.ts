@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ async function getEpisode(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const episode = db.missingEpisodes.findById(id);
+  const episode = await dal.missingEpisodes.findById(id);
   if (!episode) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: episode });
 }
@@ -28,7 +28,7 @@ async function patchEpisode(
   const { id } = await params;
   const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
-  const existing = db.missingEpisodes.findById(id);
+  const existing = await dal.missingEpisodes.findById(id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Auto-calculate duration_hours when marking returned
@@ -46,7 +46,7 @@ async function patchEpisode(
     }
   }
 
-  const updated = db.missingEpisodes.patch(id, { ...body, ...extra });
+  const updated = await dal.missingEpisodes.patch(id, { ...body, ...extra });
   if (!updated) return NextResponse.json({ error: "Update failed" }, { status: 500 });
 
   return NextResponse.json({ data: updated });
