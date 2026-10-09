@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Brain, AlertTriangle } from "lucide-react";
+import { Save, Brain, AlertTriangle, Sparkles } from "lucide-react";
 import type { CaraChildLearningProfile, CaraLearningStyle } from "@/lib/cara-studio/cara-types";
 import { Labelled, TextInput, TextArea } from "@/components/cara-studio/studio-bits";
 
@@ -59,6 +59,37 @@ export function ProfileEditor({ childId, profile, childName }: { childId: string
   const qc = useQueryClient();
   const [d, setD] = useState<Draft>(() => toDraft(profile));
   const set = (k: keyof Draft) => (v: string) => setD((cur) => ({ ...cur, [k]: v }));
+  const [draftNote, setDraftNote] = useState<string[] | null>(null);
+
+  // Draft from records: Cara proposes values for the fields it can evidence,
+  // filling ONLY empty fields (never overwriting what staff have typed). Each
+  // applied field is listed with its source; clinical fields are never drafted.
+  type DraftField = { value: unknown; source: string };
+  const autodraft = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/cara/profile/${childId}/draft`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Couldn't draft from records");
+      return (json.data?.draft ?? {}) as Record<string, DraftField | undefined>;
+    },
+    onSuccess: (draft) => {
+      const applied: string[] = [];
+      const next = { ...d };
+      type StrKey = "age" | "risk_themes" | "emotional_triggers" | "calming_strategies";
+      const put = (key: StrKey, value: string, label: string, source: string) => {
+        if (value && !d[key].trim()) {
+          next[key] = value;
+          applied.push(`${label} — ${source.toLowerCase()}`);
+        }
+      };
+      if (draft.age) put("age", String(draft.age.value), "Age", draft.age.source);
+      if (draft.risk_themes) put("risk_themes", (draft.risk_themes.value as string[]).join(", "), "Risk themes", draft.risk_themes.source);
+      if (draft.emotional_triggers) put("emotional_triggers", String(draft.emotional_triggers.value), "Known triggers", draft.emotional_triggers.source);
+      if (draft.calming_strategies) put("calming_strategies", String(draft.calming_strategies.value), "What calms", draft.calming_strategies.source);
+      setD(next);
+      setDraftNote(applied);
+    },
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -95,11 +126,32 @@ export function ProfileEditor({ childId, profile, childName }: { childId: string
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Brain className="h-4 w-4 text-[var(--cs-teal-strong)]" /> How {childName} learns — editable, audited</h3>
-        <button onClick={() => save.mutate()} disabled={save.isPending} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--cs-navy-soft)] disabled:opacity-60">
-          <Save className="h-3.5 w-3.5" /> {save.isPending ? "Saving…" : save.isSuccess ? "Saved" : "Save profile"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => autodraft.mutate()} disabled={autodraft.isPending} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-teal-strong)] bg-[var(--cs-teal-bg)] px-3.5 py-2 text-xs font-bold text-[var(--cs-navy)] hover:bg-[var(--cs-teal-bg)]/70 disabled:opacity-60">
+            <Sparkles className="h-3.5 w-3.5" /> {autodraft.isPending ? "Reading records…" : "Draft from records"}
+          </button>
+          <button onClick={() => save.mutate()} disabled={save.isPending} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--cs-navy-soft)] disabled:opacity-60">
+            <Save className="h-3.5 w-3.5" /> {save.isPending ? "Saving…" : save.isSuccess ? "Saved" : "Save profile"}
+          </button>
+        </div>
       </div>
       {save.isError && <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600"><AlertTriangle className="h-3.5 w-3.5" /> {save.error.message}</p>}
+      {autodraft.isError && <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600"><AlertTriangle className="h-3.5 w-3.5" /> {autodraft.error.message}</p>}
+      {draftNote && (
+        <div className="mt-3 rounded-xl border border-[var(--cs-teal-strong)]/40 bg-[var(--cs-teal-bg)] p-3 text-xs text-[var(--cs-navy)]">
+          {draftNote.length ? (
+            <>
+              <p className="font-bold">Drafted from {childName}&apos;s records — please review, then Save:</p>
+              <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
+                {draftNote.map((line) => <li key={line}>{line}</li>)}
+              </ul>
+              <p className="mt-2 text-[11px] text-[var(--cs-text-muted)]">Only empty fields were filled. SEND, learning style, literacy, sensory and communication needs are left for your professional judgement — Cara won&apos;t infer those.</p>
+            </>
+          ) : (
+            <p>Cara found nothing in the records to add that the profile doesn&apos;t already have. The clinical fields are yours to complete.</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <Labelled label="Age"><TextInput value={d.age} onChange={set("age")} placeholder="e.g. 14" /></Labelled>
