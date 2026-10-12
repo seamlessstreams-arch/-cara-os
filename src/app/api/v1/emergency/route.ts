@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { getActiveEmergencyAlerts } from "@/lib/supabase/workforce";
 import { resolveSignInStaff } from "@/lib/attendance/sign-in-service";
 import { triggerEmergency } from "@/lib/staffing/emergency-service";
 import { EMERGENCY_TYPE_LABEL, type EmergencyType } from "@/lib/staffing/emergency-types";
@@ -10,7 +12,12 @@ export const dynamic = "force-dynamic";
 // GET /api/v1/emergency → active emergency alerts for the acting user's home.
 export async function GET(req: NextRequest) {
   const staff = resolveSignInStaff(req.headers);
-  return NextResponse.json({ data: db.emergencyAlerts.findActive(staff.home_id) });
+  // Live: read emergency_alerts from Supabase (the store is emptied on live, so
+  // active alerts were invisible). Demo: the in-memory store.
+  const alerts = isSupabaseEnabled()
+    ? await getActiveEmergencyAlerts(staff.home_id)
+    : db.emergencyAlerts.findActive(staff.home_id);
+  return NextResponse.json({ data: alerts });
 }
 
 // POST /api/v1/emergency → raise an emergency (alert + privacy-safe broadcast).
