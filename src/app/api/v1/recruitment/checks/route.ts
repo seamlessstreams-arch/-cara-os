@@ -1,10 +1,11 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { createRecruitmentAuditRecord, persistRecruitmentCheck } from "@/lib/supabase/recruitment-persist";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
+import type { CandidateCheck } from "@/types/recruitment";
 
 // ── GET /api/v1/recruitment/checks?candidate_id= ──────────────────────────────
 
@@ -12,11 +13,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const candidateId = searchParams.get("candidate_id");
 
-  const rawChecks = candidateId
-    ? db.candidateChecks.findByCandidate(candidateId)
-    : db.candidateChecks.findAll();
+  // dal returns the Supabase row on live; the generated row type is stale
+  // (missing risk_mitigation/notes), so present it as the app CandidateCheck.
+  const rawChecks = (candidateId
+    ? await dal.candidateChecks.findByCandidate(candidateId)
+    : await dal.candidateChecks.findAll()) as CandidateCheck[];
 
-  const candidate = candidateId ? db.candidateProfiles.findById(candidateId) : null;
+  const candidate = candidateId ? await dal.candidateProfiles.findById(candidateId) : null;
   const home_id = candidate?.home_id ?? tenantHomeId();
 
   const checks = rawChecks.map((c) => ({
@@ -66,7 +69,7 @@ export async function PATCH(req: NextRequest) {
 
   const now = new Date().toISOString();
 
-  const updated = db.candidateChecks.update(id, {
+  const updated = await dal.candidateChecks.update(id, {
     ...(status !== undefined && { status }),
     ...(owner !== undefined && { owner_id: owner }),
     ...(requested_date !== undefined && { requested_at: requested_date }),
@@ -81,12 +84,13 @@ export async function PATCH(req: NextRequest) {
     ...(override_reason !== undefined && { override_reason }),
     ...(risk_mitigation !== undefined && { risk_mitigation }),
     ...(notes !== undefined && { notes }),
-  });
+  }) as CandidateCheck | null;
 
   if (!updated) {
     return NextResponse.json({ error: "Check not found" }, { status: 404 });
   }
-  void persistRecruitmentCheck(updated); // best-effort write-through (no-op when off)
+  // dal.candidateChecks.update persists to Supabase on a live tenant, so no
+  // separate write-through is needed.
 
   // Write audit entry
   if (candidate_id) {
