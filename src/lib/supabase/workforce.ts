@@ -48,3 +48,18 @@ export function persistEmergencyAlert(a: EmergencyAlert) {
     resolved_at: a.resolved_at, resolved_by: a.resolved_by,
   });
 }
+
+/** Active emergency alerts for a home, live (Supabase). Empty when Supabase is
+ *  off — the route falls back to the in-memory store in demo. Mirrors the store
+ *  findActive filter: home_id + status "active". */
+export async function getActiveEmergencyAlerts(homeId: string): Promise<EmergencyAlert[]> {
+  if (!isSupabaseEnabled()) return [];
+  const s = sb();
+  if (!s) return [];
+  try {
+    const { data } = await s.from("emergency_alerts").select("*").eq("home_id", homeId).eq("status", "active");
+    return (data ?? []) as unknown as EmergencyAlert[];
+  } catch {
+    return [];
+  }
+}
