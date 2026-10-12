@@ -1280,9 +1280,9 @@ export const dal = {
   },
 
   candidateChecks: {
-    // DEMO-ONLY list read (2026-08-05): in-memory until a whole-table Supabase
-    // query lands (sq.getCandidateChecks is per-candidate only).
     async findAll() {
+      const c = sb();
+      if (c) return sq.getAllCandidateChecks(c);
       return getStore().candidateChecks ?? [];
     },
     async findByCandidate(candidateId: string) {

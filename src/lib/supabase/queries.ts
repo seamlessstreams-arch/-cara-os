@@ -699,6 +699,11 @@ export async function getCandidateChecks(sb: SB, candidateId: string) {
   return unwrap(await sb.from("candidate_checks").select("*").eq("candidate_id", candidateId));
 }
 
+/** Whole-table read for the all-candidates checks overview (single-home tenant). */
+export async function getAllCandidateChecks(sb: SB) {
+  return unwrap(await sb.from("candidate_checks").select("*"));
+}
+
 export async function updateCandidateCheck(sb: SB, id: string, data: Database["public"]["Tables"]["candidate_checks"]["Update"]) {
   return unwrap(await sb.from("candidate_checks").update(data).eq("id", id).select().single());
 }
