@@ -24,7 +24,8 @@ import * as sqCalendar from "@/lib/supabase/calendar-persist";
 import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan, EducationRecord } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord, InspectionRecord } from "@/types/extended";
+import type { SB } from "@/lib/supabase/loose-client";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
@@ -1322,6 +1323,54 @@ export const dal = {
       const c = sb();
       if (c) return sq.updateCandidateReference(c, id, data as Parameters<typeof sq.updateCandidateReference>[2]);
       return db.candidateReferences.update(id, data);
+    },
+  },
+
+  // ── Inspection history (Phase 2: inspection_history table) ────────────────
+  // Untyped table (not yet in generated types) → loose SB client + cast.
+  inspectionHistory: {
+    async findAll(): Promise<InspectionRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB)
+          .from("inspection_history").select("*")
+          .eq("home_id", homeId()).order("inspection_date", { ascending: false });
+        return (data ?? []) as InspectionRecord[];
+      }
+      return db.inspectionHistory.findAll();
+    },
+    async latest(): Promise<InspectionRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB)
+          .from("inspection_history").select("*")
+          .eq("home_id", homeId()).order("inspection_date", { ascending: false }).limit(1);
+        return ((Array.isArray(data) ? data[0] : null) as InspectionRecord | null) ?? null;
+      }
+      return db.inspectionHistory.latest() ?? null;
+    },
+    async create(data: Partial<InspectionRecord>): Promise<InspectionRecord> {
+      const c = sb();
+      if (c) {
+        const now = new Date().toISOString();
+        const row = {
+          home_id: homeId(),
+          inspection_date: data.inspection_date ?? now.slice(0, 10),
+          inspection_type: data.inspection_type ?? "Full inspection",
+          grade: data.grade ?? "Good",
+          inspector_name: data.inspector_name ?? "",
+          report_reference: data.report_reference ?? null,
+          report_url: data.report_url ?? null,
+          actions_required: data.actions_required ?? 0,
+          actions_completed: data.actions_completed ?? 0,
+          summary: data.summary ?? null,
+          published_at: data.published_at ?? null,
+        };
+        const { data: created } = await (c as unknown as SB)
+          .from("inspection_history").insert(row).select().single();
+        return created as InspectionRecord;
+      }
+      return db.inspectionHistory.create(data);
     },
   },
 
