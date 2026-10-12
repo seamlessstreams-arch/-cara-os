@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
 import { buildAnnexAQueue } from "@/lib/care-events/compliance-queues";
 import type { ManagerDecision } from "@/types/care-events";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -9,9 +9,17 @@ export const dynamic = "force-dynamic";
 // GET /api/v1/annex-a-readiness?section=&decision=  → enriched queue + readiness meta
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
+  // Live-safe: read queue + care events via careEventsDb (Supabase on live),
+  // then resolve events through a pre-fetched map so the pure builder's sync
+  // resolver stays sync.
+  const [queue, allEvents] = await Promise.all([
+    careEventsDb.annexAEvidenceQueue.findAll(),
+    careEventsDb.careEvents.findAll(),
+  ]);
+  const byId = new Map(allEvents.map((e) => [e.id, e]));
   const result = buildAnnexAQueue(
-    db.annexAEvidenceQueue.findAll(),
-    (id) => db.careEvents.findById(id),
+    queue,
+    (id) => byId.get(id),
     { section: sp.get("section"), decision: sp.get("decision") },
   );
   return NextResponse.json(result);
@@ -34,7 +42,7 @@ export async function PATCH(req: NextRequest) {
   }
   if (!body.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-  const updated = db.annexAEvidenceQueue.patch(body.id, {
+  const updated = await careEventsDb.annexAEvidenceQueue.patch(body.id, {
     manager_decision: body.manager_decision,
     manager_approved_text: body.manager_approved_text ?? null,
     reviewed_by: body.reviewed_by ?? null,

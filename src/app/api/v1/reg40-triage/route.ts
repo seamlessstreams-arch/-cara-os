@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
+import { dal } from "@/lib/db/dal";
 import { buildReg40Queue, buildReg40NotifiableDraft } from "@/lib/care-events/compliance-queues";
 import { readJsonBody } from "@/lib/http/read-json";
 import { todayStr } from "@/lib/utils";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const today = todayStr();
-  const events = db.careEvents.findForReg40();
+  const events = await careEventsDb.careEvents.findForReg40();
   const result = buildReg40Queue(events, events.length, today, {
     status: sp.get("status"),
     child_id: sp.get("child_id"),
@@ -43,7 +44,7 @@ export async function PATCH(req: NextRequest) {
     .filter(Boolean)
     .join(" — ") || null;
 
-  const updated = db.careEvents.patch(body.task_id, {
+  const updated = await careEventsDb.careEvents.patch(body.task_id, {
     requires_reg40_triage: false,
     manager_id: body.completed_by ?? null,
     manager_review_at: new Date().toISOString(),
@@ -60,7 +61,7 @@ export async function PATCH(req: NextRequest) {
       note: body.evidence_note,
       today: todayStr(),
     });
-    notifiable_event_id = db.notifiableEvents.create(draft).id;
+    notifiable_event_id = (await dal.notifiableEvents.create(draft)).id;
   }
 
   return NextResponse.json({ data: updated, notifiable_event_id });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
 import { buildOversightQueue } from "@/lib/care-events/compliance-queues";
 import { readJsonBody } from "@/lib/http/read-json";
 import { todayStr } from "@/lib/utils";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const today = todayStr();
-  const result = buildOversightQueue(db.careEvents.findNeedingManagerReview(), today, {
+  const result = buildOversightQueue(await careEventsDb.careEvents.findNeedingManagerReview(), today, {
     status: sp.get("status"),
     priority: sp.get("priority"),
     child_id: sp.get("child_id"),
@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
   }
   if (!body.task_id) return NextResponse.json({ error: "task_id is required" }, { status: 400 });
 
-  const updated = db.careEvents.patch(body.task_id, {
+  const updated = await careEventsDb.careEvents.patch(body.task_id, {
     status: "verified",
     manager_review_completed: true,
     requires_manager_review: false,
