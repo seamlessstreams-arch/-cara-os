@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
 import { seedDay } from "@/lib/seed-date";
@@ -97,7 +97,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const audit = db.audits.findById(id);
+  const audit = await dal.qaAudits.findById(id);
   if (!audit) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const findings = AUDIT_FINDINGS[id] ?? [];
@@ -109,7 +109,7 @@ export async function GET(
   );
 
   // Resolved staff name
-  const staff = audit.completed_by ? db.staff.findById(audit.completed_by) : null;
+  const staff = audit.completed_by ? await dal.staff.findById(audit.completed_by) : null;
   const completedByName = staff
     ? `${staff.first_name} ${staff.last_name}`
     : audit.completed_by ?? null;
@@ -137,7 +137,7 @@ export async function PATCH(
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const updated = db.audits.update(id, body);
+  const updated = await dal.qaAudits.update(id, body);
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: updated });
 }
