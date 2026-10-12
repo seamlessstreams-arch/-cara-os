@@ -1068,6 +1068,11 @@ export const dal = {
       if (c) return asApp<Audit[]>(await sq.getQaAudits(c, homeId(), filters));
       return db.audits.findAll();
     },
+    async findById(id: string): Promise<Audit | null> {
+      const c = sb();
+      if (c) return asApp<Audit[]>(await sq.getQaAudits(c, homeId())).find((a) => a.id === id) ?? null;
+      return db.audits.findById(id) ?? null;
+    },
     async create(data: Parameters<typeof db.audits.create>[0]) {
       const c = sb();
       if (c) return sq.createQaAudit(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createQaAudit>[1]);
