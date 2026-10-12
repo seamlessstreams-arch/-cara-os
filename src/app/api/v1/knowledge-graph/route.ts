@@ -10,7 +10,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildKnowledgeGraph } from "@/lib/knowledge-graph/knowledge-graph-engine";
@@ -26,8 +26,7 @@ export async function GET(req: NextRequest) {
   const today = todayStr();
   const windowDays = 180;
 
-  const children: GraphChild[] = db.youngPeople
-    .findAll()
+  const children: GraphChild[] = (await dal.youngPeople.findAll())
     .filter((yp) => yp.status === "current" || yp.status === "planned")
     .map((yp) => ({
       id: yp.id,
@@ -36,8 +35,7 @@ export async function GET(req: NextRequest) {
       socialWorker: yp.social_worker_name || undefined,
     }));
 
-  const incidents: GraphIncident[] = db.incidents
-    .findAll()
+  const incidents: GraphIncident[] = (await dal.incidents.findAll())
     .map((i) => ({ childId: i.child_id, type: i.type, location: i.location, date: i.date }));
 
   try {
