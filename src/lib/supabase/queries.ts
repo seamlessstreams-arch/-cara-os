@@ -712,6 +712,16 @@ export async function getCandidateReferences(sb: SB, candidateId: string) {
   return unwrap(await sb.from("candidate_references").select("*").eq("candidate_id", candidateId));
 }
 
+/** Whole-table read for the all-candidates references overview (single-home tenant). */
+export async function getAllCandidateReferences(sb: SB) {
+  return unwrap(await sb.from("candidate_references").select("*"));
+}
+
+/** Single reference by id (null when absent). */
+export async function getCandidateReferenceById(sb: SB, id: string) {
+  return unwrap(await sb.from("candidate_references").select("*").eq("id", id).maybeSingle());
+}
+
 export async function createCandidateReference(sb: SB, data: Database["public"]["Tables"]["candidate_references"]["Insert"]) {
   return unwrap(await sb.from("candidate_references").insert(data).select().single());
 }

@@ -1298,6 +1298,16 @@ export const dal = {
   },
 
   candidateReferences: {
+    async findAll() {
+      const c = sb();
+      if (c) return sq.getAllCandidateReferences(c);
+      return getStore().candidateReferences ?? [];
+    },
+    async findById(id: string) {
+      const c = sb();
+      if (c) return sq.getCandidateReferenceById(c, id);
+      return db.candidateReferences.findById(id) ?? null;
+    },
     async findByCandidate(candidateId: string) {
       const c = sb();
       if (c) return sq.getCandidateReferences(c, candidateId);

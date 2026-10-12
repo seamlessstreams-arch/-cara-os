@@ -1,10 +1,10 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import type { CandidateReference } from "@/types/recruitment";
 
 // ── GET /api/v1/recruitment/references?candidate_id= ─────────────────────────
@@ -13,11 +13,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const candidateId = searchParams.get("candidate_id");
 
-  const rawRefs = candidateId
-    ? db.candidateReferences.findByCandidate(candidateId)
-    : db.candidateReferences.findAll();
+  // dal returns the Supabase row on live; the generated row type is stale, so
+  // present it as the app CandidateReference for the serializer.
+  const rawRefs = (candidateId
+    ? await dal.candidateReferences.findByCandidate(candidateId)
+    : await dal.candidateReferences.findAll()) as CandidateReference[];
 
-  const candidate = candidateId ? db.candidateProfiles.findById(candidateId) : null;
+  const candidate = candidateId ? await dal.candidateProfiles.findById(candidateId) : null;
   const home_id = candidate?.home_id ?? tenantHomeId();
 
   const refs = rawRefs.map((r) => serializeRef(r, home_id));
@@ -44,12 +46,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const candidate = db.candidateProfiles.findById(candidate_id);
+  const candidate = await dal.candidateProfiles.findById(candidate_id);
   if (!candidate) {
     return NextResponse.json({ error: "Candidate not found" }, { status: 404 });
   }
 
-  const ref = db.candidateReferences.create({
+  const ref = await dal.candidateReferences.create({
     candidate_id,
     referee_name,
     referee_role: referee_role ?? null,
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     discrepancy_notes: null,
     reliability_rating: null,
     status: "not_requested",
-  });
+  }) as CandidateReference;
 
   createRecruitmentAuditRecord({
     candidate_id,
@@ -102,7 +104,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Reference id is required" }, { status: 400 });
   }
 
-  const existing = db.candidateReferences.findById(id);
+  const existing = await dal.candidateReferences.findById(id) as CandidateReference | null;
   if (!existing) {
     return NextResponse.json({ error: "Reference not found" }, { status: 404 });
   }
@@ -124,13 +126,15 @@ export async function PATCH(req: NextRequest) {
       ?? existing.structured_response?.additional_comments ?? null,
   };
 
-  const updated = updateCandidateReferenceRecord(id, {
+  // dal.update persists to Supabase on live (replacing the store-only
+  // updateCandidateReferenceRecord write-through, which 404'd on a live tenant).
+  const updated = await dal.candidateReferences.update(id, {
     ...(status !== undefined && { status }),
     ...(received_date !== undefined && { received_at: received_date }),
     ...(discrepancy_flag !== undefined && { discrepancy_flag }),
     ...(discrepancy_notes !== undefined && { discrepancy_notes }),
     structured_response: updatedStructured as CandidateReference["structured_response"],
-  });
+  }) as CandidateReference | null;
 
   if (!updated) {
     return NextResponse.json({ error: "Reference not found" }, { status: 404 });
@@ -155,7 +159,7 @@ export async function PATCH(req: NextRequest) {
     });
   }
 
-  const candidateRecord = db.candidateProfiles.findById(updated.candidate_id);
+  const candidateRecord = await dal.candidateProfiles.findById(updated.candidate_id);
   return NextResponse.json({ data: serializeRef(updated, candidateRecord?.home_id ?? tenantHomeId()) });
 }
 
