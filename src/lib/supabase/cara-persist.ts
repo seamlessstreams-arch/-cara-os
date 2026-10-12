@@ -98,6 +98,89 @@ export async function getCaraStudioOutputsByChild(childId: string): Promise<Cara
   }
 }
 
+/** Home-wide Cara Studio outputs for the manager review centre (live only). */
+export async function getCaraStudioOutputsForHome(): Promise<CaraSavedOutput[]> {
+  if (!isSupabaseEnabled()) return [];
+  const c = createServerClient();
+  if (!c) return [];
+  try {
+    const { data } = await raw(c)
+      .from("cara_studio_outputs")
+      .select("id, module, child_id, title, output, status, manager_review_status, manager_review_reasons, guardrail_severity, guardrail_flags, llm_used, created_by, reviewed_by, reviewed_at, review_note, created_at, updated_at")
+      .eq("home_id", homeId())
+      .order("created_at", { ascending: false });
+    return (data ?? []) as unknown as CaraSavedOutput[];
+  } catch {
+    return [];
+  }
+}
+
+/** Recent guardrail events for the home (live only), newest first. */
+export async function getRecentCaraGuardrailEvents(limit = 30): Promise<CaraGuardrailEvent[]> {
+  if (!isSupabaseEnabled()) return [];
+  const c = createServerClient();
+  if (!c) return [];
+  try {
+    const { data } = await raw(c)
+      .from("cara_guardrail_events")
+      .select("id, module, risk_type, severity, flagged_text, action_taken, user_id, child_id, created_at")
+      .eq("home_id", homeId())
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
+      id: String(r.id ?? ""),
+      user_id: (r.user_id as string) ?? "",
+      child_id: (r.child_id as string | null) ?? null,
+      module: r.module as CaraGuardrailEvent["module"],
+      risk_type: String(r.risk_type ?? ""),
+      severity: r.severity as CaraGuardrailEvent["severity"],
+      flagged_text: String(r.flagged_text ?? ""),
+      action_taken: r.action_taken as CaraGuardrailEvent["action_taken"],
+      created_at: String(r.created_at ?? ""),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Recent AI runs for the home (live only), newest first. The stored row packs
+ *  identity/summary into input_context and the output id into output, so this
+ *  reverses that mapping; llm_used isn't persisted and is inferred from the model. */
+export async function getRecentCaraAiRuns(limit = 30): Promise<CaraAiRun[]> {
+  if (!isSupabaseEnabled()) return [];
+  const c = createServerClient();
+  if (!c) return [];
+  try {
+    const { data } = await raw(c)
+      .from("cara_ai_runs")
+      .select("id, module, prompt_type, input_context, output, safety_flags, model_used, human_review_required, created_at")
+      .eq("home_id", homeId())
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return ((data ?? []) as Record<string, unknown>[]).map((r) => {
+      const ctx = (r.input_context ?? {}) as { summary?: string; user?: string; child?: string | null };
+      const out = (r.output ?? {}) as { output_id?: string | null };
+      const model = String(r.model_used ?? "");
+      return {
+        id: String(r.id ?? ""),
+        user_id: ctx.user ?? "",
+        child_id: ctx.child ?? null,
+        module: r.module as CaraAiRun["module"],
+        prompt_type: String(r.prompt_type ?? ""),
+        input_summary: ctx.summary ?? "",
+        output_id: out.output_id ?? null,
+        safety_flags: (r.safety_flags as string[]) ?? [],
+        model_used: model,
+        llm_used: model !== "" && model !== "stub" && model !== "deterministic",
+        human_review_required: Boolean(r.human_review_required),
+        created_at: String(r.created_at ?? ""),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 /** Read a child's learning profile from the durable table (live only), or null.
  *  Counterpart to persistCaraLearningProfile — same table, cara_child_learning_profiles. */
 export async function getCaraLearningProfileByChild(childId: string): Promise<CaraChildLearningProfile | null> {
