@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const latest = req.nextUrl.searchParams.get("latest") === "true";
   if (latest) {
-    return NextResponse.json({ data: db.inspectionHistory.latest() ?? null });
+    return NextResponse.json({ data: (await dal.inspectionHistory.latest()) ?? null });
   }
-  const data = db.inspectionHistory.findAll();
+  const data = await dal.inspectionHistory.findAll();
   return NextResponse.json({ data, meta: { total: data.length } });
 }
 
@@ -33,6 +33,6 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const record = db.inspectionHistory.create(body);
+  const record = await dal.inspectionHistory.create(body);
   return NextResponse.json({ data: record }, { status: 201 });
 }
