@@ -107,6 +107,19 @@ describe("session generator", () => {
     expect(steps.some((s) => s.startsWith("Main activity"))).toBe(true);
   });
 
+  it("produces the actual piece of work the plan names (not just 'make your own')", () => {
+    const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: "Trusting adults", aim: "Help Alex name one trusted adult", durationMinutes: 20, childReadiness: "medium", emotionalIntensity: "low", staffConfidence: "medium" });
+    const m = output.producedMaterial;
+    expect(m).toBeDefined();
+    expect(m!.title.length).toBeGreaterThan(0);
+    expect(m!.blocks.length).toBeGreaterThan(0);
+    expect(m!.printableText.length).toBeGreaterThan(0);
+    expect(m!.lowWritingAlternative.length).toBeGreaterThan(0);
+    // resources point at the produced artifact, not a "make or print" instruction
+    expect(output.resourcesNeeded.join(" ")).toMatch(/printable piece of work/i);
+    expect(output.resourcesNeeded.join(" ")).not.toMatch(/make or print/i);
+  });
+
   it("micro-sessions compress but keep before/opening/closing; movement profile picks walk-and-talk", () => {
     const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: "Sharing space", aim: "One small win", durationMinutes: 5, childReadiness: "low", emotionalIntensity: "low", staffConfidence: "low" });
     expect(output.title).toMatch(/micro-session/);
