@@ -5,10 +5,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { buildVacancySetupPack } from "@/lib/engines/vacancy-setup-engine";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
+import type { Vacancy } from "@/types/recruitment";
 import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const today = todayStr();
   const employerValuesProfilesList = await dal.employerValuesProfiles.findAll();
-  const vacancies = db.vacancies.findAll();
+  // dal returns the Supabase row on live (looser enums); present as app Vacancy.
+  const vacancies = (await dal.vacancies.findAll()) as Vacancy[];
   if (vacancies.length === 0) {
     return NextResponse.json({ data: { vacancies: [], pack: null } });
   }
@@ -25,14 +26,14 @@ export async function GET(req: NextRequest) {
   const vacancy = (requestedId && vacancies.find((v) => v.id === requestedId)) || vacancies[0];
 
   const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
-  const staff = db.staff.findAll().map((s) => ({ id: s.id, full_name: s.full_name }));
+  const staff = (await dal.staff.findAll()).map((s) => ({ id: s.id, full_name: s.full_name }));
 
   const pack = buildVacancySetupPack({
     today,
     vacancy,
     employer,
     staff,
-    training_records: db.training.findAll(),
+    training_records: await dal.training.findAll(),
   });
 
   return NextResponse.json({
