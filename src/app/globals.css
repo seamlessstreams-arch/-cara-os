@@ -1040,6 +1040,9 @@ body::before {
   .cs-card-float:hover { transform: none; box-shadow: none; }
   * { color: #000 !important; background: #fff !important; }
 
+  /* A Cara Studio output being printed on its own: hide every other generated output on the page. */
+  body[data-cs-print] .cs-output:not(.cs-output-active) { display: none !important; }
+
   /* Shareable report packs keep their RAG status colours when printed. These
      selectors are more specific than the `*` reset above, so they win, and
      print-color-adjust:exact forces the backgrounds to actually render. */
