@@ -10,6 +10,8 @@
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 import type { NotebookInput } from "./notebook-briefing";
+import { buildNotebookTimeline } from "./notebook-timeline";
+import type { RelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
 
 type Row = Record<string, unknown>;
 const r = (x: unknown): Row => (x ?? {}) as Row;
@@ -50,4 +52,41 @@ export async function gatherNotebookData(childId: string): Promise<NotebookInput
     lacReviews: lacReviews.map((x) => { const o = r(x); return { id: String(o.id), nextReviewDate: day(o.next_review_date, o.next_review) }; }),
     riskAssessments: riskAssessments.map((x) => { const o = r(x); return { id: String(o.id), nextReviewDate: day(o.next_review_date, o.review_date) }; }),
   };
+}
+
+/** Gather a child's live-safe relational timeline (reuses the pure engine).
+ *  Returns null if the child is not found. */
+export async function gatherNotebookTimeline(childId: string): Promise<RelationalTimeline | null> {
+  const childRow = await dal.youngPeople.findById(childId);
+  if (!childRow) return null;
+  const c = r(childRow);
+
+  const [keywork, incidents, missing, education, lac, staff] = await Promise.all([
+    dal.keyWorkingSessions.findAll({ child_id: childId }),
+    dal.incidents.findAll({ child_id: childId }),
+    dal.missingEpisodes.findAll({ child_id: childId }),
+    dal.educationRecords.findAll({ child_id: childId }),
+    dal.lacReviews.findAll({ child_id: childId }),
+    dal.staff.findAll(),
+  ]);
+
+  const staffMap = new Map<string, string>();
+  for (const st of staff) {
+    const o = r(st);
+    staffMap.set(String(o.id), s(o.full_name) || [o.first_name, o.last_name].filter(Boolean).join(" ") || String(o.id));
+  }
+  const name = s(c.full_name) || [c.first_name, c.last_name].filter(Boolean).join(" ") || s(c.preferred_name) || s(c.first_name) || childId;
+
+  return buildNotebookTimeline({
+    childId,
+    childName: name,
+    now: new Date().toISOString(),
+    keyWorkingSessions: keywork,
+    incidents,
+    missingEpisodes: missing,
+    educationRecords: education,
+    lacReviews: lac,
+    trustedAdults: [],
+    staffName: (id) => staffMap.get(id) ?? id,
+  });
 }
