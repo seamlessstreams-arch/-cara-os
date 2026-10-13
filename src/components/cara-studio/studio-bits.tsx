@@ -163,7 +163,7 @@ export function OutputView({ result }: { result: CaraApiResult }) {
   return (
     <div className="space-y-4">
       {result.review_banner && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="font-semibold">{result.review_banner}</p>
@@ -179,7 +179,7 @@ export function OutputView({ result }: { result: CaraApiResult }) {
           <p className="mt-1">{result.blocked_message}</p>
         </div>
       ) : result.output ? (
-        <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
+        <div className="cara-studio-print rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] print:rounded-none print:border-0 print:p-0 print:shadow-none">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:hidden">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" /> Cara draft — saved · ID {result.id}</span>
             <span className="flex gap-2">
@@ -187,11 +187,15 @@ export function OutputView({ result }: { result: CaraApiResult }) {
               <button onClick={() => window.print()} className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"><Printer className="h-3 w-3" /> Print</button>
             </span>
           </div>
-          <h3 className="mb-3 text-base font-bold text-[var(--cs-navy)]">{result.title}</h3>
+          <h3 className="mb-3 text-base font-bold text-[var(--cs-navy)] print:mb-1 print:text-xl">{result.title}</h3>
+          {/* Print-only document caption: carries the draft caveat onto the printed session / piece of work. */}
+          <p className="mb-4 hidden text-xs text-[var(--cs-text-muted)] print:block">
+            Cara draft — review before use with the child. Printed {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.
+          </p>
           <ObjectView obj={result.output} />
         </div>
       ) : null}
-      <p className="flex items-start gap-2 text-[11px] text-[var(--cs-text-muted)]">
+      <p className="flex items-start gap-2 text-[11px] text-[var(--cs-text-muted)] print:hidden">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         Cara supports professional judgement. Staff and managers remain responsible for decisions, recording, and
         safeguarding actions. Adapt freely — the child in front of you beats any plan.
@@ -244,7 +248,7 @@ export function GeneratorPage({
           </button>
         </div>
         <div>
-          {result ? <div className="space-y-3"><OutputView result={result} />{afterResult}</div> : (
+          {result ? <div className="space-y-3"><OutputView result={result} /><div className="print:hidden">{afterResult}</div></div> : (
             <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-white/50 p-10 text-center text-sm text-[var(--cs-text-muted)]">
               Fill in the left side and Cara will draft it here — adapted to the child, with safety notes, signs to pause and a recording prompt built in.
             </div>
