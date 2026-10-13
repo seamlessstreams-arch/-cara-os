@@ -63,7 +63,7 @@
     "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.0",
     "playwright": "^1.59.1",
     "qrcode": "^1.5.4",
     "shadcn": "^4.21.4",
@@ -72,8 +72,5 @@
     "typescript": "^7",
     "typescript6": "npm:typescript@^6.0.3",
     "vitest": "^5.0.3"
-  },
-  "overrides": {
-    "eslint-plugin-react-hooks": "7.0.1"
   }
 }
