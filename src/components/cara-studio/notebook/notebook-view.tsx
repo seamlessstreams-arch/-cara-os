@@ -11,17 +11,18 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Link2, Network, NotebookPen, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
+import { Link2, MessageCircle, Network, NotebookPen, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import type { NotebookBriefing, BriefingSignal } from "@/lib/cara-studio/notebook/notebook-briefing";
 import type { RelationalTimeline, RelationalMoment } from "@/lib/relational-timeline/relational-timeline-engine";
 import type { NotebookMindMap, MindMapGroupKey } from "@/lib/cara-studio/notebook/notebook-mindmap";
 import type { OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
+import type { AskCaraAnswer } from "@/lib/ask-cara/types";
 
-type View = "briefing" | "timeline" | "mindmap" | "outcomes";
+type View = "briefing" | "timeline" | "mindmap" | "outcomes" | "ask";
 
 const SEV: Record<BriefingSignal["severity"], string> = { crit: "bg-red-500", warn: "bg-amber-500", good: "bg-emerald-500" };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -238,9 +239,69 @@ function OutcomesDoc({ oc }: { oc: OutcomeIntelligence }) {
   );
 }
 
-const COMING = [
-  { icon: "💬", t: "Ask (grounded)", d: "Q&A labelled fact / account / analysis" },
-];
+// ── grounded Ask output ──
+const EPI: Record<string, { bg: string; label: string }> = {
+  fact: { bg: "bg-[#e4eef0] text-[#1d5b56]", label: "fact" },
+  account: { bg: "bg-[#ece6f6] text-[#5a4a86]", label: "account" },
+  analysis: { bg: "bg-[#f3eadb] text-[#8a6418]", label: "analysis" },
+  hypothesis: { bg: "bg-[#e7edf6] text-[#3a5a86]", label: "hypoth." },
+  action: { bg: "bg-[#e2eff0] text-[#156a63]", label: "action" },
+};
+
+function AskDoc({ childId, childName }: { childId: string; childName?: string }) {
+  const [q, setQ] = useState("");
+  const m = useMutation({
+    mutationFn: (question: string) => api.post<{ data: { answer: AskCaraAnswer } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/ask`, { question }),
+  });
+  const ans = m.data?.data.answer;
+  const who = childName ?? "this child";
+  const ask = (question: string) => { const text = question.trim(); if (text) { setQ(text); m.mutate(text); } };
+  const EXAMPLES = ["What helps them regulate?", "What happened recently?", "Any missing episodes?", "What reviews are due?"];
+  return (
+    <>
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><MessageCircle className="h-3.5 w-3.5" /> Ask Cara</div>
+      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>Ask about {who}</h1>
+      <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">Deterministic and grounded only in the record. Every line is labelled for the kind of claim it is — and Cara says &ldquo;not evidenced&rdquo; rather than guessing.</p>
+      <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="mt-4 flex gap-2">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Ask about ${who}…`} aria-label="Ask about this child" className="min-w-0 flex-1 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text)] focus:border-[var(--cs-teal)] focus:outline-none" />
+        <button type="submit" disabled={m.isPending} className="rounded-lg bg-[var(--cs-teal)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">Ask</button>
+      </form>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {EXAMPLES.map((ex) => <button key={ex} type="button" onClick={() => ask(ex)} className="rounded-full border border-[var(--cs-border)] bg-[var(--cs-bg)] px-2.5 py-1 text-[11.5px] text-[var(--cs-text-secondary)] hover:border-[var(--cs-teal)]">{ex}</button>)}
+      </div>
+      {m.isPending && <p className="mt-5 text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
+      {m.isError && <p className="mt-5 text-sm text-red-700">Couldn’t answer that right now.</p>}
+      {ans && (
+        <div className="mt-5">
+          {ans.answered ? (
+            <ul className="space-y-2.5">
+              {ans.labelled.filter((l) => l.text.trim()).map((l, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  {l.label !== "context"
+                    ? <span className={`mt-0.5 w-[58px] shrink-0 rounded px-1.5 py-0.5 text-center font-mono text-[9.5px] uppercase tracking-wide ${EPI[l.label]?.bg ?? "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"}`}>{EPI[l.label]?.label ?? l.label}</span>
+                    : <span className="w-[58px] shrink-0" aria-hidden="true" />}
+                  <span className="text-sm leading-relaxed text-[var(--cs-text)]">{l.text}</span>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="text-sm leading-relaxed text-[var(--cs-text)]">{ans.text}</p>}
+          {ans.sources.length > 0 && (
+            <div className="mt-5 rounded-lg border-l-[3px] border-[var(--cs-teal)] bg-[var(--cs-teal)]/6 px-4 py-3 text-[13px] text-[var(--cs-text-secondary)]">
+              <b className="text-[var(--cs-teal)]">Sources:</b> {ans.sources.map((src) => src.label + (src.count != null ? `: ${src.count}` : "")).join(" · ")}
+              <p className="mt-1 text-[11px] text-[var(--cs-text-muted)]">Grounded only in {who}&rsquo;s records — nothing outside the file, nothing invented.</p>
+            </div>
+          )}
+          {ans.suggestions.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {ans.suggestions.map((sg) => <button key={sg.label} type="button" onClick={() => ask(sg.label)} className="rounded-full border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11.5px] text-[var(--cs-navy)] hover:border-[var(--cs-teal)]">{sg.label} →</button>)}
+            </div>
+          )}
+          {ans.disclaimer && <p className="mt-3 text-[11px] text-[var(--cs-text-muted)]">{ans.disclaimer}</p>}
+        </div>
+      )}
+    </>
+  );
+}
 
 export function NotebookView({ childId, childName }: { childId: string; childName?: string }) {
   const [view, setView] = useState<View>("briefing");
@@ -291,12 +352,18 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
         {/* Document canvas */}
         <section className="min-w-0">
           <article className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-sm sm:p-8">
-            {active.isLoading && <p className="text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
-            {active.isError && <p className="text-sm text-red-700">Couldn’t load this output. The child may not be on file.</p>}
-            {view === "briefing" && b && <BriefingDoc b={b} />}
-            {view === "timeline" && t && <TimelineDoc t={t} />}
-            {view === "mindmap" && mm && <MindMapDoc m={mm} />}
-            {view === "outcomes" && oc && <OutcomesDoc oc={oc} />}
+            {view === "ask" ? (
+              <AskDoc childId={childId} childName={childName ?? b?.firstName} />
+            ) : (
+              <>
+                {active.isLoading && <p className="text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
+                {active.isError && <p className="text-sm text-red-700">Couldn’t load this output. The child may not be on file.</p>}
+                {view === "briefing" && b && <BriefingDoc b={b} />}
+                {view === "timeline" && t && <TimelineDoc t={t} />}
+                {view === "mindmap" && mm && <MindMapDoc m={mm} />}
+                {view === "outcomes" && oc && <OutcomesDoc oc={oc} />}
+              </>
+            )}
           </article>
           <p className="mt-2 text-center text-[11px] text-[var(--cs-text-muted)]">Generated deterministically from {childName ? childName + "’s" : "this child’s"} own records.</p>
         </section>
@@ -309,19 +376,11 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
             <StudioButton active={view === "timeline"} onClick={() => setView("timeline")} icon="🪢" title="Relational timeline" sub="connection · repair · rupture" />
             <StudioButton active={view === "mindmap"} onClick={() => setView("mindmap")} icon="🕸" title="Mind map" sub="people · risks · strengths · services" />
             <StudioButton active={view === "outcomes"} onClick={() => setView("outcomes")} icon="🛡" title="Outcomes & evidence" sub="SCCIF areas · for Reg 44" />
+            <StudioButton active={view === "ask"} onClick={() => setView("ask")} icon="💬" title="Ask (grounded)" sub="fact · account · analysis" />
             <Link href={`/cara-studio/session/new?childId=${encodeURIComponent(childId)}`} className="mt-2 block rounded-lg border border-[var(--cs-border)] px-3 py-2.5 hover:border-[var(--cs-teal)]">
               <div className="text-[13px] font-semibold text-[var(--cs-navy)]">🗂 Session + material</div>
               <div className="text-[11px] text-[var(--cs-text-secondary)]">plan a key-work session →</div>
             </Link>
-            <div className="mt-3 px-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Coming to the notebook</div>
-            <ul className="mt-1 space-y-1">
-              {COMING.map((c) => (
-                <li key={c.t} className="rounded-lg px-3 py-2 text-[12px] text-[var(--cs-text-muted)]">
-                  <span className="mr-1">{c.icon}</span><span className="font-medium text-[var(--cs-text-secondary)]">{c.t}</span>
-                  <div className="pl-5 text-[10.5px]">{c.d}</div>
-                </li>
-              ))}
-            </ul>
           </div>
         </aside>
       </div>
