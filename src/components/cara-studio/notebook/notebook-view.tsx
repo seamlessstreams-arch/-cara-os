@@ -15,12 +15,13 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Link2, Network, NotebookPen, Sparkles, Waypoints } from "lucide-react";
+import { Link2, Network, NotebookPen, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import type { NotebookBriefing, BriefingSignal } from "@/lib/cara-studio/notebook/notebook-briefing";
 import type { RelationalTimeline, RelationalMoment } from "@/lib/relational-timeline/relational-timeline-engine";
 import type { NotebookMindMap, MindMapGroupKey } from "@/lib/cara-studio/notebook/notebook-mindmap";
+import type { OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 
-type View = "briefing" | "timeline" | "mindmap";
+type View = "briefing" | "timeline" | "mindmap" | "outcomes";
 
 const SEV: Record<BriefingSignal["severity"], string> = { crit: "bg-red-500", warn: "bg-amber-500", good: "bg-emerald-500" };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -183,9 +184,62 @@ function MindMapDoc({ m }: { m: NotebookMindMap }) {
   );
 }
 
+// ── outcomes & evidence output ──
+const OC_STATUS: Record<string, string> = {
+  on_track: "bg-emerald-100 text-emerald-700",
+  progressing: "bg-amber-100 text-amber-700",
+  needs_focus: "bg-red-100 text-red-700",
+};
+const OC_DIR: Record<string, string> = { improving: "↑ improving", stable: "→ stable", declining: "↓ declining" };
+const unslug = (v: string) => v.replace(/_/g, " ");
+
+function OutcomesDoc({ oc }: { oc: OutcomeIntelligence }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><ShieldCheck className="h-3.5 w-3.5" /> Outcomes &amp; evidence</div>
+      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>Outcomes &amp; evidence for {oc.childName}</h1>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-[var(--cs-text-secondary)]">
+        <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${OC_STATUS[oc.overallStatus] ?? "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"}`}>{unslug(oc.overallStatus)}</span>
+        <span className="font-mono text-[11px] text-[var(--cs-text-muted)]">{OC_DIR[oc.overallTrajectory] ?? oc.overallTrajectory}</span>
+      </div>
+      <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">{oc.headline}</p>
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {oc.domains.map((d) => (
+          <div key={d.key} className="rounded-xl border border-[var(--cs-border)] p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-[var(--cs-navy)]">{d.label}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${OC_STATUS[d.status] ?? "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"}`}>{unslug(d.status)}</span>
+            </div>
+            <div className="mt-0.5 font-mono text-[10.5px] text-[var(--cs-text-muted)]">{OC_DIR[d.direction] ?? d.direction}</div>
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--cs-text)]">{d.headline}</p>
+            {d.metrics.length > 0 && (
+              <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                {d.metrics.map((mt, i) => (
+                  <li key={i} className="rounded border border-[var(--cs-border)] bg-[var(--cs-bg)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--cs-text-secondary)]">{mt.label}: {mt.value}</li>
+                ))}
+              </ul>
+            )}
+            {!d.hasEvidence && <p className="mt-1.5 text-[11px] text-[var(--cs-text-muted)]">No evidence on file yet for this area.</p>}
+          </div>
+        ))}
+      </div>
+      {oc.insights.length > 0 && (
+        <ul className="mt-4 space-y-1.5">
+          {oc.insights.map((ins) => (
+            <li key={ins.key} className="flex items-start gap-2 text-[13px] text-[var(--cs-text-secondary)]">
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${ins.tone === "positive" ? "bg-emerald-500" : ins.tone === "gap" ? "bg-red-500" : "bg-amber-500"}`} />
+              {ins.text}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-4 text-[11px] text-[var(--cs-text-muted)]">Outcome areas with direction and evidence — never a grade, no false red. The child-level evidence that underpins Reg 44 and inspection.</p>
+    </>
+  );
+}
+
 const COMING = [
   { icon: "💬", t: "Ask (grounded)", d: "Q&A labelled fact / account / analysis" },
-  { icon: "🛡", t: "Reg 44 evidence", d: "SCCIF evidence & gaps" },
 ];
 
 export function NotebookView({ childId, childName }: { childId: string; childName?: string }) {
@@ -205,10 +259,16 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
     queryFn: () => api.get<{ data: { mindmap: NotebookMindMap } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/mindmap`),
     enabled: view === "mindmap",
   });
+  const outcomesQ = useQuery({
+    queryKey: ["cara-notebook-outcomes", childId],
+    queryFn: () => api.get<{ data: { outcomes: OutcomeIntelligence } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/outcomes`),
+    enabled: view === "outcomes",
+  });
   const b = briefingQ.data?.data.briefing;
   const t = timelineQ.data?.data.timeline;
   const mm = mindmapQ.data?.data.mindmap;
-  const active = view === "briefing" ? briefingQ : view === "timeline" ? timelineQ : mindmapQ;
+  const oc = outcomesQ.data?.data.outcomes;
+  const active = view === "briefing" ? briefingQ : view === "timeline" ? timelineQ : view === "mindmap" ? mindmapQ : outcomesQ;
 
   return (
     <PageShell title={childName ? `${childName} — Notebook` : b ? `${b.firstName} — Notebook` : "Child Notebook"} subtitle="Deterministic whole-child intelligence · no uploads · every line cites the record">
@@ -236,6 +296,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
             {view === "briefing" && b && <BriefingDoc b={b} />}
             {view === "timeline" && t && <TimelineDoc t={t} />}
             {view === "mindmap" && mm && <MindMapDoc m={mm} />}
+            {view === "outcomes" && oc && <OutcomesDoc oc={oc} />}
           </article>
           <p className="mt-2 text-center text-[11px] text-[var(--cs-text-muted)]">Generated deterministically from {childName ? childName + "’s" : "this child’s"} own records.</p>
         </section>
@@ -247,6 +308,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
             <StudioButton active={view === "briefing"} onClick={() => setView("briefing")} icon="📰" title="Whole-child briefing" sub="this fortnight" />
             <StudioButton active={view === "timeline"} onClick={() => setView("timeline")} icon="🪢" title="Relational timeline" sub="connection · repair · rupture" />
             <StudioButton active={view === "mindmap"} onClick={() => setView("mindmap")} icon="🕸" title="Mind map" sub="people · risks · strengths · services" />
+            <StudioButton active={view === "outcomes"} onClick={() => setView("outcomes")} icon="🛡" title="Outcomes & evidence" sub="SCCIF areas · for Reg 44" />
             <Link href={`/cara-studio/session/new?childId=${encodeURIComponent(childId)}`} className="mt-2 block rounded-lg border border-[var(--cs-border)] px-3 py-2.5 hover:border-[var(--cs-teal)]">
               <div className="text-[13px] font-semibold text-[var(--cs-navy)]">🗂 Session + material</div>
               <div className="text-[11px] text-[var(--cs-text-secondary)]">plan a key-work session →</div>
