@@ -10,19 +10,20 @@
 // dump. Each output is fetched LIVE-SAFELY and only when selected.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Link2, MessageCircle, Network, NotebookPen, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
+import { Headphones, Link2, MessageCircle, Network, NotebookPen, Pause, Play, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import type { NotebookBriefing, BriefingSignal } from "@/lib/cara-studio/notebook/notebook-briefing";
 import type { RelationalTimeline, RelationalMoment } from "@/lib/relational-timeline/relational-timeline-engine";
 import type { NotebookMindMap, MindMapGroupKey } from "@/lib/cara-studio/notebook/notebook-mindmap";
 import type { OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import type { AskCaraAnswer } from "@/lib/ask-cara/types";
+import type { NotebookAudioScript } from "@/lib/cara-studio/notebook/notebook-audio";
 
-type View = "briefing" | "timeline" | "mindmap" | "outcomes" | "ask";
+type View = "briefing" | "timeline" | "mindmap" | "outcomes" | "ask" | "audio";
 
 const SEV: Record<BriefingSignal["severity"], string> = { crit: "bg-red-500", warn: "bg-amber-500", good: "bg-emerald-500" };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -303,6 +304,67 @@ function AskDoc({ childId, childName }: { childId: string; childName?: string })
   );
 }
 
+function AudioDoc({ childId }: { childId: string }) {
+  const q = useQuery({
+    queryKey: ["cara-notebook-audio", childId],
+    queryFn: () => api.get<{ data: { script: NotebookAudioScript } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/audio`),
+  });
+  const script = q.data?.data.script;
+  const [playing, setPlaying] = useState(false);
+  const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
+
+  // Stop any speech when leaving the view (no state change in the effect).
+  useEffect(() => () => { if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel(); }, []);
+
+  const stop = () => { if (canSpeak) window.speechSynthesis.cancel(); setPlaying(false); };
+  const play = () => {
+    if (!canSpeak || !script) return;
+    window.speechSynthesis.cancel();
+    const voices = window.speechSynthesis.getVoices().filter((v) => /^en/i.test(v.lang));
+    const hostV = voices[0];
+    const analystV = voices[1] ?? voices[0];
+    setPlaying(true);
+    script.lines.forEach((l, i) => {
+      const u = new SpeechSynthesisUtterance(l.text);
+      u.rate = 1;
+      u.pitch = l.speaker === "Host" ? 1.08 : 0.9;
+      const v = l.speaker === "Host" ? hostV : analystV;
+      if (v) u.voice = v;
+      if (i === script.lines.length - 1) u.onend = () => setPlaying(false);
+      window.speechSynthesis.speak(u);
+    });
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><Headphones className="h-3.5 w-3.5" /> Audio briefing</div>
+      {q.isLoading && <p className="mt-3 text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
+      {q.isError && <p className="mt-3 text-sm text-red-700">Couldn’t build the audio briefing.</p>}
+      {script && (
+        <>
+          <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{script.title}</h1>
+          <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">{script.intro}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {canSpeak
+              ? <button type="button" onClick={playing ? stop : play} className="inline-flex items-center gap-2 rounded-full bg-[var(--cs-teal)] px-4 py-2 text-sm font-semibold text-white">{playing ? <><Pause className="h-4 w-4" /> Stop</> : <><Play className="h-4 w-4" /> Play</>}</button>
+              : <span className="text-[12px] text-[var(--cs-text-muted)]">Text-to-speech isn’t available here — read the script below.</span>}
+            <span className="font-mono text-[11px] text-[var(--cs-text-muted)]">{script.durationLabel} · {script.wordCount} words · 2 voices</span>
+          </div>
+          <div className="mt-5 space-y-3">
+            {script.lines.map((l, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className={`mt-0.5 w-[62px] shrink-0 rounded px-1.5 py-0.5 text-center font-mono text-[9.5px] uppercase tracking-wide ${l.speaker === "Host" ? "bg-[var(--cs-teal)]/12 text-[var(--cs-teal)]" : "bg-[var(--cs-bg)] text-[var(--cs-navy)]"}`}>{l.speaker}</span>
+                <p className="text-sm leading-relaxed text-[var(--cs-text)]">{l.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 text-[11px] text-[var(--cs-text-muted)]">A deterministic script — read it aloud, record it, or play it above. It only says what the records show; nothing is generated or invented.</p>
+        </>
+      )}
+    </>
+  );
+}
+
 export function NotebookView({ childId, childName }: { childId: string; childName?: string }) {
   const [view, setView] = useState<View>("briefing");
 
@@ -354,6 +416,8 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
           <article className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-sm sm:p-8">
             {view === "ask" ? (
               <AskDoc childId={childId} childName={childName ?? b?.firstName} />
+            ) : view === "audio" ? (
+              <AudioDoc childId={childId} />
             ) : (
               <>
                 {active.isLoading && <p className="text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
@@ -377,6 +441,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
             <StudioButton active={view === "mindmap"} onClick={() => setView("mindmap")} icon="🕸" title="Mind map" sub="people · risks · strengths · services" />
             <StudioButton active={view === "outcomes"} onClick={() => setView("outcomes")} icon="🛡" title="Outcomes & evidence" sub="SCCIF areas · for Reg 44" />
             <StudioButton active={view === "ask"} onClick={() => setView("ask")} icon="💬" title="Ask (grounded)" sub="fact · account · analysis" />
+            <StudioButton active={view === "audio"} onClick={() => setView("audio")} icon="🎧" title="Audio briefing" sub="two-voice · play aloud" />
             <Link href={`/cara-studio/session/new?childId=${encodeURIComponent(childId)}`} className="mt-2 block rounded-lg border border-[var(--cs-border)] px-3 py-2.5 hover:border-[var(--cs-teal)]">
               <div className="text-[13px] font-semibold text-[var(--cs-navy)]">🗂 Session + material</div>
               <div className="text-[11px] text-[var(--cs-text-secondary)]">plan a key-work session →</div>
