@@ -14,6 +14,8 @@ import { buildNotebookTimeline } from "./notebook-timeline";
 import type { RelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
 import { buildNotebookMindMap, type NotebookMindMap } from "./notebook-mindmap";
 import { getCaraLearningProfileByChild } from "@/lib/supabase/cara-persist";
+import { buildNotebookOutcomes } from "./notebook-outcomes";
+import type { OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 
 type Row = Record<string, unknown>;
 const r = (x: unknown): Row => (x ?? {}) as Row;
@@ -147,5 +149,34 @@ export async function gatherNotebookMindMap(childId: string): Promise<NotebookMi
     trustedAdults,
     riskThemes,
     strengths,
+  });
+}
+
+/** Gather a child's live-safe outcomes & evidence (reuses the pure engine). */
+export async function gatherNotebookOutcomes(childId: string): Promise<OutcomeIntelligence | null> {
+  const childRow = await dal.youngPeople.findById(childId);
+  if (!childRow) return null;
+  const c = r(childRow);
+
+  const [keywork, incidents, missing, education, lac, profile] = await Promise.all([
+    dal.keyWorkingSessions.findAll({ child_id: childId }),
+    dal.incidents.findAll({ child_id: childId }),
+    dal.missingEpisodes.findAll({ child_id: childId }),
+    dal.educationRecords.findAll({ child_id: childId }),
+    dal.lacReviews.findAll({ child_id: childId }),
+    getCaraLearningProfileByChild(childId).catch(() => null),
+  ]);
+  const name = s(c.full_name) || [c.first_name, c.last_name].filter(Boolean).join(" ") || s(c.preferred_name) || s(c.first_name) || childId;
+
+  return buildNotebookOutcomes({
+    childId,
+    childName: name,
+    now: new Date().toISOString(),
+    keyWorkingSessions: keywork,
+    incidents,
+    missingEpisodes: missing,
+    educationRecords: education,
+    lacReviews: lac,
+    trustedAdults: splitList(s(r(profile).trusted_adults)),
   });
 }
