@@ -1036,7 +1036,7 @@ body::before {
 /* ── Print styles — clean, no chrome ──────────────────────────────────────── */
 @media print {
   body::before { display: none; }
-  nav, .cs-sidebar-gradient, [class*="bottom-nav"], [class*="QuickCreateFab"] { display: none !important; }
+  nav, .cara-chrome, .cs-sidebar-gradient, [class*="bottom-nav"], [class*="QuickCreateFab"] { display: none !important; }
   .cs-card-float:hover { transform: none; box-shadow: none; }
   * { color: #000 !important; background: #fff !important; }
 
