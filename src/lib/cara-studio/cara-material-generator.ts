@@ -144,9 +144,97 @@ function blocksFor(input: MaterialGenInput): { blocks: Blocks; visualPrompt: str
         visualPrompt: null,
         audio: null,
       };
+    case "reflection_cards":
+      return {
+        blocks: [
+          { heading: "How to use", body: `A small deck for a walk or a quiet moment about ${t}. One card at a time, at the child's pace. "Pass" is always allowed — a pass still tells you something.` },
+          { heading: "Card 1 — Now", body: `"On a scale from acorn to oak tree, how big does ${t} feel today?"`, childPrompt: "Hands can show it if words are too much." },
+          { heading: "Card 2 — Story", body: `"When did ${t} last come up for you? What was happening just before?"`, childPrompt: "Beginning, middle, end — or just one bit of it." },
+          { heading: "Card 3 — People", body: `"Who makes ${t} easier? Who makes it harder?"`, childPrompt: "No wrong names, nothing goes any further without your say." },
+          { heading: "Card 4 — Forward", body: `"If ${t} got one percent better this week, what would be different?"`, childPrompt: "Small counts. Tiny counts." },
+          { heading: "Blank card", body: "The child writes or says their own question — for you to answer honestly. Turn-taking is where trust is built.", childPrompt: "Your turn to ask me something." },
+        ],
+        visualPrompt: "A small deck of calm cards, one short question each, a little space to draw an answer.",
+        audio: null,
+      };
+    case "role_play":
+      return {
+        blocks: [
+          { heading: "Set-up", body: `A no-stakes rehearsal of a ${t} moment. The adult plays the tricky part first to model it, then you swap. Either of you can call "pause" or "rewind" at any point.`, childPrompt: "You direct — where should we start it?" },
+          { heading: "The scene", body: `The moment just before ${t} gets hard. Keep it to about a minute of acting, then stop and talk.`, options: ["Child watches first", "Child tries first", "Do it side by side"] },
+          { heading: "Rewind button", body: `When it goes wrong — and it will, that is the whole point — call "rewind" and try a different move. Mistakes in here are free.`, childPrompt: "What would you try differently on the rewind?" },
+          { heading: "Swap roles", body: "The child plays the other person. Seeing it from the other side is usually where the learning lands." },
+          { heading: "Step back out", body: `Shake it off together and name one thing that felt real. "That was pretend — you're you again." Never leave a child inside a hard role.` },
+        ],
+        visualPrompt: null,
+        audio: null,
+      };
+    case "staff_script":
+      return {
+        blocks: [
+          { heading: "Regulate yourself first", body: `Thirty seconds before you start: unclench your jaw, drop your shoulders, slow your out-breath. ${name} will borrow your nervous system — ${t} goes better coming from a calm adult.` },
+          { heading: "Open sideways", body: `Don't open with the problem. "${name}, got a minute? Nothing's wrong — I just wanted a bit of time with you." Then bridge gently into ${t}.` },
+          { heading: "Say less, wait more", body: `Ask one thing, then hold the silence for a slow five-count. The urge to fill the gap is yours to resist. Lead with curiosity, not questions: "I wonder if…" lands softer than "Why did you…".` },
+          { heading: "If it heats up", body: `Name it and lower the stakes: "We don't have to sort this all out right now." Offer a break before the wobble, not after. Co-regulation first, content second.` },
+          { heading: "Close warm", body: `End on the relationship, never on the hardest sentence: "Thanks for talking to me — we're good." Leave the door open for next time.` },
+          { heading: "Afterwards", body: "Record what the child said in their own words, note what worked, and flag anything that needs a senior. Looking after yourself is part of the job — debrief if it was a heavy one." },
+        ],
+        visualPrompt: null,
+        audio: null,
+      };
+    case "independence_task":
+      return {
+        blocks: [
+          { heading: "A real task, done for real", body: `A genuine life skill tied to ${t} — practised together, for real, not on paper. Pick something that actually needs doing this week: a meal, a form, a journey, a budget, a phone call.`, childPrompt: "Which one feels useful to you right now?" },
+          { heading: "I do, we do, you do", body: "First time, the adult leads and the child watches. Second time, do it together. Third, the child leads and the adult is nearby. Say out loud which stage you're at — no surprise hand-overs.", options: ["I do (you watch)", "We do (together)", "You do (I'm nearby)"] },
+          { heading: "Make the hidden steps visible", body: `The invisible bits are what trip people up later — the 'ring to cancel', the 'read the small print', the 'what if it goes wrong'. Talk those through out loud, don't just do them for them.` },
+          { heading: "When it goes wrong", body: `It will, and that is the lesson. Getting it wrong safely, with an adult here, is far cheaper than getting it wrong alone later. Who would you call? What is plan B?`, childPrompt: "Mine would be…" },
+          { heading: "Log the win", body: "Record the skill practised against the pathway plan — small, real and evidenced. Independence is built one genuine task at a time." },
+        ],
+        visualPrompt: "A simple photo checklist of the real steps, ticked off as they are actually done.",
+        audio: null,
+      };
+    case "living_with_others_activity":
+      return {
+        blocks: [
+          { heading: "What this is", body: `Living alongside other people is a skill, not something you're just meant to know — ${t} is part of learning it. No blame and no house-rules lecture, just how we all rub along.` },
+          { heading: "My space / our space", body: `Sort everyday things into "mine to decide" and "ours to share". The grey ones in the middle are the interesting conversation.`, options: ["My room", "The TV", "The kitchen", "Quiet times", "Noise", "Food"] },
+          { heading: "When someone winds me up", body: `Everyone gets on everyone's nerves sometimes — that's normal, not a crisis. What's one move that makes it better, and one that makes it worse?`, childPrompt: "Walk away, say something, find an adult, take space — which is most like you?" },
+          { heading: "Repair after a bust-up", body: `You don't have to be best friends — you have to be able to share a fridge. A small repair, even just "alright?", counts. Adults will help, no one is forced.` },
+          { heading: "One thing I bring", body: "Living with others isn't only about putting up with people — it's also what you add. What's one good thing you bring to this house?", childPrompt: "Honest answer — everyone brings something." },
+        ],
+        visualPrompt: "A simple sorting mat: 'mine' and 'shared', warm and non-judgemental.",
+        audio: null,
+      };
+    case "exploitation_awareness_activity":
+      return {
+        blocks: [
+          { heading: "This isn't here to scare you", body: `Most people are kind. But a few people try to use young people, and that is called exploitation — it is never the young person's fault. This is about spotting the signs early so you've got the upper hand.` },
+          { heading: "Signs something's off", body: `Gifts, money, vapes or a phone that seem too good to be true · being asked to hide things from the people who care about you · someone much older who 'gets you' very fast · being asked to go somewhere or do something that gives you a bad gut feeling · being split off from your friends.`, childPrompt: "Which of these would make YOUR gut say 'hmm'? (No need to tell me about anyone real.)" },
+          { heading: "Your gut is good data", body: `That 'something's not right' feeling is your brain looking after you. You don't need proof and you don't need to be certain — 'a bit weird' is already enough to mention to someone.` },
+          { heading: "Surprises and the other kind", body: `A surprise is a good thing saved for later, like a party. The other kind — where you're told you must never, ever tell, and it leaves you with a funny feeling — is exactly the kind worth telling a safe adult about. Telling is never grassing.` },
+          { heading: "Your people", body: ctx.profile?.trusted_adults ? `${ctx.profile.trusted_adults} — plus anyone here, any time.` : `Who would you go to if your gut said 'hmm'? Staff here, your social worker, or Childline on 0800 1111 — all free, all on your side.`, childPrompt: "Name one person. You don't have to use them today — just know who they are." },
+          { heading: "Our promise", body: `If you ever tell us something, we stay calm, we stay on your side, and we help. You will never be in trouble for being honest about something that was done to you.` },
+        ],
+        visualPrompt: "Calm, non-graphic icons for each sign — a gift, a phone, a gut feeling — nothing frightening.",
+        audio: null,
+      };
+    case "digital_safety_activity":
+      return {
+        blocks: [
+          { heading: "Your phone, mostly your rules", body: `Being online is a normal, good part of life. ${t} is just about keeping the good bits and spotting the few dodgy bits early. Nobody is taking your phone off you for talking about this.` },
+          { heading: "People online aren't always who they say", body: `Online, a person can claim any age, any name, any photo. A fast new 'friend' who is really keen, really complimentary, and wants to move you onto a private app — that's a known pattern worth clocking.`, childPrompt: "What would make YOU trust someone online? What would make you doubt them?" },
+          { heading: "Once it's sent, it's gone", body: `A photo or message can be screenshotted and passed on, even on apps that say they delete things. A good test: would I be okay if my favourite adult saw this? If not, it's about staying in control, not about being judged.` },
+          { heading: "Pressure is the red flag", body: `Anyone who rushes you, flatters you, offers you things, or makes you feel you 'owe' them — online or off — is the thing to notice. Real friends don't pressure.`, childPrompt: "What does online pressure feel like in your body?" },
+          { heading: "What to do", body: `Screenshot it, block them, report it with the app's own button, and tell a safe adult. You won't be in trouble and you won't lose your phone for being honest.`, childPrompt: "Who's your tell-a-safe-adult person?" },
+          { heading: "Your people", body: ctx.profile?.trusted_adults ? `${ctx.profile.trusted_adults}, anyone here, or Childline on 0800 1111.` : `Staff here, your social worker, or Childline on 0800 1111 — all free, all on your side.` },
+        ],
+        visualPrompt: "Phone-screen style cards, calm and modern, each sign shown as a simple icon.",
+        audio: null,
+      };
     default:
-      // Worksheet-family fallback used by worksheet, role_play, reflection_cards,
-      // staff_script, independence_task, living/exploitation/digital activities.
+      // True worksheet: a short, doing-first, three-part activity. Only the
+      // `worksheet` type reaches this now — every other type has its own template.
       return {
         blocks: [
           { heading: "What this is", body: `A short, doing-first activity about ${theme} for ${name}. Three parts, ten minutes, nothing graded.` },
@@ -178,7 +266,10 @@ export function generateCaraInteractiveMaterial(input: MaterialGenInput): { outp
   const output: CaraInteractiveMaterialOutput = {
     materialType: input.materialType,
     title: `${tidy(theme)} — ${input.materialType.replace(/_/g, " ")} for ${ctx.name}`,
-    childFriendlyIntro: `This is for you. No marks, no tests, no trick questions — you can talk, draw, point or pass.`,
+    childFriendlyIntro:
+      input.materialType === "staff_script"
+        ? `A script for you, the adult — not the child. Make the words your own; the warmth matters more than the lines.`
+        : `This is for you. No marks, no tests, no trick questions — you can talk, draw, point or pass.`,
     blocks,
     printableText: printable,
     audioScript: audio,
