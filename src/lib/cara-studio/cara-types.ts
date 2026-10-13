@@ -219,6 +219,27 @@ export const CaraSessionPlanOutputSchema = z
     regulationBreaks: z.array(z.string()),
     closingScript: z.string(),
     childFriendlySummary: z.string(),
+    // The actual printable piece of work the plan calls for (card sort →
+    // scenario cards, etc.) — produced alongside the plan so staff get the
+    // ready-to-use material, not "make your own". Essentials only (the plan
+    // already carries the safety spine).
+    producedMaterial: z
+      .object({
+        materialType: z.string(),
+        title: z.string(),
+        childFriendlyIntro: z.string(),
+        blocks: z.array(
+          z.object({
+            heading: z.string(),
+            body: z.string(),
+            childPrompt: z.string().optional(),
+            options: z.array(z.string()).optional(),
+          }),
+        ),
+        printableText: z.string(),
+        lowWritingAlternative: z.string(),
+      })
+      .optional(),
   })
   .extend(SafetySpineSchema.shape);
 export type CaraSessionPlanOutput = z.infer<typeof CaraSessionPlanOutputSchema>;

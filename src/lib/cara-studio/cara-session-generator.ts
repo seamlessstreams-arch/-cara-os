@@ -17,8 +17,22 @@ import {
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
 import { safetyPlanConversationPrompts } from "@/lib/cara/practice-frameworks";
 import { asLead, softLower, tidy } from "./cara-text";
+import { generateCaraInteractiveMaterial } from "./cara-material-generator";
+import type { CaraMaterialType } from "./cara-types";
 
 const SAFETY_THEME_RE = /safe|calm|regulat|crisis|overwhelm|missing|self.?harm|de-?escalat|melt ?down|big feelings|anger/i;
+
+// Each session activity implies a tangible piece of work. Cara PRODUCES it (the
+// printable material) alongside the plan instead of only naming it ("make or
+// print theme cards") — so staff get the ready-to-use artifact.
+const ACTIVITY_TO_MATERIAL: Record<string, CaraMaterialType> = {
+  "Card sort": "scenario_cards",
+  "Draw it out": "worksheet",
+  "Listen and pause": "audio_script",
+  "Do it together": "routine_builder",
+  "Walk-and-talk": "reflection_cards",
+  "Side-by-side chat": "reflection_cards",
+};
 
 export interface SessionGenInput {
   ctx: CaraChildContext;
@@ -58,6 +72,12 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
   const name = ctx.name;
   const activity = activityFor(input);
   const shortBurst = ctx.profile?.learning_style?.short_bursts ?? false;
+
+  // Produce the actual piece of work the activity calls for (not just name it).
+  const materialType: CaraMaterialType = ACTIVITY_TO_MATERIAL[activity.name] ?? "worksheet";
+  const difficulty: "gentle" | "standard" | "stretch" =
+    input.childReadiness === "low" ? "gentle" : input.childReadiness === "high" ? "stretch" : "standard";
+  const material = generateCaraInteractiveMaterial({ ctx, materialType, theme, difficulty }).output;
 
   // ── Duration-shaped structure (the 10 parts compress, never disappear) ──
   const micro = durationMinutes <= 7;
@@ -106,7 +126,11 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
     purpose: asLead(input.aim),
     aims: [asLead(input.aim), `Strengthen ${name}'s sense that adults here are safe and on their side`, "Leave the door open for the next conversation", ...(safetyTheme ? [`Begin building ${name}'s own safety plan — what helps, the early warning signs, and who to go to`] : [])],
     emotionalSafetyCheck: `Before starting: is ${name} regulated, fed and not mid-crisis? ${ctx.triggerMatch ? `CAUTION — this theme overlaps known triggers (${ctx.profile?.emotional_triggers}). Pair with a trusted adult${ctx.profile?.trusted_adults ? ` (${ctx.profile.trusted_adults})` : ""} and have an exit plan.` : "If anything feels off, do the warm five-minute version instead and try the rest another day."}`,
-    resourcesNeeded: activity.name === "Card sort" ? ["Theme cards (make or print)", "Flat space", "Drink/snack"] : activity.name === "Draw it out" ? ["Big paper", "Pens", "Drink/snack"] : ["Just you, time and a drink"],
+    resourcesNeeded: [
+      `The printable piece of work below — Cara made it for you: "${material.title}"`,
+      activity.name === "Draw it out" ? "Big paper and pens" : "A comfortable, low-pressure spot",
+      "Drink/snack",
+    ],
     sessionStructure: structure,
     openingScript: `"${opening}" …then bridge: "I wanted a few minutes with you about ${softLower(theme)} — not because you're in trouble, just because it matters to me how you're doing."`,
     mainActivity: activity.description,
@@ -117,6 +141,14 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
     ],
     closingScript: `"Thanks for giving that a go — seriously. ${pick(PACE_REPAIR, name, 2)} Right — ${micro ? "let's get back to it" : "what shall we do now"}?"`,
     childFriendlySummary: `We spent a bit of time on ${softLower(theme)}. Nothing was a test, nothing goes on a naughty list — it's about us understanding things together.`,
+    producedMaterial: {
+      materialType: material.materialType,
+      title: material.title,
+      childFriendlyIntro: material.childFriendlyIntro,
+      blocks: material.blocks,
+      printableText: material.printableText,
+      lowWritingAlternative: material.lowWritingAlternative,
+    },
     staffGuidance: `${pick(STAFF_REGULATION_REMINDERS, theme, 4)} ${input.staffConfidence === "low" ? "You don't have to be the expert — curiosity is the skill. If it gets bigger than expected, pause and bring in a senior; that IS good practice." : "Follow their pace. The plan serves the child, not the other way round."}`,
     adaptationNotes: adaptations,
     safeguardingNotes: ctx.riskThemes.length
