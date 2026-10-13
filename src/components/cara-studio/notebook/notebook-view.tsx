@@ -15,11 +15,12 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Link2, NotebookPen, Sparkles, Waypoints } from "lucide-react";
+import { Link2, Network, NotebookPen, Sparkles, Waypoints } from "lucide-react";
 import type { NotebookBriefing, BriefingSignal } from "@/lib/cara-studio/notebook/notebook-briefing";
 import type { RelationalTimeline, RelationalMoment } from "@/lib/relational-timeline/relational-timeline-engine";
+import type { NotebookMindMap, MindMapGroupKey } from "@/lib/cara-studio/notebook/notebook-mindmap";
 
-type View = "briefing" | "timeline";
+type View = "briefing" | "timeline" | "mindmap";
 
 const SEV: Record<BriefingSignal["severity"], string> = { crit: "bg-red-500", warn: "bg-amber-500", good: "bg-emerald-500" };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -132,7 +133,7 @@ function TimelineDoc({ t }: { t: RelationalTimeline }) {
                 <span className="rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-[var(--cs-text-secondary)] ring-1 ring-[var(--cs-border)]">{LENS[m.lens].label}</span>
               </div>
               <div className="mt-0.5 text-sm font-semibold text-[var(--cs-navy)]">{m.title}</div>
-              {m.detail && <p className="mt-0.5 max-w-[62ch] text-[13px] leading-relaxed text-[var(--cs-text)]">{m.detail}</p>}
+              {m.detail && <p className="mt-0.5 line-clamp-3 max-w-[62ch] text-[13px] leading-relaxed text-[var(--cs-text)]">{m.detail}</p>}
               {m.childVoice && <p className="mt-1 max-w-[60ch] border-l-2 border-[var(--cs-teal)]/40 pl-2 text-[13px] italic text-[var(--cs-text-secondary)]">“{m.childVoice}”</p>}
               <span className="mt-1 inline-flex items-center gap-1 rounded border border-[var(--cs-teal)]/35 bg-[var(--cs-teal)]/8 px-1.5 py-0.5 font-mono text-[10px] text-[var(--cs-teal)]"><Link2 className="h-2.5 w-2.5" /> {m.source}</span>
             </li>
@@ -148,8 +149,41 @@ function TimelineDoc({ t }: { t: RelationalTimeline }) {
   );
 }
 
+const MAP_ACCENT: Record<MindMapGroupKey, { border: string; text: string }> = {
+  people: { border: "border-[var(--cs-teal)]", text: "text-[var(--cs-teal)]" },
+  risks: { border: "border-red-400", text: "text-red-600" },
+  strengths: { border: "border-emerald-400", text: "text-emerald-600" },
+  services: { border: "border-amber-400", text: "text-amber-600" },
+};
+
+function MindMapDoc({ m }: { m: NotebookMindMap }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><Network className="h-3.5 w-3.5" /> Mind map</div>
+      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{m.childName}&rsquo;s world, mapped from the record</h1>
+      <div className="mx-auto my-5 w-fit rounded-full bg-[var(--cs-navy)] px-5 py-2 text-center text-sm font-bold text-white">{m.childName}</div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {m.groups.map((g) => (
+          <div key={g.key} className={`rounded-xl border-l-4 bg-[var(--cs-bg)]/40 p-3.5 ${MAP_ACCENT[g.key].border}`}>
+            <div className={`mb-2 text-[11px] font-bold uppercase tracking-wide ${MAP_ACCENT[g.key].text}`}>{g.label}</div>
+            {g.nodes.length ? (
+              <ul className="flex flex-wrap gap-1.5">
+                {g.nodes.map((n, i) => (
+                  <li key={i} className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1.5 text-[12.5px] text-[var(--cs-text)]">
+                    {n.label}{n.sub ? <span className="ml-1 text-[10.5px] text-[var(--cs-text-muted)]">· {n.sub}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="text-[12px] text-[var(--cs-text-muted)]">None on file.</p>}
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-[11px] text-[var(--cs-text-muted)]">{m.note}</p>
+    </>
+  );
+}
+
 const COMING = [
-  { icon: "🕸", t: "Mind map", d: "the child's world as a graph" },
   { icon: "💬", t: "Ask (grounded)", d: "Q&A labelled fact / account / analysis" },
   { icon: "🛡", t: "Reg 44 evidence", d: "SCCIF evidence & gaps" },
 ];
@@ -166,9 +200,15 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
     queryFn: () => api.get<{ data: { timeline: RelationalTimeline } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/timeline`),
     enabled: view === "timeline",
   });
+  const mindmapQ = useQuery({
+    queryKey: ["cara-notebook-mindmap", childId],
+    queryFn: () => api.get<{ data: { mindmap: NotebookMindMap } }>(`/api/cara/notebook/${encodeURIComponent(childId)}/mindmap`),
+    enabled: view === "mindmap",
+  });
   const b = briefingQ.data?.data.briefing;
   const t = timelineQ.data?.data.timeline;
-  const active = view === "briefing" ? briefingQ : timelineQ;
+  const mm = mindmapQ.data?.data.mindmap;
+  const active = view === "briefing" ? briefingQ : view === "timeline" ? timelineQ : mindmapQ;
 
   return (
     <PageShell title={childName ? `${childName} — Notebook` : b ? `${b.firstName} — Notebook` : "Child Notebook"} subtitle="Deterministic whole-child intelligence · no uploads · every line cites the record">
@@ -195,6 +235,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
             {active.isError && <p className="text-sm text-red-700">Couldn’t load this output. The child may not be on file.</p>}
             {view === "briefing" && b && <BriefingDoc b={b} />}
             {view === "timeline" && t && <TimelineDoc t={t} />}
+            {view === "mindmap" && mm && <MindMapDoc m={mm} />}
           </article>
           <p className="mt-2 text-center text-[11px] text-[var(--cs-text-muted)]">Generated deterministically from {childName ? childName + "’s" : "this child’s"} own records.</p>
         </section>
@@ -205,6 +246,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
           <div className="p-2">
             <StudioButton active={view === "briefing"} onClick={() => setView("briefing")} icon="📰" title="Whole-child briefing" sub="this fortnight" />
             <StudioButton active={view === "timeline"} onClick={() => setView("timeline")} icon="🪢" title="Relational timeline" sub="connection · repair · rupture" />
+            <StudioButton active={view === "mindmap"} onClick={() => setView("mindmap")} icon="🕸" title="Mind map" sub="people · risks · strengths · services" />
             <Link href={`/cara-studio/session/new?childId=${encodeURIComponent(childId)}`} className="mt-2 block rounded-lg border border-[var(--cs-border)] px-3 py-2.5 hover:border-[var(--cs-teal)]">
               <div className="text-[13px] font-semibold text-[var(--cs-navy)]">🗂 Session + material</div>
               <div className="text-[11px] text-[var(--cs-text-secondary)]">plan a key-work session →</div>
