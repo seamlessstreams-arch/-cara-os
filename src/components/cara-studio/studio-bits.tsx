@@ -7,7 +7,7 @@
 // OutputView that renders any Cara output schema without per-type UI code.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { YoungPerson, StaffMember } from "@/types";
@@ -35,6 +35,7 @@ function useYoungPeople(status = "current") {
 }
 import { PageShell } from "@/components/layout/page-shell";
 import { AlertTriangle, ShieldCheck, Printer, Copy, Sparkles, CheckCircle2 } from "lucide-react";
+import { extractHandout, staffSheetOf, type Handout } from "@/lib/cara-studio/printable";
 
 // ── Form primitives ───────────────────────────────────────────────────────────
 
@@ -159,9 +160,68 @@ export interface CaraApiResult {
   output: Record<string, unknown> | null;
 }
 
-export function OutputView({ result }: { result: CaraApiResult }) {
+type PrintMode = "staff" | "handout" | "both";
+
+/**
+ * The piece of work, laid out to be handed over: one clear block per part, tick boxes for options and a blank answer
+ * box under each prompt. Holds nothing staff-only; the draft caveat and the sign-off line sit at the foot.
+ */
+function HandoutSheet({ handout, reviewRequired }: { handout: Handout; reviewRequired: boolean }) {
+  const forStaff = handout.audience === "staff";
   return (
     <div className="space-y-4">
+      <div>
+        {forStaff && <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Script for staff — not for the child</p>}
+        <h3 className="text-lg font-bold text-[var(--cs-navy)] print:text-2xl">{handout.title}</h3>
+        {handout.intro && <p className="mt-1 text-sm leading-relaxed text-[var(--cs-text-secondary)] print:text-base">{handout.intro}</p>}
+      </div>
+      {handout.blocks.map((b, i) => (
+        <div key={i} className="break-inside-avoid space-y-1.5 rounded-xl border border-[var(--cs-border)] p-3 print:rounded-none print:border-0 print:border-b print:border-gray-300 print:px-0">
+          <h4 className="text-sm font-bold text-[var(--cs-navy)] print:text-base">{b.heading}</h4>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--cs-text-secondary)] print:text-base">{b.body}</p>
+          {b.options && (
+            <ul className="space-y-1">
+              {b.options.map((o, j) => <li key={j} className="flex items-start gap-2 text-sm print:text-base"><span aria-hidden className="select-none">☐</span> {o}</li>)}
+            </ul>
+          )}
+          {b.childPrompt && (
+            <div className="space-y-1">
+              <p className="text-sm font-semibold italic text-[var(--cs-navy)] print:text-base">{b.childPrompt}</p>
+              {!forStaff && <div className="h-16 rounded-lg border border-dashed border-[var(--cs-border)] print:h-24 print:border-gray-500" aria-hidden />}
+            </div>
+          )}
+        </div>
+      ))}
+      {handout.lowWritingAlternative && !forStaff && <p className="text-xs text-[var(--cs-text-muted)] print:text-sm">No writing needed: {handout.lowWritingAlternative}</p>}
+      <p className="hidden break-inside-avoid border-t border-gray-300 pt-3 text-xs text-[var(--cs-text-muted)] print:block">
+        {reviewRequired ? "Needs manager review before use. " : ""}Cara draft — checked by staff before use.   Checked by: ______________________   Date: ______________
+      </p>
+    </div>
+  );
+}
+
+export function OutputView({ result }: { result: CaraApiResult }) {
+  const [mode, setMode] = useState<PrintMode | null>(null);
+  const handout = extractHandout(result.output);
+  const staffSheet = result.output ? staffSheetOf(result.output) : null;
+  const reviewRequired = result.manager_review_status === "review_required";
+
+  // Print one part (or both) by laying the page out for it first, then opening the print dialog. While printing, every other
+  // generated output on the page is hidden (see globals.css), so a list of outputs never prints as one run.
+  useEffect(() => {
+    if (!mode) return;
+    const done = () => { document.body.removeAttribute("data-cs-print"); setMode(null); };
+    document.body.setAttribute("data-cs-print", "1");
+    window.addEventListener("afterprint", done, { once: true });
+    window.print();
+    return () => { window.removeEventListener("afterprint", done); document.body.removeAttribute("data-cs-print"); };
+  }, [mode]);
+
+  const printBtn = "inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]";
+  const staffHidden = mode === "handout" ? "print:hidden" : "";
+  const handoutHidden = mode === "staff" ? "print:hidden" : mode === "handout" ? "" : "print:break-before-page";
+  return (
+    <div className={`cs-output space-y-4 ${mode ? "cs-output-active" : ""}`}>
       {result.review_banner && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -179,21 +239,42 @@ export function OutputView({ result }: { result: CaraApiResult }) {
           <p className="mt-1">{result.blocked_message}</p>
         </div>
       ) : result.output ? (
-        <div className="cara-studio-print rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] print:rounded-none print:border-0 print:p-0 print:shadow-none">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:hidden">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" /> Cara draft — saved · ID {result.id}</span>
-            <span className="flex gap-2">
-              <button onClick={() => navigator.clipboard.writeText(JSON.stringify(result.output, null, 2)).catch(() => {})} className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"><Copy className="h-3 w-3" /> Copy</button>
-              <button onClick={() => window.print()} className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"><Printer className="h-3 w-3" /> Print</button>
-            </span>
+        <>
+          <div className={`cara-studio-print rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] print:rounded-none print:border-0 print:p-0 print:shadow-none ${staffHidden}`}>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:hidden">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" /> Cara draft — saved · ID {result.id}</span>
+              <span className="flex flex-wrap gap-2">
+                <button onClick={() => navigator.clipboard.writeText(JSON.stringify(result.output, null, 2)).catch(() => {})} className={printBtn}><Copy className="h-3 w-3" /> Copy</button>
+                {handout ? (
+                  <>
+                    <button onClick={() => setMode("staff")} className={printBtn}><Printer className="h-3 w-3" /> Print staff sheet</button>
+                    <button onClick={() => setMode("handout")} className={printBtn}><Printer className="h-3 w-3" /> Print {handout.audience === "staff" ? "script" : "hand-out"}</button>
+                    <button onClick={() => setMode("both")} className={printBtn}><Printer className="h-3 w-3" /> Print both</button>
+                  </>
+                ) : (
+                  <button onClick={() => setMode("staff")} className={printBtn}><Printer className="h-3 w-3" /> Print</button>
+                )}
+              </span>
+            </div>
+            <h3 className="mb-3 text-base font-bold text-[var(--cs-navy)] print:mb-1 print:text-xl">{result.title}</h3>
+            {/* Print-only document caption: carries the draft caveat onto the printed session / piece of work. */}
+            <p className="mb-4 hidden text-xs text-[var(--cs-text-muted)] print:block">
+              Staff sheet — not for the child. Cara draft — review before use with the child. Printed {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.
+            </p>
+            {handout && (
+              <p className="mb-3 text-xs text-[var(--cs-text-muted)] print:hidden">
+                The piece of work for {handout.audience === "staff" ? "you to use" : "the child"} is below: &ldquo;{handout.title}&rdquo;. It prints on its own page, without these staff notes.
+              </p>
+            )}
+            <ObjectView obj={staffSheet ?? result.output} />
           </div>
-          <h3 className="mb-3 text-base font-bold text-[var(--cs-navy)] print:mb-1 print:text-xl">{result.title}</h3>
-          {/* Print-only document caption: carries the draft caveat onto the printed session / piece of work. */}
-          <p className="mb-4 hidden text-xs text-[var(--cs-text-muted)] print:block">
-            Cara draft — review before use with the child. Printed {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.
-          </p>
-          <ObjectView obj={result.output} />
-        </div>
+          {handout && (
+            <div className={`rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] print:rounded-none print:border-0 print:p-0 print:shadow-none ${handoutHidden}`}>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)] print:hidden">{handout.audience === "staff" ? "Script" : "Hand-out"} (prints separately)</p>
+              <HandoutSheet handout={handout} reviewRequired={reviewRequired} />
+            </div>
+          )}
+        </>
       ) : null}
       <p className="flex items-start gap-2 text-[11px] text-[var(--cs-text-muted)] print:hidden">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
