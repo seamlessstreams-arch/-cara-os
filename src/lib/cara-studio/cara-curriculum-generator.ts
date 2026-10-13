@@ -7,11 +7,47 @@
 // Domain selection is scored from RISK_TO_DOMAINS — explainable, not magic.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { CaraCurriculumMapOutput } from "./cara-types";
+import type { CaraCurriculumMapOutput, CaraMaterialType } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import { CARA_CURRICULUM_DOMAINS, RISK_TO_DOMAINS, RECORDING_PROMPTS, type CaraCurriculumDomain } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { generateCaraInteractiveMaterial } from "./cara-material-generator";
 import { independenceSkillsForDomain } from "@/lib/cara/practice-frameworks";
+
+// Each curriculum domain implies a best-fit piece of work. The map lets the
+// pathway PRODUCE the matched printable material for every week (mirroring the
+// session generator) instead of only naming a session idea. Falls back to a
+// plain worksheet for any future domain not yet mapped.
+const DOMAIN_TO_MATERIAL: Partial<Record<CaraCurriculumDomain, CaraMaterialType>> = {
+  "Emotional literacy": "feelings_cards",
+  "Relational literacy": "reflection_cards",
+  "Situational literacy": "scenario_cards",
+  "Safety literacy": "safety_plan",
+  "Exploitation awareness": "exploitation_awareness_activity",
+  "Digital safety": "digital_safety_activity",
+  "Conflict and repair": "restorative_conversation",
+  "Living with others": "living_with_others_activity",
+  "Personal routines": "routine_builder",
+  "Health and wellbeing": "worksheet",
+  "Identity and belonging": "worksheet",
+  "Education and aspiration": "worksheet",
+  "Independence skills": "independence_task",
+  "Community safety": "scenario_cards",
+  "Rights and responsibilities": "quiz",
+  "Self-advocacy": "role_play",
+  "Consequences and decision-making": "decision_tree",
+  "Managing rejection and disappointment": "social_story",
+  "Trust and safe adults": "reflection_cards",
+  "Understanding risk": "decision_tree",
+  "Processing incidents": "comic_strip",
+  "Restorative reflection": "restorative_conversation",
+};
+
+// Weeks whose material is pitched gentle by default (sensitive or foundational).
+const GENTLE_DOMAINS = new Set<CaraCurriculumDomain>([
+  "Exploitation awareness", "Digital safety", "Safety literacy", "Understanding risk",
+  "Processing incidents", "Conflict and repair", "Restorative reflection",
+]);
 
 export interface CurriculumGenInput {
   ctx: CaraChildContext;
@@ -80,21 +116,41 @@ export function generateCaraCurriculumMap(input: CurriculumGenInput): { output: 
     weeks <= 4
       ? [...FOUNDATION.slice(0, 1), ...middle.slice(0, weeks - 2), CLOSING[0]]
       : [...FOUNDATION, ...middle.slice(0, weeks - FOUNDATION.length - CLOSING.length), ...CLOSING];
-  const weekly = fitted.slice(0, weeks).map((domain, i) => ({
-    week: i + 1,
-    focus: domain,
-    why:
-      i === 0
-        ? "Everything builds on felt safety with adults — start here even if it feels 'too basic'."
-        : ctx.riskThemes.some((r) => (RISK_TO_DOMAINS[r.toLowerCase()] ?? []).includes(domain))
-          ? `Directly linked to ${ctx.name}'s current risk themes.`
-          : "Builds on the previous week and keeps momentum without overload.",
-    sessionIdeas: [
-      ...(DOMAIN_SESSION_IDEAS[domain] ?? [`A short, practical session on ${domain.toLowerCase()}`, `A visual or walk-and-talk follow-up on ${domain.toLowerCase()}`]),
-      // Blend in concrete preparation-for-adulthood skills that map to this domain.
-      ...independenceSkillsForDomain(domain).slice(0, 2).map((s) => `Independence skill — ${s.skill}: ${s.summary}`),
-    ],
-  }));
+  const weekly = fitted.slice(0, weeks).map((domain, i) => {
+    // Produce the actual printable piece of work for this week's focus, so the
+    // pathway ships the material, not just a session idea to build one.
+    const difficulty: "gentle" | "standard" | "stretch" =
+      i === 0 || GENTLE_DOMAINS.has(domain) ? "gentle" : "standard";
+    const material = generateCaraInteractiveMaterial({
+      ctx,
+      materialType: DOMAIN_TO_MATERIAL[domain] ?? "worksheet",
+      theme: domain,
+      difficulty,
+    }).output;
+    return {
+      week: i + 1,
+      focus: domain,
+      why:
+        i === 0
+          ? "Everything builds on felt safety with adults — start here even if it feels 'too basic'."
+          : ctx.riskThemes.some((r) => (RISK_TO_DOMAINS[r.toLowerCase()] ?? []).includes(domain))
+            ? `Directly linked to ${ctx.name}'s current risk themes.`
+            : "Builds on the previous week and keeps momentum without overload.",
+      sessionIdeas: [
+        ...(DOMAIN_SESSION_IDEAS[domain] ?? [`A short, practical session on ${domain.toLowerCase()}`, `A visual or walk-and-talk follow-up on ${domain.toLowerCase()}`]),
+        // Blend in concrete preparation-for-adulthood skills that map to this domain.
+        ...independenceSkillsForDomain(domain).slice(0, 2).map((s) => `Independence skill — ${s.skill}: ${s.summary}`),
+      ],
+      producedMaterial: {
+        materialType: material.materialType,
+        title: material.title,
+        childFriendlyIntro: material.childFriendlyIntro,
+        blocks: material.blocks,
+        printableText: material.printableText,
+        lowWritingAlternative: material.lowWritingAlternative,
+      },
+    };
+  });
 
   const priorityNeeds = [
     ...ctx.riskThemes.map((r) => `Address risk theme: ${r}`),
@@ -127,7 +183,7 @@ export function generateCaraCurriculumMap(input: CurriculumGenInput): { output: 
       "Has the risk picture shifted — does the map still fit?",
     ],
     staffGuidance:
-      "Treat the map as a menu, not a march. Repeat weeks freely, swap formats to match the day, and let the child see the map — their pathway, their voice. Two short wins beat one long struggle.",
+      "Treat the map as a menu, not a march. Repeat weeks freely, swap formats to match the day, and let the child see the map — their pathway, their voice. Two short wins beat one long struggle. Each week comes with a ready-to-use, printable piece of work matched to its focus — print it straight from the pathway, review it first, and adapt it live.",
     adaptationNotes: ctx.profile
       ? [
           ctx.profile.send_needs ? `Every session pre-adapted for: ${ctx.profile.send_needs}` : "Adapt each session with the SEND engine before use",

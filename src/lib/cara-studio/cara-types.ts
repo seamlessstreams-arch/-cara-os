@@ -171,6 +171,27 @@ export const SafetySpineSchema = z.object({
   managerReviewNeeded: z.boolean(),
 });
 
+// ── Produced material ─────────────────────────────────────────────────────────
+// A ready-to-use, printable piece of work produced ALONGSIDE a plan (a session,
+// or a curriculum week) so staff get the actual material, not "make your own".
+// Essentials only — the parent output already carries the safety spine.
+export const ProducedMaterialSchema = z.object({
+  materialType: z.string(),
+  title: z.string(),
+  childFriendlyIntro: z.string(),
+  blocks: z.array(
+    z.object({
+      heading: z.string(),
+      body: z.string(),
+      childPrompt: z.string().optional(),
+      options: z.array(z.string()).optional(),
+    }),
+  ),
+  printableText: z.string(),
+  lowWritingAlternative: z.string(),
+});
+export type ProducedMaterial = z.infer<typeof ProducedMaterialSchema>;
+
 // ── Curriculum map ────────────────────────────────────────────────────────────
 
 export const CaraCurriculumMapOutputSchema = z
@@ -185,6 +206,8 @@ export const CaraCurriculumMapOutputSchema = z
         focus: z.string(),
         why: z.string(),
         sessionIdeas: z.array(z.string()),
+        // The matched, printable piece of work for this week's focus.
+        producedMaterial: ProducedMaterialSchema.optional(),
       }),
     ),
     suggestedSessionSequence: z.array(z.string()),
@@ -221,25 +244,8 @@ export const CaraSessionPlanOutputSchema = z
     childFriendlySummary: z.string(),
     // The actual printable piece of work the plan calls for (card sort →
     // scenario cards, etc.) — produced alongside the plan so staff get the
-    // ready-to-use material, not "make your own". Essentials only (the plan
-    // already carries the safety spine).
-    producedMaterial: z
-      .object({
-        materialType: z.string(),
-        title: z.string(),
-        childFriendlyIntro: z.string(),
-        blocks: z.array(
-          z.object({
-            heading: z.string(),
-            body: z.string(),
-            childPrompt: z.string().optional(),
-            options: z.array(z.string()).optional(),
-          }),
-        ),
-        printableText: z.string(),
-        lowWritingAlternative: z.string(),
-      })
-      .optional(),
+    // ready-to-use material, not "make your own".
+    producedMaterial: ProducedMaterialSchema.optional(),
   })
   .extend(SafetySpineSchema.shape);
 export type CaraSessionPlanOutput = z.infer<typeof CaraSessionPlanOutputSchema>;

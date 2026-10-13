@@ -164,6 +164,37 @@ describe("curriculum generator", () => {
     const allIdeas = output.weeklyPlan.flatMap((w) => w.sessionIdeas);
     expect(allIdeas.some((i) => /Independence skill —/.test(i))).toBe(true);
   });
+
+  it("produces a matched, printable piece of work for every week, and stays guardrail-clean", () => {
+    const { output } = generateCaraCurriculumMap({ ctx: ctx(), desiredOutcomes: ["Safer free time"], timeframeWeeks: 8 });
+    for (const w of output.weeklyPlan) {
+      expect(w.producedMaterial, `week ${w.week}`).toBeDefined();
+      expect(w.producedMaterial!.printableText.length, `week ${w.week}`).toBeGreaterThan(0);
+      expect(w.producedMaterial!.blocks.length, `week ${w.week}`).toBeGreaterThan(0);
+      expect(w.producedMaterial!.lowWritingAlternative.length, `week ${w.week}`).toBeGreaterThan(10);
+    }
+    // the first (trust) week and sensitive weeks must still pass the guardrails
+    // even with all their embedded materials serialised into one output
+    expect(runCaraGuardrails(output).passed).toBe(true);
+  });
+
+  it("maps domains to the right material type (exploitation/digital/independence are purpose-built, not generic)", () => {
+    // drive exploitation + digital + independence domains in via the profile's risk themes
+    const c = ctx({ profile: profile({ risk_themes: ["cse", "online", "independence"] }) });
+    const { output } = generateCaraCurriculumMap({ ctx: c, desiredOutcomes: ["Stay safe online"], timeframeWeeks: 14 });
+    const focuses = output.weeklyPlan.map((w) => w.focus);
+    expect(focuses).toContain("Exploitation awareness"); // non-vacuous: the week must exist
+    const expected: Record<string, string> = {
+      "Exploitation awareness": "exploitation_awareness_activity",
+      "Digital safety": "digital_safety_activity",
+      "Independence skills": "independence_task",
+      "Trust and safe adults": "reflection_cards",
+      "Emotional literacy": "feelings_cards",
+    };
+    for (const w of output.weeklyPlan) {
+      if (expected[w.focus]) expect(w.producedMaterial?.materialType, w.focus).toBe(expected[w.focus]);
+    }
+  });
 });
 
 describe("conversation coach", () => {
