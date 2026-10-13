@@ -228,6 +228,37 @@ describe("material generator", () => {
     const { output } = generateCaraInteractiveMaterial({ ctx: ctx(), materialType: "exploitation_awareness_activity", theme: "Understanding exploitation and pressure", difficulty: "gentle" });
     expect(output.managerReviewNeeded).toBe(true);
   });
+
+  it("every type now has its own purpose-built template (none fall back to the generic worksheet)", () => {
+    // Signature phrase unique to each previously-generic type's dedicated template.
+    const signatures: Partial<Record<string, RegExp>> = {
+      reflection_cards: /acorn to oak tree/i,
+      role_play: /rewind/i,
+      staff_script: /borrow your nervous system/i,
+      independence_task: /i do, we do, you do/i,
+      living_with_others_activity: /share a fridge/i,
+      exploitation_awareness_activity: /gut is good data/i,
+      digital_safety_activity: /once it'?s sent/i,
+    };
+    for (const [type, re] of Object.entries(signatures)) {
+      const { output } = generateCaraInteractiveMaterial({ ctx: ctx(), materialType: type as (typeof CARA_MATERIAL_TYPES)[number], theme: "Keeping safe", difficulty: "standard" });
+      expect(output.printableText, type).toMatch(re!);
+      // and NOT the worksheet fallback's signature
+      expect(output.printableText, type).not.toMatch(/Part 1 — Notice/i);
+    }
+  });
+
+  it("safeguarding-sensitive materials stay guardrail-clean across scary themes", () => {
+    const themes = ["Child sexual exploitation", "County lines and being groomed", "Online strangers and sending images", "Keeping secrets from staff"];
+    const types = ["exploitation_awareness_activity", "digital_safety_activity", "reflection_cards", "staff_script"] as const;
+    for (const theme of themes) {
+      for (const type of types) {
+        const { output } = generateCaraInteractiveMaterial({ ctx: ctx(), materialType: type, theme, difficulty: "gentle" });
+        const g = runCaraGuardrails(output);
+        expect(g.passed, `${type} / ${theme}`).toBe(true);
+      }
+    }
+  });
 });
 
 describe("adaptation engine", () => {
