@@ -15,7 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requireNonEmptyBody } from "@/lib/http/require-fields";
 import type { WelfareCheck, WelfareCheckRound } from "@/types/extended";
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   const childId = searchParams.get("child_id");
   const today = todayStr();
 
-  const allRounds = db.welfareCheckRounds.findAll();
+  const allRounds = await dal.welfareCheckRounds.findAll();
 
   // Filters narrow what is LISTED; meta always describes the whole picture, so
   // the stat tiles don't silently change meaning when a filter is applied.
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   const __missing = requireNonEmptyBody(parsed.data);
   if (__missing) return __missing;
   try {
-    const round = db.welfareCheckRounds.create(parsed.data);
+    const round = await dal.welfareCheckRounds.create(parsed.data);
     return NextResponse.json({ data: round }, { status: 201 });
   } catch (err) {
     console.error("[api/welfare-checks] create failed:", err);

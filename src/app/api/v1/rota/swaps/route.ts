@@ -1,9 +1,9 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export async function GET() {
-  const swaps = db.shiftSwaps.findAll();
+  const swaps = await dal.shiftSwaps.findAll();
   return NextResponse.json({ data: swaps });
 }
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const swap = db.shiftSwaps.create({
+    const swap = await dal.shiftSwaps.create({
       requester_id,
       target_staff_id,
       requester_shift_id,

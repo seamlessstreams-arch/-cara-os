@@ -627,6 +627,71 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["child_pace_profiles"]["Insert"]>;
         Relationships: [];
       };
+      employer_values_profiles: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          organisation_name: string;
+          home_name: string;
+          core_values: Json;
+          care_approach: string;
+          leadership_style: string;
+          therapeutic_model: string;
+          pace_commitment: string;
+          trauma_informed_expectations: string;
+          safeguarding_culture: string;
+          expected_behaviours: Json;
+          non_negotiables: Json;
+          what_makes_us_different: string;
+          relational_practice_priority: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Omit<Database["public"]["Tables"]["employer_values_profiles"]["Row"], "updated_at"> & { updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["employer_values_profiles"]["Insert"]>;
+        Relationships: [];
+      };
+      shift_swaps: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          requester_id: string;
+          target_staff_id: string;
+          requester_shift_id: string;
+          target_shift_id: string | null;
+          status: string;
+          reason: string;
+          manager_notes: string | null;
+          decided_by: string | null;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["shift_swaps"]["Row"], "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["shift_swaps"]["Insert"]>;
+        Relationships: [];
+      };
+      welfare_check_rounds: {
+        Row: {
+          id: string;
+          home_id: string | null;
+          staff_id: string;
+          round_date: string;
+          round_time: string;
+          shift_type: string;
+          checks: Json;
+          all_children_checked: boolean;
+          building_secure: boolean;
+          fire_exits_clear: boolean;
+          external_doors_locked: boolean;
+          alarm_set: boolean;
+          additional_notes: string | null;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["welfare_check_rounds"]["Row"], "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["welfare_check_rounds"]["Insert"]>;
+        Relationships: [];
+      };
 
       maintenance_items: {
         Row: {

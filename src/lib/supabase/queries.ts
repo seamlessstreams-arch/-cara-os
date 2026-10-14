@@ -548,6 +548,40 @@ export async function upsertChildPaceProfile(
   return unwrap(await sb.from("child_pace_profiles").upsert(row, { onConflict: "child_id" }).select().single());
 }
 
+// ── employer_values_profiles (the home's values profile) ────────────────────────
+export async function getEmployerValuesProfiles(sb: SB) {
+  return unwrap(await sb.from("employer_values_profiles").select("*"));
+}
+
+export async function getEmployerValuesProfile(sb: SB, id: string) {
+  return unwrap(await sb.from("employer_values_profiles").select("*").eq("id", id).maybeSingle());
+}
+
+export async function upsertEmployerValuesProfile(
+  sb: SB,
+  row: Database["public"]["Tables"]["employer_values_profiles"]["Insert"],
+) {
+  return unwrap(await sb.from("employer_values_profiles").upsert(row, { onConflict: "id" }).select().single());
+}
+
+// ── shift_swaps (staff shift-swap requests) ─────────────────────────────────────
+export async function getShiftSwaps(sb: SB) {
+  return unwrap(await sb.from("shift_swaps").select("*").order("created_at", { ascending: false }));
+}
+
+export async function createShiftSwap(sb: SB, row: Database["public"]["Tables"]["shift_swaps"]["Insert"]) {
+  return unwrap(await sb.from("shift_swaps").insert(row).select().single());
+}
+
+// ── welfare_check_rounds (night-check rounds) ───────────────────────────────────
+export async function getWelfareCheckRounds(sb: SB) {
+  return unwrap(await sb.from("welfare_check_rounds").select("*").order("created_at", { ascending: false }));
+}
+
+export async function createWelfareCheckRound(sb: SB, row: Database["public"]["Tables"]["welfare_check_rounds"]["Insert"]) {
+  return unwrap(await sb.from("welfare_check_rounds").insert(row).select().single());
+}
+
 export async function createBehaviourSupportPlan(
   sb: SB,
   data: Database["public"]["Tables"]["behaviour_support_plans"]["Insert"],
