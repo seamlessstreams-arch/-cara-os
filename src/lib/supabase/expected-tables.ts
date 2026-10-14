@@ -338,6 +338,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "employer_values_profiles",
+    migration: "20261014130000_persist_employer_values_profiles.sql",
+    columns: [],
+  },
+  {
     table: "expenses",
     migration: "20260722120000_persist_typed_tables.sql",
     columns: [],
@@ -500,6 +505,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "shift_swaps",
+    migration: "20261014140000_persist_shift_swaps.sql",
+    columns: [],
+  },
+  {
     table: "shifts",
     migration: "00000000000000_lean_live_baseline.sql",
     columns: [],
@@ -554,6 +564,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
   {
     table: "vehicles",
     migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "welfare_check_rounds",
+    migration: "20261014150000_persist_welfare_check_rounds.sql",
     columns: [],
   },
   {

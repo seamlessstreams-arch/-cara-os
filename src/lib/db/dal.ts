@@ -24,8 +24,9 @@ import * as sqCalendar from "@/lib/supabase/calendar-persist";
 import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan, EducationRecord, InspectionRecord } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwapRequest, WelfareCheckRound } from "@/types/extended";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
+import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import type { SB } from "@/lib/supabase/loose-client";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
@@ -1942,17 +1943,51 @@ export const dal = {
     },
   },
 
+  // Dual-mode as of the employer_values_profiles migration: the real table on
+  // live (direct-cast — the app type is already snake_case), the in-memory store
+  // in demo. Before the table existed, the home's values profile was empty on a
+  // live tenant and an edit saved nothing beyond the serverless instance.
   employerValuesProfiles: {
-    async findAll() { return getStore().employerValuesProfiles; },
-    async findById(id: string) { return getStore().employerValuesProfiles.find((r) => r.id === id) ?? null; },
-    // DEMO-ONLY single-profile upsert (there is one profile per home). Mirrors
-    // the route's list[0]-replace mutation exactly.
-    async upsert(updated: NonNullable<ReturnType<typeof getStore>["employerValuesProfiles"]>[number]) {
-      const s = (getStore());
+    async findAll(): Promise<EmployerValuesProfile[]> {
+      const c = sb();
+      if (c) return (await sq.getEmployerValuesProfiles(c)) as unknown as EmployerValuesProfile[];
+      return getStore().employerValuesProfiles;
+    },
+    async findById(id: string): Promise<EmployerValuesProfile | null> {
+      const c = sb();
+      if (c) return (await sq.getEmployerValuesProfile(c, id)) as unknown as EmployerValuesProfile | null;
+      return getStore().employerValuesProfiles.find((r) => r.id === id) ?? null;
+    },
+    // One profile per home. On live, inject the home uuid for tenant scoping;
+    // in demo, mirror the route's list[0]-replace mutation exactly.
+    async upsert(updated: EmployerValuesProfile): Promise<EmployerValuesProfile> {
+      const c = sb();
+      if (c) {
+        return (await sq.upsertEmployerValuesProfile(
+          c,
+          { ...updated, home_id: homeId() } as unknown as Parameters<typeof sq.upsertEmployerValuesProfile>[1],
+        )) as unknown as EmployerValuesProfile;
+      }
+      const s = getStore();
       const list = s.employerValuesProfiles ?? [];
       if (list[0]) list[0] = updated; else list.push(updated);
       s.employerValuesProfiles = list;
       return updated;
+    },
+  },
+
+  // Dual-mode as of the shift_swaps migration: the real table on live, the store
+  // in demo. The record carries no home_id, so create injects the home uuid.
+  shiftSwaps: {
+    async findAll(): Promise<ShiftSwapRequest[]> {
+      const c = sb();
+      if (c) return (await sq.getShiftSwaps(c)) as unknown as ShiftSwapRequest[];
+      return db.shiftSwaps.findAll();
+    },
+    async create(data: Parameters<typeof db.shiftSwaps.create>[0]): Promise<ShiftSwapRequest> {
+      const c = sb();
+      if (c) return (await sq.createShiftSwap(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createShiftSwap>[1])) as unknown as ShiftSwapRequest;
+      return db.shiftSwaps.create(data);
     },
   },
 
@@ -2255,8 +2290,20 @@ export const dal = {
     async findAll() { return db.cornerstoneEvents.findAll(); },
   },
 
+  // Dual-mode as of the welfare_check_rounds migration: the real table on live,
+  // the store in demo. create injects the home uuid; the per-child checks ride
+  // inline as jsonb (the flat welfareChecks collection is a derived projection).
   welfareCheckRounds: {
-    async findAll() { return db.welfareCheckRounds.findAll(); },
+    async findAll(): Promise<WelfareCheckRound[]> {
+      const c = sb();
+      if (c) return (await sq.getWelfareCheckRounds(c)) as unknown as WelfareCheckRound[];
+      return db.welfareCheckRounds.findAll();
+    },
+    async create(data: Parameters<typeof db.welfareCheckRounds.create>[0]): Promise<WelfareCheckRound> {
+      const c = sb();
+      if (c) return (await sq.createWelfareCheckRound(c, { ...data, home_id: homeId() } as unknown as Parameters<typeof sq.createWelfareCheckRound>[1])) as unknown as WelfareCheckRound;
+      return db.welfareCheckRounds.create(data);
+    },
   },
 
   uploadedDocuments: {
