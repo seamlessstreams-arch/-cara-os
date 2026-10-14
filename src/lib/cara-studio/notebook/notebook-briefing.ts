@@ -164,3 +164,31 @@ export function buildNotebookBriefing(input: NotebookInput): NotebookBriefing {
     generatedAtLabel: shortDate(todayIso),
   };
 }
+
+// ── Home dashboard card ───────────────────────────────────────────────────────
+// A per-child attention summary for the notebook index ("who needs me today").
+export interface NotebookHomeCard {
+  childId: string;
+  firstName: string;
+  name: string;
+  headline: string;
+  attention: number;              // count of "needs you" items
+  severity: "good" | "warn" | "crit";
+  sourceCount: number;            // total records on file
+}
+
+export function buildNotebookHomeCard(childId: string, b: NotebookBriefing): NotebookHomeCard {
+  const severity: "good" | "warn" | "crit" =
+    b.needsYou.some((s) => s.severity === "crit") ? "crit"
+      : b.needsYou.some((s) => s.severity === "warn") ? "warn"
+        : "good";
+  return {
+    childId,
+    firstName: b.firstName,
+    name: b.childName,
+    headline: b.headline,
+    attention: b.needsYou.length,
+    severity,
+    sourceCount: b.sources.reduce((n, s) => n + s.count, 0),
+  };
+}
