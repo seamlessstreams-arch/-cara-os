@@ -15,9 +15,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { dal } from "@/lib/db";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
-import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
+import { buildOrgLearningInputFromStore, buildOrgLearningInputLive } from "@/lib/org-learning-report/build-input";
 import type { ReportPeriod } from "@/lib/org-learning-report/types";
 import {
   buildOrgLearningExportModel,
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     const format = (searchParams.get("format") || "html").toLowerCase();
     const asOf = todayStr();
 
-    const input = buildOrgLearningInputFromStore(getStore(), asOf, period);
+    const input = isLiveTenant() ? await buildOrgLearningInputLive(asOf, period) : buildOrgLearningInputFromStore(getStore(), asOf, period);
     const report = buildOrgLearningReport(input);
 
     const home = await dal.home.get();
