@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { OutputView, type CaraApiResult } from "@/components/cara-studio/studio-bits";
 import { ProfileEditor } from "@/components/cara-studio/profile-editor";
-import { Sparkles, LineChart } from "lucide-react";
+import { Sparkles, LineChart, BookOpen, ArrowRight } from "lucide-react";
 import type { CaraSavedOutput, CaraChildLearningProfile } from "@/lib/cara-studio/cara-types";
 
 import { api } from "@/hooks/use-api";
@@ -42,6 +42,14 @@ export default function CaraChildPage({ params }: { params: Promise<{ childId: s
       {isLoading && <p className="text-sm text-[var(--cs-text-muted)]">Loading…</p>}
       {data && (
         <div className="space-y-4">
+          <Link href={`/cara-studio/notebook/${childId}`} className="group flex items-center gap-3 rounded-2xl border border-[var(--cs-teal)] bg-[var(--cs-teal-bg)] px-4 py-3 transition-shadow hover:shadow-[var(--cs-shadow-card)]">
+            <BookOpen className="h-5 w-5 shrink-0 text-[var(--cs-teal-strong)]" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-[var(--cs-navy)]">Open the Notebook</span>
+              <span className="block text-xs text-[var(--cs-text-secondary)]">Whole-child briefing, timeline, mind map, outcomes, grounded Ask &amp; audio — the deterministic intelligence view.</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-[var(--cs-teal-strong)]" />
+          </Link>
           <div className="flex flex-wrap gap-1.5">
             {TABS.map((t) => (
               <button key={t} onClick={() => setTab(t)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${tab === t ? "border-[var(--cs-navy)] bg-[var(--cs-navy)] text-white" : "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)] hover:bg-[var(--cs-bg)]"}`}>
