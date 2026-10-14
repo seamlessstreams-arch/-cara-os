@@ -62,7 +62,7 @@ function BriefingDoc({ b }: { b: NotebookBriefing }) {
   return (
     <>
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><NotebookPen className="h-3.5 w-3.5" /> Whole-child briefing</div>
-      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{b.headline}</h1>
+      <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>{b.headline}</h1>
       <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{b.windowLabel}</p>
 
       <Section title="What needs you">
@@ -118,7 +118,7 @@ function TimelineDoc({ t }: { t: RelationalTimeline }) {
   return (
     <>
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><Waypoints className="h-3.5 w-3.5" /> Relational timeline</div>
-      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{t.childName} &amp; the people around them</h1>
+      <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>{t.childName} &amp; the people around them</h1>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-[var(--cs-text-secondary)]">
         <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${STATUS_PILL[st.status]}`}>{st.status}</span>
         <span className="font-mono text-[11px] text-[var(--cs-text-muted)]">{st.connectionCount} connection · {st.repairCount} repair · {st.ruptureCount} rupture</span>
@@ -163,7 +163,7 @@ function MindMapDoc({ m }: { m: NotebookMindMap }) {
   return (
     <>
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><Network className="h-3.5 w-3.5" /> Mind map</div>
-      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{m.childName}&rsquo;s world, mapped from the record</h1>
+      <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>{m.childName}&rsquo;s world, mapped from the record</h1>
       <div className="mx-auto my-5 w-fit rounded-full bg-[var(--cs-navy)] px-5 py-2 text-center text-sm font-bold text-white">{m.childName}</div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {m.groups.map((g) => (
@@ -199,7 +199,7 @@ function OutcomesDoc({ oc }: { oc: OutcomeIntelligence }) {
   return (
     <>
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><ShieldCheck className="h-3.5 w-3.5" /> Outcomes &amp; evidence</div>
-      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>Outcomes &amp; evidence for {oc.childName}</h1>
+      <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>Outcomes &amp; evidence for {oc.childName}</h1>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-[var(--cs-text-secondary)]">
         <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${OC_STATUS[oc.overallStatus] ?? "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"}`}>{unslug(oc.overallStatus)}</span>
         <span className="font-mono text-[11px] text-[var(--cs-text-muted)]">{OC_DIR[oc.overallTrajectory] ?? oc.overallTrajectory}</span>
@@ -261,7 +261,7 @@ function AskDoc({ childId, childName }: { childId: string; childName?: string })
   return (
     <>
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><MessageCircle className="h-3.5 w-3.5" /> Ask Cara</div>
-      <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>Ask about {who}</h1>
+      <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>Ask about {who}</h1>
       <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">Deterministic and grounded only in the record. Every line is labelled for the kind of claim it is — and Cara says &ldquo;not evidenced&rdquo; rather than guessing.</p>
       <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="mt-4 flex gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Ask about ${who}…`} aria-label="Ask about this child" className="min-w-0 flex-1 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text)] focus:border-[var(--cs-teal)] focus:outline-none" />
@@ -342,7 +342,7 @@ function AudioDoc({ childId }: { childId: string }) {
       {q.isError && <p className="mt-3 text-sm text-red-700">Couldn’t build the audio briefing.</p>}
       {script && (
         <>
-          <h1 className="mt-2 text-2xl font-bold leading-tight text-[var(--cs-navy)] sm:text-3xl" style={{ textWrap: "balance" }}>{script.title}</h1>
+          <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>{script.title}</h1>
           <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">{script.intro}</p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {canSpeak

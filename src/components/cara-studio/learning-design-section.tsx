@@ -71,6 +71,14 @@ export function LearningDesignSection() {
           </Link>
         )}
       </div>
+      <Link href="/cara-studio/notebook" className="group mt-4 flex items-center gap-4 rounded-2xl border border-[var(--cs-teal)] bg-[var(--cs-teal-bg)] p-4 transition-shadow hover:shadow-[var(--cs-shadow-card)]">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[var(--cs-navy)] text-white"><BookOpen className="h-6 w-6" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-[var(--cs-navy)]">Open the Notebook</span>
+          <span className="mt-0.5 block text-xs leading-relaxed text-[var(--cs-text-secondary)]">The whole-child intelligence view — briefing, relational timeline, mind map, outcomes, grounded Ask and an audio overview. Deterministic, grounded in the records, nothing to upload.</span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-[var(--cs-teal-strong)] transition-transform group-hover:translate-x-0.5" />
+      </Link>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {TOOLS.map((t) => (
           <Link key={t.href} href={t.href} className="group rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 transition-colors hover:bg-white hover:shadow-[var(--cs-shadow-card)]">
