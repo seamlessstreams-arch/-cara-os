@@ -529,6 +529,25 @@ export async function getBehaviourSupportPlan(sb: SB, id: string) {
   return unwrap(await sb.from("behaviour_support_plans").select("*").eq("id", id).maybeSingle());
 }
 
+// ── child_pace_profiles (PACE "what works for this child") ──────────────────────
+// Single-home live tenant: no home filter needed (the server reads as
+// service_role; every row is this home's). Rows are snake_case; the DAL maps them
+// to the camelCase ChildPACEProfile.
+export async function getChildPaceProfiles(sb: SB) {
+  return unwrap(await sb.from("child_pace_profiles").select("*"));
+}
+
+export async function getChildPaceProfile(sb: SB, childId: string) {
+  return unwrap(await sb.from("child_pace_profiles").select("*").eq("child_id", childId).maybeSingle());
+}
+
+export async function upsertChildPaceProfile(
+  sb: SB,
+  row: Database["public"]["Tables"]["child_pace_profiles"]["Insert"],
+) {
+  return unwrap(await sb.from("child_pace_profiles").upsert(row, { onConflict: "child_id" }).select().single());
+}
+
 export async function createBehaviourSupportPlan(
   sb: SB,
   data: Database["public"]["Tables"]["behaviour_support_plans"]["Insert"],
