@@ -4,9 +4,10 @@ import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
-import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
+import { buildAskSnapshot, buildLiveAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerNaturally, buildFreeChatGrounding, type ChatTurn } from "@/lib/cara/ask-cara-natural";
 import { readJsonBody } from "@/lib/http/read-json";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { todayStr } from "@/lib/utils";
 
 /** Sanitise client-sent chat history to typed, clipped turns (max 6). */
@@ -137,8 +138,9 @@ export async function POST(req: NextRequest) {
   // Deterministic Ask-Cara path — record-based Q&A, no model, works with no credit.
   if (body.mode === "ask") {
     try {
-      const store = getStore();
-      const snapshot = buildAskSnapshot(store);
+      // Live tenants empty the in-memory store, so build the snapshot from the
+      // live-safe dal collections instead; the demo keeps the full store snapshot.
+      const snapshot = isLiveTenant() ? await buildLiveAskSnapshot() : buildAskSnapshot(getStore());
       const role = typeof body.role === "string" ? body.role : undefined;
       const childId = typeof body.childId === "string" ? body.childId : undefined;
       const asOf = todayStr();
@@ -222,8 +224,8 @@ export async function POST(req: NextRequest) {
   // grounding can't be built, chat degrades to the ungrounded prompt (never 500s).
   let grounding = "";
   try {
-    const store = getStore();
-    const snapshot = buildAskSnapshot(store);
+    // Live-safe snapshot on live (store is empty); full store snapshot on demo.
+    const snapshot = isLiveTenant() ? await buildLiveAskSnapshot() : buildAskSnapshot(getStore());
     const role = typeof body.role === "string" ? body.role : undefined;
     const childId = typeof body.childId === "string" ? body.childId : undefined;
     const asOf = todayStr();
