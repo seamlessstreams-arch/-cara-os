@@ -105,17 +105,23 @@ function pretty(key: string): string {
   return key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()).trim();
 }
 
-function ValueView({ value }: { value: unknown }) {
+// The shared safety spine appears on every Cara output; at the top level it
+// groups into a distinct "Safety & practice" panel so therapeutic / safeguarding
+// guidance stands apart from the body of the document.
+const SPINE_KEYS = ["staffGuidance", "adaptationNotes", "safeguardingNotes", "signsToPause", "followUpActions", "recordingPrompt"];
+const SKIP_KEYS = new Set(["managerReviewNeeded", "materialType"]);
+
+function ValueView({ value, depth = 1 }: { value: unknown; depth?: number }) {
   if (value == null || value === "") return null;
-  if (typeof value === "string") return <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--cs-text-secondary)]">{value}</p>;
+  if (typeof value === "string") return <p className="max-w-[70ch] whitespace-pre-wrap text-sm leading-relaxed text-[var(--cs-text-secondary)]">{value}</p>;
   if (typeof value === "number" || typeof value === "boolean") return <p className="text-sm text-[var(--cs-text-secondary)]">{String(value)}</p>;
   if (Array.isArray(value)) {
     if (value.length === 0) return null;
     if (typeof value[0] === "string" || typeof value[0] === "number") {
       return (
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {value.map((v, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--cs-teal)]" /> {String(v)}</li>
+            <li key={i} className="flex max-w-[70ch] items-start gap-2 text-sm text-[var(--cs-text-secondary)]"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--cs-teal)]" /> {String(v)}</li>
           ))}
         </ul>
       );
@@ -123,27 +129,47 @@ function ValueView({ value }: { value: unknown }) {
     return (
       <div className="space-y-2">
         {value.map((v, i) => (
-          <div key={i} className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] p-3"><ObjectView obj={v as Record<string, unknown>} /></div>
+          <div key={i} className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] p-3"><ObjectView obj={v as Record<string, unknown>} depth={depth + 1} /></div>
         ))}
       </div>
     );
   }
-  if (typeof value === "object") return <ObjectView obj={value as Record<string, unknown>} />;
+  if (typeof value === "object") return <ObjectView obj={value as Record<string, unknown>} depth={depth + 1} />;
   return null;
 }
 
-function ObjectView({ obj }: { obj: Record<string, unknown> }) {
+function Field({ k, v, depth }: { k: string; v: unknown; depth: number }) {
   return (
-    <div className="space-y-2">
-      {Object.entries(obj).map(([k, v]) => {
-        if (v == null || v === "" || (Array.isArray(v) && v.length === 0) || k === "managerReviewNeeded" || k === "materialType") return null;
-        return (
-          <div key={k}>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">{pretty(k)}</p>
-            <div className="mt-0.5"><ValueView value={v} /></div>
-          </div>
-        );
-      })}
+    <div>
+      <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">{pretty(k)}</p>
+      <div className="mt-0.5"><ValueView value={v} depth={depth} /></div>
+    </div>
+  );
+}
+
+function ObjectView({ obj, depth = 0 }: { obj: Record<string, unknown>; depth?: number }) {
+  const entries = Object.entries(obj).filter(([k, v]) => !(v == null || v === "" || (Array.isArray(v) && v.length === 0) || SKIP_KEYS.has(k)));
+  // Nested objects stay compact (small labels); only a top-level output becomes a
+  // sectioned document with proper headings and a safety-spine panel.
+  if (depth > 0) {
+    return <div className="space-y-2">{entries.map(([k, v]) => <Field key={k} k={k} v={v} depth={depth} />)}</div>;
+  }
+  const main = entries.filter(([k]) => !SPINE_KEYS.includes(k));
+  const spine = entries.filter(([k]) => SPINE_KEYS.includes(k));
+  return (
+    <div>
+      {main.map(([k, v], i) => (
+        <section key={k} className={i > 0 ? "mt-5 border-t border-[var(--cs-border)] pt-4 print:break-inside-avoid" : "print:break-inside-avoid"}>
+          <h4 className="mb-1.5 text-base font-bold text-[var(--cs-navy)] print:text-lg">{pretty(k)}</h4>
+          <ValueView value={v} depth={1} />
+        </section>
+      ))}
+      {spine.length > 0 && (
+        <div className="mt-6 break-inside-avoid rounded-xl border border-dashed border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 print:bg-transparent">
+          <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Safety &amp; practice guidance</p>
+          <div className="space-y-3">{spine.map(([k, v]) => <Field key={k} k={k} v={v} depth={1} />)}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -256,7 +282,7 @@ export function OutputView({ result }: { result: CaraApiResult }) {
                 )}
               </span>
             </div>
-            <h3 className="mb-3 text-base font-bold text-[var(--cs-navy)] print:mb-1 print:text-xl">{result.title}</h3>
+            <h3 className="mb-4 text-lg font-bold leading-tight text-[var(--cs-navy)] sm:text-xl print:mb-1 print:text-xl">{result.title}</h3>
             {/* Print-only document caption: carries the draft caveat onto the printed session / piece of work. */}
             <p className="mb-4 hidden text-xs text-[var(--cs-text-muted)] print:block">
               Staff sheet — not for the child. Cara draft — review before use with the child. Printed {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.
