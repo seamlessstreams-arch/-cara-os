@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import { buildPracticeDigest } from "@/lib/ask-cara/build-practice";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
@@ -323,4 +324,136 @@ function buildChildCalendars(childIds: string[]): AskCaraChildCalendar[] | undef
   } catch {
     return undefined; // the skill answers honestly without it
   }
+}
+
+// ── Live-safe snapshot (a live tenant's store is EMPTY) ─────────────────────────
+// buildAskSnapshot reads the in-memory store (and getChildTwin / weekly-intel /
+// calendar / catalogue), which is emptied on a live tenant — so Ask CARA would
+// answer from nothing. buildLiveAskSnapshot instead maps the live-safe `dal`
+// collections (each has an sb() branch) into the SAME AskCaraSnapshot shape. The
+// composite legs with no live-safe source (twins, weekly/monthly intelligence,
+// ops, practice, calendar, catalogue, evaluations, policies, home, feedback,
+// health) and the store-only collections (shifts, contacts, training) are left
+// empty/undefined — honest, never invented; the engine treats a gap as an answer.
+// Shared by the Ask CARA chat route and the Cara Studio notebook (child-scoped via
+// the question context). Call this only when isLiveTenant(); the demo keeps the
+// full store-backed snapshot above.
+export async function buildLiveAskSnapshot(): Promise<AskCaraSnapshot> {
+  const [childrenRows, staffRows, incidentRows, missingRows, logRows, keyworkRows, riskRows, lacRows, medRows, taskRows, supervisionRows, restraintRows] =
+    await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.staff.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.dailyLog.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.lacReviews.findAll(),
+      dal.medications.findAll(),
+      dal.tasks.findAll(),
+      dal.supervisions.findAll(),
+      dal.restraints.findAll(),
+    ]);
+
+  const rr = (x: unknown): Record<string, unknown> => (x ?? {}) as Record<string, unknown>;
+
+  // Latest upcoming LAC review per child (mirrors the store-backed mapper above).
+  const lacNext = new Map<string, string>();
+  for (const row of lacRows) {
+    const o = rr(row);
+    const cid = o.child_id ? String(o.child_id) : "";
+    const d = day(o.next_review_date ?? o.next_review);
+    if (cid && d && (!lacNext.has(cid) || d > lacNext.get(cid)!)) lacNext.set(cid, d);
+  }
+
+  return {
+    children: childrenRows.map((x) => {
+      const c = rr(x);
+      return {
+        id: String(c.id),
+        firstName: s(c.preferred_name) || s(c.first_name) || s(c.full_name) || String(c.id),
+        name: s(c.full_name) || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id),
+        dob: day(c.date_of_birth),
+        status: s(c.status) || "current",
+        keyWorkerId: s(c.key_worker_id) || s(c.key_worker) || undefined,
+        legalStatus: s(c.legal_status) || undefined,
+        socialWorker: s(c.social_worker_name) || undefined,
+        iro: s(c.iro_name) || undefined,
+        school: s(c.school_name) || undefined,
+        gp: s(c.gp_name) || undefined,
+        allergies: Array.isArray(c.allergies) ? (c.allergies as unknown[]).map(String) : undefined,
+        dietary: s(c.dietary_requirements) || undefined,
+        placementStart: day(c.placement_start),
+        nextReviewDate: lacNext.get(String(c.id)) || undefined,
+      };
+    }),
+    staff: staffRows.map((x) => {
+      const o = rr(x);
+      return { id: String(o.id), name: s(o.full_name) || [o.first_name, o.last_name].filter(Boolean).join(" ") || String(o.id) };
+    }),
+    incidents: incidentRows.map((x) => {
+      const i = rr(x);
+      return {
+        id: String(i.id),
+        type: s(i.type) || "other",
+        severity: s(i.severity),
+        childId: i.child_id ? String(i.child_id) : undefined,
+        date: day(i.date),
+        status: s(i.status) || "open",
+        requiresOversight: !!i.requires_oversight,
+        hasOversight: !!(i.oversight_note || i.oversight_by || i.oversight_at),
+      };
+    }),
+    tasks: taskRows.map((x) => {
+      const t = rr(x);
+      const cid = t.linked_child_id ?? t.child_id;
+      return { id: String(t.id), title: s(t.title) || "Action", dueDate: day(t.due_date), status: s(t.status), childId: cid ? String(cid) : undefined };
+    }),
+    restraints: restraintRows.map((x) => {
+      const r2 = rr(x);
+      return { id: String(r2.id), date: day(r2.date ?? r2.created_at), childId: r2.child_id ? String(r2.child_id) : undefined, childDebriefed: !!r2.child_debriefed };
+    }),
+    missingEpisodes: missingRows.map((x) => {
+      const m = rr(x);
+      return {
+        id: String(m.id),
+        date: day(m.date ?? m.reported_at ?? m.created_at),
+        childId: m.child_id ? String(m.child_id) : undefined,
+        status: s(m.status) || "active",
+        hasReturnInterview: !!(m.return_interview_completed || m.has_return_interview),
+      };
+    }),
+    dailyLogs: logRows.map((x) => {
+      const l = rr(x);
+      return { childId: String(l.child_id), date: day(l.date), content: s(l.content), significant: !!l.is_significant };
+    }),
+    medications: medRows.map((x) => {
+      const m = rr(x);
+      return { id: String(m.id), childId: m.child_id ? String(m.child_id) : undefined, name: s(m.name) };
+    }),
+    reviews: [
+      ...riskRows.map((x) => {
+        const ra = rr(x);
+        return { id: String(ra.id), kind: "Risk assessment", childId: ra.child_id ? String(ra.child_id) : undefined, nextReviewDate: day(ra.next_review_date ?? ra.review_date) };
+      }),
+      ...lacRows.map((x) => {
+        const l = rr(x);
+        return { id: String(l.id), kind: "LAC review", childId: l.child_id ? String(l.child_id) : undefined, nextReviewDate: day(l.next_review_date ?? l.next_review) };
+      }),
+    ].filter((rv) => rv.nextReviewDate),
+    keyWork: keyworkRows.map((x) => {
+      const k = rr(x);
+      return { childId: String(k.child_id), date: day(k.date ?? k.session_date) };
+    }),
+    supervisions: supervisionRows
+      .map((x) => {
+        const sv = rr(x);
+        return { staffId: String(sv.staff_id), date: day(sv.actual_date ?? sv.scheduled_date ?? sv.date), nextDate: day(sv.next_date) || undefined, status: s(sv.status) || undefined };
+      })
+      .filter((sv) => sv.staffId && sv.date),
+    // Store-only on live (no sb() source) → empty; honest, never invented.
+    shifts: [],
+    contacts: [],
+    training: [],
+  };
 }

@@ -19,7 +19,8 @@ import {
 } from "@/lib/engines/chronology-intelligence-engine";
 import { buildInspectionReadiness } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
 import { renderChronologyNarrative, renderInspectionNarrative } from "@/lib/cara/deterministic-narratives";
-import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
+import { buildAskSnapshot, buildLiveAskSnapshot } from "@/lib/ask-cara/build-snapshot";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
@@ -441,9 +442,10 @@ function caraDeterministicText(text: string, mode: string, resolvedStyle: string
 // the same record-based answers as the Ask CARA chat — so the workflow assistant
 // keeps helping (surfacing what's due, overdue, missing oversight, next steps)
 // even when the model is unavailable (e.g. exhausted credits). Never a dead end.
-function deterministicAssistText(opts: { question?: string; pageContext?: string; role?: string }): string {
+async function deterministicAssistText(opts: { question?: string; pageContext?: string; role?: string }): Promise<string> {
   try {
-    const snapshot = buildAskSnapshot(getStore());
+    // Live tenants empty the store → build from live-safe dal; demo keeps the full snapshot.
+    const snapshot = isLiveTenant() ? await buildLiveAskSnapshot() : buildAskSnapshot(getStore());
     const q =
       (opts.question ?? "").trim() ||
       (opts.pageContext ? `What needs my attention on ${opts.pageContext}?` : "What needs my attention today?");
@@ -1688,7 +1690,7 @@ export async function POST(req: NextRequest) {
   if (!hasAiKey && !streamMode) {
     if (mode === "assist") {
       return caraDeterministicJson(
-        deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role }),
+        await deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role }),
         mode,
         resolvedStyle,
       );
@@ -1718,7 +1720,7 @@ export async function POST(req: NextRequest) {
   // ungrounded rather than break the assistant.
   if (typeof question === "string" && question.trim()) {
     try {
-      const snapshot = buildAskSnapshot(getStore());
+      const snapshot = isLiveTenant() ? await buildLiveAskSnapshot() : buildAskSnapshot(getStore());
       const asOf = todayStr();
       const detAnswer = answerQuestion({ question, asOf, role: user_role, snapshot });
       const pack = buildFreeChatGrounding({
@@ -1786,7 +1788,7 @@ export async function POST(req: NextRequest) {
             // the model is unavailable (e.g. exhausted credits).
             const deterministicText =
               mode === "assist"
-                ? deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role })
+                ? await deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role })
                 : mode === "staff_development_summary"
                 ? deterministicStaffDevelopmentSummary()
                 : mode === "chronology_summary"
