@@ -11,8 +11,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
-import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
+import { buildOrgLearningInputFromStore, buildOrgLearningInputLive } from "@/lib/org-learning-report/build-input";
 import type { ReportPeriod } from "@/lib/org-learning-report/types";
 import { todayStr } from "@/lib/utils";
 
@@ -29,8 +30,9 @@ export async function GET(req: NextRequest) {
     if (identity instanceof NextResponse) return identity;
 
     // The store→input mapping lives in @/lib/org-learning-report/build-input so
-    // Ask CARA and this API share ONE organisational-learning read.
-    const input = buildOrgLearningInputFromStore(store, asOf, period);
+    // Ask CARA and this API share ONE organisational-learning read. Live tenants
+    // empty the store, so read the live-safe dal collections there instead.
+    const input = isLiveTenant() ? await buildOrgLearningInputLive(asOf, period) : buildOrgLearningInputFromStore(store, asOf, period);
 
     return NextResponse.json({ data: buildOrgLearningReport(input) });
   } catch (error: unknown) {
