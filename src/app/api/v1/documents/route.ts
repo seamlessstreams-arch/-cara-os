@@ -9,7 +9,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { todayStr } from "@/lib/utils";
@@ -18,8 +17,8 @@ export const dynamic = "force-dynamic";
 
 
 // Documents are read/written via the dual-mode dal (the documents table on a
-// live tenant, the in-memory store in demo). Read receipts have no dal accessor
-// yet, so they stay on the store — empty on a live home, which is correct.
+// live tenant, the in-memory store in demo). Read receipts read through the dal
+// too (findByDocuments), so they populate on a live home rather than staying empty.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function allDocuments(): Promise<any[]> {
   try {
@@ -46,8 +45,10 @@ export async function GET(req: NextRequest) {
     docs = docs.filter((d) => (d as unknown as Record<string, unknown>).requires_read_sign === true);
   }
 
-  // Get all read receipts
-  const receipts = db.documentReadReceipts.findAll();
+  // Receipts for the home's documents — one live-safe query over their ids
+  // (the ids are already home-scoped, so no home-wide store read is needed).
+  const allDocIds = allDocsSource.map((d) => String((d as Record<string, unknown>).id)).filter(Boolean);
+  const receipts = await dal.documentReadReceipts.findByDocuments(allDocIds);
 
   // ── Compute meta over ALL documents (not just filtered) ─────────────────
   const allDocs = allDocsSource;

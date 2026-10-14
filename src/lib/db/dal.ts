@@ -985,6 +985,16 @@ export const dal = {
       if (c) return asApp<DocumentReadReceipt[]>(await sq.getDocumentReadReceipts(c, [docId]));
       return db.documentReadReceipts.findByDocument(docId);
     },
+    // Receipts for a set of documents in ONE query — the live-safe way to get a
+    // home's receipts (the document ids are already home-scoped), so the bulk
+    // documents endpoint no longer needs a home-wide store read (empty on live).
+    async findByDocuments(docIds: string[]): Promise<DocumentReadReceipt[]> {
+      if (docIds.length === 0) return [];
+      const c = sb();
+      if (c) return asApp<DocumentReadReceipt[]>(await sq.getDocumentReadReceipts(c, docIds));
+      const set = new Set(docIds);
+      return db.documentReadReceipts.findAll().filter((r) => set.has(r.document_id));
+    },
     async upsertSignature(docId: string, staffId: string) {
       const c = sb();
       if (c) return sq.upsertDocumentReadReceipt(c, docId, staffId);
