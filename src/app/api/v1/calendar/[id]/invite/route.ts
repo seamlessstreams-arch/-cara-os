@@ -8,7 +8,6 @@
 // human dispatches it.
 import { NextResponse } from "next/server";
 import { safeList } from "@/lib/api/safe-list";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { buildICS, buildInviteMailto } from "@/lib/calendar/ics";
 import { markInviteSent } from "@/lib/calendar/calendar-service";
@@ -35,7 +34,9 @@ async function resolveNames(childId: string | null, organiserId: string) {
 
 export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
-  const event = db.calendarEvents.findById(id);
+  // Live-safe: dal.calendarEvents reads the Supabase table when enabled (the
+  // in-memory store is empty on a live tenant), the store otherwise.
+  const event = await dal.calendarEvents.findById(id);
   if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
   const { childName, organiserName } = await resolveNames(event.child_id, event.organiser_id);

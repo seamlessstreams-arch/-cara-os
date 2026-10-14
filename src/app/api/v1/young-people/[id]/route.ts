@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -26,10 +25,10 @@ async function getYoungPerson(
 ) {
   const { id } = await params;
 
-  // Dual-mode: the 6 converted core entities (young person, staff, incidents, tasks,
-  // medications, daily log, care forms) read from their real Supabase tables when
-  // enabled, the in-memory store otherwise. Chronology + missing-episodes stay on the
-  // store until their own batches (their writes aren't yet write-through to Supabase).
+  // Dual-mode: every section reads its live-safe dal collection (Supabase table
+  // when enabled, in-memory store otherwise) — so the record view populates on a
+  // live tenant, where the store is empty. Chronology + missing-episodes read via
+  // dal (sb()-backed); their writes are not yet write-through to Supabase.
   const yp = ((await dal.youngPeople.findById(id)));
   if (!yp) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
 
@@ -42,8 +41,8 @@ async function getYoungPerson(
   const incidents        = (((await dal.incidents.findAll()))).filter((i) => i.child_id === id);
   const tasks            = (((await dal.tasks.findAll()))).filter((t) => t.linked_child_id === id);
   const medications      = ((await dal.medications.findByChild(id)));
-  const missingEpisodes  = db.missingEpisodes.findByChild(id);
-  const chronology       = db.chronology.findByChild(id);
+  const missingEpisodes  = (((await dal.missingEpisodes.findAll()))).filter((m) => m.child_id === id);
+  const chronology       = ((await dal.chronology.findByChild(id)));
   const careForms        = (((await dal.careForms.findAll()))).filter((f) => f.linked_child_id === id);
   const dailyLog         = (((await dal.dailyLog.findByChild(id)))).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
 
