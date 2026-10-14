@@ -222,6 +222,11 @@ export const EXPECTED_TABLES: ExpectedTable[] = [
     columns: [],
   },
   {
+    table: "child_pace_profiles",
+    migration: "20261014120000_persist_child_pace_profiles.sql",
+    columns: [],
+  },
+  {
     table: "child_report_actions",
     migration: "20260907090000_child_reports_promotion.sql",
     columns: [],

@@ -25,6 +25,7 @@ import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan, EducationRecord, InspectionRecord } from "@/types/extended";
+import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type { SB } from "@/lib/supabase/loose-client";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
@@ -56,6 +57,28 @@ import type {
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
+}
+
+// child_pace_profiles rows are snake_case; the app type (ChildPACEProfile) is
+// camelCase, so map explicitly rather than cast (a cast would read undefined).
+function paceRowToApp(r: Record<string, unknown>): ChildPACEProfile {
+  const sa = (v: unknown): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : []);
+  return {
+    childId: String(r.child_id ?? ""),
+    homeId: r.home_id != null ? String(r.home_id) : "",
+    knownTriggers: sa(r.known_triggers),
+    calmingApproaches: sa(r.calming_approaches),
+    trustedAdults: sa(r.trusted_adults),
+    phrasesThatHelp: sa(r.phrases_that_help),
+    phrasesThatEscalate: sa(r.phrases_that_escalate),
+    sensoryNeeds: sa(r.sensory_needs),
+    repairApproaches: sa(r.repair_approaches),
+    preferredDebriefStyle: r.preferred_debrief_style != null ? String(r.preferred_debrief_style) : null,
+    traumaInformedStrategies: sa(r.trauma_informed_strategies),
+    riskLinkedEscalationRules: sa(r.risk_linked_escalation_rules),
+    updatedBy: r.updated_by != null ? String(r.updated_by) : "",
+    updatedAt: String(r.updated_at ?? ""),
+  };
 }
 
 /** Get a connected Supabase client, or null when in-memory mode */
@@ -1953,13 +1976,53 @@ export const dal = {
     async create(data: Parameters<typeof db.mentalHealthCheckIns.create>[0]) { return db.mentalHealthCheckIns.create(data); },
   },
 
+  // Dual-mode as of the child_pace_profiles migration: the real table on live
+  // (mapped snake↔camel), the in-memory store in demo. Before the table existed,
+  // a child's PACE profile was empty on a live tenant — the wrong thing for a
+  // record staff read while a child is escalating.
   childPaceProfiles: {
-    async findAll(filters?: { child_id?: string }) {
+    async findAll(filters?: { child_id?: string }): Promise<ChildPACEProfile[]> {
+      const c = sb();
+      if (c) {
+        let list = ((await sq.getChildPaceProfiles(c)) as Record<string, unknown>[]).map(paceRowToApp);
+        if (filters?.child_id) list = list.filter((r) => r.childId === filters.child_id);
+        return list;
+      }
       let list = db.childPaceProfiles.findAll();
       if (filters?.child_id) list = list.filter((r) => r.childId === filters.child_id);
       return list;
     },
-    async findByChild(childId: string) { return db.childPaceProfiles.findByChild(childId) ?? null; },
+    async findByChild(childId: string): Promise<ChildPACEProfile | null> {
+      const c = sb();
+      if (c) {
+        const row = await sq.getChildPaceProfile(c, childId);
+        return row ? paceRowToApp(row as Record<string, unknown>) : null;
+      }
+      return db.childPaceProfiles.findByChild(childId) ?? null;
+    },
+    async upsert(profile: ChildPACEProfile): Promise<ChildPACEProfile> {
+      const c = sb();
+      if (c) {
+        const saved = await sq.upsertChildPaceProfile(c, {
+          child_id: profile.childId,
+          home_id: homeId(),
+          known_triggers: profile.knownTriggers,
+          calming_approaches: profile.calmingApproaches,
+          trusted_adults: profile.trustedAdults,
+          phrases_that_help: profile.phrasesThatHelp,
+          phrases_that_escalate: profile.phrasesThatEscalate,
+          sensory_needs: profile.sensoryNeeds,
+          repair_approaches: profile.repairApproaches,
+          preferred_debrief_style: profile.preferredDebriefStyle,
+          trauma_informed_strategies: profile.traumaInformedStrategies,
+          risk_linked_escalation_rules: profile.riskLinkedEscalationRules,
+          updated_by: profile.updatedBy,
+          updated_at: profile.updatedAt,
+        });
+        return paceRowToApp(saved as unknown as Record<string, unknown>);
+      }
+      return db.childPaceProfiles.upsert(profile);
+    },
   },
 
   complaints: {

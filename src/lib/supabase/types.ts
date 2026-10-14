@@ -605,6 +605,28 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["behaviour_support_plans"]["Insert"]>;
         Relationships: [];
       };
+      child_pace_profiles: {
+        Row: {
+          child_id: string;
+          home_id: string | null;
+          known_triggers: Json;
+          calming_approaches: Json;
+          trusted_adults: Json;
+          phrases_that_help: Json;
+          phrases_that_escalate: Json;
+          sensory_needs: Json;
+          repair_approaches: Json;
+          preferred_debrief_style: string | null;
+          trauma_informed_strategies: Json;
+          risk_linked_escalation_rules: Json;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["child_pace_profiles"]["Row"], "created_at" | "updated_at"> & { created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["child_pace_profiles"]["Insert"]>;
+        Relationships: [];
+      };
 
       maintenance_items: {
         Row: {

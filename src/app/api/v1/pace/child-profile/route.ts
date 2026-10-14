@@ -4,7 +4,7 @@
 // Permission-controlled + auditable (updatedBy/updatedAt). Sensitive child data.
 import { NextResponse } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
@@ -16,12 +16,12 @@ function arr(v: unknown, fallback: string[] = []): string[] {
   return Array.isArray(v) ? v.map((x) => String(x)).filter(Boolean) : fallback;
 }
 
-export function GET(req: Request) {
+export async function GET(req: Request) {
   const auth = requirePermission(req, PERMISSIONS.VIEW_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
   const childId = new URL(req.url).searchParams.get("childId");
   if (!childId) return NextResponse.json({ error: "childId is required" }, { status: 400 });
-  return NextResponse.json({ data: { childId, profile: db.childPaceProfiles.findByChild(childId) ?? null } });
+  return NextResponse.json({ data: { childId, profile: await dal.childPaceProfiles.findByChild(childId) } });
 }
 
 export async function PUT(req: Request) {
@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
   const childId = String(body.childId ?? "");
   if (!childId) return NextResponse.json({ error: "childId is required" }, { status: 400 });
 
-  const existing = db.childPaceProfiles.findByChild(childId);
+  const existing = await dal.childPaceProfiles.findByChild(childId);
   const profile: ChildPACEProfile = {
     childId,
     homeId: String(body.homeId ?? existing?.homeId ?? tenantHomeId()),
@@ -51,7 +51,7 @@ export async function PUT(req: Request) {
     updatedBy: auth.userId,
     updatedAt: new Date().toISOString(),
   };
-  const saved = db.childPaceProfiles.upsert(profile);
+  const saved = await dal.childPaceProfiles.upsert(profile);
   return NextResponse.json({ data: saved }, { status: existing ? 200 : 201 });
 }
 
