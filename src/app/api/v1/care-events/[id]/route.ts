@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
-import { careEventsDb } from "@/lib/db";
+import { careEventsDb, dal } from "@/lib/db";
 import { processCareEvent, retryFailedRoutes, persistProcessorState } from "@/lib/care-events/processor";
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
 import { proposeRecordsFromCareEvent } from "@/lib/cara/cara-care-event-bridge";
@@ -56,10 +56,14 @@ export async function GET(
     careEventsDb.careEventAuditLog.findByCareEvent(id),
   ]);
 
-  // Resolve names (still from in-memory staff/YP for now — will migrate separately)
-  const staffMember = event.staff_id ? db.staff.findById(event.staff_id) : null;
-  const youngPerson = event.child_id ? db.youngPeople.findById(event.child_id) : null;
-  const verifier    = event.verified_by ? db.staff.findById(event.verified_by) : null;
+  // Resolve names via the live-safe dal (staff + young person are Supabase-backed),
+  // so the care-event detail shows real names on a live tenant. Prefetch staff once
+  // so the version-history loop below is not N+1.
+  const allStaff = await dal.staff.findAll();
+  const staffById = (sid: string | null | undefined) => (sid ? allStaff.find((s) => s.id === sid) ?? null : null);
+  const staffMember = staffById(event.staff_id);
+  const youngPerson = event.child_id ? await dal.youngPeople.findById(event.child_id) : null;
+  const verifier    = staffById(event.verified_by);
 
   // Build version history chain (oldest first)
   const versionHistory: Array<{ id: string; version: number; amended_at: string | null; amendment_reason: string | null; amended_by_name: string | null }> = [];
@@ -67,7 +71,7 @@ export async function GET(
   while (cursor?.previous_version_id) {
     const prev = await careEventsDb.careEvents.findById(cursor.previous_version_id);
     if (!prev) break;
-    const amendedByStaff = prev.amended_by ? db.staff.findById(prev.amended_by) : null;
+    const amendedByStaff = staffById(prev.amended_by);
     versionHistory.unshift({
       id: prev.id,
       version: prev.version,
@@ -190,7 +194,7 @@ export async function PATCH(
 
       // Notify manager if routing failed
       if (result.routes_failed > 0) {
-        const mgr = db.staff.findAll().find(
+        const mgr = (await dal.staff.findAll()).find(
           (s) => s.role === "registered_manager"
         );
         if (mgr) {
@@ -278,7 +282,10 @@ export async function PATCH(
         ip_address: null,
       });
 
-      // Mark all filing cabinet items for this event as verified
+      // Mark all filing cabinet items for this event as verified. Filing stays on
+      // the in-memory store (no live write-through yet), so on a live tenant there
+      // are no items to verify here — the care-event verification itself is
+      // live-backed via careEventsDb above.
       const filingItems = db.filingCabinet.findByCareEvent(id);
       const verifiedAt = new Date().toISOString();
       filingItems
@@ -446,7 +453,7 @@ export async function PATCH(
       });
 
       // Notify manager that amendment requires review
-      const manager = db.staff.findAll().find(
+      const manager = (await dal.staff.findAll()).find(
         (s) => s.role === "registered_manager"
       );
       if (manager && manager.id !== actorId) {

@@ -48,13 +48,18 @@ export async function GET(req: NextRequest) {
 
   // ── List mode (picker) ───────────────────────────────────────────────────
   if (!id) {
-    const records = db.incidents
-      .findAll()
+    // Live-safe: read incidents + young people via dal (Supabase on live, store on
+    // demo); prefetch the roster once so the picker is not N+1.
+    const [allIncidents, allYoungPeople] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+    const records = allIncidents
       .slice()
       .sort((a, b) => `${b.date ?? ""}`.localeCompare(`${a.date ?? ""}`))
       .slice(0, 50)
       .map((i) => {
-        const yp = db.youngPeople.findById(i.child_id);
+        const yp = allYoungPeople.find((y) => y.id === i.child_id);
         return {
           id: i.id,
           recordType: "incident" as const,
@@ -71,20 +76,23 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Detail mode (hydrate + generate) ──────────────────────────────────────
-  const incident = db.incidents.findById(id);
+  const incident = await dal.incidents.findById(id);
   if (!incident) {
     return NextResponse.json({ error: "Incident not found" }, { status: 404 });
   }
-  const yp = db.youngPeople.findById(incident.child_id);
+  const yp = (await dal.youngPeople.findById(incident.child_id)) ?? undefined;
+  // Restraint→debrief linkage has no live-safe source yet → honest-empty on live.
   const debriefs = db.debriefRecords.findAll().filter((d) => d.linked_incident_id === id);
-  const recentIncidents = db.incidents.findAll().filter((i) => i.child_id === incident.child_id);
+  const recentIncidents = (await dal.incidents.findAll()).filter((i) => i.child_id === incident.child_id);
 
   // Full practice-intelligence lens: the child's Digital Twin (via the CPIE
-  // chokepoint — never raw records) + training rows for the involved staff.
+  // chokepoint — never raw records) + training rows for the involved staff. The
+  // twin reads the store, so practiceLens degrades to empty on a live tenant.
   const twin = getChildTwin(incident.child_id);
   const staffIds = [incident.reported_by, ...(incident.witnesses ?? [])].filter(Boolean);
+  const allStaff = await dal.staff.findAll();
   const staffNameOf = (sid: string) => {
-    const st = db.staff.findById(sid);
+    const st = allStaff.find((s) => s.id === sid);
     return st ? st.full_name || [st.first_name, st.last_name].filter(Boolean).join(" ") : sid;
   };
   const staffTraining = (await safeList(dal.training.findAll()))
