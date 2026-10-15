@@ -15,7 +15,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Headphones, Link2, MessageCircle, Network, NotebookPen, Pause, Play, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
+import { Headphones, Link2, MessageCircle, Network, NotebookPen, Pause, Play, Printer, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import type { NotebookBriefing, BriefingSignal } from "@/lib/cara-studio/notebook/notebook-briefing";
 import type { RelationalTimeline, RelationalMoment } from "@/lib/relational-timeline/relational-timeline-engine";
 import type { NotebookMindMap, MindMapGroupKey } from "@/lib/cara-studio/notebook/notebook-mindmap";
@@ -136,7 +136,7 @@ function TimelineDoc({ t }: { t: RelationalTimeline }) {
                 <span className="rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-[var(--cs-text-secondary)] ring-1 ring-[var(--cs-border)]">{LENS[m.lens].label}</span>
               </div>
               <div className="mt-0.5 text-sm font-semibold text-[var(--cs-navy)]">{m.title}</div>
-              {m.detail && <p className="mt-0.5 line-clamp-3 max-w-[62ch] text-[13px] leading-relaxed text-[var(--cs-text)]">{m.detail}</p>}
+              {m.detail && <p className="mt-0.5 line-clamp-3 max-w-[62ch] text-[13px] leading-relaxed text-[var(--cs-text)] print:line-clamp-none">{m.detail}</p>}
               {m.childVoice && <p className="mt-1 max-w-[60ch] border-l-2 border-[var(--cs-teal)]/40 pl-2 text-[13px] italic text-[var(--cs-text-secondary)]">“{m.childVoice}”</p>}
               <span className="mt-1 inline-flex items-center gap-1 rounded border border-[var(--cs-teal)]/35 bg-[var(--cs-teal)]/8 px-1.5 py-0.5 font-mono text-[10px] text-[var(--cs-teal)]"><Link2 className="h-2.5 w-2.5" /> {m.source}</span>
             </li>
@@ -263,11 +263,12 @@ function AskDoc({ childId, childName }: { childId: string; childName?: string })
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--cs-teal)]"><MessageCircle className="h-3.5 w-3.5" /> Ask Cara</div>
       <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>Ask about {who}</h1>
       <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">Deterministic and grounded only in the record. Every line is labelled for the kind of claim it is — and Cara says &ldquo;not evidenced&rdquo; rather than guessing.</p>
-      <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="mt-4 flex gap-2">
+      <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="mt-4 flex gap-2 print:hidden">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Ask about ${who}…`} aria-label="Ask about this child" className="min-w-0 flex-1 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text)] focus:border-[var(--cs-teal)] focus:outline-none" />
         <button type="submit" disabled={m.isPending} className="rounded-lg bg-[var(--cs-teal)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">Ask</button>
       </form>
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      {ans && <p className="mt-4 hidden text-sm font-semibold text-[var(--cs-navy)] print:block">Question: {q}</p>}
+      <div className="mt-2 flex flex-wrap gap-1.5 print:hidden">
         {EXAMPLES.map((ex) => <button key={ex} type="button" onClick={() => ask(ex)} className="rounded-full border border-[var(--cs-border)] bg-[var(--cs-bg)] px-2.5 py-1 text-[11.5px] text-[var(--cs-text-secondary)] hover:border-[var(--cs-teal)]">{ex}</button>)}
       </div>
       {m.isPending && <p className="mt-5 text-sm text-[var(--cs-text-muted)]">Reading the record…</p>}
@@ -293,7 +294,7 @@ function AskDoc({ childId, childName }: { childId: string; childName?: string })
             </div>
           )}
           {ans.suggestions.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex flex-wrap gap-1.5 print:hidden">
               {ans.suggestions.map((sg) => <button key={sg.label} type="button" onClick={() => ask(sg.label)} className="rounded-full border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11.5px] text-[var(--cs-navy)] hover:border-[var(--cs-teal)]">{sg.label} →</button>)}
             </div>
           )}
@@ -344,7 +345,7 @@ function AudioDoc({ childId }: { childId: string }) {
         <>
           <h1 className="mt-2 text-xl font-bold leading-tight text-[var(--cs-navy)] sm:text-2xl" style={{ textWrap: "balance" }}>{script.title}</h1>
           <p className="mt-1 max-w-[64ch] text-sm text-[var(--cs-text-secondary)]">{script.intro}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3 print:hidden">
             {canSpeak
               ? <button type="button" onClick={playing ? stop : play} className="inline-flex items-center gap-2 rounded-full bg-[var(--cs-teal)] px-4 py-2 text-sm font-semibold text-white">{playing ? <><Pause className="h-4 w-4" /> Stop</> : <><Play className="h-4 w-4" /> Play</>}</button>
               : <span className="text-[12px] text-[var(--cs-text-muted)]">Text-to-speech isn’t available here — read the script below.</span>}
@@ -395,10 +396,10 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
 
   return (
     <PageShell title={childName ? `${childName} — Notebook` : b ? `${b.firstName} — Notebook` : "Child Notebook"} subtitle="Deterministic whole-child intelligence · no uploads · every line cites the record">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)_210px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)_210px] print:block">
 
         {/* Sources rail */}
-        <aside className="rounded-xl border border-[var(--cs-border)] bg-white">
+        <aside className="rounded-xl border border-[var(--cs-border)] bg-white print:hidden">
           <div className="border-b border-[var(--cs-border)] px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Sources</div>
           <p className="border-b border-[var(--cs-border)] px-3.5 py-2.5 text-[11px] leading-relaxed text-[var(--cs-text-secondary)]">The notebook <b className="text-[var(--cs-teal)]">is</b> the child — every record is already here, nothing to upload.</p>
           <ul className="p-2">
@@ -413,7 +414,17 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
 
         {/* Document canvas */}
         <section className="min-w-0">
-          <article className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-sm sm:p-8">
+          <div className="mb-2 flex justify-end print:hidden">
+            <button
+              type="button"
+              onClick={() => { if (typeof window !== "undefined") window.print(); }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:border-[var(--cs-teal)]"
+            >
+              <Printer className="h-3.5 w-3.5" /> Print / Save as PDF
+            </button>
+          </div>
+          {/* cara-notebook-print keeps the semantic colour coding when printed (see globals.css). */}
+          <article className="cara-notebook-print rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-sm sm:p-8 print:rounded-none print:border-0 print:p-0 print:shadow-none">
             {view === "ask" ? (
               <AskDoc childId={childId} childName={childName ?? b?.firstName} />
             ) : view === "audio" ? (
@@ -433,7 +444,7 @@ export function NotebookView({ childId, childName }: { childId: string; childNam
         </section>
 
         {/* Studio rail */}
-        <aside className="rounded-xl border border-[var(--cs-border)] bg-white">
+        <aside className="rounded-xl border border-[var(--cs-border)] bg-white print:hidden">
           <div className="border-b border-[var(--cs-border)] px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Studio</div>
           <div className="p-2">
             <StudioButton active={view === "briefing"} onClick={() => setView("briefing")} icon="📰" title="Whole-child briefing" sub="this fortnight" />
