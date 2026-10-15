@@ -1060,6 +1060,22 @@ body::before {
   .cs-print-color .cs-tone-green { background: #f0fdf4 !important; color: #166534 !important; }
   .cs-print-color .cs-tone-blue { background: #eff6ff !important; color: #1e40af !important; }
   .cs-print-color .cs-tone-slate { background: #f8fafc !important; color: #334155 !important; }
+
+  /* The Cara Studio notebook prints as a clean document but keeps its semantic
+     colour coding (severity dots, relational-lens dots, SCCIF status pills) — the
+     `*` reset above would otherwise strip every background to white. These are
+     more specific than `*`, so they win, and print-color-adjust forces them to
+     actually render on paper. */
+  .cara-notebook-print, .cara-notebook-print * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .cara-notebook-print .bg-red-500 { background: #ef4444 !important; }
+  .cara-notebook-print .bg-amber-500 { background: #f59e0b !important; }
+  .cara-notebook-print .bg-emerald-500 { background: #10b981 !important; }
+  .cara-notebook-print .bg-sky-500 { background: #0ea5e9 !important; }
+  .cara-notebook-print .bg-indigo-500 { background: #6366f1 !important; }
+  .cara-notebook-print .bg-violet-500 { background: #8b5cf6 !important; }
+  .cara-notebook-print .bg-emerald-100 { background: #d1fae5 !important; color: #047857 !important; }
+  .cara-notebook-print .bg-amber-100 { background: #fef3c7 !important; color: #b45309 !important; }
+  .cara-notebook-print .bg-red-100 { background: #fee2e2 !important; color: #b91c1c !important; }
 }
 /* ══════════════════════════════════════════════════════════════════════════════
    CARA PREMIUM MOTION — a deliberate, high-class feel, in CARA's own palette.
