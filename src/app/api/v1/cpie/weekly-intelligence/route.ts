@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
-import { getWeeklyReport } from "@/lib/cpie/get-weekly-report";
+import { getWeeklyIntelligenceObjectAsync, getMonthlyIntelligenceObjectAsync } from "@/lib/cpie/get-weekly-intelligence-object";
+import { getWeeklyReportAsync } from "@/lib/cpie/get-weekly-report";
 import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 import { enhanceWeeklyReport, enhanceWeeklyNarrative } from "@/lib/cpie/enhance-report";
 
@@ -36,15 +36,15 @@ export async function GET(req: NextRequest) {
     }
 
     const wio = period === "month"
-      ? getMonthlyIntelligenceObject(childId, weekEnding)
-      : getWeeklyIntelligenceObject(childId, weekEnding);
+      ? await getMonthlyIntelligenceObjectAsync(childId, weekEnding)
+      : await getWeeklyIntelligenceObjectAsync(childId, weekEnding);
     if (!wio) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
     // The narrator layer: the third-person Manager-Summary NARRATIVE and the full
     // sectioned, second-person REPORT (the Oak House template) — deterministic,
     // never an LLM; a narrator only phrases what the object already holds.
     const narrative = composeWeeklyNarrative(wio);
-    const report = getWeeklyReport(childId, wio.weekEnding, wio.windowDays);
+    const report = await getWeeklyReportAsync(childId, wio.weekEnding, wio.windowDays);
 
     // Optional LLM ENHANCEMENT (opt-in via ?enhance=true) — layered ON TOP of the
     // deterministic floor, through the governed AI gateway. Falls back to the

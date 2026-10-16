@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { getChildTwinAsync } from "@/lib/cpie/get-child-twin";
 import {
   buildChildTwinExportModel,
   renderChildTwinHtml,
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "A child id is required (?child_id=)." }, { status: 400 });
     }
 
-    const twin = getChildTwin(childId);
+    const twin = await getChildTwinAsync(childId);
     if (!twin) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
     const format = (searchParams.get("format") || "html").toLowerCase();
