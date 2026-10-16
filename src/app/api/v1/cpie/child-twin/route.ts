@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { getChildTwinAsync } from "@/lib/cpie/get-child-twin";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
     }
 
-    const twin = getChildTwin(childId);
+    const twin = await getChildTwinAsync(childId);
     if (!twin) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
     return NextResponse.json({

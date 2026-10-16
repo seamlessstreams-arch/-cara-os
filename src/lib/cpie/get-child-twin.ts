@@ -14,6 +14,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { buildChildTwin, type ChildTwinInput } from "./child-twin-engine";
 import type { ChildTwin } from "./types";
 
@@ -97,6 +99,76 @@ export function getChildTwin(childId: string, nowIso: string = new Date().toISOS
   const twin = buildChildTwin(input);
   cache.set(childId, { sig, twin });
   return twin;
+}
+
+// ── Live-safe gather (a live tenant's store is EMPTY) ───────────────────────────
+// buildInput reads the in-memory store, so getChildTwin returns null on a live
+// tenant ("Child not found"). buildInputLive gathers the SAME ChildTwinInput from
+// the live-safe dal collections (each sb()-backed) and feeds the identical pure
+// buildChildTwin. The enrichment collections with no live-safe source (personal
+// passports, aspirations, life story, achievements, friendship maps, return
+// interviews, family time, debriefs) are left EMPTY — honest gaps the twin
+// reports in missingInformation, never invents. Rows are whole-home; the engine
+// windows per child.
+async function buildInputLive(childId: string, nowIso: string): Promise<ChildTwinInput | null> {
+  const [children, staff, pace, dailyLogs, keywork, behaviour, incidents, missing, education, lac, risk] =
+    await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.staff.findAll(),
+      dal.childPaceProfiles.findAll(),
+      dal.dailyLog.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.educationRecords.findAll(),
+      dal.lacReviews.findAll(),
+      dal.riskAssessments.findAll(),
+    ]);
+  const R = (v: unknown): Record<string, unknown>[] => (Array.isArray(v) ? (v as unknown as Record<string, unknown>[]) : []);
+  const child = R(children).find((yp) => String(yp.id) === childId);
+  if (!child) return null;
+  const staffById = new Map(
+    R(staff).map((x) => [
+      String(x.id),
+      s(x.full_name) || [x.first_name, x.last_name].filter(Boolean).join(" ") || String(x.id),
+    ]),
+  );
+  return {
+    childId,
+    childName: s(child.preferred_name) || s(child.first_name) || childId,
+    now: nowIso,
+    child,
+    paceProfile: R(pace).find((p) => String(p.childId ?? p.child_id) === childId),
+    // Store-only enrichment — honest gaps on live (never invented).
+    personalPassports: [],
+    aspirationRecords: [],
+    lifeStoryEntries: [],
+    positiveAchievements: [],
+    friendshipMaps: [],
+    returnInterviews: [],
+    familyTimeSessions: [],
+    debriefRecords: [],
+    // Live-safe record collections.
+    dailyLogs: R(dailyLogs),
+    keyWorkingSessions: R(keywork),
+    behaviourLog: R(behaviour),
+    incidents: R(incidents),
+    missingEpisodes: R(missing),
+    educationRecords: R(education),
+    lacReviews: R(lac),
+    riskAssessments: R(risk),
+    staffName: (id: string) => staffById.get(id) ?? id,
+  };
+}
+
+/** The twin, resolved live-safely: the dal collections on a live tenant, the
+ *  in-memory store (memoised) in demo. The one way a ROUTE should read the twin. */
+export async function getChildTwinAsync(childId: string, nowIso: string = new Date().toISOString()): Promise<ChildTwin | null> {
+  if (!isLiveTenant()) return getChildTwin(childId, nowIso);
+  const input = await buildInputLive(childId, nowIso);
+  if (!input) return null;
+  return buildChildTwin(input);
 }
 
 /** Twins for every current child (manager rollups, weekly objects, dashboards). */

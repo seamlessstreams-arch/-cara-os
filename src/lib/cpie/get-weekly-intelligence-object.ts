@@ -9,7 +9,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
-import { getChildTwin } from "./get-child-twin";
+import { dal } from "@/lib/db/dal";
+import { isLiveTenant } from "@/lib/db/live-mode";
+import { getChildTwin, getChildTwinAsync } from "./get-child-twin";
 import { buildWeeklyIntelligenceObject, type WeeklyIntelligenceObject } from "./weekly-intelligence-object";
 import { todayStr } from "@/lib/utils";
 
@@ -59,6 +61,64 @@ export function getMonthlyIntelligenceObject(
   nowIso: string = new Date().toISOString(),
 ): WeeklyIntelligenceObject | null {
   return getWeeklyIntelligenceObject(childId, monthEnding, nowIso, 30, "month");
+}
+
+// ── Live-safe variants (a live tenant's store is EMPTY) ─────────────────────────
+// The sync versions read the store (and getChildTwin), so they return null on a
+// live tenant. These resolve the twin via getChildTwinAsync and window the
+// live-safe dal record collections; the store-only ones (achievements, life
+// story, family time, return interviews) stay empty — honest, never invented.
+export async function getWeeklyIntelligenceObjectAsync(
+  childId: string,
+  weekEnding: string = todayStr(),
+  nowIso: string = new Date().toISOString(),
+  windowDays = 7,
+  periodLabel = "week",
+): Promise<WeeklyIntelligenceObject | null> {
+  const twin = await getChildTwinAsync(childId, nowIso);
+  if (!twin) return null;
+  const R = (v: unknown): Record<string, unknown>[] => (Array.isArray(v) ? (v as Record<string, unknown>[]) : []);
+  let recs: Parameters<typeof buildWeeklyIntelligenceObject>[0];
+  if (isLiveTenant()) {
+    const [incidents, missing, keywork, dailyLogs, behaviour, education] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.dailyLog.findAll(),
+      dal.behaviourLog.findAll(),
+      dal.educationRecords.findAll(),
+    ]);
+    recs = {
+      twin, now: nowIso, weekEnding, windowDays, periodLabel,
+      positiveAchievements: [], lifeStoryEntries: [], familyTimeSessions: [], returnInterviews: [],
+      incidents: R(incidents), missingEpisodes: R(missing), keyWorkingSessions: R(keywork),
+      dailyLogs: R(dailyLogs), behaviourLog: R(behaviour), educationRecords: R(education),
+    };
+  } else {
+    const store = getStore();
+    recs = {
+      twin, now: nowIso, weekEnding, windowDays, periodLabel,
+      positiveAchievements: rows(store, "positiveAchievements"),
+      lifeStoryEntries: rows(store, "lifeStoryEntries"),
+      incidents: rows(store, "incidents"),
+      missingEpisodes: rows(store, "missingEpisodes"),
+      keyWorkingSessions: rows(store, "keyWorkingSessions"),
+      familyTimeSessions: rows(store, "familyTimeSessions"),
+      dailyLogs: rows(store, "dailyLog"),
+      behaviourLog: rows(store, "behaviourLog"),
+      educationRecords: rows(store, "educationRecords"),
+      returnInterviews: rows(store, "returnInterviews"),
+    };
+  }
+  return buildWeeklyIntelligenceObject(recs);
+}
+
+export async function getMonthlyIntelligenceObjectAsync(
+  childId: string,
+  monthEnding: string = todayStr(),
+  nowIso: string = new Date().toISOString(),
+): Promise<WeeklyIntelligenceObject | null> {
+  return getWeeklyIntelligenceObjectAsync(childId, monthEnding, nowIso, 30, "month");
 }
 
 /** Weekly objects for every current child (home rollups, manager review). */

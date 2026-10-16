@@ -11,7 +11,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
-import { getWeeklyIntelligenceObject } from "./get-weekly-intelligence-object";
+import { dal } from "@/lib/db/dal";
+import { isLiveTenant } from "@/lib/db/live-mode";
+import { getWeeklyIntelligenceObject, getWeeklyIntelligenceObjectAsync } from "./get-weekly-intelligence-object";
 import { composeWeeklyReport, type WeeklyReport } from "./weekly-report";
 import { composeWeeklyNarrative, type WeeklyNarrative } from "./weekly-narrative";
 import { pronounsForChild } from "./pronouns";
@@ -51,6 +53,50 @@ export function getWeeklyReport(childId: string, weekEnding?: string, windowDays
     healthRecordEntries: rows(store.healthRecordEntries),
     ypFeedback: rows(store.ypFeedback),
     keyWorkingSessions: rows(store.keyWorkingSessions),
+  });
+}
+
+/** The full sectioned weekly report, resolved live-safely: the dal collections on
+ *  a live tenant (store-only enrichment left empty — honest), the store in demo. */
+export async function getWeeklyReportAsync(childId: string, weekEnding?: string, windowDays = 7): Promise<WeeklyReport | null> {
+  if (!isLiveTenant()) return getWeeklyReport(childId, weekEnding, windowDays);
+  const now = new Date().toISOString();
+  const end = (weekEnding || now).slice(0, 10);
+  const wio = await getWeeklyIntelligenceObjectAsync(childId, end, now, windowDays, windowDays >= 28 ? "month" : "week");
+  if (!wio) return null;
+  const [children, dailyLogs, incidents, behaviour, education, medications, keywork] = await Promise.all([
+    dal.youngPeople.findAll(),
+    dal.dailyLog.findAll(),
+    dal.incidents.findAll(),
+    dal.behaviourLog.findAll(),
+    dal.educationRecords.findAll(),
+    dal.medications.findAll(),
+    dal.keyWorkingSessions.findAll(),
+  ]);
+  const child = rows(children).find((c) => String(c.id) === childId);
+  if (!child) return null;
+  // pronounsForChild only reads youngPeople (gender) + personalPassports; pass a
+  // minimal store-shaped object with the live child so gender-based pronouns work.
+  const pronounStore = { youngPeople: rows(children), personalPassports: [] } as unknown as ReturnType<typeof getStore>;
+  return composeWeeklyReport({
+    childId,
+    childName: childName(child, childId),
+    now,
+    weekEnding: end,
+    windowDays,
+    wio,
+    pronouns: pronounsForChild(childId, pronounStore),
+    dailyLogs: rows(dailyLogs),
+    positiveAchievements: [],
+    incidents: rows(incidents),
+    behaviourLog: rows(behaviour),
+    familyTimeSessions: [],
+    educationRecords: rows(education),
+    medications: rows(medications),
+    activities: [],
+    healthRecordEntries: [],
+    ypFeedback: [],
+    keyWorkingSessions: rows(keywork),
   });
 }
 
