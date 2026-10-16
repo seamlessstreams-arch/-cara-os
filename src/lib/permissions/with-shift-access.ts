@@ -33,8 +33,29 @@ const DEFAULT_USER_ID = "staff_darren";
 
 export function withShiftAccess<Ctx>(resourceType: ResourceType, action: Action, handler: RouteHandler<Ctx>): WrappedHandler<Ctx> {
   return async (req: NextRequest, routeCtx) => {
-    const staffId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
-    const user = buildShiftAwareUserContext(staffId);
+    let staffId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
+    let sessionRole: string | undefined;
+    let sessionHomeId: string | null | undefined;
+    // On a live tenant resolve the real staff session — the store is emptied, so
+    // the header/seed convention would default every caller to an off-shift care
+    // worker and wrongly refuse a manager. Fail closed (401) when there's no
+    // session; in demo (Supabase off) keep the header convention unchanged.
+    const { isSupabaseEnabled } = await import("@/lib/supabase/server");
+    if (isSupabaseEnabled()) {
+      const { resolveStaffSession } = await import("@/lib/supabase/auth");
+      let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+      try { session = await resolveStaffSession(req); } catch { session = null; }
+      if (!session) {
+        return NextResponse.json(
+          { error: "Unauthorized", detail: "A valid authenticated session is required." },
+          { status: 401 },
+        );
+      }
+      staffId = session.userId;
+      sessionRole = session.role;
+      sessionHomeId = session.homeId;
+    }
+    const user = buildShiftAwareUserContext(staffId, { sessionRole, sessionHomeId });
     const decision = checkAccess({ user, resourceType, action });
 
     if (!decision.allowed) {

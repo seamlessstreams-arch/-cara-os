@@ -89,6 +89,11 @@ export interface ShiftComputeOpts {
   now?: string;
   /** Force enforcement logic for DISPLAY ONLY (does not change real access). */
   preview?: boolean;
+  /** Session-resolved role / home for a live tenant. The in-memory store is
+   *  emptied on live, so without these the role falls back to a default care
+   *  worker and a manager is wrongly shift-blocked. Demo passes neither. */
+  sessionRole?: string;
+  sessionHomeId?: string | null;
 }
 
 /**
@@ -120,8 +125,8 @@ interface StaffRow {
  */
 export function buildShiftAwareUserContext(staffId: string, opts: ShiftComputeOpts = {}): UserContext {
   const staff = (db.staff?.findAll?.() ?? []).find((s: { id: string }) => s.id === staffId) as StaffRow | undefined;
-  const role = toPermissionRole(staff?.role);
-  const homeId = staff?.home_id ?? "home_oak";
+  const role = opts.sessionRole ? toPermissionRole(opts.sessionRole) : toPermissionRole(staff?.role);
+  const homeId = opts.sessionHomeId ?? staff?.home_id ?? "home_oak";
   const assignedChildIds = (db.youngPeople?.findAll?.() ?? [])
     .filter((yp: { key_worker_id?: string | null }) => yp.key_worker_id === staffId)
     .map((yp: { id: string }) => yp.id);
