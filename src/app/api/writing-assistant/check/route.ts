@@ -8,7 +8,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getWritingProvider, isWritingAssistantEnabled } from "@/lib/writing-assistant/engine";
 import { MAX_CHECK_LENGTH, type WritingCheckInput, type WritingMode } from "@/lib/writing-assistant/types";
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!isWritingAssistantEnabled()) {
     return NextResponse.json({ error: "Writing Assistant is disabled" }, { status: 503 });
   }
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   let body: Partial<WritingCheckInput>;

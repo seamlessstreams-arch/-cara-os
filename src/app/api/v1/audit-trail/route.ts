@@ -3,7 +3,7 @@
 // In-memory + always-on for the demo; durable cs_audit_log backs it when Supabase
 // is configured. Gated to roles permitted to view the audit trail.
 import { NextRequest, NextResponse } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getRecordAuditTrail } from "@/lib/audit/audit-recorder";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -11,7 +11,7 @@ import { isSupabaseEnabled } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_AUDIT_TRAIL);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_CARA_AUDIT_TRAIL);
   if (auth instanceof NextResponse) return auth;
 
   const url = new URL(req.url);

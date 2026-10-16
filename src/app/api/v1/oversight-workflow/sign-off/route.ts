@@ -18,7 +18,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS, type AppRole } from "@/lib/permissions";
 import {
   generateManagementOversight,
@@ -70,7 +70,7 @@ interface SignOffBody extends Partial<WorkflowSignOffInput> {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.SIGN_OFF_TASKS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.SIGN_OFF_TASKS);
   if (auth instanceof NextResponse) return auth;
 
   let body: SignOffBody;

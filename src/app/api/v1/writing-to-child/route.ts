@@ -6,8 +6,8 @@
 // Deterministic-first: the review always returns; AI (when configured) only
 // enriches the two wording suggestions. Cara advises — the practitioner owns
 // the final record (disclaimer travels in every response).
-import { NextResponse } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { enrichWritingReview } from "@/lib/writing-to-child/writing-to-child-engine";
 import { WRITING_EXAMPLES } from "@/lib/writing-to-child/examples";
@@ -27,8 +27,8 @@ function strArr(v: unknown): string[] | undefined {
   return Array.isArray(v) ? v.map((x) => String(x)).filter(Boolean) : undefined;
 }
 
-export function GET(req: Request) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_DASHBOARD);
+export async function GET(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_DASHBOARD);
   if (auth instanceof NextResponse) return auth;
   const sp = new URL(req.url).searchParams;
   if (sp.has("nodes")) {
@@ -38,8 +38,8 @@ export function GET(req: Request) {
   return NextResponse.json({ data: { examples: WRITING_EXAMPLES, recordTypes: RECORD_TYPES, principle: WRITING_CORE_PRINCIPLE } });
 }
 
-export async function POST(req: Request) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_DASHBOARD);
+export async function POST(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_DASHBOARD);
   if (auth instanceof NextResponse) return auth;
 
   let body: Record<string, unknown> = {};

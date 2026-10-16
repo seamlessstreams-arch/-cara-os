@@ -2,13 +2,13 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { auditFromRequest } from "@/lib/audit/audit-recorder";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = requirePermission(req, PERMISSIONS.VIEW_SUPERVISION);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_SUPERVISION);
   if (auth instanceof NextResponse) return auth;
 
   const supervision = await dal.supervisions.findById(id);
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = requirePermission(req, PERMISSIONS.MANAGE_SUPERVISION);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SUPERVISION);
   if (auth instanceof NextResponse) return auth;
 
   const supervision = await dal.supervisions.findById(id);

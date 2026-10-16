@@ -10,7 +10,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
   buildDefensibleDecision,
@@ -45,14 +45,14 @@ const DEMO: DefensibleDecisionInput = {
 };
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
   const today = todayStr();
   return NextResponse.json({ data: { example: true, input: DEMO, decision: buildDefensibleDecision(DEMO, today) } });
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
 
   let body: Partial<DefensibleDecisionInput>;

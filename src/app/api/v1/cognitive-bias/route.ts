@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { BIAS_DEFINITIONS, computeBiasReflections } from "@/lib/cognitive-bias/bias-engine";
 import { BIAS_CONTEXT_LABELS, type BiasContext, type BiasSignalInput } from "@/lib/cognitive-bias/types";
@@ -29,7 +29,7 @@ const DEMO: BiasSignalInput = {
 };
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
   return NextResponse.json({
     data: {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
 
   const parsed = await readJsonBody(req);

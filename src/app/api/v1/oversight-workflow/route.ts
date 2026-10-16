@@ -13,7 +13,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
@@ -95,7 +95,7 @@ const DEMO_INPUT: OversightInput = {
 };
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
   try {
     // Live tenants: was returning DEMO_INPUT (fictional "Jordan" 14yo physical
@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
 
   let body: Partial<OversightInput>;

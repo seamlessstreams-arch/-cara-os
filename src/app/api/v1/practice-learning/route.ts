@@ -11,7 +11,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildLearningInput } from "@/lib/practice-learning/hydrate";
 import { learnFromEvents } from "@/lib/practice-learning/learning-engine";
@@ -20,7 +20,7 @@ import { todayStr } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   const today = todayStr();
