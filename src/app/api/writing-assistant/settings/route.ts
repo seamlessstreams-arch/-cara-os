@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { db } from "@/lib/db/store";
 import type { WACategory, WritingAssistantSettings } from "@/lib/writing-assistant/types";
@@ -13,7 +13,7 @@ function userId(req: NextRequest): string | null {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
   const uid = userId(req);
   if (!uid) return NextResponse.json({ error: "x-user-id required" }, { status: 400 });
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
   const uid = userId(req);
   if (!uid) return NextResponse.json({ error: "x-user-id required" }, { status: 400 });

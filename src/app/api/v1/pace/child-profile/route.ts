@@ -2,10 +2,10 @@
 //   GET  /api/v1/pace/child-profile?childId=…   (requires view_young_people)
 //   PUT  /api/v1/pace/child-profile { childId, … } (requires edit_young_people)
 // Permission-controlled + auditable (updatedBy/updatedAt). Sensitive child data.
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -16,16 +16,16 @@ function arr(v: unknown, fallback: string[] = []): string[] {
   return Array.isArray(v) ? v.map((x) => String(x)).filter(Boolean) : fallback;
 }
 
-export async function GET(req: Request) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_YOUNG_PEOPLE);
+export async function GET(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
   const childId = new URL(req.url).searchParams.get("childId");
   if (!childId) return NextResponse.json({ error: "childId is required" }, { status: 400 });
   return NextResponse.json({ data: { childId, profile: await dal.childPaceProfiles.findByChild(childId) } });
 }
 
-export async function PUT(req: Request) {
-  const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
+export async function PUT(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
   let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);

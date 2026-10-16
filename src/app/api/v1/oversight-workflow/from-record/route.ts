@@ -13,7 +13,7 @@ import { safeList } from "@/lib/api/safe-list";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { incidentToOversightInput } from "@/lib/oversight/hydrate";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
 const VALID_MODES: OversightMode[] = ["professional", "child_addressed", "both"];
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
 
   const sp = req.nextUrl.searchParams;

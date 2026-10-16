@@ -1,7 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { auditFromRequest } from "@/lib/audit/audit-recorder";
 
@@ -10,7 +10,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 // ── GET /api/v1/forms/:id ─────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_FORMS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_FORMS);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   // ── Action: submit ────────────────────────────────────────────────────────
   if (body.action === "submit") {
-    const auth = requirePermission(req, PERMISSIONS.SUBMIT_FORMS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.SUBMIT_FORMS);
     if (auth instanceof NextResponse) return auth;
 
     const updated = await dal.careForms.submit(id, body.submitted_by ?? auth.userId);
@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   // ── Action: approve ───────────────────────────────────────────────────────
   if (body.action === "approve") {
-    const auth = requirePermission(req, PERMISSIONS.APPROVE_FORMS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.APPROVE_FORMS);
     if (auth instanceof NextResponse) return auth;
 
     const updated = await dal.careForms.approve(id, body.approved_by ?? auth.userId, body.review_notes);
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 
   // ── General field update ──────────────────────────────────────────────────
-  const auth = requirePermission(req, PERMISSIONS.EDIT_FORMS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_FORMS);
   if (auth instanceof NextResponse) return auth;
 
   const form = await dal.careForms.findById(id);

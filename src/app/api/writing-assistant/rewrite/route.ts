@@ -17,7 +17,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { SAFEGUARDING_SENSITIVE_TERMS, type WritingMode } from "@/lib/writing-assistant/types";
@@ -39,7 +39,7 @@ const REWRITE_MAX_LENGTH = 100_000;
 const VALID_MODES: WritingMode[] = ["standard", "safeguarding", "writing-to-child", "management-oversight"];
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   let body: Record<string, unknown>;

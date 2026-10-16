@@ -1,7 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -9,7 +9,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 // ── GET /api/v1/tasks/:id ─────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_TASKS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_TASKS);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
@@ -31,7 +31,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   // ── Action: complete ──────────────────────────────────────────────────────
   if (body.action === "complete") {
-    const auth = requirePermission(req, PERMISSIONS.COMPLETE_TASKS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.COMPLETE_TASKS);
     if (auth instanceof NextResponse) return auth;
 
     const updated = await dal.tasks.update(id, {
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   // ── Action: sign_off ──────────────────────────────────────────────────────
   if (body.action === "sign_off") {
-    const auth = requirePermission(req, PERMISSIONS.SIGN_OFF_TASKS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.SIGN_OFF_TASKS);
     if (auth instanceof NextResponse) return auth;
 
     const updated = await dal.tasks.update(id, {
@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   // ── Action: escalate ──────────────────────────────────────────────────────
   if (body.action === "escalate") {
-    const auth = requirePermission(req, PERMISSIONS.ESCALATE_TASKS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.ESCALATE_TASKS);
     if (auth instanceof NextResponse) return auth;
 
     const updated = await dal.tasks.update(id, {
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 
   // ── General field update ──────────────────────────────────────────────────
-  const auth = requirePermission(req, PERMISSIONS.EDIT_OWN_TASKS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_OWN_TASKS);
   if (auth instanceof NextResponse) return auth;
 
   // Strip the action field and protected audit fields before merging.

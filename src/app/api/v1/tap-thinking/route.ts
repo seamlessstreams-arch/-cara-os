@@ -15,7 +15,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { computeTapStatus, TAP_STAGE_DEFINITIONS } from "@/lib/tap-thinking/tap-engine";
 import {
@@ -30,7 +30,7 @@ import { TAP_CONTEXT_LABELS, type TapContext, type TapStage } from "@/lib/tap-th
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
 
   const params = req.nextUrl.searchParams;
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
 
   const parsed = await readJsonBody(req);

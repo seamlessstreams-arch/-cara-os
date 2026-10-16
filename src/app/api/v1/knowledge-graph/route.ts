@@ -11,7 +11,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildKnowledgeGraph } from "@/lib/knowledge-graph/knowledge-graph-engine";
 import type { GraphChild, GraphIncident } from "@/lib/knowledge-graph/types";
@@ -20,7 +20,7 @@ import { todayStr } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   const today = todayStr();

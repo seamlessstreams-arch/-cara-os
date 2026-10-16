@@ -15,13 +15,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { db } from "@/lib/db/store";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
 
   const data = [...db.escalations.findAll()].sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
 
   const parsed = await readJsonBody(req);

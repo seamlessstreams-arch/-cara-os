@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { db } from "@/lib/db/store";
 import { getStaffName } from "@/lib/seed-data";
@@ -14,7 +14,7 @@ const VALID_ACTIONS = ["accepted", "ignored"] as const;
 // ── GET — manager audit reporting ─────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   const { searchParams } = new URL(req.url);
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 // ── POST — log a single accept/ignore event ───────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.USE_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   const uid = req.headers.get("x-user-id") ?? req.headers.get("x-cs-user-id");

@@ -1,7 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { requireOnShift } from "@/lib/permissions/require-on-shift";
 import { auditFromRequest } from "@/lib/audit/audit-recorder";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = requirePermission(req, PERMISSIONS.VIEW_INCIDENTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_INCIDENTS);
   if (auth instanceof NextResponse) return auth;
   const shift = requireOnShift(req);
   if (shift) return shift;
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = requirePermission(req, PERMISSIONS.MANAGE_INCIDENTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_INCIDENTS);
   if (auth instanceof NextResponse) return auth;
   const shift = requireOnShift(req); // parity with GET — off-shift general staff can't edit either
   if (shift) return shift;

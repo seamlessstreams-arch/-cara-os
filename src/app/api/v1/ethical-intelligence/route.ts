@@ -13,7 +13,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { computeEthicalCycleStatus } from "@/lib/ethical-intelligence/ethical-intelligence-engine";
 import {
@@ -31,7 +31,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
 
   const params = req.nextUrl.searchParams;
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 //   { kind: "insight" | "decision" | "action" | "outcome" | "learning" | "integration",
 //     eventId, actor, ...stage fields }
 export async function POST(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
 
   const parsed = await readJsonBody(req);

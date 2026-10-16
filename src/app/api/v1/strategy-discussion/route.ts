@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { dal } from "@/lib/db";
 import { computeStrategyDraftStatus } from "@/lib/strategy-discussion/assembly-engine";
@@ -38,7 +38,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const auth = requirePermission(req, PERMISSIONS.VIEW_REPORTS);
+  const auth = await requirePermissionAsync(req, PERMISSIONS.VIEW_REPORTS);
   if (auth instanceof NextResponse) return auth;
 
   const params = req.nextUrl.searchParams;
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   const kind = typeof body.kind === "string" ? body.kind : "";
 
   if (kind === "create") {
-    const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
     if (auth instanceof NextResponse) return auth;
 
     const childId = str(body.childId);
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
   if (!requestId) return NextResponse.json({ error: "requestId is required." }, { status: 422 });
 
   if (kind === "section" || kind === "answer" || kind === "thinking") {
-    const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
     if (auth instanceof NextResponse) return auth;
     const actor = str(body.actor) ?? auth.userId;
 
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (kind === "decide") {
-    const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
     if (auth instanceof NextResponse) return auth;
 
     const result = recordManagerDecision(requestId, {
