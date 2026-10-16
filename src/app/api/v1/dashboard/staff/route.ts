@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { todayStr } from "@/lib/utils";
 import type { Shift, Task, YoungPerson, DailyLogEntry, MedicationAdministration, Incident } from "@/types";
 import type { Building, BuildingCheck, Vehicle, VehicleCheck, Notification, HandoverEntry } from "@/types/extended";
@@ -18,7 +19,15 @@ import type { Building, BuildingCheck, Vehicle, VehicleCheck, Notification, Hand
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const staffId = req.nextUrl.searchParams.get("staff_id") ?? "staff_darren";
+  // Default to the caller's own session identity (their real staff id on live),
+  // not the seed "staff_darren" — which does not exist on a live tenant and made
+  // the dashboard 404 for the signed-in manager. An explicit ?staff_id= still wins.
+  let staffId = req.nextUrl.searchParams.get("staff_id");
+  if (!staffId) {
+    const id = await getRequestIdentity(req);
+    if (id instanceof NextResponse) return id;
+    staffId = id.userId;
+  }
   const today = todayStr();
 
   const activeStaff = await dal.staff.findActive();
