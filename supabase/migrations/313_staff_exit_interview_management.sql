@@ -4,7 +4,7 @@
 
 DO $$ BEGIN
 
-CREATE TABLE IF NOT EXISTS cs_staff_exit_interviews (
+CREATE TABLE IF NOT EXISTS cs_staff_exit_interview_management (
   id            uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
@@ -33,16 +33,16 @@ CREATE TABLE IF NOT EXISTS cs_staff_exit_interviews (
   updated_at    timestamptz DEFAULT now()
 );
 
-ALTER TABLE cs_staff_exit_interviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_staff_exit_interview_management ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Tenant isolation" ON cs_staff_exit_interviews;
-CREATE POLICY "Tenant isolation" ON cs_staff_exit_interviews
+DROP POLICY IF EXISTS "Tenant isolation" ON cs_staff_exit_interview_management;
+CREATE POLICY "Tenant isolation" ON cs_staff_exit_interview_management
   USING (home_id = get_my_home_id());
 
-CREATE INDEX IF NOT EXISTS idx_cs_staff_exit_interviews_home
-  ON cs_staff_exit_interviews(home_id);
-CREATE INDEX IF NOT EXISTS idx_cs_staff_exit_interviews_date
-  ON cs_staff_exit_interviews(interview_date DESC);
+CREATE INDEX IF NOT EXISTS idx_cs_staff_exit_interview_management_home
+  ON cs_staff_exit_interview_management(home_id);
+CREATE INDEX IF NOT EXISTS idx_cs_staff_exit_interview_management_date
+  ON cs_staff_exit_interview_management(interview_date DESC);
 
 EXCEPTION WHEN duplicate_table THEN NULL;
 END $$;

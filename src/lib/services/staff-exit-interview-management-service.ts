@@ -260,7 +260,7 @@ export async function listStaffExitInterviews(
 ): Promise<ServiceResult<StaffExitInterviewRow[]>> {
   const client = sb();
   if (!client) return { ok: true, data: [] };
-  let query = (client.from("cs_staff_exit_interviews") as SB)
+  let query = (client.from("cs_staff_exit_interview_management") as SB)
     .select("*")
     .eq("home_id", homeId);
   if (filters?.complianceStatus) {
@@ -295,7 +295,7 @@ export async function createStaffExitInterview(input: {
 }): Promise<ServiceResult<StaffExitInterviewRow>> {
   const client = sb();
   if (!client) return { ok: false, error: "Supabase not configured" };
-  const { data, error } = await (client.from("cs_staff_exit_interviews") as SB)
+  const { data, error } = await (client.from("cs_staff_exit_interview_management") as SB)
     .insert({
       home_id: input.homeId,
       interview_date: input.interviewDate,
@@ -327,7 +327,7 @@ export async function updateStaffExitInterview(
 ): Promise<ServiceResult<StaffExitInterviewRow>> {
   const client = sb();
   if (!client) return { ok: false, error: "Supabase not configured" };
-  const { data, error } = await (client.from("cs_staff_exit_interviews") as SB)
+  const { data, error } = await (client.from("cs_staff_exit_interview_management") as SB)
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
