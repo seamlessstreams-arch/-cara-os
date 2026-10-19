@@ -4,7 +4,7 @@
 -- SCCIF: Overall Experiences
 -- ══════════════════════════════════════════════════════════════════════════════
 
-create table if not exists cs_meal_records (
+create table if not exists cs_mealtime_observations (
   id              uuid primary key default gen_random_uuid(),
   home_id         uuid not null references homes(id) on delete cascade,
   meal_date       date not null default now(),
@@ -31,15 +31,15 @@ create table if not exists cs_meal_records (
 );
 
 -- RLS
-alter table cs_meal_records enable row level security;
+alter table cs_mealtime_observations enable row level security;
 
 DO $$ BEGIN
-  create policy "meal_records_home_access" on cs_meal_records
+  create policy "mealtime_observations_home_access" on cs_mealtime_observations
     for all using (home_id = get_my_home_id());
 EXCEPTION WHEN duplicate_object THEN null;
 END $$;
 
 -- Indexes
-create index if not exists idx_meal_records_home on cs_meal_records(home_id);
-create index if not exists idx_meal_records_date on cs_meal_records(meal_date desc);
-create index if not exists idx_meal_records_type on cs_meal_records(meal_type);
+create index if not exists idx_mealtime_observations_home on cs_mealtime_observations(home_id);
+create index if not exists idx_mealtime_observations_date on cs_mealtime_observations(meal_date desc);
+create index if not exists idx_mealtime_observations_type on cs_mealtime_observations(meal_type);
