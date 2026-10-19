@@ -19,7 +19,7 @@
 -- score_delta reflects movement vs the immediately preceding period (can be negative).
 
 create table child_experience_snapshots (
-  id                  uuid          primary key default uuid_generate_v4(),
+  id                  uuid          primary key default gen_random_uuid(),
   home_id             uuid          not null references homes(id) on delete cascade,
   child_id            uuid          not null references young_people(id) on delete cascade,
 
@@ -67,7 +67,7 @@ alter table child_experience_snapshots enable row level security;
 -- ARIA-detected patterns. child_id nullable = home-wide alert.
 
 create table pattern_alerts (
-  id                  uuid          primary key default uuid_generate_v4(),
+  id                  uuid          primary key default gen_random_uuid(),
   home_id             uuid          not null references homes(id) on delete cascade,
   child_id            uuid          references young_people(id) on delete cascade,  -- null = home-wide
 
@@ -121,7 +121,7 @@ alter table pattern_alerts enable row level security;
 -- with outcomes, effectiveness ratings and continuation recommendations.
 
 create table interventions (
-  id                      uuid        primary key default uuid_generate_v4(),
+  id                      uuid        primary key default gen_random_uuid(),
   home_id                 uuid        not null references homes(id) on delete cascade,
   child_id                uuid        not null references young_people(id) on delete cascade,
 
@@ -182,7 +182,7 @@ alter table interventions enable row level security;
 -- sensory needs, voice moments and participation records.
 
 create table relational_records (
-  id              uuid        primary key default uuid_generate_v4(),
+  id              uuid        primary key default gen_random_uuid(),
   home_id         uuid        not null references homes(id) on delete cascade,
   child_id        uuid        not null references young_people(id) on delete cascade,
 
@@ -232,7 +232,7 @@ alter table relational_records enable row level security;
 -- how to prepare, how to de-escalate, etc.
 
 create table practice_bank_entries (
-  id                    uuid        primary key default uuid_generate_v4(),
+  id                    uuid        primary key default gen_random_uuid(),
   home_id               uuid        not null references homes(id) on delete cascade,
   child_id              uuid        not null references young_people(id) on delete cascade,
 
@@ -279,7 +279,7 @@ alter table practice_bank_entries enable row level security;
 -- acted on — covering every required element for Ofsted and IRO purposes.
 
 create table voice_records (
-  id                      uuid        primary key default uuid_generate_v4(),
+  id                      uuid        primary key default gen_random_uuid(),
   home_id                 uuid        not null references homes(id) on delete cascade,
   child_id                uuid        not null references young_people(id) on delete cascade,
 
@@ -333,7 +333,7 @@ alter table voice_records enable row level security;
 -- suggests module placement and linked records, generates chronology entries.
 
 create table document_intelligence_jobs (
-  id                          uuid        primary key default uuid_generate_v4(),
+  id                          uuid        primary key default gen_random_uuid(),
   home_id                     uuid        not null references homes(id) on delete cascade,
 
   -- Source file
@@ -405,7 +405,7 @@ alter table document_intelligence_jobs enable row level security;
 -- incident patterns, staffing consistency, wellbeing indicators, etc.
 
 create table home_climate_snapshots (
-  id                          uuid        primary key default uuid_generate_v4(),
+  id                          uuid        primary key default gen_random_uuid(),
   home_id                     uuid        not null references homes(id) on delete cascade,
 
   -- Period
@@ -446,13 +446,13 @@ alter table home_climate_snapshots enable row level security;
 -- whether it worked, and what comes next.
 
 create table action_outcomes (
-  id                      uuid        primary key default uuid_generate_v4(),
+  id                      uuid        primary key default gen_random_uuid(),
   home_id                 uuid        not null references homes(id) on delete cascade,
 
   -- Source linkages (all optional — at least one expected but not enforced)
   linked_task_id          uuid        references tasks(id),
   linked_incident_id      uuid        references incidents(id),
-  linked_supervision_id   uuid        references supervisions(id),
+  linked_supervision_id   text        references supervisions(id),  -- supervisions.id is text
   child_id                uuid        references young_people(id),
 
   -- What was agreed and why it mattered
@@ -511,7 +511,7 @@ alter table action_outcomes enable row level security;
 
 -- ── Realtime subscriptions ────────────────────────────────────────────────────
 
-alter publication supabase_realtime add table pattern_alerts;
-alter publication supabase_realtime add table document_intelligence_jobs;
-alter publication supabase_realtime add table home_climate_snapshots;
-alter publication supabase_realtime add table action_outcomes;
+do $pub$ begin alter publication supabase_realtime add table pattern_alerts; exception when others then null; end $pub$;
+do $pub$ begin alter publication supabase_realtime add table document_intelligence_jobs; exception when others then null; end $pub$;
+do $pub$ begin alter publication supabase_realtime add table home_climate_snapshots; exception when others then null; end $pub$;
+do $pub$ begin alter publication supabase_realtime add table action_outcomes; exception when others then null; end $pub$;

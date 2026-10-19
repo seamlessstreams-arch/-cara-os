@@ -339,7 +339,7 @@ export async function listRecords(
   const s = sb();
   if (!s) return { ok: true, data: [] };
 
-  let q = (s.from("cs_meal_records") as SB).select("*").eq("home_id", homeId);
+  let q = (s.from("cs_mealtime_observations") as SB).select("*").eq("home_id", homeId);
   if (filters?.mealType) q = q.eq("meal_type", filters.mealType);
   if (filters?.mealQuality) q = q.eq("meal_quality", filters.mealQuality);
   q = q.order("meal_date", { ascending: false }).limit(filters?.limit ?? 200);
@@ -376,7 +376,7 @@ export async function createRecord(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_meal_records") as SB)
+  const { data, error } = await (s.from("cs_mealtime_observations") as SB)
     .insert({
       home_id: input.homeId,
       meal_date: input.mealDate,
@@ -413,7 +413,7 @@ export async function updateRecord(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_meal_records") as SB)
+  const { data, error } = await (s.from("cs_mealtime_observations") as SB)
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
