@@ -452,7 +452,7 @@ create table action_outcomes (
   -- Source linkages (all optional — at least one expected but not enforced)
   linked_task_id          uuid        references tasks(id),
   linked_incident_id      uuid        references incidents(id),
-  linked_supervision_id   uuid        references supervisions(id),
+  linked_supervision_id   text        references supervisions(id),  -- supervisions.id is text
   child_id                uuid        references young_people(id),
 
   -- What was agreed and why it mattered
