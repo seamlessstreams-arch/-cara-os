@@ -2,16 +2,16 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staff_id");
   const homeId = searchParams.get("home_id");
 
-  let results = db.competencyProfiles.findAll();
+  let results = await dal.competencyProfiles.findAll();
   if (staffId) {
-    const single = db.competencyProfiles.findByStaff(staffId);
+    const single = await dal.competencyProfiles.findByStaff(staffId);
     return NextResponse.json({ data: single ?? null });
   }
   if (homeId) results = results.filter((p) => p.home_id === homeId);
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const body = __parsed.data;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const profile = db.competencyProfiles.create({
+  const profile = await dal.competencyProfiles.create({
     ...body,
     home_id: body.home_id ?? tenantHomeId(),
     domain_scores: body.domain_scores ?? [],

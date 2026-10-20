@@ -9,14 +9,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const record = db.competencyProfiles.findAll().find((p) => p.id === id);
+  const record = await dal.competencyProfiles.findById(id);
   if (!record) return NextResponse.json({ error: "Competency profile not found" }, { status: 404 });
   return NextResponse.json({ data: record });
 }
@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const { id } = await ctx.params;
   const parsed = await readJsonBody(req);
   if (!parsed.ok) return parsed.response;
-  const updated = db.competencyProfiles.update(id, parsed.data);
+  const updated = await dal.competencyProfiles.update(id, parsed.data);
   if (!updated) return NextResponse.json({ error: "Competency profile not found" }, { status: 404 });
   return NextResponse.json({ data: updated });
 }
