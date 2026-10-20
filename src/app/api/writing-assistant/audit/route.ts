@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
 import type { IssueType } from "@/lib/writing-assistant/types";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const filterUser = searchParams.get("userId") ?? undefined;
   const filterAction = (searchParams.get("action") as "accepted" | "ignored") ?? undefined;
 
-  const all = db.writingAssistant.getAllAuditEvents(days, filterUser, filterAction);
+  const all = await dal.writingAssistantAudit.getAll(days, filterUser, filterAction);
 
   // Aggregate stats
   const total = all.length;
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
   const issue_type = typeof body.issue_type === "string" ? (body.issue_type as IssueType) : undefined;
   if (!issue_type) return NextResponse.json({ error: "issue_type required" }, { status: 400 });
 
-  const rec = db.writingAssistant.logAudit({
+  const rec = await dal.writingAssistantAudit.log({
     user_id: uid,
     action: action as "accepted" | "ignored",
     issue_type,
