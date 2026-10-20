@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { isManagerRole } from "@/lib/comms/comms-access";
 import { isValidRetentionCategory } from "@/lib/comms/comms-governance";
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Only a manager can place or release an investigation hold" }, { status: 403 });
   }
 
-  const msg = db.commsMessages.findById(id);
+  const msg = await dal.commsMessages.findById(id);
   if (!msg) return NextResponse.json({ error: "Message not found" }, { status: 404 });
 
   let body: { hold?: boolean; retention_category?: string; reason?: string };
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const retention_category =
     body.retention_category ?? (hold ? "investigation" : msg.retention_category);
 
-  const updated = db.commsMessages.patch(id, { investigation_hold: hold, retention_category });
+  const updated = await dal.commsMessages.patch(id, { investigation_hold: hold, retention_category });
 
   auditComms(hold ? "message_held" : "message_hold_released", user, id, {
     reason: body.reason ?? null,

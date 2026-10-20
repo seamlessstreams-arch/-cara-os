@@ -126,39 +126,39 @@ ALTER TABLE staff_trust_notice_acknowledgements ENABLE ROW LEVEL SECURITY;
 
 -- comms_channels: home-scoped read/write; managers delete.
 DROP POLICY IF EXISTS comms_channels_select ON comms_channels;
-CREATE POLICY comms_channels_select ON comms_channels FOR SELECT USING (home_id = get_my_home_id());
+CREATE POLICY comms_channels_select ON comms_channels FOR SELECT USING (home_id = (select get_my_home_id())::text);
 DROP POLICY IF EXISTS comms_channels_insert ON comms_channels;
-CREATE POLICY comms_channels_insert ON comms_channels FOR INSERT WITH CHECK (home_id = get_my_home_id());
+CREATE POLICY comms_channels_insert ON comms_channels FOR INSERT WITH CHECK (home_id = (select get_my_home_id())::text);
 DROP POLICY IF EXISTS comms_channels_update ON comms_channels;
-CREATE POLICY comms_channels_update ON comms_channels FOR UPDATE USING (home_id = get_my_home_id());
+CREATE POLICY comms_channels_update ON comms_channels FOR UPDATE USING (home_id = (select get_my_home_id())::text);
 DROP POLICY IF EXISTS comms_channels_delete ON comms_channels;
 CREATE POLICY comms_channels_delete ON comms_channels FOR DELETE USING (
-  home_id = get_my_home_id() AND get_my_role() IN ('registered_manager','deputy_manager','responsible_individual')
+  home_id = (select get_my_home_id())::text AND get_my_role() IN ('registered_manager','deputy_manager','responsible_individual')
 );
 
 -- comms_messages: home-scoped read/write. No DELETE policy — messages are soft-deleted only.
 DROP POLICY IF EXISTS comms_messages_select ON comms_messages;
-CREATE POLICY comms_messages_select ON comms_messages FOR SELECT USING (home_id = get_my_home_id());
+CREATE POLICY comms_messages_select ON comms_messages FOR SELECT USING (home_id = (select get_my_home_id())::text);
 DROP POLICY IF EXISTS comms_messages_insert ON comms_messages;
-CREATE POLICY comms_messages_insert ON comms_messages FOR INSERT WITH CHECK (home_id = get_my_home_id());
+CREATE POLICY comms_messages_insert ON comms_messages FOR INSERT WITH CHECK (home_id = (select get_my_home_id())::text);
 DROP POLICY IF EXISTS comms_messages_update ON comms_messages;
-CREATE POLICY comms_messages_update ON comms_messages FOR UPDATE USING (home_id = get_my_home_id());
+CREATE POLICY comms_messages_update ON comms_messages FOR UPDATE USING (home_id = (select get_my_home_id())::text);
 
 -- comms_channel_members + receipts + actions: channel/home scoped via subquery.
 DROP POLICY IF EXISTS comms_members_all ON comms_channel_members;
 CREATE POLICY comms_members_all ON comms_channel_members FOR ALL USING (
-  channel_id IN (SELECT id FROM comms_channels WHERE home_id = get_my_home_id())
-) WITH CHECK (channel_id IN (SELECT id FROM comms_channels WHERE home_id = get_my_home_id()));
+  channel_id IN (SELECT id FROM comms_channels WHERE home_id = (select get_my_home_id())::text)
+) WITH CHECK (channel_id IN (SELECT id FROM comms_channels WHERE home_id = (select get_my_home_id())::text));
 
 DROP POLICY IF EXISTS comms_receipts_all ON comms_message_receipts;
 CREATE POLICY comms_receipts_all ON comms_message_receipts FOR ALL USING (
-  channel_id IN (SELECT id FROM comms_channels WHERE home_id = get_my_home_id())
-) WITH CHECK (channel_id IN (SELECT id FROM comms_channels WHERE home_id = get_my_home_id()));
+  channel_id IN (SELECT id FROM comms_channels WHERE home_id = (select get_my_home_id())::text)
+) WITH CHECK (channel_id IN (SELECT id FROM comms_channels WHERE home_id = (select get_my_home_id())::text));
 
 DROP POLICY IF EXISTS comms_actions_all ON comms_message_actions;
 CREATE POLICY comms_actions_all ON comms_message_actions FOR ALL USING (
-  message_id IN (SELECT id FROM comms_messages WHERE home_id = get_my_home_id())
-) WITH CHECK (message_id IN (SELECT id FROM comms_messages WHERE home_id = get_my_home_id()));
+  message_id IN (SELECT id FROM comms_messages WHERE home_id = (select get_my_home_id())::text)
+) WITH CHECK (message_id IN (SELECT id FROM comms_messages WHERE home_id = (select get_my_home_id())::text));
 
 -- Trust notice acks: a user sees/writes only their own.
 DROP POLICY IF EXISTS trust_notice_own ON staff_trust_notice_acknowledgements;

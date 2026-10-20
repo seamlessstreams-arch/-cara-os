@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel } from "@/lib/comms/comms-access";
 import { persistCommsReceipt } from "@/lib/supabase/comms";
@@ -12,10 +13,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await resolveCommsUser(req);
-  const msg = db.commsMessages.findById(id);
+  const msg = await dal.commsMessages.findById(id);
   if (!msg) return NextResponse.json({ error: "Message not found" }, { status: 404 });
 
-  const channel = db.commsChannels.findById(msg.channel_id);
+  const channel = await dal.commsChannels.findById(msg.channel_id);
   if (!channel || !canViewChannel(user, channel).allowed) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!body.ok) return body.response;
   const acknowledge = !!body.data?.acknowledge;
 
-  const receipt = db.commsMessageReceipts.mark(id, msg.channel_id, user.id, { read: true, acknowledge });
+  const receipt = await dal.commsMessageReceipts.mark(id, msg.channel_id, user.id, { read: true, acknowledge });
   auditComms(acknowledge ? "message_acknowledged" : "message_read", user, id, {});
   void persistCommsReceipt(receipt);
   return NextResponse.json({ data: receipt });
