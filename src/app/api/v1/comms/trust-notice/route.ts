@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { persistTrustNoticeAck } from "@/lib/supabase/comms";
 import { STAFF_TRUST_NOTICE_VERSION } from "@/types/comms";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 // GET /api/v1/comms/trust-notice → current version + whether the user has acknowledged it.
 export async function GET(req: NextRequest) {
   const user = await resolveCommsUser(req);
-  const latest = db.staffTrustNoticeAcks.latestForUser(user.id);
+  const latest = await dal.staffTrustNoticeAcks.latestForUser(user.id);
   const acknowledged = !!latest && latest.notice_version === STAFF_TRUST_NOTICE_VERSION;
   return NextResponse.json({
     data: {

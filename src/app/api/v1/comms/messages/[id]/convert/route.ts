@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await resolveCommsUser(req);
-  const msg = db.commsMessages.findById(id);
+  const msg = await dal.commsMessages.findById(id);
   if (!msg || msg.is_deleted) return NextResponse.json({ error: "Message not found" }, { status: 404 });
   if (msg.investigation_hold) {
     return NextResponse.json(
@@ -134,7 +135,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     target_record_id: targetRecordId,
     created_by: user.id,
   });
-  const updated = db.commsMessages.patch(msg.id, {
+  const updated = await dal.commsMessages.patch(msg.id, {
     linked_record_type: mapping.linkedRecordType,
     linked_record_id: targetRecordId,
   });

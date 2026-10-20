@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel, canPostChannel, type CommsUser } from "@/lib/comms/comms-access";
 import { persistCommsMessage } from "@/lib/supabase/comms";
@@ -17,8 +18,8 @@ function staffName(id: string): string {
   return s?.full_name ?? [s?.first_name, s?.last_name].filter(Boolean).join(" ") ?? "Unknown";
 }
 
-function enrich(m: CommsMessage, user: CommsUser): CommsMessageEnriched {
-  const receipts = db.commsMessageReceipts.findByMessage(m.id);
+async function enrich(m: CommsMessage, user: CommsUser): Promise<CommsMessageEnriched> {
+  const receipts = await dal.commsMessageReceipts.findByMessage(m.id);
   const mine = receipts.find((r) => r.user_id === user.id);
   return {
     ...m,
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
   const user = await resolveCommsUser(req);
   const channelId = req.nextUrl.searchParams.get("channel_id");
   if (!channelId) return NextResponse.json({ error: "channel_id is required" }, { status: 400 });
-  const channel = db.commsChannels.findById(channelId);
+  const channel = await dal.commsChannels.findById(channelId);
   if (!channel) return NextResponse.json({ error: "Channel not found" }, { status: 404 });
 
   const access = canViewChannel(user, channel);
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
     auditComms("access_denied", user, `channel:${channelId}`, { reason: access.reason });
     return NextResponse.json({ error: "Access denied", reason: access.reason }, { status: 403 });
   }
-  const data = db.commsMessages.findByChannel(channelId).map((m) => enrich(m, user));
+  const data = await Promise.all((await dal.commsMessages.findByChannel(channelId)).map((m) => enrich(m, user)));
   return NextResponse.json({ data });
 }
 
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   const text = (body.body as string)?.trim();
   if (!channelId || !text) return NextResponse.json({ error: "channel_id and body are required" }, { status: 400 });
 
-  const channel = db.commsChannels.findById(channelId);
+  const channel = await dal.commsChannels.findById(channelId);
   if (!channel) return NextResponse.json({ error: "Channel not found" }, { status: 404 });
 
   const access = canPostChannel(user, channel);
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
     retention_category: channel.access === "safeguarding" ? "safeguarding_linked_messages" : channel.linked_child_id ? "child_linked_messages" : "routine_messages",
   });
   // Author has implicitly read their own message.
-  db.commsMessageReceipts.mark(msg.id, channelId, user.id, { read: true });
+  await dal.commsMessageReceipts.mark(msg.id, channelId, user.id, { read: true });
   auditComms("message_sent", user, msg.id, { channel_id: channelId, priority, has_link: !!msg.linked_child_id || !!msg.linked_incident_id });
   void persistCommsMessage(msg);
 
@@ -120,5 +121,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ data: enrich(msg, user) }, { status: 201 });
+  return NextResponse.json({ data: await enrich(msg, user) }, { status: 201 });
 }

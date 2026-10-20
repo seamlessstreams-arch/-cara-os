@@ -28,6 +28,7 @@ import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwap
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import type { SB } from "@/lib/supabase/loose-client";
+import type { CommsChannel, CommsMessage, CommsMessageReceipt, CommsMessageAction, StaffTrustNoticeAck } from "@/types/comms";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
@@ -1410,6 +1411,145 @@ export const dal = {
         return created as InspectionRecord;
       }
       return db.inspectionHistory.create(data);
+    },
+  },
+
+  // ── Comms Centre (own comms_* tables, migration 403; reads + stateful writes live-safe) ──
+  commsChannels: {
+    async findForHome(homeId: string): Promise<CommsChannel[]> {
+      const c = sb();
+      if (c) {
+        const sbx = c as unknown as SB;
+        const existing = await sbx.from("comms_channels").select("id").eq("home_id", homeId).limit(1);
+        if (!existing.data || existing.data.length === 0) {
+          // Seed the structural default channels only (deterministic ids, idempotent) — NEVER the
+          // demo message threads, which carry seed-staff authors (would violate seeded-actors on live).
+          const now = new Date().toISOString();
+          const defs: Array<{ type: string; name: string; access: string; sensitivity: string; allowed_roles?: string[] }> = [
+            // seed-actor-ok: these are structural comms channel TYPES (created_by "system"), not seeded persons; "home_announcements" only resembles a home_* id.
+            { type: "home_announcements", name: "Whole Home Announcements", access: "all_staff", sensitivity: "internal" },
+            { type: "shift_handover", name: "Shift Handover", access: "on_shift", sensitivity: "internal" },
+            { type: "managers_seniors", name: "Managers & Seniors", access: "managers", sensitivity: "confidential" },
+            { type: "waking_night", name: "Waking Night Team", access: "role_restricted", sensitivity: "internal", allowed_roles: ["waking_night", "team_leader", "deputy_manager", "registered_manager"] },
+            { type: "medication_updates", name: "Medication Updates", access: "on_shift", sensitivity: "confidential" },
+            { type: "safeguarding_alerts", name: "Safeguarding Alerts", access: "safeguarding", sensitivity: "restricted" },
+            { type: "rota_cover", name: "Rota Cover Requests", access: "all_staff", sensitivity: "internal" },
+            { type: "health_safety", name: "Health & Safety", access: "all_staff", sensitivity: "internal" },
+            { type: "maintenance", name: "Maintenance", access: "all_staff", sensitivity: "internal" },
+            { type: "training_policy", name: "Training & Policy Updates", access: "all_staff", sensitivity: "internal" },
+            { type: "keywork_sessions", name: "Key Work & Sessions", access: "on_shift", sensitivity: "confidential" },
+            { type: "emergency_broadcast", name: "Emergency Broadcasts", access: "all_staff", sensitivity: "internal" },
+          ];
+          await sbx.from("comms_channels").upsert(defs.map((d) => ({
+            id: `ch_${homeId}_${d.type}`, home_id: homeId, type: d.type, name: d.name, description: null,
+            access: d.access, allowed_roles: d.allowed_roles ?? [], linked_child_id: null, linked_incident_id: null,
+            sensitivity: d.sensitivity, is_archived: false, created_by: "system", created_at: now, updated_at: now,
+          })));
+        }
+        const { data } = await sbx.from("comms_channels").select("*").eq("home_id", homeId).eq("is_archived", false);
+        return (data ?? []) as unknown as CommsChannel[];
+      }
+      return db.commsChannels.findForHome(homeId);
+    },
+    async findById(id: string): Promise<CommsChannel | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_channels").select("*").eq("id", id).maybeSingle();
+        return (data ?? null) as unknown as CommsChannel | null;
+      }
+      return db.commsChannels.findById(id) ?? null;
+    },
+  },
+
+  commsMessages: {
+    async findByChannel(channelId: string, includeDeleted = false): Promise<CommsMessage[]> {
+      const c = sb();
+      if (c) {
+        let q = (c as unknown as SB).from("comms_messages").select("*").eq("channel_id", channelId);
+        if (!includeDeleted) q = q.eq("is_deleted", false);
+        const { data } = await q.order("created_at", { ascending: true });
+        return (data ?? []) as unknown as CommsMessage[];
+      }
+      return db.commsMessages.findByChannel(channelId, includeDeleted);
+    },
+    async findById(id: string): Promise<CommsMessage | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_messages").select("*").eq("id", id).maybeSingle();
+        return (data ?? null) as unknown as CommsMessage | null;
+      }
+      return db.commsMessages.findById(id) ?? null;
+    },
+    async patch(id: string, updates: Partial<CommsMessage>): Promise<CommsMessage | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_messages").update({ ...updates, updated_at: new Date().toISOString() }).eq("id", id).select().maybeSingle();
+        return (data ?? null) as unknown as CommsMessage | null;
+      }
+      return db.commsMessages.patch(id, updates);
+    },
+  },
+
+  commsMessageReceipts: {
+    async findByMessage(messageId: string): Promise<CommsMessageReceipt[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_message_receipts").select("*").eq("message_id", messageId);
+        return (data ?? []) as unknown as CommsMessageReceipt[];
+      }
+      return db.commsMessageReceipts.findByMessage(messageId);
+    },
+    async findForUserInChannel(userId: string, channelId: string): Promise<CommsMessageReceipt[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_message_receipts").select("*").eq("user_id", userId).eq("channel_id", channelId);
+        return (data ?? []) as unknown as CommsMessageReceipt[];
+      }
+      return db.commsMessageReceipts.findForUserInChannel(userId, channelId);
+    },
+    async mark(messageId: string, channelId: string, userId: string, opts: { read?: boolean; acknowledge?: boolean }): Promise<CommsMessageReceipt> {
+      const c = sb();
+      if (c) {
+        const sbx = c as unknown as SB;
+        const { data: existing } = await sbx.from("comms_message_receipts").select("*").eq("message_id", messageId).eq("user_id", userId).maybeSingle();
+        const now = new Date().toISOString();
+        const r = (existing ?? { id: `rcpt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`, message_id: messageId, channel_id: channelId, user_id: userId, read_at: null, acknowledged_at: null }) as CommsMessageReceipt;
+        if (opts.read && !r.read_at) r.read_at = now;
+        if (opts.acknowledge) { r.acknowledged_at = now; if (!r.read_at) r.read_at = now; }
+        await sbx.from("comms_message_receipts").upsert(r);
+        return r;
+      }
+      return db.commsMessageReceipts.mark(messageId, channelId, userId, opts);
+    },
+  },
+
+  commsMessageActions: {
+    async findAll(): Promise<CommsMessageAction[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_message_actions").select("*");
+        return (data ?? []) as unknown as CommsMessageAction[];
+      }
+      return db.commsMessageActions.findAll();
+    },
+    async findByMessage(messageId: string): Promise<CommsMessageAction[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("comms_message_actions").select("*").eq("message_id", messageId);
+        return (data ?? []) as unknown as CommsMessageAction[];
+      }
+      return db.commsMessageActions.findByMessage(messageId);
+    },
+  },
+
+  staffTrustNoticeAcks: {
+    async latestForUser(userId: string): Promise<StaffTrustNoticeAck | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("staff_trust_notice_acknowledgements").select("*").eq("user_id", userId).order("acknowledged_at", { ascending: false }).limit(1);
+        return ((Array.isArray(data) ? data[0] : null) as StaffTrustNoticeAck | null) ?? null;
+      }
+      return db.staffTrustNoticeAcks.latestForUser(userId) ?? null;
     },
   },
 

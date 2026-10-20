@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel, isManagerRole } from "@/lib/comms/comms-access";
 import { persistCommsChannel } from "@/lib/supabase/comms";
@@ -12,12 +13,12 @@ export const dynamic = "force-dynamic";
 // GET /api/v1/comms/channels → channels the acting user may view, with unread counts.
 export async function GET(req: NextRequest) {
   const user = await resolveCommsUser(req);
-  const channels = db.commsChannels.findForHome(user.home_id);
+  const channels = await dal.commsChannels.findForHome(user.home_id);
   const visible = channels.filter((c) => canViewChannel(user, c).allowed);
 
-  const data: CommsChannelSummary[] = visible.map((c) => {
-    const msgs = db.commsMessages.findByChannel(c.id);
-    const receipts = db.commsMessageReceipts.findForUserInChannel(user.id, c.id);
+  const data: CommsChannelSummary[] = await Promise.all(visible.map(async (c) => {
+    const msgs = await dal.commsMessages.findByChannel(c.id);
+    const receipts = await dal.commsMessageReceipts.findForUserInChannel(user.id, c.id);
     const readIds = new Set(receipts.filter((r) => r.read_at).map((r) => r.message_id));
     const unread = msgs.filter((m) => m.author_id !== user.id && !readIds.has(m.id)).length;
     const last = msgs[msgs.length - 1] ?? null;
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
       last_message_at: last?.created_at ?? null,
       last_message_preview: last ? last.body.slice(0, 80) : null,
     };
-  });
+  }));
 
   return NextResponse.json({ data });
 }
