@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_substance_assessments (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id              UUID NOT NULL,
   child_name            TEXT NOT NULL,
   assessment_date       DATE NOT NULL,
@@ -36,7 +36,7 @@ ALTER TABLE cs_substance_assessments ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "substance_assessments_home" ON cs_substance_assessments
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -50,7 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_substance_assessments_risk
 
 CREATE TABLE IF NOT EXISTS cs_substance_incidents (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                UUID NOT NULL,
   child_name              TEXT NOT NULL,
   incident_date           DATE NOT NULL,
@@ -75,7 +75,7 @@ ALTER TABLE cs_substance_incidents ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "substance_incidents_home" ON cs_substance_incidents
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

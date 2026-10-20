@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_outcome_targets (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   domain              TEXT NOT NULL,
@@ -31,7 +31,7 @@ ALTER TABLE cs_outcome_targets ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "outcome_targets_home" ON cs_outcome_targets
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_outcome_targets_child
 
 CREATE TABLE IF NOT EXISTS cs_outcome_reviews (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id           UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id          UUID NOT NULL,
   child_name        TEXT NOT NULL,
   review_date       DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -63,7 +63,7 @@ ALTER TABLE cs_outcome_reviews ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "outcome_reviews_home" ON cs_outcome_reviews
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -77,7 +77,7 @@ CREATE INDEX IF NOT EXISTS idx_outcome_reviews_child
 
 CREATE TABLE IF NOT EXISTS cs_handovers (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   handover_type           TEXT NOT NULL DEFAULT 'shift_change',
   shift_date              DATE NOT NULL DEFAULT CURRENT_DATE,
   outgoing_staff          JSONB NOT NULL DEFAULT '[]',
@@ -98,7 +98,7 @@ ALTER TABLE cs_handovers ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "handovers_home" ON cs_handovers
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

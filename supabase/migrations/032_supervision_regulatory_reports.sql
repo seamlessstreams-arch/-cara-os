@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_supervision_records (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id         uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id         uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id        uuid NOT NULL,
   supervisor_id   uuid NOT NULL,
   type            text NOT NULL DEFAULT 'formal'
@@ -43,7 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_supervision_sched    ON cs_supervision_records(sc
 
 CREATE TABLE IF NOT EXISTS cs_regulatory_reports (
   id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id                 uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   report_type             text NOT NULL
                             CHECK (report_type IN ('reg44','reg45','annual_review','ofsted_notification','serious_incident','schedule_5','schedule_6')),
   title                   text NOT NULL,
@@ -79,12 +79,12 @@ ALTER TABLE cs_regulatory_reports  ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY supervision_home_policy ON cs_supervision_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY reg_reports_home_policy ON cs_regulatory_reports
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

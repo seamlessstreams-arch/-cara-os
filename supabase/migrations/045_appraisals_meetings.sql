@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_staff_appraisals (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id                UUID NOT NULL,
   staff_name              TEXT NOT NULL,
   appraisal_type          TEXT NOT NULL DEFAULT 'annual',
@@ -36,7 +36,7 @@ ALTER TABLE cs_staff_appraisals ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "staff_appraisals_home" ON cs_staff_appraisals
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_staff_appraisals_status
 
 CREATE TABLE IF NOT EXISTS cs_performance_goals (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id                UUID NOT NULL,
   staff_name              TEXT NOT NULL,
   goal_description        TEXT NOT NULL,
@@ -70,7 +70,7 @@ ALTER TABLE cs_performance_goals ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "performance_goals_home" ON cs_performance_goals
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -84,7 +84,7 @@ CREATE INDEX IF NOT EXISTS idx_performance_goals_staff
 
 CREATE TABLE IF NOT EXISTS cs_house_meetings (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   meeting_date            DATE NOT NULL DEFAULT CURRENT_DATE,
   meeting_type            TEXT NOT NULL DEFAULT 'house_meeting',
   facilitated_by          TEXT NOT NULL,
@@ -104,7 +104,7 @@ ALTER TABLE cs_house_meetings ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "house_meetings_home" ON cs_house_meetings
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -115,7 +115,7 @@ CREATE INDEX IF NOT EXISTS idx_house_meetings_home
 
 CREATE TABLE IF NOT EXISTS cs_consultation_records (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                UUID NOT NULL,
   child_name              TEXT NOT NULL,
   consultation_date       DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -133,7 +133,7 @@ ALTER TABLE cs_consultation_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "consultation_records_home" ON cs_consultation_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
