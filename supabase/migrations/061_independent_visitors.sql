@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_independent_visitor_assignments (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id              UUID NOT NULL,
   child_name            TEXT NOT NULL,
   visitor_name          TEXT NOT NULL,
@@ -35,7 +35,7 @@ ALTER TABLE cs_independent_visitor_assignments ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "iv_assignments_home" ON cs_independent_visitor_assignments
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_iv_assignments_status
 
 CREATE TABLE IF NOT EXISTS cs_independent_visitor_visits (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                UUID NOT NULL,
   child_name              TEXT NOT NULL,
   assignment_id           UUID NOT NULL REFERENCES cs_independent_visitor_assignments(id) ON DELETE CASCADE,
@@ -76,7 +76,7 @@ ALTER TABLE cs_independent_visitor_visits ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "iv_visits_home" ON cs_independent_visitor_visits
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_sanction_records (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id              UUID NOT NULL,
   child_name            TEXT NOT NULL,
   sanction_type         TEXT NOT NULL,
@@ -38,7 +38,7 @@ ALTER TABLE cs_sanction_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "sanction_records_home" ON cs_sanction_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_sanction_records_date
 
 CREATE TABLE IF NOT EXISTS cs_reward_records (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   reward_type         TEXT NOT NULL,
@@ -70,7 +70,7 @@ ALTER TABLE cs_reward_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "reward_records_home" ON cs_reward_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

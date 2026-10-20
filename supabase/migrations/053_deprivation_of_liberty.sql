@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_dol_orders (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   order_type          TEXT NOT NULL,
@@ -35,7 +35,7 @@ ALTER TABLE cs_dol_orders ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "dol_orders_home" ON cs_dol_orders
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_dol_orders_status
 
 CREATE TABLE IF NOT EXISTS cs_restrictions_register (
   id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                   UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                  UUID NOT NULL,
   child_name                TEXT NOT NULL,
   restriction_type          TEXT NOT NULL,
@@ -77,7 +77,7 @@ ALTER TABLE cs_restrictions_register ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "restrictions_register_home" ON cs_restrictions_register
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

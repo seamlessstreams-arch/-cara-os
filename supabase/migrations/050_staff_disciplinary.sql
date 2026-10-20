@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_disciplinary_records (
   id                          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                     UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                     UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id                    UUID NOT NULL,
   staff_name                  TEXT NOT NULL,
   category                    TEXT NOT NULL DEFAULT 'conduct',
@@ -47,7 +47,7 @@ ALTER TABLE cs_disciplinary_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "disciplinary_records_home" ON cs_disciplinary_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -61,7 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_disciplinary_records_status
 
 CREATE TABLE IF NOT EXISTS cs_grievance_records (
   id                            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                       UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                       UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id                      UUID NOT NULL,
   staff_name                    TEXT NOT NULL,
   grievance_type                TEXT NOT NULL DEFAULT 'working_conditions',
@@ -87,7 +87,7 @@ ALTER TABLE cs_grievance_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "grievance_records_home" ON cs_grievance_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

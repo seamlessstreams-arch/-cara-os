@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_rota_entries (
   id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id       UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id      UUID NOT NULL,
   staff_name    TEXT NOT NULL,
   role          TEXT NOT NULL,
@@ -30,7 +30,7 @@ ALTER TABLE cs_rota_entries ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "rota_home" ON cs_rota_entries
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -44,7 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_rota_entries_staff
 
 CREATE TABLE IF NOT EXISTS cs_absence_records (
   id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                   UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   staff_id                  UUID NOT NULL,
   staff_name                TEXT NOT NULL,
   absence_type              TEXT NOT NULL,
@@ -62,7 +62,7 @@ ALTER TABLE cs_absence_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "absence_home" ON cs_absence_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_absence_records_staff
 
 CREATE TABLE IF NOT EXISTS cs_premises_checks (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   check_type            TEXT NOT NULL,
   check_date            DATE NOT NULL,
   completed_by          TEXT NOT NULL,
@@ -93,7 +93,7 @@ ALTER TABLE cs_premises_checks ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "premises_checks_home" ON cs_premises_checks
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -107,7 +107,7 @@ CREATE INDEX IF NOT EXISTS idx_premises_checks_date
 
 CREATE TABLE IF NOT EXISTS cs_maintenance_requests (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id           UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   title             TEXT NOT NULL,
   description       TEXT NOT NULL DEFAULT '',
   category          TEXT NOT NULL,
@@ -129,7 +129,7 @@ ALTER TABLE cs_maintenance_requests ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "maintenance_home" ON cs_maintenance_requests
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

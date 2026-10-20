@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_self_evaluations (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   period_from             DATE NOT NULL,
   period_to               DATE NOT NULL,
   status                  TEXT NOT NULL DEFAULT 'draft',
@@ -30,7 +30,7 @@ ALTER TABLE cs_self_evaluations ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "self_evaluations_home" ON cs_self_evaluations
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -41,7 +41,7 @@ CREATE INDEX IF NOT EXISTS idx_self_evaluations_home
 
 CREATE TABLE IF NOT EXISTS cs_evaluation_evidence (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   evaluation_id         UUID NOT NULL REFERENCES cs_self_evaluations(id) ON DELETE CASCADE,
   evidence_area         TEXT NOT NULL,
   description           TEXT NOT NULL DEFAULT '',
@@ -57,7 +57,7 @@ ALTER TABLE cs_evaluation_evidence ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "evaluation_evidence_home" ON cs_evaluation_evidence
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -74,7 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_evaluation_evidence_area
 
 CREATE TABLE IF NOT EXISTS cs_visitor_entries (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id           UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   visitor_name      TEXT NOT NULL,
   visitor_type      TEXT NOT NULL,
   organisation      TEXT,
@@ -96,7 +96,7 @@ ALTER TABLE cs_visitor_entries ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "visitor_entries_home" ON cs_visitor_entries
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

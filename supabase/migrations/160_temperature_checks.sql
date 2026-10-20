@@ -8,7 +8,7 @@ DO $$ BEGIN
 
 CREATE TABLE IF NOT EXISTS cs_temperature_checks (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
   room_type               text NOT NULL DEFAULT 'lounge',
   temperature_status      text NOT NULL DEFAULT 'comfortable',
@@ -45,8 +45,8 @@ ALTER TABLE cs_temperature_checks ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tc_home_isolation ON cs_temperature_checks;
 CREATE POLICY tc_home_isolation ON cs_temperature_checks
-  USING  (home_id = get_my_home_id())
-  WITH CHECK (home_id = get_my_home_id());
+  USING  (home_id = (select get_my_home_id()))
+  WITH CHECK (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_tc_home_date ON cs_temperature_checks(home_id, check_date DESC);
 

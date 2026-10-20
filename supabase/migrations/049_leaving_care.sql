@@ -11,7 +11,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_pathway_plans (
   id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                   UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                  UUID NOT NULL,
   child_name                TEXT NOT NULL,
   plan_type                 TEXT NOT NULL DEFAULT 'initial',
@@ -45,7 +45,7 @@ ALTER TABLE cs_pathway_plans ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "pathway_plans_home" ON cs_pathway_plans
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -59,7 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_pathway_plans_status
 
 CREATE TABLE IF NOT EXISTS cs_independence_assessments (
   id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                   UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                  UUID NOT NULL,
   child_name                TEXT NOT NULL,
   assessment_date           DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -77,7 +77,7 @@ ALTER TABLE cs_independence_assessments ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "independence_assessments_home" ON cs_independence_assessments
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -88,7 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_independence_assessments_home
 
 CREATE TABLE IF NOT EXISTS cs_leaving_care_entitlements (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   entitlement_type    TEXT NOT NULL,
@@ -109,7 +109,7 @@ ALTER TABLE cs_leaving_care_entitlements ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "leaving_care_entitlements_home" ON cs_leaving_care_entitlements
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

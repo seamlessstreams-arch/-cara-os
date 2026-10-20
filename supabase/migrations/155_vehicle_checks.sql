@@ -8,7 +8,7 @@ DO $$ BEGIN
 
 CREATE TABLE IF NOT EXISTS cs_vehicle_checks (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
   check_type              text NOT NULL DEFAULT 'daily_pre_use',
   check_date              date NOT NULL DEFAULT CURRENT_DATE,
@@ -51,8 +51,8 @@ ALTER TABLE cs_vehicle_checks ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS vc_home_isolation ON cs_vehicle_checks;
 CREATE POLICY vc_home_isolation ON cs_vehicle_checks
-  USING  (home_id = get_my_home_id())
-  WITH CHECK (home_id = get_my_home_id());
+  USING  (home_id = (select get_my_home_id()))
+  WITH CHECK (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_vc_home_date ON cs_vehicle_checks(home_id, check_date DESC);
 

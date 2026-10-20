@@ -8,7 +8,7 @@ DO $$ BEGIN
 
 CREATE TABLE IF NOT EXISTS cs_childrens_feedback (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
   feedback_type           text NOT NULL DEFAULT 'satisfaction_survey',
   feedback_date           date NOT NULL DEFAULT CURRENT_DATE,
@@ -45,8 +45,8 @@ ALTER TABLE cs_childrens_feedback ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS cf_home_isolation ON cs_childrens_feedback;
 CREATE POLICY cf_home_isolation ON cs_childrens_feedback
-  USING  (home_id = get_my_home_id())
-  WITH CHECK (home_id = get_my_home_id());
+  USING  (home_id = (select get_my_home_id()))
+  WITH CHECK (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_cf_home_date ON cs_childrens_feedback(home_id, feedback_date DESC);
 

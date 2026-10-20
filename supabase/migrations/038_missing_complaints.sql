@@ -8,7 +8,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_missing_episodes (
   id                            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id                       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                      uuid NOT NULL,
   episode_type                  text NOT NULL
                                   CHECK (episode_type IN (
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_missing_reported ON cs_missing_episodes(reported_
 
 CREATE TABLE IF NOT EXISTS cs_complaints (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id               uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   complaint_category    text NOT NULL
                           CHECK (complaint_category IN (
                             'care_quality','staff_conduct','food_nutrition',
@@ -108,7 +108,7 @@ CREATE INDEX IF NOT EXISTS idx_complaint_received ON cs_complaints(date_received
 
 CREATE TABLE IF NOT EXISTS cs_reg40_notifications (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id               uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   notification_type     text NOT NULL
                           CHECK (notification_type IN (
                             'death','serious_injury','serious_illness','missing',
@@ -144,18 +144,18 @@ ALTER TABLE cs_reg40_notifications  ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY missing_home_policy ON cs_missing_episodes
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY complaint_home_policy ON cs_complaints
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY reg40_home_policy ON cs_reg40_notifications
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

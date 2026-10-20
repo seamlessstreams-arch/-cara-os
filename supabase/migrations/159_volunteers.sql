@@ -8,7 +8,7 @@ DO $$ BEGIN
 
 CREATE TABLE IF NOT EXISTS cs_volunteers (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
   volunteer_name          text NOT NULL DEFAULT '',
   volunteer_role          text NOT NULL DEFAULT 'general_support',
@@ -50,8 +50,8 @@ ALTER TABLE cs_volunteers ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS vol_home_isolation ON cs_volunteers;
 CREATE POLICY vol_home_isolation ON cs_volunteers
-  USING  (home_id = get_my_home_id())
-  WITH CHECK (home_id = get_my_home_id());
+  USING  (home_id = (select get_my_home_id()))
+  WITH CHECK (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_vol_home_status ON cs_volunteers(home_id, volunteer_status);
 

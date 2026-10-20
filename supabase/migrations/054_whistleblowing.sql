@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_whistleblowing_reports (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   reporter_id             UUID,
   reporter_name           TEXT,
   reporter_role           TEXT,
@@ -47,7 +47,7 @@ ALTER TABLE cs_whistleblowing_reports ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "whistleblowing_reports_home" ON cs_whistleblowing_reports
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -61,7 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_whistleblowing_reports_status
 
 CREATE TABLE IF NOT EXISTS cs_whistleblowing_policy_reviews (
   id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                   UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   review_date               DATE NOT NULL,
   reviewed_by               TEXT NOT NULL,
   policy_accessible         boolean,
@@ -80,7 +80,7 @@ ALTER TABLE cs_whistleblowing_policy_reviews ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "whistleblowing_policy_reviews_home" ON cs_whistleblowing_policy_reviews
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

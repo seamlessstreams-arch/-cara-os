@@ -8,7 +8,7 @@ DO $$ BEGIN
 
 CREATE TABLE IF NOT EXISTS cs_pest_control (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id       uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id       uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
 
   inspection_type         text NOT NULL DEFAULT 'routine_inspection',
   inspection_date         date NOT NULL DEFAULT CURRENT_DATE,
@@ -48,8 +48,8 @@ ALTER TABLE cs_pest_control ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS pc_home_isolation ON cs_pest_control;
 CREATE POLICY pc_home_isolation ON cs_pest_control
-  USING  (home_id = get_my_home_id())
-  WITH CHECK (home_id = get_my_home_id());
+  USING  (home_id = (select get_my_home_id()))
+  WITH CHECK (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_pc_home_date ON cs_pest_control(home_id, inspection_date DESC);
 

@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_advocacy_referrals (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   referral_date       DATE NOT NULL,
@@ -34,7 +34,7 @@ ALTER TABLE cs_advocacy_referrals ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "advocacy_referrals_home" ON cs_advocacy_referrals
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -48,7 +48,7 @@ CREATE INDEX IF NOT EXISTS idx_advocacy_referrals_status
 
 CREATE TABLE IF NOT EXISTS cs_childrens_rights_records (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   record_date         DATE NOT NULL,
@@ -70,7 +70,7 @@ ALTER TABLE cs_childrens_rights_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "childrens_rights_records_home" ON cs_childrens_rights_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

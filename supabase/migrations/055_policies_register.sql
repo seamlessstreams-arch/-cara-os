@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_policies (
   id                          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                     UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                     UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   policy_name                 TEXT NOT NULL,
   policy_reference            TEXT,
   category                    TEXT NOT NULL,
@@ -35,7 +35,7 @@ ALTER TABLE cs_policies ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "policies_home" ON cs_policies
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_policies_status
 
 CREATE TABLE IF NOT EXISTS cs_policy_acknowledgements (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id           UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   policy_id         UUID NOT NULL REFERENCES cs_policies(id) ON DELETE CASCADE,
   staff_id          UUID NOT NULL,
   staff_name        TEXT NOT NULL,
@@ -63,7 +63,7 @@ ALTER TABLE cs_policy_acknowledgements ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "policy_acknowledgements_home" ON cs_policy_acknowledgements
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -77,7 +77,7 @@ CREATE INDEX IF NOT EXISTS idx_policy_acknowledgements_home
 
 CREATE TABLE IF NOT EXISTS cs_policy_review_history (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id           UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   policy_id         UUID NOT NULL REFERENCES cs_policies(id) ON DELETE CASCADE,
   review_date       DATE NOT NULL,
   reviewed_by       TEXT NOT NULL,
@@ -93,7 +93,7 @@ ALTER TABLE cs_policy_review_history ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "policy_review_history_home" ON cs_policy_review_history
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
