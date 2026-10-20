@@ -24,7 +24,7 @@ import * as sqCalendar from "@/lib/supabase/calendar-persist";
 import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwapRequest, WelfareCheckRound } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwapRequest, WelfareCheckRound, DevelopmentPlan, AppraisalRecord, StaffCompetencyProfile } from "@/types/extended";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -2392,7 +2392,48 @@ export const dal = {
   },
 
   developmentPlans: {
-    async findAll() { return db.developmentPlans.findAll(); },
+    async findAll(): Promise<DevelopmentPlan[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("development_plans").select("*");
+        return (data ?? []) as unknown as DevelopmentPlan[];
+      }
+      return db.developmentPlans.findAll();
+    },
+    async findByStaff(staffId: string): Promise<DevelopmentPlan[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("development_plans").select("*").eq("staff_id", staffId);
+        return (data ?? []) as unknown as DevelopmentPlan[];
+      }
+      return db.developmentPlans.findByStaff(staffId);
+    },
+    async findById(id: string): Promise<DevelopmentPlan | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("development_plans").select("*").eq("id", id).maybeSingle();
+        return (data ?? null) as unknown as DevelopmentPlan | null;
+      }
+      return db.developmentPlans.findById(id) ?? null;
+    },
+    async create(data: Partial<DevelopmentPlan>): Promise<DevelopmentPlan> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("development_plans").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as DevelopmentPlan;
+      }
+      return db.developmentPlans.create(data);
+    },
+    async update(id: string, data: Partial<DevelopmentPlan>): Promise<DevelopmentPlan | null> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("development_plans").update({ ...rest, updated_at: new Date().toISOString() }).eq("id", id).select().maybeSingle();
+        return (saved ?? null) as unknown as DevelopmentPlan | null;
+      }
+      return db.developmentPlans.update(id, data);
+    },
   },
 
   activities: {
@@ -2405,7 +2446,48 @@ export const dal = {
   },
 
   appraisals: {
-    async findAll() { return db.appraisals.findAll(); },
+    async findAll(): Promise<AppraisalRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("appraisals").select("*");
+        return (data ?? []) as unknown as AppraisalRecord[];
+      }
+      return db.appraisals.findAll();
+    },
+    async findByStaff(staffId: string): Promise<AppraisalRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("appraisals").select("*").eq("staff_id", staffId);
+        return (data ?? []) as unknown as AppraisalRecord[];
+      }
+      return db.appraisals.findByStaff(staffId);
+    },
+    async findById(id: string): Promise<AppraisalRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("appraisals").select("*").eq("id", id).maybeSingle();
+        return (data ?? null) as unknown as AppraisalRecord | null;
+      }
+      return db.appraisals.findById(id) ?? null;
+    },
+    async create(data: Partial<AppraisalRecord>): Promise<AppraisalRecord> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("appraisals").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as AppraisalRecord;
+      }
+      return db.appraisals.create(data);
+    },
+    async update(id: string, data: Partial<AppraisalRecord>): Promise<AppraisalRecord | null> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("appraisals").update({ ...rest, updated_at: new Date().toISOString() }).eq("id", id).select().maybeSingle();
+        return (saved ?? null) as unknown as AppraisalRecord | null;
+      }
+      return db.appraisals.update(id, data);
+    },
   },
 
   whistleblowingRecords: {
@@ -2710,7 +2792,48 @@ export const dal = {
     async findAll() { return getStore().clothingAllowanceRecords ?? []; },
   },
   competencyProfiles: {
-    async findAll() { return getStore().competencyProfiles ?? []; },
+    async findAll(): Promise<StaffCompetencyProfile[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("competency_profiles").select("*");
+        return (data ?? []) as unknown as StaffCompetencyProfile[];
+      }
+      return db.competencyProfiles.findAll();
+    },
+    async findByStaff(staffId: string): Promise<StaffCompetencyProfile | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("competency_profiles").select("*").eq("staff_id", staffId).order("updated_at", { ascending: false }).limit(1);
+        return ((Array.isArray(data) ? data[0] : null) as StaffCompetencyProfile | null) ?? null;
+      }
+      return db.competencyProfiles.findByStaff(staffId) ?? null;
+    },
+    async findById(id: string): Promise<StaffCompetencyProfile | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("competency_profiles").select("*").eq("id", id).maybeSingle();
+        return (data ?? null) as unknown as StaffCompetencyProfile | null;
+      }
+      return db.competencyProfiles.findById(id) ?? null;
+    },
+    async create(data: Partial<StaffCompetencyProfile>): Promise<StaffCompetencyProfile> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("competency_profiles").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as StaffCompetencyProfile;
+      }
+      return db.competencyProfiles.create(data);
+    },
+    async update(id: string, data: Partial<StaffCompetencyProfile>): Promise<StaffCompetencyProfile | null> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, ...rest } = data;
+        const { data: saved } = await (c as unknown as SB).from("competency_profiles").update({ ...rest, updated_at: new Date().toISOString() }).eq("id", id).select().maybeSingle();
+        return (saved ?? null) as unknown as StaffCompetencyProfile | null;
+      }
+      return db.competencyProfiles.update(id, data);
+    },
   },
   contactDirectoryEntries: {
     async findAll() { return getStore().contactDirectoryEntries ?? []; },

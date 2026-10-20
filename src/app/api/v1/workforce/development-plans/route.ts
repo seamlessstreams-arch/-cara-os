@@ -3,15 +3,15 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staff_id");
   const status = searchParams.get("status");
 
-  let results = db.developmentPlans.findAll();
-  if (staffId) results = db.developmentPlans.findByStaff(staffId);
+  let results = await dal.developmentPlans.findAll();
+  if (staffId) results = await dal.developmentPlans.findByStaff(staffId);
   if (status) results = results.filter((p) => p.status === status);
 
   return NextResponse.json({
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const plan = db.developmentPlans.create({
+  const plan = await dal.developmentPlans.create({
     ...body,
     created_by: __identity.userId,
     home_id: body.home_id ?? tenantHomeId(),

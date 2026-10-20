@@ -3,14 +3,14 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staff_id");
   const status = searchParams.get("status");
 
-  let results = db.appraisals.findAll();
-  if (staffId) results = db.appraisals.findByStaff(staffId);
+  let results = await dal.appraisals.findAll();
+  if (staffId) results = await dal.appraisals.findByStaff(staffId);
   if (status) results = results.filter((a) => a.status === status);
 
   const sorted = results.sort((a, b) => b.appraisal_date.localeCompare(a.appraisal_date));
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const appraisal = db.appraisals.create({
+  const appraisal = await dal.appraisals.create({
     ...body,
     created_by: __identity.userId,
     home_id: body.home_id ?? tenantHomeId(),
