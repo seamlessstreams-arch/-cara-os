@@ -7,7 +7,7 @@
 //     MANAGE_DOCUMENTS → planNewVersion (422 with named errors). The route
 //     applies the PURE plan: supersede exactly the computed ids, create the row.
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   if (!docType || !docId) {
     return NextResponse.json({ error: "doc_type and doc_id are required" }, { status: 400 });
   }
-  const all = db.documentVersions.findAll();
+  const all = await dal.documentVersions.findAll();
   return NextResponse.json({
     data: {
       doc_type: docType,
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const body = (parsed.data ?? {}) as Partial<NewVersionInput>;
 
-  const plan = planNewVersion(db.documentVersions.findByDoc(String(body.doc_type ?? ""), String(body.doc_id ?? "")), {
+  const plan = planNewVersion(await dal.documentVersions.findByDoc(String(body.doc_type ?? ""), String(body.doc_id ?? "")), {
     doc_type: String(body.doc_type ?? ""),
     doc_id: String(body.doc_id ?? ""),
     version_label: body.version_label ?? null,
@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Version refused", blockers: plan.errors }, { status: 422 });
   }
 
-  db.documentVersions.supersede(plan.supersede_ids);
-  const version = db.documentVersions.create(plan.record);
+  await dal.documentVersions.supersede(plan.supersede_ids);
+  const version = await dal.documentVersions.create(plan.record);
   return NextResponse.json(
     { data: { enabled: true, recorded: true, version, superseded: plan.supersede_ids } },
     { status: 201 },

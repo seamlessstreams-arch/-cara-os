@@ -29,6 +29,8 @@ import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import type { SB } from "@/lib/supabase/loose-client";
 import type { CommsChannel, CommsMessage, CommsMessageReceipt, CommsMessageAction, StaffTrustNoticeAck } from "@/types/comms";
+import type { DocVersionRecord } from "@/lib/doc-versioning/doc-versioning-engine";
+import type { WritingAuditEvent } from "@/lib/writing-assistant/types";
 import type { FilingCabinetItem, SavedTimeMetric } from "@/types/care-events";
 // Row types for the child-data collections below. The in-memory store already
 // holds these exact types; only the Supabase path was untyped, and its `any`
@@ -1550,6 +1552,65 @@ export const dal = {
         return ((Array.isArray(data) ? data[0] : null) as StaffTrustNoticeAck | null) ?? null;
       }
       return db.staffTrustNoticeAcks.latestForUser(userId) ?? null;
+    },
+  },
+
+  // ── Doc version history + Writing Assistant audit (own tables, live-safe) ──
+  documentVersions: {
+    async findAll(): Promise<DocVersionRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("document_versions").select("*");
+        return (data ?? []) as unknown as DocVersionRecord[];
+      }
+      return db.documentVersions.findAll();
+    },
+    async findByDoc(docType: string, docId: string): Promise<DocVersionRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("document_versions").select("*").eq("doc_type", docType).eq("doc_id", docId);
+        return (data ?? []) as unknown as DocVersionRecord[];
+      }
+      return db.documentVersions.findByDoc(docType, docId);
+    },
+    async create(record: Omit<DocVersionRecord, "id">): Promise<DocVersionRecord> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("document_versions").insert({ ...record, home_id: homeId() }).select().single();
+        return data as unknown as DocVersionRecord;
+      }
+      return db.documentVersions.create(record);
+    },
+    async supersede(ids: readonly string[]): Promise<void> {
+      const c = sb();
+      if (c) {
+        if (ids.length) await (c as unknown as SB).from("document_versions").update({ is_current: false }).in("id", ids as string[]);
+        return;
+      }
+      db.documentVersions.supersede(ids);
+    },
+  },
+
+  writingAssistantAudit: {
+    async getAll(days = 7, filterUserId?: string, filterAction?: "accepted" | "ignored"): Promise<WritingAuditEvent[]> {
+      const c = sb();
+      if (c) {
+        const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+        let q = (c as unknown as SB).from("writing_assistant_audit_events").select("*").gte("created_at", cutoff);
+        if (filterUserId) q = q.eq("user_id", filterUserId);
+        if (filterAction) q = q.eq("action", filterAction);
+        const { data } = await q;
+        return (data ?? []) as unknown as WritingAuditEvent[];
+      }
+      return db.writingAssistant.getAllAuditEvents(days, filterUserId, filterAction);
+    },
+    async log(event: Omit<WritingAuditEvent, "id" | "created_at">): Promise<WritingAuditEvent> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("writing_assistant_audit_events").insert({ ...event, home_id: homeId() }).select().single();
+        return data as unknown as WritingAuditEvent;
+      }
+      return db.writingAssistant.logAudit(event);
     },
   },
 
