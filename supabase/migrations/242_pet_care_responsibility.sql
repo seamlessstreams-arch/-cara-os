@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_pet_care_responsibility (
   therapeutic_impact   text NOT NULL DEFAULT 'neutral',
   session_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name   text NOT NULL,
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   supported_by text NOT NULL,
   animal_welfare_met       boolean,
   veterinary_care_current  boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_pet_care_responsibility ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "pet_care_responsibility_home" ON cs_pet_care_responsibility;
 CREATE POLICY "pet_care_responsibility_home" ON cs_pet_care_responsibility
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_pet_care_responsibility_home ON cs_pet_care_responsibility(home_id);
 

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_behaviour_pattern_analysis (
   behaviour_severity text NOT NULL DEFAULT 'low',
   incident_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   staff_involved text NOT NULL DEFAULT '',
   trigger_identified boolean,
   de_escalation_attempted boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_behaviour_pattern_analysis ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "behaviour_pattern_analysis_home" ON cs_behaviour_pattern_analysis;
 CREATE POLICY "behaviour_pattern_analysis_home" ON cs_behaviour_pattern_analysis
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 216 idempotent: %', SQLERRM;
 END $$;

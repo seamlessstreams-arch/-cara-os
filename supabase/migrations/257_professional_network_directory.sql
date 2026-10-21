@@ -53,7 +53,7 @@ ALTER TABLE cs_professional_network_directory ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "professional_network_home" ON cs_professional_network_directory;
 CREATE POLICY "professional_network_home" ON cs_professional_network_directory
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'Migration 257 (professional network directory): %', SQLERRM;
 END $$;

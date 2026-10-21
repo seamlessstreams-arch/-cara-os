@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_family_engagement_tracking (
   relationship_quality text NOT NULL DEFAULT 'good',
   engagement_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   family_member_name text NOT NULL DEFAULT '',
   facilitated_by text NOT NULL DEFAULT '',
   child_views_sought boolean,
@@ -39,7 +39,7 @@ ALTER TABLE cs_family_engagement_tracking ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "family_engagement_tracking_home" ON cs_family_engagement_tracking;
 CREATE POLICY "family_engagement_tracking_home" ON cs_family_engagement_tracking
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 212 idempotent: %', SQLERRM;
 END $$;

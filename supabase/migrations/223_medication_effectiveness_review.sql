@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_medication_effectiveness_review (
   review_compliance text NOT NULL DEFAULT 'fully_compliant',
   review_date  date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   reviewed_by  text NOT NULL DEFAULT '',
   child_views_sought boolean,
   side_effects_monitored boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_medication_effectiveness_review ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "medication_effectiveness_review_home" ON cs_medication_effectiveness_review;
 CREATE POLICY "medication_effectiveness_review_home" ON cs_medication_effectiveness_review
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 223 idempotent: %', SQLERRM;
 END $$;

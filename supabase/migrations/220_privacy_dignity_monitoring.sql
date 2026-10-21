@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_privacy_dignity_monitoring (
   response_quality text NOT NULL DEFAULT 'good',
   monitoring_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   monitored_by text NOT NULL DEFAULT '',
   child_views_sought boolean,
   knock_before_entry boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_privacy_dignity_monitoring ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "privacy_dignity_monitoring_home" ON cs_privacy_dignity_monitoring;
 CREATE POLICY "privacy_dignity_monitoring_home" ON cs_privacy_dignity_monitoring
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 220 idempotent: %', SQLERRM;
 END $$;

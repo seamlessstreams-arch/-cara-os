@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS cs_community_links_integration (
   funding_source text NOT NULL DEFAULT 'home_budget',
   start_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name text NOT NULL,
-  child_id uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id uuid REFERENCES young_people(id) ON DELETE SET NULL,
   activity_name text NOT NULL,
   provider_name text NOT NULL,
   safeguarding_checked boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_community_links_integration ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS cs_community_links_integration_home ON cs_community_links_integration;
 CREATE POLICY cs_community_links_integration_home ON cs_community_links_integration
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN duplicate_table THEN NULL;
 END $$;

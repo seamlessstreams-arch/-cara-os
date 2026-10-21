@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_creative_enrichment_activities (
   creative_output text NOT NULL DEFAULT 'work_in_progress',
   activity_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   facilitated_by text NOT NULL DEFAULT '',
   child_choice_offered boolean,
   age_appropriate boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_creative_enrichment_activities ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "creative_enrichment_activities_home" ON cs_creative_enrichment_activities;
 CREATE POLICY "creative_enrichment_activities_home" ON cs_creative_enrichment_activities
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 222 idempotent: %', SQLERRM;
 END $$;

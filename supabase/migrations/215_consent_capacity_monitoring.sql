@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_consent_capacity_monitoring (
   competence_assessment text NOT NULL DEFAULT 'age_appropriate',
   assessment_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   assessed_by  text NOT NULL DEFAULT '',
   child_views_sought boolean,
   information_provided boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_consent_capacity_monitoring ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "consent_capacity_monitoring_home" ON cs_consent_capacity_monitoring;
 CREATE POLICY "consent_capacity_monitoring_home" ON cs_consent_capacity_monitoring
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 215 idempotent: %', SQLERRM;
 END $$;

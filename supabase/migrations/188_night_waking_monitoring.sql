@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS cs_night_waking_monitoring (
   waking_date date NOT NULL DEFAULT CURRENT_DATE,
   waking_time text NOT NULL DEFAULT '00:00',
   child_name text NOT NULL,
-  child_id uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id uuid REFERENCES young_people(id) ON DELETE SET NULL,
   staff_on_duty text NOT NULL,
   child_comforted boolean,
   environment_checked boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_night_waking_monitoring ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS cs_night_waking_monitoring_home ON cs_night_waking_monitoring;
 CREATE POLICY cs_night_waking_monitoring_home ON cs_night_waking_monitoring
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN duplicate_table THEN NULL;
 END $$;

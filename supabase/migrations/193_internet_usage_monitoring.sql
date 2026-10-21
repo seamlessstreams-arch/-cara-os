@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS cs_internet_usage_monitoring (
   monitoring_level text NOT NULL DEFAULT 'periodic_checks',
   monitoring_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name text NOT NULL,
-  child_id uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id uuid REFERENCES young_people(id) ON DELETE SET NULL,
   monitored_by text NOT NULL,
   parental_controls_active boolean,
   age_appropriate_content boolean,
@@ -37,7 +37,7 @@ ALTER TABLE cs_internet_usage_monitoring ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS cs_internet_usage_monitoring_home ON cs_internet_usage_monitoring;
 CREATE POLICY cs_internet_usage_monitoring_home ON cs_internet_usage_monitoring
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN duplicate_table THEN NULL;
 END $$;

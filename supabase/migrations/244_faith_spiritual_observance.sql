@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_faith_spiritual_observance (
   cultural_sensitivity text NOT NULL DEFAULT 'adequate',
   session_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name   text NOT NULL,
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   supported_by text NOT NULL,
   child_wishes_respected       boolean,
   dietary_needs_met            boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_faith_spiritual_observance ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "faith_spiritual_observance_home" ON cs_faith_spiritual_observance;
 CREATE POLICY "faith_spiritual_observance_home" ON cs_faith_spiritual_observance
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_faith_spiritual_observance_home ON cs_faith_spiritual_observance(home_id);
 
