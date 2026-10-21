@@ -11,20 +11,22 @@ import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
-function staffName(id: string): string {
-  const s = (db.staff?.findAll?.() ?? []).find((x: { id: string }) => x.id === id) as
+type StaffList = Awaited<ReturnType<typeof dal.staff.findAll>>;
+
+function staffName(id: string, staff: StaffList): string {
+  const s = staff.find((x) => x.id === id) as
     | { full_name?: string; first_name?: string; last_name?: string }
     | undefined;
   return s?.full_name ?? [s?.first_name, s?.last_name].filter(Boolean).join(" ") ?? "Unknown";
 }
 
-async function enrich(m: CommsMessage, user: CommsUser): Promise<CommsMessageEnriched> {
+async function enrich(m: CommsMessage, user: CommsUser, staff: StaffList): Promise<CommsMessageEnriched> {
   const receipts = await dal.commsMessageReceipts.findByMessage(m.id);
   const mine = receipts.find((r) => r.user_id === user.id);
   return {
     ...m,
     body: m.is_deleted ? "[message deleted]" : m.body,
-    author_name: staffName(m.author_id),
+    author_name: staffName(m.author_id, staff),
     read_count: receipts.filter((r) => r.read_at).length,
     acknowledged_count: receipts.filter((r) => r.acknowledged_at).length,
     read_by_me: !!mine?.read_at,
@@ -45,7 +47,8 @@ export async function GET(req: NextRequest) {
     auditComms("access_denied", user, `channel:${channelId}`, { reason: access.reason });
     return NextResponse.json({ error: "Access denied", reason: access.reason }, { status: 403 });
   }
-  const data = await Promise.all((await dal.commsMessages.findByChannel(channelId)).map((m) => enrich(m, user)));
+  const staff = await dal.staff.findAll();
+  const data = await Promise.all((await dal.commsMessages.findByChannel(channelId)).map((m) => enrich(m, user, staff)));
   return NextResponse.json({ data });
 }
 
@@ -73,6 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You cannot post in this channel", reason: access.reason }, { status: 403 });
   }
 
+  const staff = await dal.staff.findAll();
   const priority = (["normal", "urgent", "emergency"].includes(body.priority as string) ? body.priority : "normal") as CommsMessage["priority"];
   const msg = db.commsMessages.create({
     channel_id: channelId,
@@ -94,13 +98,13 @@ export async function POST(req: NextRequest) {
 
   // Privacy-safe notification for urgent/emergency — NO message content, NO child/incident detail.
   if (priority !== "normal") {
-    const recipients = (db.staff?.findAll?.() ?? []).filter((s: { id: string; home_id?: string; role?: string }) => {
+    const recipients = staff.filter((s: { id: string; home_id?: string; role?: string }) => {
       if (s.id === user.id) return false;
       const u: CommsUser = { id: s.id, role: s.role ?? "residential_care_worker", home_id: s.home_id ?? tenantHomeId(), shift_active: true };
       return canViewChannel(u, channel).allowed;
     });
     for (const r of recipients as Array<{ id: string }>) {
-      db.notifications.create({
+      await dal.notifications.create({
         home_id: channel.home_id,
         recipient_id: r.id,
         title: priority === "emergency" ? "Emergency broadcast" : "Urgent message",
@@ -121,5 +125,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ data: await enrich(msg, user) }, { status: 201 });
+  return NextResponse.json({ data: await enrich(msg, user, staff) }, { status: 201 });
 }
