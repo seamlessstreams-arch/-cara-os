@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_garden_horticulture_activities (
   health_benefit   text NOT NULL DEFAULT 'some_benefit',
   session_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name   text NOT NULL,
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   supported_by text NOT NULL,
   age_appropriate          boolean,
   risk_assessment_done     boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_garden_horticulture_activities ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "garden_horticulture_activities_home" ON cs_garden_horticulture_activities;
 CREATE POLICY "garden_horticulture_activities_home" ON cs_garden_horticulture_activities
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 CREATE INDEX IF NOT EXISTS idx_garden_horticulture_activities_home ON cs_garden_horticulture_activities(home_id);
 

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_religious_cultural_observance (
   staff_competence text NOT NULL DEFAULT 'competent',
   observance_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   supported_by text NOT NULL DEFAULT '',
   child_views_sought boolean,
   family_consulted boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_religious_cultural_observance ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "religious_cultural_observance_home" ON cs_religious_cultural_observance;
 CREATE POLICY "religious_cultural_observance_home" ON cs_religious_cultural_observance
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 218 idempotent: %', SQLERRM;
 END $$;

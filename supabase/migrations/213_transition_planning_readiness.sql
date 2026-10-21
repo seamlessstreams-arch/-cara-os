@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_transition_planning_readiness (
   pathway_plan_status text NOT NULL DEFAULT 'in_progress',
   assessment_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   assessed_by  text NOT NULL DEFAULT '',
   child_views_included boolean,
   life_skills_assessed boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_transition_planning_readiness ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "transition_planning_readiness_home" ON cs_transition_planning_readiness;
 CREATE POLICY "transition_planning_readiness_home" ON cs_transition_planning_readiness
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 213 idempotent: %', SQLERRM;
 END $$;

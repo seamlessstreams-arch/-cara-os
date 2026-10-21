@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS cs_boundary_management (
   consistency_rating text NOT NULL DEFAULT 'fully_consistent',
   incident_date date NOT NULL DEFAULT CURRENT_DATE,
   child_name text NOT NULL,
-  child_id uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id uuid REFERENCES young_people(id) ON DELETE SET NULL,
   staff_name text NOT NULL,
   boundary_explained boolean,
   age_appropriate boolean,
@@ -37,7 +37,7 @@ ALTER TABLE cs_boundary_management ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS cs_boundary_management_home ON cs_boundary_management;
 CREATE POLICY cs_boundary_management_home ON cs_boundary_management
-  USING (home_id = get_my_home_id());
+  USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN duplicate_table THEN NULL;
 END $$;

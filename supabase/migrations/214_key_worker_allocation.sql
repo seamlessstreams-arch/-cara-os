@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_key_worker_allocation (
   continuity_rating text NOT NULL DEFAULT 'stable',
   review_date  date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   key_worker_name text NOT NULL DEFAULT '',
   reviewed_by  text NOT NULL DEFAULT '',
   child_views_sought boolean,
@@ -39,7 +39,7 @@ ALTER TABLE cs_key_worker_allocation ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "key_worker_allocation_home" ON cs_key_worker_allocation;
 CREATE POLICY "key_worker_allocation_home" ON cs_key_worker_allocation
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 214 idempotent: %', SQLERRM;
 END $$;

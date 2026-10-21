@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_sibling_contact_quality (
   barrier_type text NOT NULL DEFAULT 'none',
   contact_date date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   sibling_name text NOT NULL DEFAULT '',
   facilitated_by text NOT NULL DEFAULT '',
   child_views_sought boolean,
@@ -39,7 +39,7 @@ ALTER TABLE cs_sibling_contact_quality ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "sibling_contact_quality_home" ON cs_sibling_contact_quality;
 CREATE POLICY "sibling_contact_quality_home" ON cs_sibling_contact_quality
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 219 idempotent: %', SQLERRM;
 END $$;

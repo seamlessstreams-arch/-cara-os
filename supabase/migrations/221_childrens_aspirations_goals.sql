@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cs_childrens_aspirations_goals (
   support_quality text NOT NULL DEFAULT 'good',
   review_date  date NOT NULL DEFAULT now(),
   child_name   text NOT NULL DEFAULT '',
-  child_id     uuid REFERENCES children(id) ON DELETE SET NULL,
+  child_id     uuid REFERENCES young_people(id) ON DELETE SET NULL,
   supported_by text NOT NULL DEFAULT '',
   child_led_goal boolean,
   realistic_timeframe boolean,
@@ -38,7 +38,7 @@ ALTER TABLE cs_childrens_aspirations_goals ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "childrens_aspirations_goals_home" ON cs_childrens_aspirations_goals;
 CREATE POLICY "childrens_aspirations_goals_home" ON cs_childrens_aspirations_goals
-  FOR ALL USING (home_id = get_my_home_id());
+  FOR ALL USING (home_id = (select get_my_home_id()));
 
 EXCEPTION WHEN others THEN RAISE NOTICE 'migration 221 idempotent: %', SQLERRM;
 END $$;
