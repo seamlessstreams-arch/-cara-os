@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_possession_records (
   id                      UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                 UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id                 UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id                UUID NOT NULL,
   child_name              TEXT NOT NULL,
   item_description        TEXT NOT NULL,
@@ -34,7 +34,7 @@ ALTER TABLE cs_possession_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "possession_records_home" ON cs_possession_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -48,7 +48,7 @@ CREATE INDEX IF NOT EXISTS idx_possession_records_child
 
 CREATE TABLE IF NOT EXISTS cs_money_records (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id             UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            UUID NOT NULL,
   child_name          TEXT NOT NULL,
   transaction_type    TEXT NOT NULL,
@@ -66,51 +66,18 @@ ALTER TABLE cs_money_records ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "money_records_home" ON cs_money_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 CREATE INDEX IF NOT EXISTS idx_money_records_child
   ON cs_money_records(child_id, recorded_date);
 
--- ── cs_fire_drills ──────────────────────────────────────────────────────────
-
-CREATE TABLE IF NOT EXISTS cs_fire_drills (
-  id                        UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id                   UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
-  drill_date                DATE NOT NULL DEFAULT CURRENT_DATE,
-  drill_time                TIME NOT NULL,
-  drill_type                TEXT NOT NULL DEFAULT 'fire_evacuation',
-  staff_present             JSONB NOT NULL DEFAULT '[]',
-  children_present          JSONB NOT NULL DEFAULT '[]',
-  children_absent           JSONB NOT NULL DEFAULT '[]',
-  evacuation_time_seconds   INTEGER NOT NULL DEFAULT 0,
-  assembly_point_used       TEXT NOT NULL DEFAULT '',
-  alarm_activated           boolean,
-  all_accounted_for         boolean,
-  issues_identified         JSONB NOT NULL DEFAULT '[]',
-  improvements_needed       JSONB NOT NULL DEFAULT '[]',
-  conducted_by              TEXT NOT NULL,
-  next_drill_date           DATE,
-  created_at                TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-ALTER TABLE cs_fire_drills ENABLE ROW LEVEL SECURITY;
-
-DO $$ BEGIN
-  CREATE POLICY "fire_drills_home" ON cs_fire_drills
-    USING (home_id = get_my_home_id());
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_fire_drills_home
-  ON cs_fire_drills(home_id, drill_date);
-
 -- ── cs_emergency_contacts ───────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS cs_emergency_contacts (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   contact_type          TEXT NOT NULL,
   name                  TEXT NOT NULL,
   role                  TEXT NOT NULL,
@@ -129,7 +96,7 @@ ALTER TABLE cs_emergency_contacts ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "emergency_contacts_home" ON cs_emergency_contacts
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -140,7 +107,7 @@ CREATE INDEX IF NOT EXISTS idx_emergency_contacts_home
 
 CREATE TABLE IF NOT EXISTS cs_contingency_plans (
   id                    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id               UUID NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               UUID NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   plan_type             TEXT NOT NULL,
   title                 TEXT NOT NULL,
   description           TEXT NOT NULL DEFAULT '',
@@ -160,7 +127,7 @@ ALTER TABLE cs_contingency_plans ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "contingency_plans_home" ON cs_contingency_plans
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

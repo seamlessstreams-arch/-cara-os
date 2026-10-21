@@ -8,7 +8,7 @@
 
 CREATE TABLE IF NOT EXISTS cs_medication_prescriptions (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id             uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id             uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id            uuid NOT NULL,
   medication_name     text NOT NULL,
   dosage              text NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS cs_mar_entries (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   prescription_id   uuid NOT NULL REFERENCES cs_medication_prescriptions(id) ON DELETE CASCADE,
   child_id          uuid NOT NULL,
-  home_id           uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id           uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   scheduled_time    timestamptz NOT NULL,
   administered_at   timestamptz,
   administered_by   uuid NOT NULL,
@@ -70,43 +70,11 @@ CREATE INDEX IF NOT EXISTS idx_mar_rx           ON cs_mar_entries(prescription_i
 CREATE INDEX IF NOT EXISTS idx_mar_scheduled    ON cs_mar_entries(scheduled_time);
 CREATE INDEX IF NOT EXISTS idx_mar_outcome      ON cs_mar_entries(outcome);
 
--- ── Medication errors ───────────────────────────────────────────────────────
-
-CREATE TABLE IF NOT EXISTS cs_medication_errors (
-  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id               uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
-  child_id              uuid NOT NULL,
-  prescription_id       uuid,
-  error_category        text NOT NULL
-                          CHECK (error_category IN (
-                            'wrong_dose','wrong_time','wrong_medication','wrong_child',
-                            'omission','double_dose','expired_medication',
-                            'documentation_error','storage_error','disposal_error'
-                          )),
-  severity              text NOT NULL
-                          CHECK (severity IN ('critical','high','medium','low')),
-  description           text NOT NULL,
-  action_taken          text NOT NULL DEFAULT '',
-  reported_by           uuid NOT NULL,
-  reported_to_manager   boolean NOT NULL DEFAULT false,
-  ofsted_notified       boolean NOT NULL DEFAULT false,
-  parent_notified       boolean NOT NULL DEFAULT false,
-  prescriber_notified   boolean NOT NULL DEFAULT false,
-  outcome               text NOT NULL DEFAULT '',
-  date_occurred         timestamptz NOT NULL DEFAULT now(),
-  created_at            timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_med_err_home     ON cs_medication_errors(home_id);
-CREATE INDEX IF NOT EXISTS idx_med_err_child    ON cs_medication_errors(child_id);
-CREATE INDEX IF NOT EXISTS idx_med_err_severity ON cs_medication_errors(severity);
-CREATE INDEX IF NOT EXISTS idx_med_err_category ON cs_medication_errors(error_category);
-
 -- ── Contact plans ───────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS cs_contact_plans (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id               uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id              uuid NOT NULL,
   contact_person_name   text NOT NULL,
   contact_person_role   text NOT NULL
@@ -141,7 +109,7 @@ CREATE INDEX IF NOT EXISTS idx_contact_plan_active ON cs_contact_plans(is_active
 
 CREATE TABLE IF NOT EXISTS cs_contact_records (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  home_id               uuid NOT NULL REFERENCES cs_homes(id) ON DELETE CASCADE,
+  home_id               uuid NOT NULL REFERENCES homes(id) ON DELETE CASCADE,
   child_id              uuid NOT NULL,
   contact_plan_id       uuid REFERENCES cs_contact_plans(id),
   contact_person_name   text NOT NULL,
@@ -182,36 +150,29 @@ CREATE INDEX IF NOT EXISTS idx_contact_rec_outcome ON cs_contact_records(outcome
 
 ALTER TABLE cs_medication_prescriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cs_mar_entries              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_medication_errors        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cs_contact_plans            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cs_contact_records          ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY med_rx_home_policy ON cs_medication_prescriptions
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY mar_home_policy ON cs_mar_entries
-    USING (home_id = get_my_home_id());
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  CREATE POLICY med_err_home_policy ON cs_medication_errors
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY contact_plan_home_policy ON cs_contact_plans
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
   CREATE POLICY contact_rec_home_policy ON cs_contact_records
-    USING (home_id = get_my_home_id());
+    USING (home_id = (select get_my_home_id()));
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
