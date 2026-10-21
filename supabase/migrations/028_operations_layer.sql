@@ -1,62 +1,11 @@
--- ══════════════════════════════════════════════════════════════════════════════
--- 028: OPERATIONS LAYER — Granular permissions, form governance, task explorer,
--- workflows, evidence management, management oversight, ARIA intelligence,
--- regulatory mapping, inspection readiness, and immutable audit trail.
---
--- The Manager+ governance engine for Cornerstone.
--- ══════════════════════════════════════════════════════════════════════════════
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 1. GRANULAR PERMISSIONS
--- ═══════════════════════════════════════════════════════════════════════════
-
-CREATE TABLE IF NOT EXISTS cs_roles (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id         UUID REFERENCES homes(id) ON DELETE CASCADE,
-  code            TEXT NOT NULL,
-  label           TEXT NOT NULL,
-  description     TEXT,
-  level           INT NOT NULL DEFAULT 0,        -- hierarchy: 100=super_admin down to 10=bank_staff
-  is_system       BOOLEAN DEFAULT FALSE,         -- system roles can't be deleted
-  created_at      TIMESTAMPTZ DEFAULT now(),
-  updated_at      TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(home_id, code)
-);
-
-CREATE TABLE IF NOT EXISTS cs_permissions (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  code            TEXT NOT NULL UNIQUE,
-  group_name      TEXT NOT NULL,                 -- e.g. 'young_people', 'incidents', 'forms'
-  label           TEXT NOT NULL,
-  description     TEXT,
-  created_at      TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS cs_role_permissions (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  role_id         UUID REFERENCES cs_roles(id) ON DELETE CASCADE,
-  permission_id   UUID REFERENCES cs_permissions(id) ON DELETE CASCADE,
-  granted_at      TIMESTAMPTZ DEFAULT now(),
-  granted_by      UUID REFERENCES staff(id),
-  UNIQUE(role_id, permission_id)
-);
-
-CREATE TABLE IF NOT EXISTS cs_user_role_assignments (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES staff(id) ON DELETE CASCADE,
-  role_id         UUID REFERENCES cs_roles(id) ON DELETE CASCADE,
-  home_id         UUID REFERENCES homes(id) ON DELETE CASCADE,
-  assigned_at     TIMESTAMPTZ DEFAULT now(),
-  assigned_by     UUID REFERENCES staff(id),
-  expires_at      TIMESTAMPTZ,
-  is_active       BOOLEAN DEFAULT TRUE,
-  UNIQUE(user_id, role_id, home_id)
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_cs_role_perms_role ON cs_role_permissions(role_id);
-CREATE INDEX IF NOT EXISTS idx_cs_user_roles_user ON cs_user_role_assignments(user_id);
-CREATE INDEX IF NOT EXISTS idx_cs_user_roles_home ON cs_user_role_assignments(home_id);
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- CORNERSTONE — OPERATIONS LAYER (promoted: 17 queried tables)
+-- Tasks/workflows, forms, evidence, oversight, inspection-readiness, settings,
+-- audit log, regulation mappings. The 6 non-queried RBAC/aria tables are not
+-- promoted. RLS redesigned: home-scoped tenant policies for owner tables,
+-- parent-scoped EXISTS policies for child/link tables (no home_id column),
+-- append-only audit log, global-read regulation reference. All idempotent.
+-- ═══════════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 2. FORM GOVERNANCE
@@ -76,7 +25,7 @@ CREATE TABLE IF NOT EXISTS form_templates (
   is_active       BOOLEAN DEFAULT TRUE,
   is_mandatory    BOOLEAN DEFAULT FALSE,
   regulation_refs TEXT[] DEFAULT '{}',          -- e.g. {'CHR2015:Reg12', 'SCCIF:Leadership'}
-  created_by      UUID REFERENCES staff(id),
+  created_by      UUID REFERENCES staff_members(id),
   created_at      TIMESTAMPTZ DEFAULT now(),
   updated_at      TIMESTAMPTZ DEFAULT now(),
   UNIQUE(home_id, slug)
@@ -93,11 +42,11 @@ CREATE TABLE IF NOT EXISTS form_template_versions (
   status          TEXT NOT NULL DEFAULT 'draft'
                     CHECK (status IN ('draft', 'pending_approval', 'approved', 'archived', 'rejected')),
   published_at    TIMESTAMPTZ,
-  published_by    UUID REFERENCES staff(id),
-  approved_by     UUID REFERENCES staff(id),
+  published_by    UUID REFERENCES staff_members(id),
+  approved_by     UUID REFERENCES staff_members(id),
   approved_at     TIMESTAMPTZ,
   changelog       TEXT,
-  created_by      UUID REFERENCES staff(id),
+  created_by      UUID REFERENCES staff_members(id),
   created_at      TIMESTAMPTZ DEFAULT now(),
   UNIQUE(template_id, version)
 );
@@ -115,20 +64,20 @@ CREATE TABLE IF NOT EXISTS form_submissions (
                     )),
   -- Context links
   linked_child_id    UUID REFERENCES young_people(id),
-  linked_staff_id    UUID REFERENCES staff(id),
+  linked_staff_id    UUID REFERENCES staff_members(id),
   linked_incident_id UUID,
   -- Workflow
   submitted_at    TIMESTAMPTZ,
-  submitted_by    UUID REFERENCES staff(id),
-  reviewed_by     UUID REFERENCES staff(id),
+  submitted_by    UUID REFERENCES staff_members(id),
+  reviewed_by     UUID REFERENCES staff_members(id),
   reviewed_at     TIMESTAMPTZ,
   review_notes    TEXT,
-  approved_by     UUID REFERENCES staff(id),
+  approved_by     UUID REFERENCES staff_members(id),
   approved_at     TIMESTAMPTZ,
   due_date        DATE,
   priority        TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
   -- Tracking
-  created_by      UUID REFERENCES staff(id),
+  created_by      UUID REFERENCES staff_members(id),
   created_at      TIMESTAMPTZ DEFAULT now(),
   updated_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -138,7 +87,7 @@ CREATE TABLE IF NOT EXISTS form_audit_logs (
   submission_id   UUID REFERENCES form_submissions(id) ON DELETE CASCADE,
   action          TEXT NOT NULL,                  -- 'created', 'edited', 'submitted', 'approved', 'rejected', 'archived'
   field_changes   JSONB,                         -- {field: {old, new}}
-  performed_by    UUID REFERENCES staff(id),
+  performed_by    UUID REFERENCES staff_members(id),
   performed_at    TIMESTAMPTZ DEFAULT now(),
   ip_address      INET,
   notes           TEXT
@@ -146,11 +95,17 @@ CREATE TABLE IF NOT EXISTS form_audit_logs (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_form_templates_home ON form_templates(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_form_versions_template ON form_template_versions(template_id);
+
 CREATE INDEX IF NOT EXISTS idx_form_submissions_home ON form_submissions(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_form_submissions_template ON form_submissions(template_id);
+
 CREATE INDEX IF NOT EXISTS idx_form_submissions_child ON form_submissions(linked_child_id);
+
 CREATE INDEX IF NOT EXISTS idx_form_submissions_status ON form_submissions(status);
+
 CREATE INDEX IF NOT EXISTS idx_form_audit_submission ON form_audit_logs(submission_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -178,15 +133,15 @@ CREATE TABLE IF NOT EXISTS cs_tasks (
                       'completed', 'cancelled', 'overdue'
                     )),
   -- Assignment
-  assigned_to     UUID REFERENCES staff(id),
+  assigned_to     UUID REFERENCES staff_members(id),
   assigned_role   TEXT,
-  delegated_to    UUID REFERENCES staff(id),
+  delegated_to    UUID REFERENCES staff_members(id),
   delegated_at    TIMESTAMPTZ,
   -- Dates
   due_date        TIMESTAMPTZ,
   start_date      TIMESTAMPTZ,
   completed_at    TIMESTAMPTZ,
-  completed_by    UUID REFERENCES staff(id),
+  completed_by    UUID REFERENCES staff_members(id),
   -- Time tracking
   estimated_minutes INT,
   actual_minutes  INT,
@@ -196,14 +151,14 @@ CREATE TABLE IF NOT EXISTS cs_tasks (
   recurrence_end  TIMESTAMPTZ,
   -- Sign-off
   requires_sign_off BOOLEAN DEFAULT FALSE,
-  signed_off_by   UUID REFERENCES staff(id),
+  signed_off_by   UUID REFERENCES staff_members(id),
   signed_off_at   TIMESTAMPTZ,
   -- Evidence
   evidence_note   TEXT,
   evidence_files  TEXT[] DEFAULT '{}',
   -- Escalation
   escalated       BOOLEAN DEFAULT FALSE,
-  escalated_to    UUID REFERENCES staff(id),
+  escalated_to    UUID REFERENCES staff_members(id),
   escalated_at    TIMESTAMPTZ,
   escalation_reason TEXT,
   escalation_level INT DEFAULT 0,
@@ -222,7 +177,7 @@ CREATE TABLE IF NOT EXISTS cs_tasks (
   -- Meta
   tags            TEXT[] DEFAULT '{}',
   regulation_refs TEXT[] DEFAULT '{}',
-  created_by      UUID REFERENCES staff(id),
+  created_by      UUID REFERENCES staff_members(id),
   created_at      TIMESTAMPTZ DEFAULT now(),
   updated_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -239,7 +194,7 @@ CREATE TABLE IF NOT EXISTS cs_task_dependencies (
 CREATE TABLE IF NOT EXISTS cs_task_comments (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   task_id         UUID REFERENCES cs_tasks(id) ON DELETE CASCADE,
-  author_id       UUID REFERENCES staff(id),
+  author_id       UUID REFERENCES staff_members(id),
   content         TEXT NOT NULL,
   is_system       BOOLEAN DEFAULT FALSE,         -- system-generated comments (status changes etc.)
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -260,13 +215,21 @@ CREATE TABLE IF NOT EXISTS cs_task_escalation_rules (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_home ON cs_tasks(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_assigned ON cs_tasks(assigned_to);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_status ON cs_tasks(status);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_due ON cs_tasks(due_date);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_category ON cs_tasks(category);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_child ON cs_tasks(linked_child_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_tasks_parent ON cs_tasks(parent_task_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_task_deps_task ON cs_task_dependencies(task_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_task_comments_task ON cs_task_comments(task_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -286,9 +249,9 @@ CREATE TABLE IF NOT EXISTS cs_workflows (
   -- Context
   linked_child_id UUID REFERENCES young_people(id),
   linked_incident_id UUID,
-  initiated_by    UUID REFERENCES staff(id),
+  initiated_by    UUID REFERENCES staff_members(id),
   completed_at    TIMESTAMPTZ,
-  completed_by    UUID REFERENCES staff(id),
+  completed_by    UUID REFERENCES staff_members(id),
   due_date        TIMESTAMPTZ,
   metadata        JSONB,                         -- workflow-specific data
   created_at      TIMESTAMPTZ DEFAULT now(),
@@ -303,7 +266,7 @@ CREATE TABLE IF NOT EXISTS cs_workflow_steps (
   description     TEXT,
   status          TEXT NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'in_progress', 'completed', 'skipped', 'blocked')),
-  assigned_to     UUID REFERENCES staff(id),
+  assigned_to     UUID REFERENCES staff_members(id),
   assigned_role   TEXT,
   -- Evidence
   evidence_required BOOLEAN DEFAULT FALSE,
@@ -311,7 +274,7 @@ CREATE TABLE IF NOT EXISTS cs_workflow_steps (
   evidence_notes  TEXT,
   -- Completion
   completed_at    TIMESTAMPTZ,
-  completed_by    UUID REFERENCES staff(id),
+  completed_by    UUID REFERENCES staff_members(id),
   completion_notes TEXT,
   due_date        TIMESTAMPTZ,
   -- Auto-actions
@@ -322,8 +285,11 @@ CREATE TABLE IF NOT EXISTS cs_workflow_steps (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_cs_workflows_home ON cs_workflows(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_workflows_status ON cs_workflows(status);
+
 CREATE INDEX IF NOT EXISTS idx_cs_workflows_template ON cs_workflows(template_code);
+
 CREATE INDEX IF NOT EXISTS idx_cs_workflow_steps_workflow ON cs_workflow_steps(workflow_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -350,14 +316,14 @@ CREATE TABLE IF NOT EXISTS cs_evidence_items (
   quality_notes   TEXT,
   -- Context
   linked_child_id UUID REFERENCES young_people(id),
-  linked_staff_id UUID REFERENCES staff(id),
+  linked_staff_id UUID REFERENCES staff_members(id),
   -- Compliance
   regulation_refs TEXT[] DEFAULT '{}',
   sccif_refs      TEXT[] DEFAULT '{}',
   -- Meta
   date_of_evidence DATE,
-  uploaded_by     UUID REFERENCES staff(id),
-  verified_by     UUID REFERENCES staff(id),
+  uploaded_by     UUID REFERENCES staff_members(id),
+  verified_by     UUID REFERENCES staff_members(id),
   verified_at     TIMESTAMPTZ,
   tags            TEXT[] DEFAULT '{}',
   created_at      TIMESTAMPTZ DEFAULT now(),
@@ -370,16 +336,20 @@ CREATE TABLE IF NOT EXISTS cs_evidence_links (
   entity_type     TEXT NOT NULL,                  -- 'task', 'workflow', 'workflow_step', 'incident', 'form_submission', 'oversight_note'
   entity_id       UUID NOT NULL,
   link_type       TEXT DEFAULT 'supports' CHECK (link_type IN ('supports', 'contradicts', 'supplements', 'supersedes')),
-  created_by      UUID REFERENCES staff(id),
+  created_by      UUID REFERENCES staff_members(id),
   created_at      TIMESTAMPTZ DEFAULT now(),
   UNIQUE(evidence_id, entity_type, entity_id)
 );
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_cs_evidence_home ON cs_evidence_items(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_evidence_type ON cs_evidence_items(evidence_type);
+
 CREATE INDEX IF NOT EXISTS idx_cs_evidence_child ON cs_evidence_items(linked_child_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_evidence_links_evidence ON cs_evidence_links(evidence_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_evidence_links_entity ON cs_evidence_links(entity_type, entity_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -427,9 +397,9 @@ CREATE TABLE IF NOT EXISTS cs_management_oversight_notes (
   actions_identified TEXT[] DEFAULT '{}',
   tasks_created   UUID[] DEFAULT '{}',
   -- Meta
-  oversight_by    UUID REFERENCES staff(id),
+  oversight_by    UUID REFERENCES staff_members(id),
   oversight_at    TIMESTAMPTZ DEFAULT now(),
-  reviewed_by     UUID REFERENCES staff(id),
+  reviewed_by     UUID REFERENCES staff_members(id),
   reviewed_at     TIMESTAMPTZ,
   regulation_refs TEXT[] DEFAULT '{}',
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -437,73 +407,10 @@ CREATE TABLE IF NOT EXISTS cs_management_oversight_notes (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_cs_oversight_home ON cs_management_oversight_notes(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_oversight_record ON cs_management_oversight_notes(record_type, record_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_oversight_by ON cs_management_oversight_notes(oversight_by);
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 8. ARIA OPERATIONAL INTELLIGENCE
--- ═══════════════════════════════════════════════════════════════════════════
-
-CREATE TABLE IF NOT EXISTS cs_aria_recommendations (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id         UUID REFERENCES homes(id) ON DELETE CASCADE,
-  recommendation_type TEXT NOT NULL CHECK (recommendation_type IN (
-    'overdue_form', 'missing_oversight', 'weak_recording',
-    'staffing_concern', 'pattern_detected', 'compliance_gap',
-    'training_due', 'supervision_due', 'risk_escalation',
-    'positive_recognition', 'inspection_prep', 'reg45_evidence',
-    'handover_quality', 'documentation_gap', 'wellbeing_concern',
-    'medication_pattern', 'incident_trend', 'placement_risk',
-    'safeguarding_pattern', 'contact_disruption'
-  )),
-  title           TEXT NOT NULL,
-  description     TEXT NOT NULL,
-  severity        TEXT NOT NULL CHECK (severity IN ('info', 'low', 'medium', 'high', 'critical')),
-  -- Context
-  linked_child_id UUID REFERENCES young_people(id),
-  linked_staff_id UUID REFERENCES staff(id),
-  linked_entity_type TEXT,
-  linked_entity_id UUID,
-  -- Action
-  suggested_action TEXT,
-  action_taken    TEXT,
-  action_by       UUID REFERENCES staff(id),
-  action_at       TIMESTAMPTZ,
-  -- Lifecycle
-  status          TEXT DEFAULT 'active' CHECK (status IN ('active', 'acknowledged', 'actioned', 'dismissed', 'expired')),
-  acknowledged_by UUID REFERENCES staff(id),
-  acknowledged_at TIMESTAMPTZ,
-  dismissed_reason TEXT,
-  expires_at      TIMESTAMPTZ,
-  -- Data
-  data_points     INT DEFAULT 0,
-  confidence      NUMERIC(4,2),
-  supporting_data JSONB,
-  -- Meta
-  created_at      TIMESTAMPTZ DEFAULT now(),
-  updated_at      TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS cs_aria_risk_signals (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  home_id         UUID REFERENCES homes(id) ON DELETE CASCADE,
-  signal_type     TEXT NOT NULL,
-  entity_type     TEXT NOT NULL,
-  entity_id       UUID NOT NULL,
-  risk_score      NUMERIC(4,2) NOT NULL,
-  risk_factors    JSONB,
-  detected_at     TIMESTAMPTZ DEFAULT now(),
-  resolved_at     TIMESTAMPTZ,
-  resolved_by     UUID REFERENCES staff(id)
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_cs_aria_rec_home ON cs_aria_recommendations(home_id);
-CREATE INDEX IF NOT EXISTS idx_cs_aria_rec_status ON cs_aria_recommendations(status);
-CREATE INDEX IF NOT EXISTS idx_cs_aria_rec_type ON cs_aria_recommendations(recommendation_type);
-CREATE INDEX IF NOT EXISTS idx_cs_aria_rec_severity ON cs_aria_recommendations(severity);
-CREATE INDEX IF NOT EXISTS idx_cs_aria_risk_home ON cs_aria_risk_signals(home_id);
-CREATE INDEX IF NOT EXISTS idx_cs_aria_risk_entity ON cs_aria_risk_signals(entity_type, entity_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 9. INSPECTION READINESS
@@ -520,7 +427,7 @@ CREATE TABLE IF NOT EXISTS cs_inspection_readiness_scans (
   strengths_identified JSONB,
   recommendations JSONB,
   -- Meta
-  initiated_by    UUID REFERENCES staff(id),
+  initiated_by    UUID REFERENCES staff_members(id),
   completed_at    TIMESTAMPTZ,
   expires_at      TIMESTAMPTZ,
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -537,7 +444,7 @@ CREATE TABLE IF NOT EXISTS cs_system_settings (
   home_id         UUID REFERENCES homes(id) ON DELETE CASCADE,
   setting_key     TEXT NOT NULL,
   setting_value   JSONB NOT NULL,
-  updated_by      UUID REFERENCES staff(id),
+  updated_by      UUID REFERENCES staff_members(id),
   updated_at      TIMESTAMPTZ DEFAULT now(),
   UNIQUE(home_id, setting_key)
 );
@@ -554,7 +461,7 @@ CREATE TABLE IF NOT EXISTS cs_audit_log (
   action          TEXT NOT NULL,                   -- 'create', 'update', 'delete', 'sign_off', 'approve', 'reject', 'escalate', 'view', 'export', 'login', 'logout'
   changes         JSONB,                          -- {field: {old, new}} for updates
   metadata        JSONB,                          -- additional context
-  performed_by    UUID REFERENCES staff(id),
+  performed_by    UUID REFERENCES staff_members(id),
   performed_at    TIMESTAMPTZ DEFAULT now(),
   ip_address      INET,
   user_agent      TEXT,
@@ -565,90 +472,69 @@ CREATE TABLE IF NOT EXISTS cs_audit_log (
 -- (enforced at application level + RLS)
 
 CREATE INDEX IF NOT EXISTS idx_cs_audit_home ON cs_audit_log(home_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_audit_entity ON cs_audit_log(entity_type, entity_id);
+
 CREATE INDEX IF NOT EXISTS idx_cs_audit_user ON cs_audit_log(performed_by);
+
 CREATE INDEX IF NOT EXISTS idx_cs_audit_action ON cs_audit_log(action);
+
 CREATE INDEX IF NOT EXISTS idx_cs_audit_time ON cs_audit_log(performed_at DESC);
 
--- ═══════════════════════════════════════════════════════════════════════════
--- RLS POLICIES
--- ═══════════════════════════════════════════════════════════════════════════
-
-ALTER TABLE cs_roles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_role_permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_user_role_assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_template_versions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_audit_logs ENABLE ROW LEVEL SECURITY;
+-- ── RLS: tenant isolation (home-scoped for owner tables, parent-scoped for child/link tables) ──
 ALTER TABLE cs_tasks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_task_dependencies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_task_comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_tasks_tenant ON cs_tasks;
+CREATE POLICY cs_tasks_tenant ON cs_tasks FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_task_escalation_rules ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_task_escalation_rules_tenant ON cs_task_escalation_rules;
+CREATE POLICY cs_task_escalation_rules_tenant ON cs_task_escalation_rules FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_workflows ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_workflow_steps ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_workflows_tenant ON cs_workflows;
+CREATE POLICY cs_workflows_tenant ON cs_workflows FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_evidence_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_evidence_links ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_evidence_items_tenant ON cs_evidence_items;
+CREATE POLICY cs_evidence_items_tenant ON cs_evidence_items FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_management_oversight_notes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_aria_recommendations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cs_aria_risk_signals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_management_oversight_notes_tenant ON cs_management_oversight_notes;
+CREATE POLICY cs_management_oversight_notes_tenant ON cs_management_oversight_notes FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_inspection_readiness_scans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_inspection_readiness_scans_tenant ON cs_inspection_readiness_scans;
+CREATE POLICY cs_inspection_readiness_scans_tenant ON cs_inspection_readiness_scans FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_system_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_system_settings_tenant ON cs_system_settings;
+CREATE POLICY cs_system_settings_tenant ON cs_system_settings FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
+ALTER TABLE form_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS form_templates_tenant ON form_templates;
+CREATE POLICY form_templates_tenant ON form_templates FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
+ALTER TABLE form_submissions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS form_submissions_tenant ON form_submissions;
+CREATE POLICY form_submissions_tenant ON form_submissions FOR ALL USING (home_id = (select get_my_home_id())) WITH CHECK (home_id = (select get_my_home_id()));
 ALTER TABLE cs_audit_log ENABLE ROW LEVEL SECURITY;
-
--- Home-scoped SELECT for all operations tables
-DO $$
-DECLARE
-  t TEXT;
-BEGIN
-  FOR t IN SELECT unnest(ARRAY[
-    'cs_roles', 'cs_role_permissions', 'cs_user_role_assignments',
-    'form_templates', 'form_template_versions', 'form_submissions', 'form_audit_logs',
-    'cs_tasks', 'cs_task_dependencies', 'cs_task_comments', 'cs_task_escalation_rules',
-    'cs_workflows', 'cs_workflow_steps',
-    'cs_evidence_items', 'cs_evidence_links',
-    'cs_management_oversight_notes',
-    'cs_aria_recommendations', 'cs_aria_risk_signals',
-    'cs_inspection_readiness_scans', 'cs_system_settings', 'cs_audit_log'
-  ]) LOOP
-    EXECUTE format(
-      'CREATE POLICY %I ON %I FOR SELECT USING (home_id = get_my_home_id())',
-      t || '_select_home', t
-    );
-    EXECUTE format(
-      'CREATE POLICY %I ON %I FOR INSERT WITH CHECK (home_id = get_my_home_id())',
-      t || '_insert_home', t
-    );
-  END LOOP;
-END $$;
-
--- cs_permissions is global (no home_id) — allow all authenticated to read
-CREATE POLICY cs_permissions_select ON cs_permissions FOR SELECT USING (TRUE);
--- cs_regulation_mappings is global reference data
-CREATE POLICY cs_reg_mappings_select ON cs_regulation_mappings FOR SELECT USING (TRUE);
-
--- Audit log: INSERT only, no UPDATE or DELETE
-CREATE POLICY cs_audit_log_no_update ON cs_audit_log FOR UPDATE USING (FALSE);
-CREATE POLICY cs_audit_log_no_delete ON cs_audit_log FOR DELETE USING (FALSE);
-
--- Manager-only UPDATE for operations tables
-DO $$
-DECLARE
-  t TEXT;
-BEGIN
-  FOR t IN SELECT unnest(ARRAY[
-    'cs_roles', 'form_templates', 'form_template_versions', 'form_submissions',
-    'cs_tasks', 'cs_workflows', 'cs_workflow_steps',
-    'cs_evidence_items', 'cs_management_oversight_notes',
-    'cs_aria_recommendations', 'cs_system_settings'
-  ]) LOOP
-    EXECUTE format(
-      'CREATE POLICY %I ON %I FOR UPDATE USING (home_id = get_my_home_id())',
-      t || '_update_home', t
-    );
-  END LOOP;
-END $$;
+DROP POLICY IF EXISTS cs_audit_log_select ON cs_audit_log;
+CREATE POLICY cs_audit_log_select ON cs_audit_log FOR SELECT USING (home_id = (select get_my_home_id()));
+DROP POLICY IF EXISTS cs_audit_log_insert ON cs_audit_log;
+CREATE POLICY cs_audit_log_insert ON cs_audit_log FOR INSERT WITH CHECK (home_id = (select get_my_home_id()));
+ALTER TABLE cs_task_comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_task_comments_tenant ON cs_task_comments;
+CREATE POLICY cs_task_comments_tenant ON cs_task_comments FOR ALL USING (EXISTS (SELECT 1 FROM cs_tasks par WHERE par.id = cs_task_comments.task_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM cs_tasks par WHERE par.id = cs_task_comments.task_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE cs_task_dependencies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_task_dependencies_tenant ON cs_task_dependencies;
+CREATE POLICY cs_task_dependencies_tenant ON cs_task_dependencies FOR ALL USING (EXISTS (SELECT 1 FROM cs_tasks par WHERE par.id = cs_task_dependencies.task_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM cs_tasks par WHERE par.id = cs_task_dependencies.task_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE cs_workflow_steps ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_workflow_steps_tenant ON cs_workflow_steps;
+CREATE POLICY cs_workflow_steps_tenant ON cs_workflow_steps FOR ALL USING (EXISTS (SELECT 1 FROM cs_workflows par WHERE par.id = cs_workflow_steps.workflow_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM cs_workflows par WHERE par.id = cs_workflow_steps.workflow_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE cs_evidence_links ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_evidence_links_tenant ON cs_evidence_links;
+CREATE POLICY cs_evidence_links_tenant ON cs_evidence_links FOR ALL USING (EXISTS (SELECT 1 FROM cs_evidence_items par WHERE par.id = cs_evidence_links.evidence_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM cs_evidence_items par WHERE par.id = cs_evidence_links.evidence_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE form_template_versions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS form_template_versions_tenant ON form_template_versions;
+CREATE POLICY form_template_versions_tenant ON form_template_versions FOR ALL USING (EXISTS (SELECT 1 FROM form_templates par WHERE par.id = form_template_versions.template_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM form_templates par WHERE par.id = form_template_versions.template_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE form_audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS form_audit_logs_tenant ON form_audit_logs;
+CREATE POLICY form_audit_logs_tenant ON form_audit_logs FOR ALL USING (EXISTS (SELECT 1 FROM form_submissions par WHERE par.id = form_audit_logs.submission_id AND par.home_id = (select get_my_home_id()))) WITH CHECK (EXISTS (SELECT 1 FROM form_submissions par WHERE par.id = form_audit_logs.submission_id AND par.home_id = (select get_my_home_id())));
+ALTER TABLE cs_regulation_mappings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS cs_reg_mappings_read ON cs_regulation_mappings;
+CREATE POLICY cs_reg_mappings_read ON cs_regulation_mappings FOR SELECT USING (true);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SEED: REGULATION MAPPINGS
@@ -676,84 +562,3 @@ INSERT INTO cs_regulation_mappings (framework, reference, title, description, mo
   ('Reg44', 'Monthly',   'Regulation 44 monthly visit',     'Independent person monthly monitoring visit', ARRAY['all'], ARRAY['review_report', 'meeting_minutes'], 1),
   ('Reg45', 'Biannual',  'Regulation 45 quality of care',   'Registered person review of quality of care', ARRAY['all'], ARRAY['review_report', 'document'], 1)
 ON CONFLICT (framework, reference) DO NOTHING;
-
--- ═══════════════════════════════════════════════════════════════════════════
--- SEED: DEFAULT PERMISSIONS
--- ═══════════════════════════════════════════════════════════════════════════
-
-INSERT INTO cs_permissions (code, group_name, label, description) VALUES
-  -- Young People
-  ('yp.view',            'young_people', 'View young people',           'View young person profiles and records'),
-  ('yp.create',          'young_people', 'Create young person',        'Add new young person records'),
-  ('yp.edit',            'young_people', 'Edit young person',          'Edit young person details'),
-  ('yp.delete',          'young_people', 'Delete young person',        'Remove young person records'),
-  ('yp.export',          'young_people', 'Export young person data',   'Export data for young people'),
-  -- Incidents
-  ('incident.view',      'incidents', 'View incidents',                'View incident records'),
-  ('incident.create',    'incidents', 'Create incidents',              'Log new incidents'),
-  ('incident.edit',      'incidents', 'Edit incidents',                'Edit incident details'),
-  ('incident.oversight', 'incidents', 'Provide oversight',             'Add management oversight to incidents'),
-  ('incident.close',     'incidents', 'Close incidents',               'Close and finalise incidents'),
-  -- Daily Logs
-  ('log.view',           'daily_logs', 'View daily logs',              'View daily log entries'),
-  ('log.create',         'daily_logs', 'Create daily logs',            'Write new daily log entries'),
-  ('log.edit',           'daily_logs', 'Edit daily logs',              'Edit existing log entries'),
-  -- Medication
-  ('med.view',           'medication', 'View medication',              'View medication records'),
-  ('med.administer',     'medication', 'Administer medication',        'Record medication administration'),
-  ('med.manage',         'medication', 'Manage medication',            'Add/edit medication prescriptions'),
-  -- Safeguarding
-  ('safeguarding.view',  'safeguarding', 'View safeguarding',         'View safeguarding concerns'),
-  ('safeguarding.create','safeguarding', 'Create safeguarding',       'Raise safeguarding concerns'),
-  ('safeguarding.manage','safeguarding', 'Manage safeguarding',       'Manage safeguarding cases'),
-  -- Tasks
-  ('task.view',          'tasks', 'View tasks',                        'View task list and details'),
-  ('task.create',        'tasks', 'Create tasks',                      'Create new tasks'),
-  ('task.edit',          'tasks', 'Edit tasks',                        'Edit task details'),
-  ('task.assign',        'tasks', 'Assign tasks',                      'Assign tasks to staff'),
-  ('task.sign_off',      'tasks', 'Sign off tasks',                    'Sign off completed tasks'),
-  ('task.escalate',      'tasks', 'Escalate tasks',                    'Escalate tasks to management'),
-  -- Forms
-  ('form.view',          'forms', 'View forms',                        'View form templates and submissions'),
-  ('form.submit',        'forms', 'Submit forms',                      'Submit form responses'),
-  ('form.review',        'forms', 'Review forms',                      'Review submitted forms'),
-  ('form.approve',       'forms', 'Approve forms',                     'Approve/reject form submissions'),
-  ('form.design',        'forms', 'Design forms',                      'Create and edit form templates'),
-  -- Workflows
-  ('workflow.view',      'workflows', 'View workflows',                'View workflow progress'),
-  ('workflow.initiate',  'workflows', 'Initiate workflows',            'Start new workflows'),
-  ('workflow.manage',    'workflows', 'Manage workflows',              'Manage workflow steps and assignments'),
-  -- Evidence
-  ('evidence.view',      'evidence', 'View evidence',                  'View evidence items'),
-  ('evidence.upload',    'evidence', 'Upload evidence',                'Upload evidence items'),
-  ('evidence.verify',    'evidence', 'Verify evidence',                'Verify evidence quality'),
-  ('evidence.link',      'evidence', 'Link evidence',                  'Link evidence to records'),
-  -- Oversight
-  ('oversight.view',     'oversight', 'View oversight',                'View management oversight notes'),
-  ('oversight.create',   'oversight', 'Create oversight',              'Add oversight notes'),
-  ('oversight.review',   'oversight', 'Review oversight',              'Review oversight quality'),
-  -- Staffing & HR
-  ('staff.view',         'staffing', 'View staff',                     'View staff profiles'),
-  ('staff.manage',       'staffing', 'Manage staff',                   'Edit staff records and assignments'),
-  ('rota.view',          'staffing', 'View rota',                      'View shift schedule'),
-  ('rota.manage',        'staffing', 'Manage rota',                    'Create and edit shifts'),
-  ('leave.view',         'staffing', 'View leave',                     'View leave requests'),
-  ('leave.approve',      'staffing', 'Approve leave',                  'Approve/decline leave requests'),
-  ('supervision.view',   'staffing', 'View supervision',               'View supervision records'),
-  ('supervision.conduct','staffing', 'Conduct supervision',            'Conduct and record supervision'),
-  -- Compliance & Training
-  ('training.view',      'compliance', 'View training',                'View training records'),
-  ('training.manage',    'compliance', 'Manage training',              'Manage training requirements'),
-  ('compliance.view',    'compliance', 'View compliance',              'View compliance dashboard'),
-  ('compliance.manage',  'compliance', 'Manage compliance',            'Manage compliance settings'),
-  -- ARIA
-  ('aria.view',          'aria', 'View ARIA',                          'View ARIA intelligence features'),
-  ('aria.configure',     'aria', 'Configure ARIA',                     'Configure ARIA settings and prompts'),
-  ('aria.approve',       'aria', 'Approve ARIA outputs',               'Approve ARIA-generated content'),
-  -- Admin & System
-  ('admin.roles',        'admin', 'Manage roles',                      'Create and edit roles and permissions'),
-  ('admin.settings',     'admin', 'System settings',                   'Manage system-wide settings'),
-  ('admin.audit',        'admin', 'View audit log',                    'View the full audit trail'),
-  ('admin.inspection',   'admin', 'Inspection readiness',              'Run inspection readiness scans'),
-  ('admin.export',       'admin', 'Export data',                       'Export system data and reports')
-ON CONFLICT (code) DO NOTHING;
