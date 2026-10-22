@@ -7,7 +7,7 @@
 // Reg 40 (notifications — learning from notifiable events).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 import { todayStr } from "@/lib/utils";
 import {
   _testing,
@@ -21,6 +21,17 @@ import type {
   LearningAction,
   LearningSource,
 } from "../practice-learning-service";
+
+// Freeze the clock to a fixed, non-boundary instant so date-relative fixtures and
+// the service's own `new Date()` / London-date helpers always share one "today"
+// (these tests otherwise flake in the ~1h UTC/London midnight window).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const { computeLearningMetrics, identifyLearningAlerts } = _testing;
 

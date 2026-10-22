@@ -4,7 +4,7 @@
 // Cara insights, constant validation, and edge cases.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { todayStr } from "@/lib/utils";
 
 import {
@@ -23,6 +23,17 @@ import type {
   ResultValue,
   ComplianceStatus,
 } from "../home-gas-safety-service";
+
+// Freeze the clock to a fixed, non-boundary instant so date-relative fixtures and
+// the service's own `new Date()` / London-date helpers always share one "today"
+// (these tests otherwise flake in the ~1h UTC/London midnight window).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const {
   computeGasSafetyMetrics,

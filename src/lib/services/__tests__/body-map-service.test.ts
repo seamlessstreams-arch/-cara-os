@@ -6,7 +6,7 @@
 // Reg 36 (records — body map documentation).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { _testing } from "../body-map-service";
 import { todayStr } from "@/lib/utils";
 import {
@@ -22,6 +22,17 @@ import type {
   BodyLocation,
   ExplanationSource,
 } from "../body-map-service";
+
+// Freeze the clock to a fixed, non-boundary instant so date-relative fixtures and
+// the service's own `new Date()` / London-date helpers always share one "today"
+// (these tests otherwise flake in the ~1h UTC/London midnight window).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const { computeBodyMapMetrics, identifyBodyMapAlerts } = _testing;
 
