@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDateStr } from "@/lib/utils";
 import type { ServiceResult } from "@/types/operations";
 import type { SB } from "@/lib/supabase/loose-client";
 
@@ -239,7 +240,7 @@ export function identifyVisitorAlerts(
     VISITOR_TYPES.filter((vt) => vt.professional).map((vt) => vt.type),
   );
 
-  const todayDate = now.toISOString().slice(0, 10);
+  const todayDate = londonDateStr(now);
 
   // Day-level visitor counts for high_volume detection
   const dayCount: Record<string, number> = {};

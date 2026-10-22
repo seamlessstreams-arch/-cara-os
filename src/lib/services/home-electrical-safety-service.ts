@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDateStr } from "@/lib/utils";
 import type { SB } from "@/lib/supabase/loose-client";
 
 export type ServiceResult<T> = { ok: boolean; data?: T; error?: string };
@@ -252,7 +253,7 @@ export function identifyElectricalSafetyAlerts(
 
   // Medium: next_inspection_date overdue
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const today = londonDateStr(now);
   for (const r of rows) {
     if (r.next_inspection_date !== null && r.next_inspection_date < today) {
       alerts.push({
