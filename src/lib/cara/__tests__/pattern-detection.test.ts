@@ -1,6 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { analysePatterns, type TimelineEvent } from "../pattern-detection";
 import { daysFromNow } from "@/lib/utils";
+
+// Freeze the clock to a fixed, non-boundary instant so weekday/relative-date
+// fixtures and analysePatterns share one "today" (otherwise flakes across the
+// UTC/London and day-of-week boundary).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
