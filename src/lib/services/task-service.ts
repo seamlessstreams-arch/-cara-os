@@ -11,7 +11,7 @@ import type {
   ServiceResult,
 } from "@/types/operations";
 import * as fallback from "./task-store-fallback";
-import { londonDayDiff } from "@/lib/utils";
+import { londonDayDiff, londonDateStr } from "@/lib/utils";
 import type { SB } from "@/lib/supabase/loose-client";
 
 function sb(): SB | null {
@@ -510,7 +510,7 @@ export async function getTaskStats(homeId: string): Promise<ServiceResult<TaskSt
 
   const allTasks = tasks ?? [];
   const now = new Date();
-  const todayDate = now.toISOString().split("T")[0];
+  const todayDate = londonDateStr(now);
 
   const stats: TaskStats = {
     total: allTasks.length,

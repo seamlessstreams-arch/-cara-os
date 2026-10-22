@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDateStr } from "@/lib/utils";
 import type { ServiceResult } from "@/types/operations";
 import type { SB } from "@/lib/supabase/loose-client";
 
@@ -300,7 +301,7 @@ export function identifySleepAlerts(
 
   // No checks last night
   const yesterday = new Date(now.getTime() - 86400000);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const yesterdayStr = londonDateStr(yesterday);
   const lastNightChecks = checks.filter((c) => c.check_date === yesterdayStr);
   if (checks.length > 0 && lastNightChecks.length === 0) {
     alerts.push({

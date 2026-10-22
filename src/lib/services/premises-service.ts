@@ -6,7 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { londonDayDiff } from "@/lib/utils";
+import { londonDayDiff, londonDateStr } from "@/lib/utils";
 import type { SB } from "@/lib/supabase/loose-client";
 
 function sb(): SB | null {
@@ -419,7 +419,7 @@ londonDayDiff(nextDue, now),
       check_type: ct.type,
       label: ct.label,
       last_done: lastDone,
-      next_due: nextDue.toISOString().split("T")[0],
+      next_due: londonDateStr(nextDue),
       days_until: daysUntil,
       overdue: daysUntil < 0,
     });

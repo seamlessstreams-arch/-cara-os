@@ -8,7 +8,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { isLiveTenant } from "@/lib/db/live-mode";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDateStr } from "@/lib/utils";
 
 import { seedDay } from "@/lib/seed-date";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -301,7 +301,7 @@ export async function getHomeTrends(
   const s = sb();
   if (!s) return { ok: true, data: isLiveTenant() ? [] : DEMO_TRENDS };
 
-  const startDate = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
+  const startDate = londonDateStr(new Date(Date.now() - days * 86400000));
 
   const { data, error } = await (s.from("cs_cross_home_trends") as SB)
     .select("period_start, period_end, metric_value")
