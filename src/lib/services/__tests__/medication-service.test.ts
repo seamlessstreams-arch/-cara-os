@@ -4,7 +4,7 @@
 // medication error rate, and medication alerts. CHR 2015 Reg 23 / Reg 12.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { _testing } from "../medication-service";
 import {
   MEDICATION_TYPES,
@@ -17,6 +17,17 @@ import type {
   MedicationPrescription,
   MedicationError,
 } from "../medication-service";
+
+// Freeze the clock to a fixed, non-boundary instant so date-relative fixtures and
+// the service's own `new Date()` / London-date helpers always share one "today"
+// (these tests otherwise flake in the ~1h UTC/London midnight window).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const {
   computeMedicationCompliance,
