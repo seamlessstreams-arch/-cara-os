@@ -4,7 +4,7 @@
 // identification, constant validation, and CRUD fallback behaviour.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import crypto from "crypto";
 import { _testing } from "../anti-bullying-service";
 import { todayStr } from "@/lib/utils";
@@ -22,6 +22,17 @@ import type {
   InterventionType,
   IncidentOutcome,
 } from "../anti-bullying-service";
+
+// Freeze the clock to a fixed, non-boundary instant so date-relative fixtures and
+// the service's own `new Date()` / London-date helpers always share one "today"
+// (these tests otherwise flake in the ~1h UTC/London midnight window).
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const { computeBullyingMetrics, identifyBullyingAlerts } = _testing;
 
