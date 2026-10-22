@@ -154,6 +154,10 @@ const POST_EMPTY_BODY_ALLOWED = new Set([
   "/api/v1/cara-studio/reg45-evidence",
   "/api/v1/cara-studio/reg45-reports",
   "/api/v1/cara-studio/safeguarding-patterns",
+  // The Staff Trust Notice acknowledgement is keyed on the session user
+  // (resolveCommsUser); the body carries only an OPTIONAL device_id, so a
+  // bodyless acknowledge is the normal, correct call (201).
+  "/api/v1/comms/trust-notice",
 ]);
 
 const postRoutes = [...walk(API_DIR)]
