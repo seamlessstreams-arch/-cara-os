@@ -10,7 +10,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildLearningInput } from "@/lib/practice-learning/hydrate";
@@ -25,14 +25,14 @@ export async function GET(req: NextRequest) {
 
   const today = todayStr();
   const childId = req.nextUrl.searchParams.get("childId") || req.nextUrl.searchParams.get("child_id");
-  const debriefs = db.debriefRecords.findAll();
+  const debriefs = await dal.debriefRecords.findAll();
 
   try {
     let input;
     if (childId) {
-      const yp = db.youngPeople.findById(childId);
+      const yp = await dal.youngPeople.findById(childId);
       if (!yp) return NextResponse.json({ error: "Child not found" }, { status: 404 });
-      const incidents = db.incidents.findAll().filter((i) => i.child_id === childId);
+      const incidents = (await dal.incidents.findAll()).filter((i) => i.child_id === childId);
       input = buildLearningInput({
         scope: "child",
         childName: yp.preferred_name || yp.first_name,
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         today,
       });
     } else {
-      input = buildLearningInput({ scope: "home", incidents: db.incidents.findAll(), debriefs, today });
+      input = buildLearningInput({ scope: "home", incidents: await dal.incidents.findAll(), debriefs, today });
     }
     const learning = learnFromEvents(input);
     return NextResponse.json({ data: { learning } });
