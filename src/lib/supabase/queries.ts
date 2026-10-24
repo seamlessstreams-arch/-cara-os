@@ -56,7 +56,7 @@ export async function getStaff(sb: SB, homeId: string, filters?: {
 }
 
 export async function getStaffById(sb: SB, id: string) {
-  return unwrap(await sb.from("staff_members").select("*").eq("id", id).single());
+  return unwrap(await sb.from("staff_members").select("*").eq("id", id).maybeSingle());
 }
 
 /**
@@ -129,7 +129,7 @@ export async function getYoungPeople(sb: SB, homeId: string, status?: string) {
 }
 
 export async function getYoungPersonById(sb: SB, id: string) {
-  return unwrap(await sb.from("young_people").select("*").eq("id", id).single());
+  return unwrap(await sb.from("young_people").select("*").eq("id", id).maybeSingle());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ export async function getTasks(sb: SB, homeId: string, filters?: {
 }
 
 export async function getTaskById(sb: SB, id: string) {
-  return unwrap(await sb.from("tasks").select("*").eq("id", id).single());
+  return unwrap(await sb.from("tasks").select("*").eq("id", id).maybeSingle());
 }
 
 /**
@@ -196,7 +196,7 @@ export async function getIncidents(sb: SB, homeId: string, filters?: {
 }
 
 export async function getIncidentById(sb: SB, id: string) {
-  return unwrap(await sb.from("incidents").select("*").eq("id", id).single());
+  return unwrap(await sb.from("incidents").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createIncident(sb: SB, data: Database["public"]["Tables"]["incidents"]["Insert"]) {
@@ -376,7 +376,7 @@ export async function getSupervisions(sb: SB, homeId: string, filters?: {
 }
 
 export async function getSupervisionById(sb: SB, id: string) {
-  return unwrap(await sb.from("supervisions").select("*").eq("id", id).single());
+  return unwrap(await sb.from("supervisions").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createSupervision(sb: SB, data: Database["public"]["Tables"]["supervisions"]["Insert"]) {
@@ -482,7 +482,7 @@ export async function getCareForms(sb: SB, homeId: string, filters?: {
 }
 
 export async function getCareFormById(sb: SB, id: string) {
-  return unwrap(await sb.from("care_forms").select("*").eq("id", id).single());
+  return unwrap(await sb.from("care_forms").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createCareForm(sb: SB, data: Database["public"]["Tables"]["care_forms"]["Insert"]) {
@@ -664,7 +664,7 @@ export async function getEducationEvents(sb: SB, homeId: string, childId?: strin
 }
 
 export async function getEducationEventById(sb: SB, id: string) {
-  return unwrap(await sb.from("cs_education_events").select("*").eq("id", id).single());
+  return unwrap(await sb.from("cs_education_events").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createEducationEvent(sb: SB, data: Database["public"]["Tables"]["cs_education_events"]["Insert"]) {
@@ -737,7 +737,7 @@ export async function getCandidateProfiles(sb: SB, homeId: string, vacancyId?: s
 }
 
 export async function getCandidateById(sb: SB, id: string) {
-  return unwrap(await sb.from("candidate_profiles").select("*").eq("id", id).single());
+  return unwrap(await sb.from("candidate_profiles").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createCandidateProfile(sb: SB, data: Database["public"]["Tables"]["candidate_profiles"]["Insert"]) {
@@ -976,7 +976,7 @@ export async function getDocumentJobs(sb: SB, homeId: string, status?: string) {
 }
 
 export async function getDocumentJobById(sb: SB, id: string) {
-  return unwrap(await sb.from("document_intelligence_jobs").select("*").eq("id", id).single());
+  return unwrap(await sb.from("document_intelligence_jobs").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createDocumentJob(sb: SB, data: Record<string, unknown>) {
@@ -1020,7 +1020,7 @@ export async function getGenericRecords(sb: SB, homeId: string, recordType: stri
 }
 
 export async function getGenericRecordById(sb: SB, id: string) {
-  return unwrap(await sb.from("generic_records").select("*").eq("id", id).single());
+  return unwrap(await sb.from("generic_records").select("*").eq("id", id).maybeSingle());
 }
 
 export async function createGenericRecord(sb: SB, data: {
