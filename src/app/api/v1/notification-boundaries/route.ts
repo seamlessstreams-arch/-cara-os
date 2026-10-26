@@ -33,7 +33,15 @@ export async function GET(req: NextRequest) {
     // Reading someone else's delivery plan is a management view of workload —
     // the doctrine wants capacity visible so trade-offs are negotiated, not
     // silently absorbed. Only managers may look at another person's.
-    if (asked && asked !== identity.userId && identity.role !== "registered_manager" && identity.role !== "deputy_manager") {
+    if (
+      asked &&
+      asked !== identity.userId &&
+      identity.role !== "registered_manager" &&
+      identity.role !== "deputy_manager" &&
+      identity.role !== "super_admin" &&
+      identity.role !== "admin" &&
+      identity.role !== "organisation_director"
+    ) {
       return NextResponse.json(
         { error: "Only a manager can view another person's delivery plan." },
         { status: 403 },

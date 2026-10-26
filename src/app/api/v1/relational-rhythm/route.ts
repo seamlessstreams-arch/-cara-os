@@ -151,7 +151,13 @@ export async function PATCH(req: NextRequest) {
 
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
-    if (identity.role !== "registered_manager" && identity.role !== "deputy_manager") {
+    if (
+      identity.role !== "registered_manager" &&
+      identity.role !== "deputy_manager" &&
+      identity.role !== "super_admin" &&
+      identity.role !== "admin" &&
+      identity.role !== "organisation_director"
+    ) {
       return NextResponse.json(
         { error: "The home's rhythm is set by a manager." },
         { status: 403 },
