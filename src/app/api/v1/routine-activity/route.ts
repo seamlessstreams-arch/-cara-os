@@ -35,7 +35,10 @@ export async function GET(req: NextRequest) {
     if (
       identity.role !== "registered_manager" &&
       identity.role !== "deputy_manager" &&
-      identity.role !== "responsible_individual"
+      identity.role !== "responsible_individual" &&
+      identity.role !== "super_admin" &&
+      identity.role !== "admin" &&
+      identity.role !== "organisation_director"
     ) {
       return NextResponse.json(
         { error: "Times and places is a manager's view — it feeds the risk assessment." },

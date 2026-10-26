@@ -206,7 +206,10 @@ export async function GET(req: NextRequest) {
       asked &&
       asked !== identity.userId &&
       identity.role !== "registered_manager" &&
-      identity.role !== "deputy_manager"
+      identity.role !== "deputy_manager" &&
+      identity.role !== "super_admin" &&
+      identity.role !== "admin" &&
+      identity.role !== "organisation_director"
     ) {
       return NextResponse.json(
         { error: "Only a manager can look at someone else's shift lifecycle." },

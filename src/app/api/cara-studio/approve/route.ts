@@ -102,7 +102,10 @@ export async function POST(req: NextRequest) {
 
     // ── Statutory content requires Registered Manager ───────────────────────
     if (action === "approve" && STATUTORY_TYPES.includes(generation.generation_type ?? "")) {
-      if (role !== "registered_manager") {
+      // admin is a legacy alias treated as registered_manager throughout;
+      // super_admin is the all-access owner. organisation_director is deliberately
+      // NOT admitted here — statutory approval of care plans is the RM's function.
+      if (role !== "registered_manager" && role !== "admin" && role !== "super_admin") {
         return NextResponse.json(
           { error: "Statutory content (placement plans, risk assessments, care plans) requires Registered Manager approval." },
           { status: 403 },
