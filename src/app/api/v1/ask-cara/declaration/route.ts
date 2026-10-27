@@ -8,12 +8,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { readJsonBody } from "@/lib/http/read-json";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { buildDeclaration, reviewDeclaration, declarationAcknowledgement, type DeclarationInput, type ReviewOutcome } from "@/lib/ask-cara/external-ai-declaration";
 
 export const dynamic = "force-dynamic";
 
-const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
-const isManager = (req: NextRequest) => MANAGEMENT.has((req.headers.get("x-user-role") || "").toLowerCase());
+// Live roles (session-derived) + legacy demo header roles, so neither mode loses access.
+const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "organisation_director", "super_admin", "admin", "org_director", "area_manager", "platform_admin"]);
+const isManager = async (req: NextRequest) => {
+  const identity = await getRequestIdentity(req);
+  return !(identity instanceof NextResponse) && MANAGEMENT.has((identity.role || "").toLowerCase());
+};
 
 export async function POST(req: NextRequest) {
   const jb = await readJsonBody(req);
@@ -29,7 +34,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!isManager(req)) return NextResponse.json({ error: "Management access required" }, { status: 403 });
+  if (!(await isManager(req))) return NextResponse.json({ error: "Management access required" }, { status: 403 });
   const items = [...(await dal.externalAiDeclarations.findAll())].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return NextResponse.json({
     data: {
@@ -44,7 +49,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!isManager(req)) return NextResponse.json({ error: "Management access required" }, { status: 403 });
+  if (!(await isManager(req))) return NextResponse.json({ error: "Management access required" }, { status: 403 });
   const jb = await readJsonBody(req);
   if (!jb.ok) return jb.response;
   const b = jb.data as { id?: string; reviewedBy?: string; outcome?: ReviewOutcome; notes?: string };

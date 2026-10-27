@@ -10,8 +10,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadCareEventPatterns } from "@/lib/care-events/pattern-detection";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 function parsePosInt(value: string | null): number | undefined {
   if (!value) return undefined;
