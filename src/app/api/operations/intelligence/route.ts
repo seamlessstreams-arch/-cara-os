@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { storageFailure } from "@/lib/http/storage-error";
 import { enumParam } from "@/lib/http/enum-param";
 import { CARA_RECOMMENDATION_SEVERITY_VALUES, CARA_RECOMMENDATION_STATUS_VALUES, CARA_RECOMMENDATION_TYPE_VALUES } from "@/types/operations";
 import { NextRequest, NextResponse } from "next/server";
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   // Stats
   if (type === "stats") {
     const result = await getRecommendationStats(homeId);
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    if (!result.ok) return storageFailure("Cara recommendation stats", { message: result.error });
     return NextResponse.json({ ok: true, data: result.data });
   }
 
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     staffId: searchParams.get("staffId") ?? undefined,
     limit: parseInt(searchParams.get("limit") ?? "50"),
   });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  if (!result.ok) return storageFailure("Cara recommendations", { message: result.error });
   return NextResponse.json({ ok: true, data: result.data });
 }
 

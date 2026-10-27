@@ -31,6 +31,20 @@ describe("storageFailure", () => {
     expect(body.error).toContain("not set up in this environment");
   });
 
+  it("detects a missing table from the message alone, when the code was dropped", async () => {
+    // Several services flatten a PostgREST error to `error.message` and discard
+    // the code. The message still names the absent table, and the manager must
+    // still see "not set up here" — never a bare 500.
+    const res = storageFailure("Training records", {
+      message: "Could not find the table 'public.cs_training_records' in the schema cache",
+    });
+    expect(res.status).toBe(503);
+
+    const body = await res.json();
+    expect(body.storage_missing).toBe(true);
+    expect(body.error).toContain("not set up in this environment");
+  });
+
   it("NEVER returns data — an empty list would read as 'nothing recorded'", async () => {
     const res = storageFailure("Incident learning reviews", { code: "42P01" });
     const body = await res.json();

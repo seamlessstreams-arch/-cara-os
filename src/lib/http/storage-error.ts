@@ -19,6 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { NextResponse } from "next/server";
+import { isMissingTableError } from "@/lib/supabase/table-probe";
 
 /** Postgres / PostgREST codes meaning "the thing you queried does not exist". */
 const MISSING_STORAGE_CODES = new Set([
@@ -46,7 +47,13 @@ export type StorageQueryError = {
  */
 export function storageFailure(feature: string, error: StorageQueryError): NextResponse {
   const code = error?.code ?? null;
-  const missing = code !== null && MISSING_STORAGE_CODES.has(code);
+  // "Missing" means the relation is not set up here, not that the server broke.
+  // Detect it by code OR by message: a service that flattens a PostgREST error
+  // to its `.message` string drops the code, but the message still says "could
+  // not find the table …" — and without this the manager would see that as a
+  // generic failure rather than the actionable "not set up in this environment".
+  const missing =
+    (code !== null && MISSING_STORAGE_CODES.has(code)) || isMissingTableError(error);
 
   console.error(`[api] storage failure — ${feature}:`, error);
 

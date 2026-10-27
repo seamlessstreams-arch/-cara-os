@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { storageFailure } from "@/lib/http/storage-error";
 import { TRAINING_CATEGORY_VALUES } from "@/lib/services/competency-service";
 import { enumParam } from "@/lib/http/enum-param";
 import { NextRequest, NextResponse } from "next/server";
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
       staffId: searchParams.get("staffId") ?? undefined,
       limit: parseInt(searchParams.get("limit") ?? "100"),
     });
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    if (!result.ok) return storageFailure("Competency assessments", { message: result.error });
     return NextResponse.json({ ok: true, data: result.data });
   }
 
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     mandatory: searchParams.get("mandatory") === "true" ? true : searchParams.get("mandatory") === "false" ? false : undefined,
     limit: parseInt(searchParams.get("limit") ?? "100"),
   });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  if (!result.ok) return storageFailure("Training records", { message: result.error });
   return NextResponse.json({ ok: true, data: result.data });
 }
 

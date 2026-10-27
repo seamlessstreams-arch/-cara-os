@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { storageFailure } from "@/lib/http/storage-error";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
       status: searchParams.get("status") ?? undefined,
       limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined,
     });
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    if (!result.ok) return storageFailure("Employment references", { message: result.error });
     return NextResponse.json({ ok: true, data: result.data });
   }
 
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       status: searchParams.get("status") ?? undefined,
       limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined,
     });
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    if (!result.ok) return storageFailure("Pre-employment checks", { message: result.error });
     return NextResponse.json({ ok: true, data: result.data });
   }
 
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
     status: searchParams.get("status") ?? undefined,
     limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined,
   });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  if (!result.ok) return storageFailure("DBS checks", { message: result.error });
   return NextResponse.json({ ok: true, data: result.data });
 }
 
