@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import {
   evaluateTrainingCompliance,
   evaluateSupervisionCompliance,
@@ -60,7 +61,9 @@ async function handleLiveData(
   if (staffId) query = query.eq("id", staffId);
 
   const { data: staffRows, error } = await query;
-  if (error) throw error;
+  // A missing workforce table on a tenant must read as "not set up here", not a
+  // bare 500 that takes the whole HR dashboard down with no clue which table.
+  if (error) return storageFailure("Workforce intelligence", error);
 
   const staff: StaffMember[] = (staffRows ?? []).map(mapToStaffMember);
   const now = new Date().toISOString();
