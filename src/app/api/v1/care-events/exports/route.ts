@@ -9,8 +9,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadExportHistory } from "@/lib/care-events/export-history";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

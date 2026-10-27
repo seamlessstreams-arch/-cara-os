@@ -8,13 +8,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { buildGovernanceSummary } from "@/lib/ask-cara/governance-summary";
+import { getRequestIdentity } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
-const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
+// Live roles (session-derived) + legacy demo header roles, so neither mode loses access.
+const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "organisation_director", "super_admin", "admin", "org_director", "area_manager", "platform_admin"]);
 
 export async function GET(req: NextRequest) {
-  if (!MANAGEMENT.has((req.headers.get("x-user-role") || "").toLowerCase())) {
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  if (!MANAGEMENT.has((identity.role || "").toLowerCase())) {
     return NextResponse.json({ error: "Management access required" }, { status: 403 });
   }
   const [askCaraAuditEventsList, externalAiDeclarationsList] = await Promise.all([dal.askCaraAuditEvents.findAll(), dal.externalAiDeclarations.findAll()]);

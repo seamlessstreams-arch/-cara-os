@@ -18,8 +18,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadAuditTrail, loadAuditActors } from "@/lib/cara/cara-audit-trail";
 import type { CaraAuditAction } from "@/types/cara-studio";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 
-const DEFAULT_HOME_ID = "home_oak";
+const DEFAULT_HOME_ID = tenantHomeId();
 
 const VALID_ACTIONS: ReadonlySet<CaraAuditAction> = new Set<CaraAuditAction>([
   "source_indexed",
