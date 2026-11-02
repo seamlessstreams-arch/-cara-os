@@ -8,7 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
+import type { CandidateReference } from "@/types/recruitment";
 import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import {
   validateToken,
@@ -28,13 +29,13 @@ const REJECTION_MESSAGES: Record<string, string> = {
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
   const { token } = await ctx.params;
   const now = new Date().toISOString();
-  const result = validateToken(db.candidateReferences.findAll(), token, now);
+  const result = validateToken((await dal.candidateReferences.findAll()) as CandidateReference[], token, now);
   if (!result.ok) {
     return NextResponse.json({ error: REJECTION_MESSAGES[result.reason], reason: result.reason }, { status: result.reason === "invalid" ? 404 : 410 });
   }
   const reference = result.reference;
-  const candidate = db.candidateProfiles.findById(reference.candidate_id);
-  const vacancy = candidate?.vacancy_id ? db.vacancies.findById(candidate.vacancy_id) : null;
+  const candidate = await dal.candidateProfiles.findById(reference.candidate_id);
+  const vacancy = candidate?.vacancy_id ? await dal.vacancies.findById(candidate.vacancy_id) : null;
   return NextResponse.json({
     data: {
       candidate_name: candidate ? `${candidate.first_name} ${candidate.last_name}` : "the candidate",
@@ -49,7 +50,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ token: str
 export async function POST(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
   const { token } = await ctx.params;
   const now = new Date().toISOString();
-  const result = validateToken(db.candidateReferences.findAll(), token, now);
+  const result = validateToken((await dal.candidateReferences.findAll()) as CandidateReference[], token, now);
   if (!result.ok) {
     return NextResponse.json({ error: REJECTION_MESSAGES[result.reason], reason: result.reason }, { status: result.reason === "invalid" ? 404 : 410 });
   }

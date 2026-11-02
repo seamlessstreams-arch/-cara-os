@@ -1,6 +1,6 @@
 // CARA STUDIO — POST /api/cara/incident-learning
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { IncidentLearningRequestSchema, CaraIncidentLearningOutputSchema } from "@/lib/cara-studio/cara-types";
 import { convertIncidentToLearning } from "@/lib/cara-studio/cara-incident-converter";
 import { actorFromHeaders, loadContext, persistCaraOutput, caraResponse } from "@/lib/cara-studio/cara-studio-service";
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   // If an incidentId is given, pull the summary from the real record.
   let summary = body.data.incidentSummary;
   if (body.data.incidentId) {
-    const incident = db.incidents.findById(body.data.incidentId);
+    const incident = await dal.incidents.findById(body.data.incidentId);
     if (incident) summary = `${incident.type}: ${incident.description}`;
   }
 
