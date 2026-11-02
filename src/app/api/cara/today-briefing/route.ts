@@ -12,6 +12,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { todayStr } from "@/lib/utils";
 import type { SB } from "@/lib/supabase/loose-client";
 
@@ -416,7 +418,7 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
 
 export async function GET(req: NextRequest) {
   try {
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? (isLiveTenant() ? tenantHomeId() : "home_oak");
 
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, data: generateDemoBriefing(homeId) });
@@ -426,7 +428,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, data: briefing });
   } catch (err) {
     console.error("[cara/today-briefing] Error:", err);
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? (isLiveTenant() ? tenantHomeId() : "home_oak");
     // A live tenant hitting a transient error must NOT fall back to demo —
     // that would surface "Chamberlain House" as their home name on any glitch.
     // Return a real error; the frontend already handles missing data.
