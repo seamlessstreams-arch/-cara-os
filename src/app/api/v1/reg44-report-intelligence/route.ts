@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
+import { isLiveTenant } from "@/lib/db/live-mode";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     const { searchParams } = new URL(req.url);
-    const homeId = searchParams.get("home_id") || "home_oak";
+    const homeId = searchParams.get("home_id") || (isLiveTenant() ? tenantHomeId() : "home_oak");
     const win = monthWindow(searchParams.get("month") || "");
     const asOf = todayStr();
 

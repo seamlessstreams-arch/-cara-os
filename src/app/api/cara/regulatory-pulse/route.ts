@@ -11,6 +11,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
+import { tenantHomeId } from "@/lib/supabase/tenant";
 import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -293,7 +295,7 @@ async function generateLivePulse(homeId: string): Promise<RegulatoryPulse> {
 
 export async function GET(req: NextRequest) {
   try {
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? (isLiveTenant() ? tenantHomeId() : "home_oak");
 
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, data: getDemoRegulatoryPulse(homeId) });
@@ -303,7 +305,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, data: pulse });
   } catch (err) {
     console.error("[cara/regulatory-pulse] Error:", err);
-    const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    const homeId = req.nextUrl.searchParams.get("homeId") ?? (isLiveTenant() ? tenantHomeId() : "home_oak");
     return NextResponse.json({ ok: true, data: getDemoRegulatoryPulse(homeId) });
   }
 }
