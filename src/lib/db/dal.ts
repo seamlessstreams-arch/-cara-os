@@ -24,7 +24,7 @@ import * as sqCalendar from "@/lib/supabase/calendar-persist";
 import * as sqNotifiable from "@/lib/supabase/notifiable-events-persist";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { todayStr } from "@/lib/utils";
-import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwapRequest, WelfareCheckRound, DevelopmentPlan, AppraisalRecord, StaffCompetencyProfile } from "@/types/extended";
+import type { BehaviourSupportPlan, EducationRecord, InspectionRecord, ShiftSwapRequest, WelfareCheckRound, DevelopmentPlan, AppraisalRecord, StaffCompetencyProfile, InductionRecord, QualificationRecord, PracticeObservation } from "@/types/extended";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import type { SB } from "@/lib/supabase/loose-client";
@@ -2457,15 +2457,51 @@ export const dal = {
   },
 
   inductionRecords: {
-    async findAll(filters?: { overall_status?: string }) {
+    async findAll(filters?: { overall_status?: string }): Promise<InductionRecord[]> {
+      const c = sb();
+      if (c) {
+        const base = (c as unknown as SB).from("induction_records").select("*");
+        const { data } = await (filters?.overall_status ? base.eq("overall_status", filters.overall_status) : base);
+        return (data ?? []) as unknown as InductionRecord[];
+      }
       let list = db.inductionRecords.findAll();
       if (filters?.overall_status) list = list.filter((r) => r.overall_status === filters.overall_status);
       return list;
     },
-    async findByStaff(staffId: string) { return db.inductionRecords.findByStaff(staffId) ?? null; },
-    async findByStatus(status: string) { return db.inductionRecords.findByStatus(status); },
-    async create(data: Parameters<typeof db.inductionRecords.create>[0]) { return db.inductionRecords.create(data); },
-    async update(id: string, data: Parameters<typeof db.inductionRecords.update>[1]) { return db.inductionRecords.update(id, data); },
+    async findByStaff(staffId: string): Promise<InductionRecord | null> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("induction_records").select("*").eq("staff_id", staffId).order("updated_at", { ascending: false }).limit(1);
+        return ((Array.isArray(data) ? data[0] : null) as InductionRecord | null) ?? null;
+      }
+      return db.inductionRecords.findByStaff(staffId) ?? null;
+    },
+    async findByStatus(status: string): Promise<InductionRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("induction_records").select("*").eq("overall_status", status);
+        return (data ?? []) as unknown as InductionRecord[];
+      }
+      return db.inductionRecords.findByStatus(status);
+    },
+    async create(data: Parameters<typeof db.inductionRecords.create>[0]): Promise<InductionRecord> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data as Record<string, unknown>;
+        const { data: saved } = await (c as unknown as SB).from("induction_records").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as InductionRecord;
+      }
+      return db.inductionRecords.create(data);
+    },
+    async update(id: string, data: Parameters<typeof db.inductionRecords.update>[1]): Promise<InductionRecord | null> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, ...rest } = data as Record<string, unknown>;
+        const { data: saved } = await (c as unknown as SB).from("induction_records").update({ ...rest, updated_at: new Date().toISOString() }).eq("id", id).select().maybeSingle();
+        return (saved ?? null) as unknown as InductionRecord | null;
+      }
+      return db.inductionRecords.update(id, data);
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -3162,7 +3198,40 @@ export const dal = {
     async findAll() { return getStore().protocolDrills ?? []; },
   },
   qualifications: {
-    async findAll() { return getStore().qualifications ?? []; },
+    async findAll(): Promise<QualificationRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("qualification_records").select("*");
+        return (data ?? []) as unknown as QualificationRecord[];
+      }
+      return getStore().qualifications ?? [];
+    },
+    async findByStaff(staffId: string): Promise<QualificationRecord[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("qualification_records").select("*").eq("staff_id", staffId);
+        return (data ?? []) as unknown as QualificationRecord[];
+      }
+      return db.qualifications.findByStaff(staffId);
+    },
+    async findExpiring(days: number): Promise<QualificationRecord[]> {
+      const c = sb();
+      if (c) {
+        const cutoff = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+        const { data } = await (c as unknown as SB).from("qualification_records").select("*").lte("expiry_date", cutoff).neq("status", "expired");
+        return ((data ?? []) as unknown as QualificationRecord[]).filter((q) => !!q.expiry_date);
+      }
+      return db.qualifications.findExpiring(days);
+    },
+    async create(data: Parameters<typeof db.qualifications.create>[0]): Promise<QualificationRecord> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data as Record<string, unknown>;
+        const { data: saved } = await (c as unknown as SB).from("qualification_records").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as QualificationRecord;
+      }
+      return db.qualifications.create(data);
+    },
   },
   relationshipEntries: {
     async findAll() { return getStore().relationshipEntries ?? []; },
@@ -3202,7 +3271,31 @@ export const dal = {
   // Same placeholder pattern as above: reads fall back to the in-memory store
   // until a Supabase table lands (then only the `if (sb())` branch changes).
   practiceObservations: {
-    async findAll() { return getStore().practiceObservations ?? []; },
+    async findAll(): Promise<PracticeObservation[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("practice_observations").select("*");
+        return (data ?? []) as unknown as PracticeObservation[];
+      }
+      return getStore().practiceObservations ?? [];
+    },
+    async findByStaff(staffId: string): Promise<PracticeObservation[]> {
+      const c = sb();
+      if (c) {
+        const { data } = await (c as unknown as SB).from("practice_observations").select("*").eq("staff_id", staffId);
+        return (data ?? []) as unknown as PracticeObservation[];
+      }
+      return db.practiceObservations.findByStaff(staffId);
+    },
+    async create(data: Parameters<typeof db.practiceObservations.create>[0]): Promise<PracticeObservation> {
+      const c = sb();
+      if (c) {
+        const { id: _id, created_at: _c, updated_at: _u, ...rest } = data as Record<string, unknown>;
+        const { data: saved } = await (c as unknown as SB).from("practice_observations").insert({ ...rest, home_id: homeId() }).select().single();
+        return saved as unknown as PracticeObservation;
+      }
+      return db.practiceObservations.create(data);
+    },
   },
   writingAssistantAuditEvents: {
     async findAll() { return getStore().writingAssistantAuditEvents ?? []; },

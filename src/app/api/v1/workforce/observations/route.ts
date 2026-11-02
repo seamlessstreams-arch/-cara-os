@@ -2,15 +2,15 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staff_id");
 
   const results = staffId
-    ? db.practiceObservations.findByStaff(staffId)
-    : db.practiceObservations.findAll();
+    ? await dal.practiceObservations.findByStaff(staffId)
+    : await dal.practiceObservations.findAll();
 
   return NextResponse.json({
     data: results.sort((a, b) => b.observation_date.localeCompare(a.observation_date)),
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const body = __parsed.data;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const obs = db.practiceObservations.create({
+  const obs = await dal.practiceObservations.create({
     ...body,
     home_id: body.home_id ?? tenantHomeId(),
     domains_observed: body.domains_observed ?? [],

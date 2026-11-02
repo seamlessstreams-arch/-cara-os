@@ -3,7 +3,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,12 +11,12 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
 
   if (staffId) {
-    const record = db.inductionRecords.findByStaff(staffId);
+    const record = await dal.inductionRecords.findByStaff(staffId);
     return NextResponse.json({ data: record ?? null });
   }
 
-  let results = db.inductionRecords.findAll();
-  if (status) results = db.inductionRecords.findByStatus(status);
+  let results = await dal.inductionRecords.findAll();
+  if (status) results = await dal.inductionRecords.findByStatus(status);
 
   return NextResponse.json({
     data: results,
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const record = db.inductionRecords.create({
+  const record = await dal.inductionRecords.create({
     ...body,
     created_by: __identity.userId,
     home_id: body.home_id ?? tenantHomeId(),
