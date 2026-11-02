@@ -8,7 +8,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import { issueToken } from "@/lib/safer-recruitment/reference-link-service";
 
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ referenceId: string }> }) {
   const { referenceId } = await ctx.params;
-  const reference = db.candidateReferences.findById(referenceId);
+  const reference = await dal.candidateReferences.findById(referenceId);
   if (!reference) {
     return NextResponse.json({ error: "Reference not found" }, { status: 404 });
   }

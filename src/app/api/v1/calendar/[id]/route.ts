@@ -1,7 +1,7 @@
 // CARA — /api/v1/calendar/[id] (get / update / reschedule / cancel / RSVP)
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   UpdateEventSchema,
   setAttendeeResponse,
@@ -15,7 +15,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
-  const event = db.calendarEvents.findById(id);
+  const event = await dal.calendarEvents.findById(id);
   if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
   return NextResponse.json({ data: { event } });
 }
