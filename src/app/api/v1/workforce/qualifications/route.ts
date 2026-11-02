@@ -3,7 +3,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,16 +11,16 @@ export async function GET(req: NextRequest) {
   const expiring = searchParams.get("expiring_days");
 
   if (staffId) {
-    const results = db.qualifications.findByStaff(staffId);
+    const results = await dal.qualifications.findByStaff(staffId);
     return NextResponse.json({ data: results, meta: { total: results.length } });
   }
 
   if (expiring) {
-    const results = db.qualifications.findExpiring(parseInt(expiring));
+    const results = await dal.qualifications.findExpiring(parseInt(expiring));
     return NextResponse.json({ data: results, meta: { total: results.length } });
   }
 
-  const results = db.qualifications.findAll();
+  const results = await dal.qualifications.findAll();
   return NextResponse.json({
     data: results,
     meta: {
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (__identity instanceof NextResponse) return __identity;
   const __missing = requireFields(body, ["staff_id"]);
   if (__missing) return __missing;
-  const qual = db.qualifications.create({
+  const qual = await dal.qualifications.create({
     ...body,
     created_by: __identity.userId,
     home_id: body.home_id ?? tenantHomeId(),
