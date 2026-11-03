@@ -3,15 +3,23 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CaraInsightCard
 //
-// Displays a proactive Cara insight — patterns detected, risk summaries,
+// Displays proactive Cara insights — patterns detected, risk summaries,
 // compliance gaps, or positive trends. Each insight has a type, severity,
-// confidence level, and actionable recommendation.
+// confidence level, and an actionable recommendation.
+//
+// NB: this component previously loaded a hardcoded set of demo insights
+// (fictional children and events) into state unconditionally — which on the live
+// tenant surfaced children who are not resident in the home.
+// Fabricated records must never appear on a live care-record system, so the demo
+// data has been removed. Until a real insights feed is wired in, the widget
+// renders an honest empty state rather than inventing insights. When a real
+// source is connected, the list below renders it (capped by `limit`).
 //
 // Usage:
 //   <CaraInsightCard homeId="demo-home" limit={4} />
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
@@ -27,7 +35,6 @@ import {
   Eye,
 } from "lucide-react";
 
-import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type InsightType =
@@ -78,77 +85,6 @@ const SEVERITY_CONFIG: Record<InsightSeverity, { colour: string; bg: string; bor
   positive: { colour: "text-emerald-700", bg: "bg-emerald-50", border: "border-l-emerald-500", dot: "bg-emerald-500" },
 };
 
-// ── Demo data ──────────────────────────────────────────────────────────────
-
-const DEMO_INSIGHTS: Insight[] = [
-  {
-    id: "ins_001",
-    type: "behaviour_pattern",
-    severity: "high",
-    title: "Escalating behaviour pattern — Alex W",
-    summary: "Three incidents involving similar behaviour within 14 days. The pattern suggests environmental triggers during evening transitions.",
-    recommendation: "Review risk assessment and consider updating the behaviour support plan. A key work session to capture the child's perspective is recommended.",
-    confidence: 87,
-    relatedChildId: "demo-child-1",
-    relatedChildName: "Alex W",
-    relatedModule: "incidents",
-    detectedAt: `${seedDay(-27)}T08:00:00Z`,
-    actionUrl: "/cara/review",
-  },
-  {
-    id: "ins_002",
-    type: "positive_trend",
-    severity: "positive",
-    title: "Improved engagement — Casey T",
-    summary: "Daily log entries over the past 21 days show increasing engagement in education and positive peer interactions, with no incidents recorded.",
-    recommendation: "Highlight in the next Reg 45 report and during the upcoming LAC review as evidence of placement stability.",
-    confidence: 92,
-    relatedChildId: "demo-child-2",
-    relatedChildName: "Casey T",
-    relatedModule: "daily_log",
-    detectedAt: `${seedDay(-28)}T16:00:00Z`,
-    actionUrl: "/young-people/demo-child-2",
-  },
-  {
-    id: "ins_003",
-    type: "oversight_gap",
-    severity: "medium",
-    title: "Management oversight pending for 3 incidents",
-    summary: "Three incidents from the past week have not yet received management oversight. Regulation 40 requires timely review of all incidents.",
-    recommendation: "Review and add management oversight to the outstanding incidents. Cara has prepared draft oversight notes for your review.",
-    confidence: 95,
-    relatedModule: "incidents",
-    detectedAt: `${seedDay(-27)}T07:30:00Z`,
-    actionUrl: "/cara/review",
-  },
-  {
-    id: "ins_004",
-    type: "compliance_gap",
-    severity: "medium",
-    title: "Supervision overdue for 2 staff members",
-    summary: "Two staff members have not had supervision within the required 4-week cycle. This is a Quality Standards requirement.",
-    recommendation: "Schedule supervision sessions within the next 5 working days. Cara can generate supervision agenda templates.",
-    confidence: 98,
-    relatedModule: "supervision",
-    detectedAt: `${seedDay(-27)}T06:00:00Z`,
-    actionUrl: "/supervision",
-  },
-  {
-    id: "ins_005",
-    type: "evidence_gap",
-    severity: "low",
-    title: "Missing child voice evidence — Jordan M",
-    summary: "No key work session or wishes-and-feelings record found in the past 30 days. The child's voice should be visible in the evidence base.",
-    recommendation: "Schedule a key work session with Jordan. Cara can suggest age-appropriate prompts for capturing wishes and feelings.",
-    confidence: 88,
-    relatedChildId: "demo-child-3",
-    relatedChildName: "Jordan M",
-    relatedModule: "key_work",
-    detectedAt: `${seedDay(-28)}T10:00:00Z`,
-    actionUrl: "/young-people/demo-child-3",
-  },
-];
-
 // ── Component ──────────────────────────────────────────────────────────────
 
 interface CaraInsightCardProps {
@@ -158,45 +94,36 @@ interface CaraInsightCardProps {
 }
 
 export function CaraInsightCard({
-  homeId,
   limit = 5,
   className,
 }: CaraInsightCardProps) {
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Insights are not yet sourced from a live feed. Rather than fabricate demo
+  // insights — which previously surfaced fictional children on the live tenant —
+  // the widget starts from nothing and shows an honest empty state. When a real
+  // insights source is connected, the list below renders it (capped by `limit`).
+  const insights: Insight[] = [];
+  const displayed = insights.slice(0, limit);
 
-  useEffect(() => {
-    // In a real implementation, fetch from /api/cara/insights
-    // For now, use demo data
-    const timer = setTimeout(() => {
-      setInsights(DEMO_INSIGHTS.slice(0, limit));
-      setLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [homeId, limit]);
-
-  if (loading) {
+  if (displayed.length === 0) {
     return (
-      <div className={cn("space-y-2", className)}>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl bg-slate-50 h-24 animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
-  if (insights.length === 0) {
-    return (
-      <div className={cn("text-center py-8", className)}>
-        <Sparkles className="h-6 w-6 text-[var(--cs-text-gentle)] mx-auto mb-2" />
-        <p className="text-sm text-[var(--cs-text-muted)]">No insights detected</p>
+      <div
+        className={cn(
+          "rounded-xl border border-dashed border-[var(--cs-border)] bg-slate-50 p-6 text-center",
+          className,
+        )}
+      >
+        <Sparkles className="h-6 w-6 text-[var(--cs-text-muted)] mx-auto mb-2" />
+        <p className="text-sm font-medium text-[var(--cs-text-secondary)]">No insights yet</p>
+        <p className="text-[11px] text-[var(--cs-text-muted)] mt-1">
+          Cara surfaces insights here as records are logged across the home.
+        </p>
       </div>
     );
   }
 
   return (
     <div className={cn("space-y-2.5", className)}>
-      {insights.map((insight) => {
+      {displayed.map((insight) => {
         const sev = SEVERITY_CONFIG[insight.severity];
         const typeConfig = TYPE_CONFIG[insight.type];
         const TypeIcon = typeConfig.icon;
@@ -272,5 +199,5 @@ export function CaraInsightCard({
   );
 }
 
-// Expose for testing
-export const _testing = { TYPE_CONFIG, SEVERITY_CONFIG, DEMO_INSIGHTS };
+// Expose for testing — pure config maps only, no fabricated data.
+export const _testing = { TYPE_CONFIG, SEVERITY_CONFIG };

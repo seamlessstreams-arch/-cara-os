@@ -1,11 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Tests: CaraWriteToChild _testing exports
+//
+// The component no longer fabricates the child's letter or its Child Lens score
+// (the old `generateDemoOutput` is gone). The practitioner writes the child
+// version and Cara scores it server-side on save. These tests cover the pure
+// display-config maps that remain.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "@/components/cara/cara-write-to-child";
 
-const { SOURCE_CONFIG, LENS_CATEGORY_CONFIG, APPROACH_LABELS, generateDemoOutput } = _testing;
+const { SOURCE_CONFIG, LENS_CATEGORY_CONFIG, APPROACH_LABELS } = _testing;
 
 describe("CaraWriteToChild", () => {
   describe("SOURCE_CONFIG", () => {
@@ -46,7 +51,7 @@ describe("CaraWriteToChild", () => {
   });
 
   describe("APPROACH_LABELS", () => {
-    it("has PACE, ARC, and Trauma-Informed", () => {
+    it("has PACE, ARC, Trauma-Informed and Relational Safeguarding", () => {
       expect(APPROACH_LABELS["PACE"]).toBeDefined();
       expect(APPROACH_LABELS["ARC"]).toBeDefined();
       expect(APPROACH_LABELS["Trauma-Informed"]).toBeDefined();
@@ -54,61 +59,11 @@ describe("CaraWriteToChild", () => {
     });
   });
 
-  describe("generateDemoOutput", () => {
-    it("generates output for incident source", () => {
-      const output = generateDemoOutput("incident", "Test oversight text", "Alex W", 14);
-      expect(output.id).toBeTruthy();
-      expect(output.managementVersion).toBeTruthy();
-      expect(output.childVersion).toBeTruthy();
-      expect(output.childVersion).toContain("Alex");
-      expect(output.status).toBe("draft");
-    });
-
-    it("generates output for all source types", () => {
-      const sources = [
-        "incident", "complaint", "missing_from_care", "weekly_summary",
-        "direct_work", "management_oversight", "key_work_session",
-      ] as const;
-
-      for (const src of sources) {
-        const output = generateDemoOutput(src, "Test text", "Jordan M", 10);
-        expect(output.childVersion).toBeTruthy();
-        expect(output.childVersion.length).toBeGreaterThan(50);
-      }
-    });
-
-    it("includes Child Lens Score with all 6 categories", () => {
-      const output = generateDemoOutput("incident", "Test", "Casey T", 15);
-      const score = output.childLensScore;
-      expect(score.overall).toBeGreaterThanOrEqual(0);
-      expect(score.overall).toBeLessThanOrEqual(100);
-      expect(score.clarity).toBeGreaterThanOrEqual(0);
-      expect(score.dignity).toBeGreaterThanOrEqual(0);
-      expect(score.jargonRisk).toBeGreaterThanOrEqual(0);
-      expect(score.blameRisk).toBeGreaterThanOrEqual(0);
-      expect(score.explanationOfConcern).toBeGreaterThanOrEqual(0);
-      expect(score.supportOffered).toBeGreaterThanOrEqual(0);
-    });
-
-    it("includes trauma-informed approaches", () => {
-      const output = generateDemoOutput("incident", "Test", "Alex W");
-      expect(output.approachUsed).toContain("PACE");
-      expect(output.approachUsed).toContain("ARC");
-      expect(output.approachUsed).toContain("Trauma-Informed");
-    });
-
-    it("uses age-appropriate language for younger children", () => {
-      const young = generateDemoOutput("incident", "Test", "Riley P", 8);
-      const older = generateDemoOutput("incident", "Test", "Riley P", 15);
-      // Younger version should use simpler terms
-      expect(young.childVersion).toContain("grown-ups");
-      // Older version should use slightly more mature language
-      expect(older.childVersion).toContain("key worker");
-    });
-
-    it("has valid generatedAt timestamp", () => {
-      const output = generateDemoOutput("incident", "Test", "Alex W");
-      expect(new Date(output.generatedAt).getTime()).toBeGreaterThan(0);
-    });
+  // Regression guard: the component must not re-introduce a fabricated letter /
+  // score generator. _testing may only expose pure config maps.
+  it("exposes no demo/output generator", () => {
+    expect(Object.keys(_testing).sort()).toEqual(
+      ["APPROACH_LABELS", "LENS_CATEGORY_CONFIG", "SOURCE_CONFIG"],
+    );
   });
 });

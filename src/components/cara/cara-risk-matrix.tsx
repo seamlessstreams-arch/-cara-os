@@ -5,6 +5,13 @@
 // safeguarding, health, placement stability, education, relationships).
 // Combines data from incidents, risk assessments, daily logs, and care plans
 // to produce an AI-powered risk overview.
+//
+// NB: this component previously rendered a hardcoded demo set of per-child risk
+// profiles (fictional children) unconditionally — which surfaced on the live
+// tenant as "children who are not living in the home". Fabricated records must
+// never appear on a live care-record system, so the demo generator has been
+// removed. The matrix renders ONLY the real profiles it is given and shows an
+// honest empty state when there are none. It never invents data.
 // ══════════════════════════════════════════════════════════════════════════════
 
 "use client";
@@ -23,9 +30,9 @@ import {
   Users,
   Brain,
   Activity,
+  ShieldCheck,
 } from "lucide-react";
 
-import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type RiskLevel = "critical" | "high" | "medium" | "low" | "minimal";
@@ -39,7 +46,7 @@ type RiskDomain =
   | "education"
   | "relationships";
 
-interface RiskDomainEntry {
+export interface RiskDomainEntry {
   domain: RiskDomain;
   level: RiskLevel;
   trend: TrendDirection;
@@ -48,13 +55,22 @@ interface RiskDomainEntry {
   dataPoints: number;
 }
 
-interface ChildRiskProfile {
+export interface ChildRiskProfile {
   childId: string;
   childName: string;
   overallRisk: RiskLevel;
   domains: RiskDomainEntry[];
   lastUpdated: string;
   caraNotes?: string;
+}
+
+export interface CaraRiskMatrixProps {
+  /**
+   * Per-child risk profiles to render. Defaults to an empty list, which shows
+   * an honest empty state. This component NEVER fabricates profiles — it renders
+   * only the real data it is given, so it is safe on the live tenant.
+   */
+  profiles?: ChildRiskProfile[];
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -82,79 +98,13 @@ const TREND_ICONS: Record<TrendDirection, React.ReactNode> = {
   decreasing: <TrendingDown className="h-3 w-3 text-emerald-500" />,
 };
 
-// ── Demo data ────────────────────────────────────────────────────────────────
-
-function getDemoRiskMatrix(): ChildRiskProfile[] {
-  return [
-    {
-      childId: "yp_001",
-      childName: "Alex W",
-      overallRisk: "high",
-      lastUpdated: seedDay(-27),
-      caraNotes: "Escalating behaviour pattern detected — 3 incidents in 14 days. Risk assessment review recommended.",
-      domains: [
-        { domain: "behaviour",           level: "high",     trend: "increasing", summary: "3 incidents in 14 days, escalating severity", lastAssessed: seedDay(-27), dataPoints: 12 },
-        { domain: "safeguarding",        level: "medium",   trend: "stable",     summary: "Active concern — monitoring in place",        lastAssessed: seedDay(-29), dataPoints: 5 },
-        { domain: "health",              level: "low",      trend: "stable",     summary: "No current health concerns",                  lastAssessed: seedDay(-31), dataPoints: 8 },
-        { domain: "placement_stability", level: "medium",   trend: "increasing", summary: "Behaviour pattern may affect stability",      lastAssessed: seedDay(-27), dataPoints: 6 },
-        { domain: "education",           level: "medium",   trend: "stable",     summary: "Reduced attendance this month — 72%",         lastAssessed: seedDay(-28), dataPoints: 15 },
-        { domain: "relationships",       level: "low",      trend: "decreasing", summary: "Positive peer relationships, improving",      lastAssessed: seedDay(-30), dataPoints: 7 },
-      ],
-    },
-    {
-      childId: "yp_002",
-      childName: "Casey T",
-      overallRisk: "medium",
-      lastUpdated: seedDay(-28),
-      domains: [
-        { domain: "behaviour",           level: "low",      trend: "decreasing", summary: "Significant improvement over 21 days",        lastAssessed: seedDay(-28), dataPoints: 18 },
-        { domain: "safeguarding",        level: "medium",   trend: "stable",     summary: "Historical concern — review due June",        lastAssessed: seedDay(-34), dataPoints: 4 },
-        { domain: "health",              level: "low",      trend: "stable",     summary: "Medication managed, no concerns",             lastAssessed: seedDay(-29), dataPoints: 10 },
-        { domain: "placement_stability", level: "minimal",  trend: "stable",     summary: "Well settled, 8 months in placement",         lastAssessed: seedDay(-38), dataPoints: 3 },
-        { domain: "education",           level: "minimal",  trend: "decreasing", summary: "95% attendance, strong engagement",           lastAssessed: seedDay(-28), dataPoints: 20 },
-        { domain: "relationships",       level: "medium",   trend: "stable",     summary: "Family contact inconsistent",                 lastAssessed: seedDay(-31), dataPoints: 6 },
-      ],
-    },
-    {
-      childId: "yp_003",
-      childName: "Jordan M",
-      overallRisk: "low",
-      lastUpdated: seedDay(-27),
-      domains: [
-        { domain: "behaviour",           level: "minimal",  trend: "stable",     summary: "No concerns",                                 lastAssessed: seedDay(-27), dataPoints: 14 },
-        { domain: "safeguarding",        level: "low",      trend: "stable",     summary: "No active concerns",                          lastAssessed: seedDay(-33), dataPoints: 2 },
-        { domain: "health",              level: "low",      trend: "stable",     summary: "Asthma managed — inhaler in date",            lastAssessed: seedDay(-29), dataPoints: 8 },
-        { domain: "placement_stability", level: "minimal",  trend: "stable",     summary: "Stable placement, 14 months",                 lastAssessed: seedDay(-38), dataPoints: 2 },
-        { domain: "education",           level: "low",      trend: "stable",     summary: "Good engagement, 88% attendance",             lastAssessed: seedDay(-28), dataPoints: 16 },
-        { domain: "relationships",       level: "low",      trend: "decreasing", summary: "Strong family contact, good peer bonds",      lastAssessed: seedDay(-30), dataPoints: 9 },
-      ],
-    },
-    {
-      childId: "yp_004",
-      childName: "Riley P",
-      overallRisk: "medium",
-      lastUpdated: seedDay(-27),
-      caraNotes: "Missing voice-of-child evidence — no key work session recorded in 28 days.",
-      domains: [
-        { domain: "behaviour",           level: "medium",   trend: "stable",     summary: "Occasional low-level disruption",             lastAssessed: seedDay(-27), dataPoints: 10 },
-        { domain: "safeguarding",        level: "low",      trend: "stable",     summary: "No active concerns",                          lastAssessed: seedDay(-35), dataPoints: 3 },
-        { domain: "health",              level: "medium",   trend: "increasing", summary: "Anxiety reported — CAMHS referral pending",   lastAssessed: seedDay(-28), dataPoints: 7 },
-        { domain: "placement_stability", level: "low",      trend: "stable",     summary: "Settled, 5 months in placement",              lastAssessed: seedDay(-38), dataPoints: 4 },
-        { domain: "education",           level: "medium",   trend: "increasing", summary: "Attendance dropped to 78% this month",        lastAssessed: seedDay(-28), dataPoints: 14 },
-        { domain: "relationships",       level: "low",      trend: "stable",     summary: "Good with staff, reserved with peers",        lastAssessed: seedDay(-31), dataPoints: 5 },
-      ],
-    },
-  ];
-}
-
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function CaraRiskMatrix() {
+export function CaraRiskMatrix({ profiles = [] }: CaraRiskMatrixProps = {}) {
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
-  const profiles = getDemoRiskMatrix();
   const domains: RiskDomain[] = ["behaviour", "safeguarding", "health", "placement_stability", "education", "relationships"];
 
-  // Sort by overall risk
+  // Sort by overall risk (most severe first)
   const sorted = [...profiles].sort(
     (a, b) => RISK_LEVEL_CONFIG[a.overallRisk].order - RISK_LEVEL_CONFIG[b.overallRisk].order,
   );
@@ -169,147 +119,166 @@ export function CaraRiskMatrix() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Cara Risk Matrix</h3>
-            <p className="text-[10px] text-[var(--cs-text-muted)]">Cross-domain risk analysis — {profiles.length} young people</p>
+            <p className="text-[10px] text-[var(--cs-text-muted)]">
+              {profiles.length > 0
+                ? `Cross-domain risk analysis — ${profiles.length} young ${profiles.length === 1 ? "person" : "people"}`
+                : "Cross-domain risk analysis"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="px-4 py-2 border-b border-[var(--cs-border)] flex items-center gap-3 flex-wrap">
-        {(["critical", "high", "medium", "low", "minimal"] as RiskLevel[]).map((level) => {
-          const cfg = RISK_LEVEL_CONFIG[level];
-          return (
-            <div key={level} className="flex items-center gap-1.5">
-              <div className={`w-3 h-3 rounded ${cfg.cell}`} />
-              <span className="text-[10px] text-[var(--cs-text-muted)]">{cfg.label}</span>
-            </div>
-          );
-        })}
-        <div className="ml-auto flex items-center gap-2 text-[10px] text-[var(--cs-text-muted)]">
-          <span className="flex items-center gap-0.5">{TREND_ICONS.increasing} Rising</span>
-          <span className="flex items-center gap-0.5">{TREND_ICONS.stable} Stable</span>
-          <span className="flex items-center gap-0.5">{TREND_ICONS.decreasing} Falling</span>
+      {profiles.length === 0 ? (
+        /* Honest empty state — never fabricate per-child risk */
+        <div className="px-5 py-10 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+            <ShieldCheck className="h-5 w-5 text-[var(--cs-text-muted)]" />
+          </div>
+          <p className="text-sm font-medium text-[var(--cs-text-secondary)]">No risk data yet</p>
+          <p className="mt-1 text-[11px] text-[var(--cs-text-muted)]">
+            Per-child risk appears here as records are logged — incidents, risk assessments, daily logs, and care plans.
+          </p>
         </div>
-      </div>
-
-      {/* Matrix grid */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-[var(--cs-border)]">
-              <th className="text-left px-4 py-2 font-medium text-[var(--cs-text-muted)] w-[140px]">Young Person</th>
-              {domains.map((d) => (
-                <th key={d} className="text-center px-2 py-2 font-medium text-[var(--cs-text-muted)]">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-[var(--cs-text-secondary)]">{DOMAIN_CONFIG[d].icon}</span>
-                    <span className="text-[9px]">{DOMAIN_CONFIG[d].shortLabel}</span>
-                  </div>
-                </th>
-              ))}
-              <th className="text-center px-3 py-2 font-medium text-[var(--cs-text-muted)]">Overall</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((profile) => {
-              const overallCfg = RISK_LEVEL_CONFIG[profile.overallRisk];
-              const isExpanded = expandedChild === profile.childId;
-
+      ) : (
+        <>
+          {/* Legend */}
+          <div className="px-4 py-2 border-b border-[var(--cs-border)] flex items-center gap-3 flex-wrap">
+            {(["critical", "high", "medium", "low", "minimal"] as RiskLevel[]).map((level) => {
+              const cfg = RISK_LEVEL_CONFIG[level];
               return (
-                <React.Fragment key={profile.childId}>
-                  <tr
-                    className="border-b border-[var(--cs-border)] hover:bg-slate-50/50 cursor-pointer transition-colors"
-                    onClick={() => setExpandedChild(isExpanded ? null : profile.childId)}
-                  >
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${overallCfg.cell.split(" ")[0]}`} />
-                        <div>
-                          <span className="font-medium text-[var(--cs-navy)]">{profile.childName}</span>
-                          {profile.caraNotes && (
-                            <AlertTriangle className="h-3 w-3 text-amber-500 inline ml-1.5" />
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    {domains.map((d) => {
-                      const entry = profile.domains.find((de) => de.domain === d);
-                      if (!entry) return <td key={d} className="text-center px-2 py-2.5">—</td>;
-                      const cfg = RISK_LEVEL_CONFIG[entry.level];
-                      return (
-                        <td key={d} className="text-center px-2 py-2.5">
-                          <div className="flex items-center justify-center gap-1">
-                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${cfg.cell}`}>
-                              {cfg.label.slice(0, 3).toUpperCase()}
-                            </span>
-                            {TREND_ICONS[entry.trend]}
-                          </div>
-                        </td>
-                      );
-                    })}
-                    <td className="text-center px-3 py-2.5">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${overallCfg.bg} ${overallCfg.colour}`}>
-                        {overallCfg.label}
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Expanded detail row */}
-                  {isExpanded && (
-                    <tr className="border-b border-[var(--cs-border)]">
-                      <td colSpan={domains.length + 2} className="px-4 py-3 bg-slate-50/50 animate-fade-in">
-                        <div className="space-y-2">
-                          {profile.caraNotes && (
-                            <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-2.5">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <Sparkles className="h-3 w-3 text-[var(--cs-cara-gold)]" />
-                                <span className="text-[10px] font-semibold text-[var(--cs-navy)]">Cara Note</span>
-                              </div>
-                              <p className="text-[11px] text-[var(--cs-text-secondary)]">{profile.caraNotes}</p>
-                            </div>
-                          )}
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {(profile.domains ?? []).map((entry) => {
-                              const dcfg = DOMAIN_CONFIG[entry.domain];
-                              const lcfg = RISK_LEVEL_CONFIG[entry.level];
-                              return (
-                                <div key={entry.domain} className="rounded-lg border border-[var(--cs-border)] p-2.5 bg-white">
-                                  <div className="flex items-center gap-1.5 mb-1">
-                                    <span className="text-[var(--cs-text-secondary)]">{dcfg.icon}</span>
-                                    <span className="text-[10px] font-semibold text-[var(--cs-navy)]">{dcfg.label}</span>
-                                    <span className={`ml-auto px-1.5 py-0.5 rounded text-[9px] font-medium ${lcfg.cell}`}>
-                                      {lcfg.label}
-                                    </span>
-                                  </div>
-                                  <p className="text-[10px] text-[var(--cs-text-muted)]">{entry.summary}</p>
-                                  <div className="flex items-center gap-2 mt-1 text-[9px] text-[var(--cs-text-gentle)]">
-                                    <span className="flex items-center gap-0.5">{TREND_ICONS[entry.trend]} {entry.trend}</span>
-                                    <span><Activity className="h-2.5 w-2.5 inline" /> {entry.dataPoints} data points</span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                <div key={level} className="flex items-center gap-1.5">
+                  <div className={`w-3 h-3 rounded ${cfg.cell}`} />
+                  <span className="text-[10px] text-[var(--cs-text-muted)]">{cfg.label}</span>
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+            <div className="ml-auto flex items-center gap-2 text-[10px] text-[var(--cs-text-muted)]">
+              <span className="flex items-center gap-0.5">{TREND_ICONS.increasing} Rising</span>
+              <span className="flex items-center gap-0.5">{TREND_ICONS.stable} Stable</span>
+              <span className="flex items-center gap-0.5">{TREND_ICONS.decreasing} Falling</span>
+            </div>
+          </div>
 
-      {/* Footer */}
-      <div className="px-4 py-2.5 border-t border-[var(--cs-border)] bg-slate-50/50">
-        <p className="text-[10px] text-[var(--cs-text-muted)] text-center">
-          Risk levels are AI-analysed from incidents, daily logs, assessments, and care plans. Always verify with professional judgement.
-        </p>
-      </div>
+          {/* Matrix grid */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-[var(--cs-border)]">
+                  <th className="text-left px-4 py-2 font-medium text-[var(--cs-text-muted)] w-[140px]">Young Person</th>
+                  {domains.map((d) => (
+                    <th key={d} className="text-center px-2 py-2 font-medium text-[var(--cs-text-muted)]">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[var(--cs-text-secondary)]">{DOMAIN_CONFIG[d].icon}</span>
+                        <span className="text-[9px]">{DOMAIN_CONFIG[d].shortLabel}</span>
+                      </div>
+                    </th>
+                  ))}
+                  <th className="text-center px-3 py-2 font-medium text-[var(--cs-text-muted)]">Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((profile) => {
+                  const overallCfg = RISK_LEVEL_CONFIG[profile.overallRisk];
+                  const isExpanded = expandedChild === profile.childId;
+
+                  return (
+                    <React.Fragment key={profile.childId}>
+                      <tr
+                        className="border-b border-[var(--cs-border)] hover:bg-slate-50/50 cursor-pointer transition-colors"
+                        onClick={() => setExpandedChild(isExpanded ? null : profile.childId)}
+                      >
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${overallCfg.cell.split(" ")[0]}`} />
+                            <div>
+                              <span className="font-medium text-[var(--cs-navy)]">{profile.childName}</span>
+                              {profile.caraNotes && (
+                                <AlertTriangle className="h-3 w-3 text-amber-500 inline ml-1.5" />
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        {domains.map((d) => {
+                          const entry = profile.domains.find((de) => de.domain === d);
+                          if (!entry) return <td key={d} className="text-center px-2 py-2.5">—</td>;
+                          const cfg = RISK_LEVEL_CONFIG[entry.level];
+                          return (
+                            <td key={d} className="text-center px-2 py-2.5">
+                              <div className="flex items-center justify-center gap-1">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${cfg.cell}`}>
+                                  {cfg.label.slice(0, 3).toUpperCase()}
+                                </span>
+                                {TREND_ICONS[entry.trend]}
+                              </div>
+                            </td>
+                          );
+                        })}
+                        <td className="text-center px-3 py-2.5">
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${overallCfg.bg} ${overallCfg.colour}`}>
+                            {overallCfg.label}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Expanded detail row */}
+                      {isExpanded && (
+                        <tr className="border-b border-[var(--cs-border)]">
+                          <td colSpan={domains.length + 2} className="px-4 py-3 bg-slate-50/50 animate-fade-in">
+                            <div className="space-y-2">
+                              {profile.caraNotes && (
+                                <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-2.5">
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <Sparkles className="h-3 w-3 text-[var(--cs-cara-gold)]" />
+                                    <span className="text-[10px] font-semibold text-[var(--cs-navy)]">Cara Note</span>
+                                  </div>
+                                  <p className="text-[11px] text-[var(--cs-text-secondary)]">{profile.caraNotes}</p>
+                                </div>
+                              )}
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {(profile.domains ?? []).map((entry) => {
+                                  const dcfg = DOMAIN_CONFIG[entry.domain];
+                                  const lcfg = RISK_LEVEL_CONFIG[entry.level];
+                                  return (
+                                    <div key={entry.domain} className="rounded-lg border border-[var(--cs-border)] p-2.5 bg-white">
+                                      <div className="flex items-center gap-1.5 mb-1">
+                                        <span className="text-[var(--cs-text-secondary)]">{dcfg.icon}</span>
+                                        <span className="text-[10px] font-semibold text-[var(--cs-navy)]">{dcfg.label}</span>
+                                        <span className={`ml-auto px-1.5 py-0.5 rounded text-[9px] font-medium ${lcfg.cell}`}>
+                                          {lcfg.label}
+                                        </span>
+                                      </div>
+                                      <p className="text-[10px] text-[var(--cs-text-muted)]">{entry.summary}</p>
+                                      <div className="flex items-center gap-2 mt-1 text-[9px] text-[var(--cs-text-gentle)]">
+                                        <span className="flex items-center gap-0.5">{TREND_ICONS[entry.trend]} {entry.trend}</span>
+                                        <span><Activity className="h-2.5 w-2.5 inline" /> {entry.dataPoints} data points</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-2.5 border-t border-[var(--cs-border)] bg-slate-50/50">
+            <p className="text-[10px] text-[var(--cs-text-muted)] text-center">
+              Risk levels are AI-analysed from incidents, daily logs, assessments, and care plans. Always verify with professional judgement.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 // ── Testing exports ──────────────────────────────────────────────────────────
 
-export const _testing = { RISK_LEVEL_CONFIG, DOMAIN_CONFIG, getDemoRiskMatrix };
+export const _testing = { RISK_LEVEL_CONFIG, DOMAIN_CONFIG };

@@ -4,6 +4,13 @@
 // Shows a timeline of regulatory deadlines: Reg 45 reports, supervision
 // cycles, training renewals, risk assessment reviews, care plan reviews,
 // fire drills, and medication audits. Colour-coded by urgency.
+//
+// NB: this widget previously rendered a hardcoded demo set (fictional children
+// and deadlines) unconditionally — which on the live tenant surfaced compliance
+// items about children who do not exist. Fabricated records must never appear on
+// a live care-record system, so the demo generator has been removed. The widget
+// now renders only the real deadlines it is given (via the optional `items`
+// prop) and shows an honest empty state otherwise.
 // ══════════════════════════════════════════════════════════════════════════════
 
 "use client";
@@ -25,7 +32,6 @@ import {
   Star,
 } from "lucide-react";
 
-import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type DeadlineStatus = "overdue" | "due_today" | "due_soon" | "upcoming" | "complete";
@@ -54,6 +60,15 @@ interface ComplianceDeadline {
   relatedPerson?: string;
 }
 
+interface CaraComplianceCalendarProps {
+  /**
+   * Real compliance deadlines to render. Defaults to none: with no recorded
+   * deadlines the widget shows an honest empty state rather than fabricated
+   * sample data. We never invent deadlines about children who may not exist.
+   */
+  items?: ComplianceDeadline[];
+}
+
 // ── Config ───────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<DeadlineStatus, { label: string; colour: string; bg: string; dot: string }> = {
@@ -76,116 +91,11 @@ const TYPE_ICONS: Record<DeadlineType, React.ReactNode> = {
   annual_review:           <Calendar className="h-3.5 w-3.5" />,
 };
 
-// ── Demo data ────────────────────────────────────────────────────────────────
-
-function getDemoDeadlines(): ComplianceDeadline[] {
-  return [
-    {
-      id: "cd_001",
-      type: "supervision",
-      title: "Supervision overdue — Jordan P",
-      description: "Supervision cycle exceeded 4-week maximum.",
-      dueDate: seedDay(-31),
-      daysUntilDue: -4,
-      status: "overdue",
-      regulation: "Reg 33 — Employment of staff",
-      assignedTo: "Olivia H (RM)",
-      relatedPerson: "Jordan P",
-    },
-    {
-      id: "cd_002",
-      type: "fire_drill",
-      title: "Monthly fire drill due",
-      description: "Last drill: 14 Apr 2026. Monthly cycle requires completion by today.",
-      dueDate: seedDay(-27),
-      daysUntilDue: 0,
-      status: "due_today",
-      regulation: "Fire Safety Order 2005",
-      assignedTo: "Sam K (Senior)",
-    },
-    {
-      id: "cd_003",
-      type: "risk_assessment_review",
-      title: "Risk assessment review — Alex W",
-      description: "Behaviour pattern escalation triggered Cara flag for risk assessment review.",
-      dueDate: seedDay(-25),
-      daysUntilDue: 2,
-      status: "due_soon",
-      regulation: "Reg 12 — Health and safety",
-      relatedPerson: "Alex W",
-    },
-    {
-      id: "cd_004",
-      type: "reg45_report",
-      title: "Reg 45 monthly report — May 2026",
-      description: "Monthly report covering all 9 Reg 45(2) subsections.",
-      dueDate: seedDay(-14),
-      daysUntilDue: 13,
-      status: "upcoming",
-      regulation: "Reg 45 — Review of quality of care",
-      assignedTo: "Olivia H (RM)",
-    },
-    {
-      id: "cd_005",
-      type: "care_plan_review",
-      title: "Care plan review — Casey T",
-      description: "6-month care plan review due. Last reviewed 28 Nov 2025.",
-      dueDate: seedDay(-11),
-      daysUntilDue: 16,
-      status: "upcoming",
-      regulation: "Reg 14 — Care planning",
-      relatedPerson: "Casey T",
-    },
-    {
-      id: "cd_006",
-      type: "training_renewal",
-      title: "First Aid certificate renewal — Pat M",
-      description: "First Aid at Work certificate expires 30 May 2026.",
-      dueDate: seedDay(-9),
-      daysUntilDue: 18,
-      status: "upcoming",
-      relatedPerson: "Pat M",
-    },
-    {
-      id: "cd_007",
-      type: "medication_audit",
-      title: "Monthly medication audit",
-      description: "All MAR charts require monthly audit and sign-off.",
-      dueDate: seedDay(-8),
-      daysUntilDue: 19,
-      status: "upcoming",
-      regulation: "Reg 23 — Health of children",
-      assignedTo: "Senior on shift",
-    },
-    {
-      id: "cd_008",
-      type: "lac_review",
-      title: "LAC review — Jordan M",
-      description: "Looked After Child statutory review due.",
-      dueDate: seedDay(-3),
-      daysUntilDue: 24,
-      status: "upcoming",
-      relatedPerson: "Jordan M",
-    },
-    {
-      id: "cd_009",
-      type: "supervision",
-      title: "Supervision — Alex R",
-      description: "Supervision due within standard 4-week cycle.",
-      dueDate: seedDay(-28),
-      daysUntilDue: -1,
-      status: "complete",
-      assignedTo: "Olivia H (RM)",
-      relatedPerson: "Alex R",
-    },
-  ];
-}
-
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function CaraComplianceCalendar() {
+export function CaraComplianceCalendar({ items = [] }: CaraComplianceCalendarProps) {
   const [showAll, setShowAll] = useState(false);
-  const deadlines = getDemoDeadlines();
+  const deadlines = items;
 
   const activeDeadlines = deadlines.filter((d) => d.status !== "complete");
   const completedCount = deadlines.filter((d) => d.status === "complete").length;
@@ -230,86 +140,103 @@ export function CaraComplianceCalendar() {
         </div>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-4 divide-x divide-[var(--cs-border)] border-b border-[var(--cs-border)]">
-        {[
-          { label: "Overdue",    value: overdueCount,    colour: overdueCount > 0 ? "text-red-600" : "text-emerald-600" },
-          { label: "Due Today",  value: dueTodayCount,   colour: dueTodayCount > 0 ? "text-orange-600" : "text-[var(--cs-navy)]" },
-          { label: "Due Soon",   value: dueSoonCount,    colour: dueSoonCount > 0 ? "text-amber-600" : "text-[var(--cs-navy)]" },
-          { label: "Complete",   value: completedCount,  colour: "text-emerald-600" },
-        ].map((s) => (
-          <div key={s.label} className="px-3 py-2.5 text-center">
-            <div className={`text-lg font-bold tabular-nums ${s.colour}`}>{s.value}</div>
-            <div className="text-[10px] text-[var(--cs-text-muted)]">{s.label}</div>
+      {deadlines.length === 0 ? (
+        /* Honest empty state — never fabricate deadlines */
+        <div className="px-5 py-10 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+            <Calendar className="h-5 w-5 text-[var(--cs-text-muted)]" />
           </div>
-        ))}
-      </div>
-
-      {/* Deadline list */}
-      <div className="divide-y divide-[var(--cs-border)]">
-        {sorted.map((deadline) => {
-          const cfg = STATUS_CONFIG[deadline.status];
-          const icon = TYPE_ICONS[deadline.type];
-
-          return (
-            <div key={deadline.id} className="px-4 py-3 flex items-start gap-3 hover:bg-slate-50/50 transition-colors">
-              <span className={`mt-0.5 ${cfg.colour}`}>{icon}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium text-[var(--cs-navy)] line-clamp-1">{deadline.title}</span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${cfg.bg} ${cfg.colour}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                    {cfg.label}
-                  </span>
-                </div>
-                <p className="text-[11px] text-[var(--cs-text-muted)] line-clamp-1 mt-0.5">{deadline.description}</p>
-                <div className="flex items-center gap-3 mt-1 text-[10px] text-[var(--cs-text-gentle)]">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-2.5 w-2.5" />
-                    {new Date(deadline.dueDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </span>
-                  {deadline.regulation && (
-                    <span className="flex items-center gap-1">
-                      <Shield className="h-2.5 w-2.5" /> {deadline.regulation}
-                    </span>
-                  )}
-                  {deadline.assignedTo && (
-                    <span className="flex items-center gap-1">
-                      <Users className="h-2.5 w-2.5" /> {deadline.assignedTo}
-                    </span>
-                  )}
-                </div>
+          <p className="text-sm font-medium text-[var(--cs-text-secondary)]">No compliance items due</p>
+          <p className="text-[11px] text-[var(--cs-text-muted)] mt-1">
+            Deadlines appear here as they are recorded.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Quick stats */}
+          <div className="grid grid-cols-4 divide-x divide-[var(--cs-border)] border-b border-[var(--cs-border)]">
+            {[
+              { label: "Overdue",    value: overdueCount,    colour: overdueCount > 0 ? "text-red-600" : "text-emerald-600" },
+              { label: "Due Today",  value: dueTodayCount,   colour: dueTodayCount > 0 ? "text-orange-600" : "text-[var(--cs-navy)]" },
+              { label: "Due Soon",   value: dueSoonCount,    colour: dueSoonCount > 0 ? "text-amber-600" : "text-[var(--cs-navy)]" },
+              { label: "Complete",   value: completedCount,  colour: "text-emerald-600" },
+            ].map((s) => (
+              <div key={s.label} className="px-3 py-2.5 text-center">
+                <div className={`text-lg font-bold tabular-nums ${s.colour}`}>{s.value}</div>
+                <div className="text-[10px] text-[var(--cs-text-muted)]">{s.label}</div>
               </div>
-              <div className="text-right shrink-0">
-                {deadline.status === "complete" ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : deadline.daysUntilDue < 0 ? (
-                  <span className="text-[11px] font-semibold text-red-600 tabular-nums">
-                    {Math.abs(deadline.daysUntilDue)}d overdue
-                  </span>
-                ) : deadline.daysUntilDue === 0 ? (
-                  <span className="text-[11px] font-semibold text-orange-600">Today</span>
-                ) : (
-                  <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] tabular-nums">
-                    {deadline.daysUntilDue}d
-                  </span>
-                )}
-              </div>
+            ))}
+          </div>
+
+          {/* Deadline list */}
+          <div className="divide-y divide-[var(--cs-border)]">
+            {sorted.map((deadline) => {
+              const cfg = STATUS_CONFIG[deadline.status];
+              const icon = TYPE_ICONS[deadline.type];
+
+              return (
+                <div key={deadline.id} className="px-4 py-3 flex items-start gap-3 hover:bg-slate-50/50 transition-colors">
+                  <span className={`mt-0.5 ${cfg.colour}`}>{icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-medium text-[var(--cs-navy)] line-clamp-1">{deadline.title}</span>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${cfg.bg} ${cfg.colour}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[var(--cs-text-muted)] line-clamp-1 mt-0.5">{deadline.description}</p>
+                    <div className="flex items-center gap-3 mt-1 text-[10px] text-[var(--cs-text-gentle)]">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-2.5 w-2.5" />
+                        {new Date(deadline.dueDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </span>
+                      {deadline.regulation && (
+                        <span className="flex items-center gap-1">
+                          <Shield className="h-2.5 w-2.5" /> {deadline.regulation}
+                        </span>
+                      )}
+                      {deadline.assignedTo && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-2.5 w-2.5" /> {deadline.assignedTo}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {deadline.status === "complete" ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    ) : deadline.daysUntilDue < 0 ? (
+                      <span className="text-[11px] font-semibold text-red-600 tabular-nums">
+                        {Math.abs(deadline.daysUntilDue)}d overdue
+                      </span>
+                    ) : deadline.daysUntilDue === 0 ? (
+                      <span className="text-[11px] font-semibold text-orange-600">Today</span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] tabular-nums">
+                        {deadline.daysUntilDue}d
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Toggle completed */}
+          {completedCount > 0 && (
+            <div className="px-4 py-2 border-t border-[var(--cs-border)]">
+              <button
+                className="flex items-center gap-1.5 text-xs text-[var(--cs-text-secondary)] hover:text-[var(--cs-navy)] transition-colors w-full justify-center"
+                onClick={() => setShowAll(!showAll)}
+              >
+                {showAll ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {showAll ? "Hide" : "Show"} completed ({completedCount})
+              </button>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Toggle completed */}
-      <div className="px-4 py-2 border-t border-[var(--cs-border)]">
-        <button
-          className="flex items-center gap-1.5 text-xs text-[var(--cs-text-secondary)] hover:text-[var(--cs-navy)] transition-colors w-full justify-center"
-          onClick={() => setShowAll(!showAll)}
-        >
-          {showAll ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          {showAll ? "Hide" : "Show"} completed ({completedCount})
-        </button>
-      </div>
+          )}
+        </>
+      )}
 
       {/* Footer */}
       <div className="px-4 py-2.5 border-t border-[var(--cs-border)] bg-slate-50/50">
@@ -323,4 +250,4 @@ export function CaraComplianceCalendar() {
 
 // ── Testing exports ──────────────────────────────────────────────────────────
 
-export const _testing = { STATUS_CONFIG, TYPE_ICONS, getDemoDeadlines };
+export const _testing = { STATUS_CONFIG, TYPE_ICONS };
