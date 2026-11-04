@@ -56,7 +56,7 @@ describe("CaraRegulationChecker", () => {
       // Guards the fix: any re-added per-regulation assessment field or
       // per-child suggestion (which previously named fictional children) must
       // fail here. Reference entries hold only generic published content.
-      for (const reg of REGULATION_REFERENCE as Array<Record<string, unknown>>) {
+      for (const reg of REGULATION_REFERENCE as unknown as Array<Record<string, unknown>>) {
         expect(reg.status).toBeUndefined();
         expect(reg.evidenceCount).toBeUndefined();
         expect(reg.lastEvidenced).toBeUndefined();

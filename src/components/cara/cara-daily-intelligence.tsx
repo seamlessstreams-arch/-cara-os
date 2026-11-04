@@ -15,7 +15,9 @@
 // and replaced with the real feed + an honest empty state.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import {
   Sparkles,
   ChevronDown,
@@ -131,38 +133,37 @@ function ragFor(b: Pick<TodayBriefing, "criticalCount" | "highCount">): keyof ty
 
 // ── Component ────────────────────────────────────────────────────────────────
 
+interface TodayBriefingResponse {
+  ok: boolean;
+  data?: TodayBriefing;
+  error?: string;
+}
+
 export function CaraDailyIntelligence({ homeId, className }: DailyIntelligenceProps) {
-  const [briefing, setBriefing] = useState<TodayBriefing | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const qs = homeId ? `?homeId=${encodeURIComponent(homeId)}` : "";
-      const res = await fetch(`/api/cara/today-briefing${qs}`);
-      const json = await res.json();
-      if (res.ok && json.ok && json.data) {
-        setBriefing(json.data as TodayBriefing);
-      } else {
-        setError(json.error ?? "Unable to load the daily brief");
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Network error");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Real feed only, via TanStack Query (the app-wide data-fetching idiom). No
+  // homeId param is sent unless one is passed explicitly, so the server resolves
+  // the live tenant itself (see DailyIntelligenceProps). The old hand-rolled
+  // effect+fetch has been removed.
+  const query = useQuery({
+    queryKey: ["cara-today-briefing", homeId ?? "live"],
+    queryFn: () =>
+      api.get<TodayBriefingResponse>(
+        `/api/cara/today-briefing${homeId ? `?homeId=${encodeURIComponent(homeId)}` : ""}`,
+      ),
+  });
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [homeId]);
+  const briefing = query.data?.ok ? query.data.data ?? null : null;
+  const error =
+    query.error instanceof Error
+      ? query.error.message
+      : query.data && !query.data.ok
+        ? query.data.error ?? "Unable to load the daily brief"
+        : null;
 
-  if (loading) {
+  if (query.isPending) {
     return (
       <div className={cn("rounded-2xl border border-[var(--cs-border)] bg-white p-6", className)}>
         <div className="flex items-center gap-3">
@@ -179,7 +180,7 @@ export function CaraDailyIntelligence({ homeId, className }: DailyIntelligencePr
         <div className="flex items-center gap-3 text-sm text-[var(--cs-text-muted)]">
           <AlertCircle className="h-4 w-4" />
           <span>{error ?? "Unable to load the daily brief"}</span>
-          <Button variant="ghost" size="sm" onClick={load} className="gap-1.5 ml-auto">
+          <Button variant="ghost" size="sm" onClick={() => query.refetch()} className="gap-1.5 ml-auto">
             <RefreshCw className="h-3.5 w-3.5" /> Retry
           </Button>
         </div>
