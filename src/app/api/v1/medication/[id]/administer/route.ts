@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { processMedicationException } from "@/lib/db/linked-updates";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
@@ -15,7 +15,7 @@ async function administerMedication(req: NextRequest, { params }: { params: Prom
   const body = __parsed.data;
   const { status, administered_by, witnessed_by, dose_given, reason_not_given, notes, prn_reason, prn_effectiveness } = body;
 
-  const updated = db.medicationAdministrations.administer(id, {
+  const updated = await dal.medicationAdministrations.update(id, {
     status, administered_by, witnessed_by, dose_given,
     reason_not_given, notes, prn_reason, prn_effectiveness,
   });
@@ -26,7 +26,7 @@ async function administerMedication(req: NextRequest, { params }: { params: Prom
 
   // Trigger linked updates for exceptions
   if (status === "refused" || status === "late" || status === "missed") {
-    const med = db.medications.findAll().find((m) => m.id === updated.medication_id);
+    const med = (await dal.medications.findAll()).find((m) => m.id === updated.medication_id);
     // Awaited: the handler writes through the dal now, and a floating promise
     // in a serverless handler can be killed when the response returns. The home
     // was the literal "home_oak" — a seed id that is not this tenant's home.
