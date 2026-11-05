@@ -1,63 +1,51 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Tests: CaraDailyIntelligence _testing exports
+//
+// The component is driven entirely by the real /api/cara/today-briefing feed
+// (no demo generator). These tests cover the display config maps and the RAG
+// derivation — the only pure logic left.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "@/components/cara/cara-daily-intelligence";
 
-const {
-  EVENT_CATEGORY_CONFIG,
-  PRIORITY_CONFIG,
-  SHIFT_CONFIG,
-  RAG_CONFIG,
-  generateDemoBrief,
-} = _testing;
+const { SEVERITY_CONFIG, CATEGORY_CONFIG, RAG_CONFIG, ragFor } = _testing;
 
 describe("CaraDailyIntelligence", () => {
-  // ── Config ────────────────────────────────────────────────────────────────
-  describe("EVENT_CATEGORY_CONFIG", () => {
-    it("has all 11 event categories", () => {
-      const cats = [
-        "incident", "mood", "medication", "behaviour", "health",
-        "safeguarding", "missing", "positive", "contact", "education", "activity",
-      ];
-      for (const c of cats) {
-        expect(EVENT_CATEGORY_CONFIG[c as keyof typeof EVENT_CATEGORY_CONFIG]).toBeDefined();
+  describe("SEVERITY_CONFIG", () => {
+    it("has all 5 severities", () => {
+      for (const s of ["critical", "high", "medium", "low", "positive"] as const) {
+        expect(SEVERITY_CONFIG[s]).toBeDefined();
       }
     });
 
-    it("each category has label, icon, colour, bg", () => {
-      for (const [, cfg] of Object.entries(EVENT_CATEGORY_CONFIG)) {
+    it("each severity has label, colour, bg, border, icon", () => {
+      for (const [, cfg] of Object.entries(SEVERITY_CONFIG)) {
+        expect(cfg.label).toBeTruthy();
+        expect(cfg.colour).toBeTruthy();
+        expect(cfg.bg).toBeTruthy();
+        expect(cfg.border).toBeTruthy();
+        expect(cfg.icon).toBeTruthy();
+      }
+    });
+  });
+
+  describe("CATEGORY_CONFIG", () => {
+    it("covers every today-briefing signal category", () => {
+      const cats = [
+        "safeguarding", "incident", "compliance", "oversight", "staffing",
+        "health", "education", "wellbeing", "deadline", "positive",
+      ];
+      for (const c of cats) {
+        expect(CATEGORY_CONFIG[c as keyof typeof CATEGORY_CONFIG]).toBeDefined();
+      }
+    });
+
+    it("each category has label, icon, colour", () => {
+      for (const [, cfg] of Object.entries(CATEGORY_CONFIG)) {
         expect(cfg.label).toBeTruthy();
         expect(cfg.icon).toBeTruthy();
         expect(cfg.colour).toBeTruthy();
-        expect(cfg.bg).toBeTruthy();
-      }
-    });
-  });
-
-  describe("PRIORITY_CONFIG", () => {
-    it("has all 4 priorities", () => {
-      expect(PRIORITY_CONFIG.critical).toBeDefined();
-      expect(PRIORITY_CONFIG.high).toBeDefined();
-      expect(PRIORITY_CONFIG.routine).toBeDefined();
-      expect(PRIORITY_CONFIG.positive).toBeDefined();
-    });
-  });
-
-  describe("SHIFT_CONFIG", () => {
-    it("has all 4 shift periods", () => {
-      expect(SHIFT_CONFIG.day).toBeDefined();
-      expect(SHIFT_CONFIG.evening).toBeDefined();
-      expect(SHIFT_CONFIG.night).toBeDefined();
-      expect(SHIFT_CONFIG.waking_night).toBeDefined();
-    });
-
-    it("each shift has label, icon, hours", () => {
-      for (const [, cfg] of Object.entries(SHIFT_CONFIG)) {
-        expect(cfg.label).toBeTruthy();
-        expect(cfg.icon).toBeTruthy();
-        expect(cfg.hours).toBeTruthy();
       }
     });
   });
@@ -70,75 +58,18 @@ describe("CaraDailyIntelligence", () => {
     });
   });
 
-  // ── generateDemoBrief ─────────────────────────────────────────────────────
-  describe("generateDemoBrief", () => {
-    it("returns a complete brief structure", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      expect(brief.date).toBe("2026-05-12");
-      expect(brief.shiftPeriod).toBeTruthy();
-      expect(brief.events.length).toBeGreaterThan(0);
-      expect(brief.moodSnapshots.length).toBeGreaterThan(0);
-      expect(brief.staffing.length).toBeGreaterThan(0);
-      expect(brief.headline).toBeTruthy();
-      expect(["red", "amber", "green"]).toContain(brief.overallRag);
+  describe("ragFor", () => {
+    it("is red when any critical signal is present", () => {
+      expect(ragFor({ criticalCount: 1, highCount: 0 })).toBe("red");
+      expect(ragFor({ criticalCount: 2, highCount: 5 })).toBe("red");
     });
 
-    it("events have required fields", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      for (const evt of brief.events) {
-        expect(evt.id).toBeTruthy();
-        expect(evt.time).toBeTruthy();
-        expect(evt.category).toBeTruthy();
-        expect(evt.priority).toBeTruthy();
-        expect(evt.summary).toBeTruthy();
-        expect(typeof evt.requiresFollowUp).toBe("boolean");
-      }
+    it("is amber when high but no critical", () => {
+      expect(ragFor({ criticalCount: 0, highCount: 1 })).toBe("amber");
     });
 
-    it("mood snapshots have child name and trend", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      for (const ms of brief.moodSnapshots) {
-        expect(ms.childName).toBeTruthy();
-        expect(["improving", "declining", "stable", "unknown"]).toContain(ms.trend);
-      }
-    });
-
-    it("staffing notes have shift and counts", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      for (const s of brief.staffing) {
-        expect(["day", "evening", "night", "waking_night"]).toContain(s.shift);
-        expect(typeof s.planned).toBe("number");
-        expect(typeof s.actual).toBe("number");
-      }
-    });
-
-    it("includes events with follow-up flags", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      const followUps = brief.events.filter((e) => e.requiresFollowUp);
-      expect(followUps.length).toBeGreaterThan(0);
-    });
-
-    it("includes positive events", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      const positives = brief.events.filter((e) => e.priority === "positive");
-      expect(positives.length).toBeGreaterThan(0);
-    });
-
-    it("RAG status reflects event priorities", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      const hasHigh = brief.events.some((e) => e.priority === "high");
-      if (hasHigh) {
-        expect(["red", "amber"]).toContain(brief.overallRag);
-      }
-    });
-
-    it("compliance gaps have area and detail", () => {
-      const brief = generateDemoBrief("2026-05-12");
-      for (const gap of brief.complianceGaps) {
-        expect(gap.area).toBeTruthy();
-        expect(gap.detail).toBeTruthy();
-        expect(["critical", "warning"]).toContain(gap.severity);
-      }
+    it("is green when nothing elevated", () => {
+      expect(ragFor({ criticalCount: 0, highCount: 0 })).toBe("green");
     });
   });
 });

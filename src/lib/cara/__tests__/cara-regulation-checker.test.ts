@@ -1,11 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Tests: CaraRegulationChecker _testing exports
+//
+// The widget renders published regulation reference content only. It must NOT
+// carry any fabricated per-regulation assessment data (compliance status,
+// evidence counts, gaps) or per-child suggestions naming fictional children —
+// that is the behaviour being guarded against here.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "@/components/cara/cara-regulation-checker";
 
-const { STATUS_CONFIG, getDemoRegulations } = _testing;
+const { STATUS_CONFIG, REGULATION_REFERENCE } = _testing;
 
 describe("CaraRegulationChecker", () => {
   describe("STATUS_CONFIG", () => {
@@ -26,57 +31,38 @@ describe("CaraRegulationChecker", () => {
     });
   });
 
-  describe("getDemoRegulations", () => {
-    const regulations = getDemoRegulations();
-
+  describe("REGULATION_REFERENCE", () => {
     it("returns multiple regulations", () => {
-      expect(regulations.length).toBeGreaterThan(10);
+      expect(REGULATION_REFERENCE.length).toBeGreaterThan(10);
     });
 
-    it("each regulation has required fields", () => {
-      for (const reg of regulations) {
+    it("each entry has only generic reference fields", () => {
+      for (const reg of REGULATION_REFERENCE) {
         expect(reg.id).toBeTruthy();
         expect(reg.number).toMatch(/^Reg \d+$/);
         expect(reg.title).toBeTruthy();
         expect(reg.description).toBeTruthy();
-        expect(["compliant", "partially_compliant", "non_compliant", "not_assessed"]).toContain(reg.status);
-        expect(typeof reg.evidenceCount).toBe("number");
-        expect(reg.evidenceCount).toBeGreaterThanOrEqual(0);
-        expect(reg.lastEvidenced).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-        expect(Array.isArray(reg.gaps)).toBe(true);
       }
-    });
-
-    it("includes both compliant and non-compliant regulations", () => {
-      const statuses = new Set(regulations.map((r) => r.status));
-      expect(statuses.has("compliant")).toBe(true);
-      expect(statuses.has("partially_compliant")).toBe(true);
-    });
-
-    it("partially compliant regulations have gaps", () => {
-      const partial = regulations.filter((r) => r.status === "partially_compliant");
-      for (const r of partial) {
-        expect(r.gaps.length).toBeGreaterThan(0);
-      }
-    });
-
-    it("compliant regulations have no gaps", () => {
-      const compliant = regulations.filter((r) => r.status === "compliant");
-      for (const r of compliant) {
-        expect(r.gaps).toHaveLength(0);
-      }
-    });
-
-    it("some regulations have Cara suggestions", () => {
-      const withSuggestions = regulations.filter((r) => r.caraSuggestion);
-      expect(withSuggestions.length).toBeGreaterThan(0);
     });
 
     it("includes key regulations (Reg 45, Reg 40, Reg 33)", () => {
-      const numbers = regulations.map((r) => r.number);
+      const numbers = REGULATION_REFERENCE.map((r) => r.number);
       expect(numbers).toContain("Reg 45");
       expect(numbers).toContain("Reg 40");
       expect(numbers).toContain("Reg 33");
+    });
+
+    it("carries no fabricated assessment data or per-child suggestions", () => {
+      // Guards the fix: any re-added per-regulation assessment field or
+      // per-child suggestion (which previously named fictional children) must
+      // fail here. Reference entries hold only generic published content.
+      for (const reg of REGULATION_REFERENCE as unknown as Array<Record<string, unknown>>) {
+        expect(reg.status).toBeUndefined();
+        expect(reg.evidenceCount).toBeUndefined();
+        expect(reg.lastEvidenced).toBeUndefined();
+        expect(reg.gaps).toBeUndefined();
+        expect(reg.caraSuggestion).toBeUndefined();
+      }
     });
   });
 });
