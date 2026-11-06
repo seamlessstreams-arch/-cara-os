@@ -1414,6 +1414,26 @@ export const dal = {
       }
       return db.inspectionHistory.create(data);
     },
+    async update(id: string, data: Partial<InspectionRecord>): Promise<InspectionRecord | null> {
+      const c = sb();
+      if (c) {
+        const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        const cols: (keyof InspectionRecord)[] = [
+          "inspection_date", "inspection_type", "grade", "inspector_name",
+          "report_reference", "report_url", "actions_required",
+          "actions_completed", "summary", "published_at",
+        ];
+        for (const k of cols) {
+          if (data[k] !== undefined) patch[k] = data[k];
+        }
+        const { data: updated } = await (c as unknown as SB)
+          .from("inspection_history").update(patch)
+          .eq("id", id).eq("home_id", homeId())
+          .select().maybeSingle();
+        return (updated as InspectionRecord | null) ?? null;
+      }
+      return db.inspectionHistory.update(id, data);
+    },
   },
 
   // ── Comms Centre (own comms_* tables, migration 403; reads + stateful writes live-safe) ──
