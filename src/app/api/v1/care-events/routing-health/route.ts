@@ -16,9 +16,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
-import { loadRoutingHealth, retryJob } from "@/lib/care-events/routing-health";
+import { loadRoutingHealthAsync, retryJobAsync } from "@/lib/care-events/routing-health";
 import { retryFailedRoutes, persistProcessorState } from "@/lib/care-events/processor";
-import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
 import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = tenantHomeId();
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     intent: "view routing health",
   });
   if (!guard.ok) return guard.response;
-  return NextResponse.json({ data: loadRoutingHealth(homeId) });
+  return NextResponse.json({ data: await loadRoutingHealthAsync(homeId) });
 }
 
 export async function POST(req: NextRequest) {
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const ev = db.careEvents.findById(careEventId);
+    const ev = await careEventsDb.careEvents.findById(careEventId);
     if (!ev) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const guard = await requireCaraStudioPermission(req, body, {
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find the job's home for RBAC.
-    const failed = db.careEventJobs.findFailed();
+    const failed = await careEventsDb.careEventJobs.findFailed();
     const job = failed.find((j) => j.id === jobId);
     if (!job) {
       return NextResponse.json(
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     });
     if (!guard.ok) return guard.response;
 
-    const result = retryJob(jobId);
+    const result = await retryJobAsync(jobId);
     if ("code" in result) {
       if (result.code === "not_found") {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
