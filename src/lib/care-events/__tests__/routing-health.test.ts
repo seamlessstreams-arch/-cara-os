@@ -6,7 +6,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
 import {
   loadRoutingHealth,
+  loadRoutingHealthAsync,
   retryJob,
+  retryJobAsync,
   routingHealthCount,
 } from "@/lib/care-events/routing-health";
 
@@ -210,5 +212,84 @@ describe("routing-health engine", () => {
       time_saved_minutes: 0,
     });
     expect(db.careEvents.findById(ev.id)).toBeDefined();
+  });
+});
+
+// The async twins read through careEventsDb (Supabase on a live tenant, the
+// in-memory store otherwise). With no Supabase in the test env they resolve the
+// same store the sync variants do, so parity here proves the plumbing while the
+// live branch is covered by careEventsDb's own dual-mode wiring.
+describe("routing-health engine — live-safe async variants", () => {
+  beforeEach(() => clearAll());
+
+  it("loadRoutingHealthAsync matches the sync summary (store parity)", async () => {
+    const ev = seedEvent();
+    db.careEventRoutes.upsert({
+      care_event_id: ev.id,
+      home_id: HOME_ID,
+      route_type: "daily_log",
+      status: "failed",
+      linked_record_id: null,
+      linked_record_table: null,
+      processing_notes: null,
+      error_message: "boom",
+      retry_count: 0,
+      last_retried_at: null,
+      time_saved_minutes: 0,
+    });
+    db.careEventJobs.upsert({
+      care_event_id: ev.id,
+      home_id: HOME_ID,
+      job_type: "reg45_summary_update",
+      status: "failed",
+      payload: {},
+      result: null,
+      error_message: "timeout",
+      retry_count: 1,
+      max_retries: 3,
+      scheduled_at: new Date().toISOString(),
+      started_at: null,
+      completed_at: null,
+      last_retried_at: null,
+    });
+
+    const sync = loadRoutingHealth(HOME_ID);
+    const asyncSummary = await loadRoutingHealthAsync(HOME_ID);
+
+    expect(asyncSummary.affected_event_count).toBe(sync.affected_event_count);
+    expect(asyncSummary.failed_route_count).toBe(sync.failed_route_count);
+    expect(asyncSummary.failed_job_count).toBe(sync.failed_job_count);
+    // generated_at is a per-call timestamp; the payload otherwise matches.
+    expect(asyncSummary.rows).toEqual(sync.rows);
+  });
+
+  it("retryJobAsync marks a failed job pending and bumps retry_count", async () => {
+    const ev = seedEvent();
+    const job = db.careEventJobs.upsert({
+      care_event_id: ev.id,
+      home_id: HOME_ID,
+      job_type: "saved_time_metrics",
+      status: "failed",
+      payload: {},
+      result: null,
+      error_message: "timeout",
+      retry_count: 0,
+      max_retries: 3,
+      scheduled_at: new Date().toISOString(),
+      started_at: null,
+      completed_at: null,
+      last_retried_at: null,
+    });
+
+    const result = await retryJobAsync(job.id);
+    if ("code" in result) throw new Error("expected success");
+    expect(result.status).toBe("pending");
+    expect(result.retry_count).toBe(1);
+    expect(result.error_message).toBeNull();
+  });
+
+  it("retryJobAsync refuses an unknown job id", async () => {
+    const r = await retryJobAsync("cej_does_not_exist");
+    expect("code" in r && r.code).toBe("not_found");
   });
 });

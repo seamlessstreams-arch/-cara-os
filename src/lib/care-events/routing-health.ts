@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { careEventsDb } from "@/lib/db";
 import type {
   CareEvent,
   CareEventJob,
@@ -42,17 +43,22 @@ function isFailedStatus(s: string): boolean {
   return s === "failed" || s === "retry_required";
 }
 
-export function loadRoutingHealth(homeId: string): RoutingHealthSummary {
-  const allRoutes = db.careEventRoutes.findFailed().filter((r) => r.home_id === homeId);
-  const allJobs = db.careEventJobs.findFailed().filter((j) => j.home_id === homeId);
-
+// Shared assembly: group a home's failed routes + jobs by care event. The
+// caller resolves care-event ids to rows first (sync store map, or live fetch)
+// and hands the map in, so this stays identical across the sync/async variants.
+function assembleRoutingHealth(
+  homeId: string,
+  allRoutes: CareEventRoute[],
+  allJobs: CareEventJob[],
+  events: Map<string, CareEvent>,
+): RoutingHealthSummary {
   const eventIds = new Set<string>();
   for (const r of allRoutes) eventIds.add(r.care_event_id);
   for (const j of allJobs) eventIds.add(j.care_event_id);
 
   const rows: RoutingHealthRow[] = [];
   for (const id of eventIds) {
-    const ev = db.careEvents.findById(id);
+    const ev = events.get(id);
     if (!ev) continue;
     rows.push({
       care_event_id: ev.id,
@@ -78,6 +84,51 @@ export function loadRoutingHealth(homeId: string): RoutingHealthSummary {
   };
 }
 
+/**
+ * Store-backed (sync). Used by the in-process projection consumers
+ * (notifications, oversight inbox, inspection readiness/snapshot) — themselves
+ * store-only. On a live tenant the store is empty, so anything that runs on
+ * live must use {@link loadRoutingHealthAsync} instead.
+ */
+export function loadRoutingHealth(homeId: string): RoutingHealthSummary {
+  const allRoutes = db.careEventRoutes.findFailed().filter((r) => r.home_id === homeId);
+  const allJobs = db.careEventJobs.findFailed().filter((j) => j.home_id === homeId);
+  const events = new Map<string, CareEvent>();
+  for (const id of careEventIdsFrom(allRoutes, allJobs)) {
+    const ev = db.careEvents.findById(id);
+    if (ev) events.set(id, ev);
+  }
+  return assembleRoutingHealth(homeId, allRoutes, allJobs, events);
+}
+
+/**
+ * Live-safe (async) twin of {@link loadRoutingHealth}: resolves failed routes,
+ * jobs and their care events through `careEventsDb`, which reads Supabase on a
+ * live tenant and the in-memory store otherwise. This is what the
+ * /api/v1/care-events/routing-health route calls.
+ */
+export async function loadRoutingHealthAsync(homeId: string): Promise<RoutingHealthSummary> {
+  const allRoutes = (await careEventsDb.careEventRoutes.findFailed()).filter(
+    (r) => r.home_id === homeId,
+  );
+  const allJobs = (await careEventsDb.careEventJobs.findFailed()).filter(
+    (j) => j.home_id === homeId,
+  );
+  const events = new Map<string, CareEvent>();
+  for (const id of careEventIdsFrom(allRoutes, allJobs)) {
+    const ev = await careEventsDb.careEvents.findById(id);
+    if (ev) events.set(id, ev);
+  }
+  return assembleRoutingHealth(homeId, allRoutes, allJobs, events);
+}
+
+function careEventIdsFrom(routes: CareEventRoute[], jobs: CareEventJob[]): Set<string> {
+  const ids = new Set<string>();
+  for (const r of routes) ids.add(r.care_event_id);
+  for (const j of jobs) ids.add(j.care_event_id);
+  return ids;
+}
+
 // ── Job retry (routes are retried by the existing processor) ─────────────────
 
 export type RetryJobError =
@@ -90,26 +141,49 @@ export type RetryJobError =
  * pick it up. Bumps retry_count and last_retried_at. Refuses if
  * max_retries reached. The job runner itself executes the work.
  */
-export function retryJob(
-  jobId: string,
-): CareEventJob | RetryJobError {
-  const all = db.careEventJobs.findPending().concat(db.careEventJobs.findFailed());
-  // findById is not exposed on careEventJobs, so search via failed/pending
-  // and the underlying store via patch failure.
+type RetryPlan =
+  | RetryJobError
+  | { ok: true; job: CareEventJob; patch: Parameters<typeof db.careEventJobs.patch>[1] };
+
+/** Validate a retry against the job list and compute the patch to apply. */
+function planRetry(jobId: string, all: CareEventJob[]): RetryPlan {
+  // findById is not exposed on careEventJobs, so search via failed/pending.
   const job = all.find((j) => j.id === jobId);
   if (!job) return { code: "not_found" };
   if (!isFailedStatus(job.status)) return { code: "not_failed", job };
   if (job.retry_count >= job.max_retries) {
     return { code: "max_retries_exceeded", job };
   }
+  return {
+    ok: true,
+    job,
+    patch: {
+      status: "pending",
+      retry_count: job.retry_count + 1,
+      last_retried_at: new Date().toISOString(),
+      error_message: null,
+    },
+  };
+}
 
-  const patched = db.careEventJobs.patch(jobId, {
-    status: "pending",
-    retry_count: job.retry_count + 1,
-    last_retried_at: new Date().toISOString(),
-    error_message: null,
-  });
-  return patched ?? job;
+/** Store-backed (sync). See {@link loadRoutingHealth} for the live caveat. */
+export function retryJob(jobId: string): CareEventJob | RetryJobError {
+  const all = db.careEventJobs.findPending().concat(db.careEventJobs.findFailed());
+  const plan = planRetry(jobId, all);
+  if (!("ok" in plan)) return plan;
+  const patched = db.careEventJobs.patch(jobId, plan.patch);
+  return patched ?? plan.job;
+}
+
+/** Live-safe (async) twin of {@link retryJob} via `careEventsDb`. */
+export async function retryJobAsync(jobId: string): Promise<CareEventJob | RetryJobError> {
+  const all = (await careEventsDb.careEventJobs.findPending()).concat(
+    await careEventsDb.careEventJobs.findFailed(),
+  );
+  const plan = planRetry(jobId, all);
+  if (!("ok" in plan)) return plan;
+  const patched = await careEventsDb.careEventJobs.patch(jobId, plan.patch);
+  return patched ?? plan.job;
 }
 
 /**
