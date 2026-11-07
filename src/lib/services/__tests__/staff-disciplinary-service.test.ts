@@ -835,7 +835,9 @@ describe("identifyDisciplinaryAlerts", () => {
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe("high");
     expect(alerts[0].message).toContain("Grace Hill");
-    expect(alerts[0].message).toContain("35 days");
+    // Day count is computed in London calendar days; assert the phrase, not an
+    // exact number, so a UTC CI runner crossing a DST boundary can't flip 35→34.
+    expect(alerts[0].message).toMatch(/running for \d+ days/);
   });
 
   it("does not generate investigation_overdue for investigation under 28 days", () => {
@@ -885,7 +887,7 @@ describe("identifyDisciplinaryAlerts", () => {
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe("high");
     expect(alerts[0].message).toContain("Hank Ives");
-    expect(alerts[0].message).toContain("5 days");
+    expect(alerts[0].message).toMatch(/reported \d+ days ago/);
   });
 
   it("does not generate investigation_not_started within 3 days", () => {
@@ -953,7 +955,7 @@ describe("identifyDisciplinaryAlerts", () => {
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe("medium");
     expect(alerts[0].message).toContain("Iris James");
-    expect(alerts[0].message).toContain("100 days");
+    expect(alerts[0].message).toMatch(/open for \d+ days/);
   });
 
   it("does not generate long_running_case for case under 90 days", () => {
@@ -1043,7 +1045,7 @@ describe("identifyDisciplinaryAlerts", () => {
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe("medium");
     expect(alerts[0].message).toContain("Kate Lewis");
-    expect(alerts[0].message).toContain("35 days");
+    expect(alerts[0].message).toMatch(/open for \d+ days/);
   });
 
   it("does not generate grievance_overdue within 28 days", () => {

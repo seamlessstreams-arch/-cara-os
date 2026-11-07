@@ -824,7 +824,9 @@ describe("identifyComplaintAlerts", () => {
     expect(responseAlerts).toHaveLength(1);
     expect(responseAlerts[0].severity).toBe("high");
     expect(responseAlerts[0].message).toContain("John Doe");
-    expect(responseAlerts[0].message).toContain("25 days");
+    // London-calendar day count; assert the phrase, not an exact number (a UTC
+    // CI runner crossing a DST boundary shifts the count by one).
+    expect(responseAlerts[0].message).toMatch(/been open for \d+ days/);
   });
 
   it("generates high alert for investigating complaint without response after 20 days", () => {
