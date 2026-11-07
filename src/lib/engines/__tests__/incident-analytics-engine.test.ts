@@ -76,6 +76,12 @@ describe("extractHour", () => {
   it("defaults to 12 for unparseable", () => {
     expect(extractHour("invalid")).toBe(12);
   });
+
+  it("defaults to 12 when time is missing (incidents store a date but no time)", () => {
+    expect(extractHour(undefined)).toBe(12);
+    expect(extractHour(null)).toBe(12);
+    expect(extractHour("")).toBe(12);
+  });
 });
 
 // ── Unit Tests: getTimeBlock ────────────────────────────────────────────────
