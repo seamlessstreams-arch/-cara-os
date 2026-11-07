@@ -60,8 +60,14 @@ const RISK_DISCLAIMER = "From CARA's Cumulative Risk read — a convergence of s
 // ── Role-based access ─────────────────────────────────────────────────────────
 // Answers are scoped to who's asking. Care staff get everything about the children
 // and the day's work; staff-management and governance data is management-only.
-const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
-const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "support_worker", "waking_night_worker"]);
+// Role → access-tier vocabulary. Must include BOTH the Ask CARA / legacy
+// spellings AND the canonical AppRole names (src/lib/permissions.ts APP_ROLES)
+// that CaraChat sends via /me — otherwise an elevated AppRole like `super_admin`
+// or `admin` falls through to "everyone", and the most privileged user is
+// denied the most ("ask your manager" shown to the registered manager).
+// Keep in sync with roleTierForCards in ./task-cards.ts.
+const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "organisation_director", "area_manager", "platform_admin", "admin", "super_admin"]);
+const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "bank_staff", "support_worker", "waking_night_worker", "therapist"]);
 const TIER_RANK: Record<AccessTier, number> = { everyone: 0, care_team: 1, management: 2 };
 
 export function roleTier(role?: string): AccessTier {

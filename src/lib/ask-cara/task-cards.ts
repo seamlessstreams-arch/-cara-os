@@ -82,8 +82,12 @@ export const ASK_CARA_TASK_CARDS: AskCaraTaskCard[] = [
 ];
 
 const TIER_RANK: Record<AccessTier, number> = { everyone: 0, care_team: 1, management: 2 };
-const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
-const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "support_worker", "waking_night_worker"]);
+// Includes BOTH legacy spellings AND canonical AppRole names (see
+// src/lib/permissions.ts). Keep in sync with MANAGEMENT_ROLES/CARE_ROLES in
+// ./ask-cara-engine.ts — a missing elevated role (e.g. super_admin) drops a
+// manager to "everyone" and hides their management task cards.
+const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "organisation_director", "area_manager", "platform_admin", "admin", "super_admin"]);
+const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "bank_staff", "support_worker", "waking_night_worker", "therapist"]);
 
 export function roleTierForCards(role?: string): AccessTier {
   const r = (role ?? "").toLowerCase();
