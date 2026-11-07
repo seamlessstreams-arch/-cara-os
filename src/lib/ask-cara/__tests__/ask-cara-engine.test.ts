@@ -248,6 +248,14 @@ describe("role-based access (RBAC)", () => {
   it("defaults (no role) to care-team so operational Q&A works", () => {
     expect(ask("how many incidents this week?").intent).toBe("incidents");
   });
+  it("treats super_admin / admin as management — the top role must not fall to 'everyone'", () => {
+    const snapshot = { ...SNAP, home: { name: "Oak House", maxBeds: 4, currentOccupancy: 3 } };
+    for (const role of ["super_admin", "admin", "organisation_director"]) {
+      const a = ask("how is the home doing?", { role, snapshot });
+      expect(a.intent, `${role} should reach management-tier answers`).toBe("home_overview");
+      expect(a.answered).not.toBe(false);
+    }
+  });
 });
 
 describe("deep child / contacts", () => {
