@@ -21,10 +21,13 @@ export async function GET(req: NextRequest) {
 
   if (latest) {
     const snapshot = intelligenceDb.childExperience.findLatest(childId);
-    if (!snapshot) {
-      return NextResponse.json({ error: "No snapshot found for this child" }, { status: 404 });
-    }
-    return NextResponse.json({ data: snapshot });
+    // A child with no experience snapshot yet is a normal empty state, not an
+    // error — returning 404 here made the client's global handler raise a
+    // "Couldn't load that" toast for every child without a snapshot (and, on a
+    // live tenant where the in-memory store is empty, for all of them). Return
+    // null with 200 so the UI renders nothing; consumers already null-guard
+    // `data.data`.
+    return NextResponse.json({ data: snapshot ?? null });
   }
 
   const snapshots = intelligenceDb.childExperience.findByChild(childId);
