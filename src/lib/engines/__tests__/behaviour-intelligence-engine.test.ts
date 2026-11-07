@@ -381,6 +381,32 @@ describe("computeBehaviourIntelligence — empty inputs", () => {
     expect(result.insights.length).toBeGreaterThanOrEqual(1);
     expect(result.insights[0].text).toContain("No behaviour entries recorded");
   });
+
+  it("does not crash when an incident has no time (incidents store a date only)", () => {
+    expect(() =>
+      computeBehaviourIntelligence({
+        behaviourEntries: [],
+        incidents: [
+          {
+            id: "i1",
+            child_id: "c1",
+            date: "2026-05-20",
+            // Real incidents have no time column — this is undefined at runtime.
+            time: undefined as unknown as string,
+            type: "physical_intervention",
+            severity: "high",
+            description: "PI during a transition",
+            immediate_action: "Guiding hold used to keep the child safe",
+            status: "open",
+            reported_by: "s1",
+          },
+        ],
+        restraints: [],
+        sanctionRewards: [],
+        today: "2026-05-23",
+      }),
+    ).not.toThrow();
+  });
 });
 
 // ── computeBehaviourIntelligence — Profile ──────────────────────────────────

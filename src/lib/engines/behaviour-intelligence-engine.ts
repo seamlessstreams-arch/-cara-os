@@ -280,9 +280,12 @@ export function classifyIncidentAsBehaviour(incident: IncidentInput): BehaviourC
 }
 
 /** Get hour from time string "HH:MM" */
-function getHour(time: string): number {
-  const parts = time.split(":");
-  return parseInt(parts[0], 10);
+function getHour(time: string | null | undefined): number {
+  // `time` is frequently missing (e.g. incidents store a date but no time) —
+  // default to noon rather than crashing on `undefined.split`.
+  const parts = (time ?? "").split(":");
+  const h = parseInt(parts[0], 10);
+  return Number.isFinite(h) ? h : 12;
 }
 
 /** Map hour to time block */

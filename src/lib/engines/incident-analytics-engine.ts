@@ -121,9 +121,11 @@ export function daysBetween(a: string, b: string): number {
 }
 
 /** Extract hour from a time string (accepts HH:MM, HH:MM:SS, or full ISO) */
-export function extractHour(time: string): number {
-  const match = time.match(/(\d{1,2}):\d{2}/);
-  return match ? parseInt(match[1], 10) : 12; // default to noon if unparseable
+export function extractHour(time: string | null | undefined): number {
+  // Incidents have a date but no dedicated time column, so `time` is often
+  // missing — default to noon rather than crashing on `undefined.match`.
+  const match = (time ?? "").match(/(\d{1,2}):\d{2}/);
+  return match ? parseInt(match[1], 10) : 12; // default to noon if missing/unparseable
 }
 
 /** Map hour to time-of-day block */
