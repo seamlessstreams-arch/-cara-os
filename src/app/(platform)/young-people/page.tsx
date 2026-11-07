@@ -45,6 +45,15 @@ interface YPEnriched extends YoungPerson {
   risk_flags_count: number;
 }
 
+// Timezone-safe age from a YYYY-MM-DD date of birth (epoch-diff, no local date parts).
+// Used as a fallback when the list endpoint doesn't send a computed `age`.
+function ageFromDob(dob: string | null | undefined): number | null {
+  if (!dob) return null;
+  const birth = new Date(dob).getTime();
+  if (Number.isNaN(birth)) return null;
+  return Math.floor((Date.now() - birth) / (365.25 * 86_400_000));
+}
+
 function useYoungPeople(status = "current") {
   return useQuery({
     queryKey: ["young-people", status],
@@ -171,7 +180,7 @@ const YP_EXPORT_COLS: ExportColumn<YPEnriched>[] = [
   { header: "First Name", accessor: (yp) => yp.preferred_name ?? yp.first_name },
   { header: "Last Name", accessor: (yp) => yp.last_name },
   { header: "Date of Birth", accessor: (yp) => yp.date_of_birth },
-  { header: "Age", accessor: (yp) => String(yp.age) },
+  { header: "Age", accessor: (yp) => Number.isFinite(yp.age) ? String(yp.age) : (ageFromDob(yp.date_of_birth)?.toString() ?? "") },
   { header: "Gender", accessor: (yp) => yp.gender },
   { header: "Status", accessor: (yp) => yp.status },
   { header: "Placement Start", accessor: (yp) => yp.placement_start },
@@ -180,9 +189,9 @@ const YP_EXPORT_COLS: ExportColumn<YPEnriched>[] = [
   { header: "Key Worker", accessor: (yp) => yp.key_worker?.full_name ?? "" },
   { header: "Legal Status", accessor: (yp) => yp.legal_status },
   { header: "Risk Flags", accessor: (yp) => (yp.risk_flags ?? []).join(", ") },
-  { header: "Open Incidents", accessor: (yp) => String(yp.open_incidents) },
-  { header: "Missing Episodes", accessor: (yp) => String(yp.missing_episodes_total) },
-  { header: "Active Medications", accessor: (yp) => String(yp.active_medications) },
+  { header: "Open Incidents", accessor: (yp) => String(yp.open_incidents || 0) },
+  { header: "Missing Episodes", accessor: (yp) => String(yp.missing_episodes_total || 0) },
+  { header: "Active Medications", accessor: (yp) => String(yp.active_medications || 0) },
   { header: "School", accessor: (yp) => yp.school_name ?? "" },
   { header: "Allergies", accessor: (yp) => yp.allergies.join(", ") },
 ];
@@ -557,7 +566,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
               {displayName} {yp.last_name}
             </div>
             <div className="text-xs text-slate-500">
-              Age {yp.age} — {yp.local_authority}
+              Age {Number.isFinite(yp.age) ? yp.age : (ageFromDob(yp.date_of_birth) ?? "—")} — {yp.local_authority}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5">
@@ -816,7 +825,11 @@ export default function YoungPeoplePage() {
   const carePlansQuery = useCarePlans({ homeId });
 
   const youngPeople = useMemo(() => data?.data ?? [], [data]);
-  const meta = data?.meta;
+  // The generic list endpoint only returns { total }; current/former/high_risk
+  // are not populated, so treat every field as optional and guard each use.
+  const meta = data?.meta as
+    | { total?: number; current?: number; former?: number; high_risk?: number }
+    | undefined;
 
   // Map child_id → latest care plan so each card can access it without extra fetches
   const carePlanByChild = useMemo(() => {
@@ -834,7 +847,7 @@ export default function YoungPeoplePage() {
     const withMissing = current.filter((yp) => yp.missing_episodes_total > 0).length;
     const noKeyWorker = current.filter((yp) => !yp.key_worker).length;
     const onMeds = current.filter((yp) => yp.active_medications > 0).length;
-    const totalIncidents = current.reduce((s, yp) => s + yp.open_incidents, 0);
+    const totalIncidents = current.reduce((s, yp) => s + (yp.open_incidents || 0), 0);
 
     // No log in 2+ days
     const today = new Date();
@@ -912,9 +925,9 @@ export default function YoungPeoplePage() {
   }, [youngPeople, search, riskFilter, sortKey]);
 
   const tabs: { key: StatusTab; label: string }[] = [
-    { key: "current", label: `Current${meta ? ` (${meta.current})` : ""}` },
-    { key: "former", label: `Former${meta ? ` (${meta.former})` : ""}` },
-    { key: "all", label: `All${meta ? ` (${meta.total})` : ""}` },
+    { key: "current", label: `Current${meta?.current != null ? ` (${meta.current})` : ""}` },
+    { key: "former", label: `Former${meta?.former != null ? ` (${meta.former})` : ""}` },
+    { key: "all", label: `All${meta?.total != null ? ` (${meta.total})` : ""}` },
   ];
 
   const riskFilters: { key: RiskFilter; label: string; count: number }[] = [
@@ -930,9 +943,9 @@ export default function YoungPeoplePage() {
       darkBody
       title="Young People"
       subtitle={
-        meta
-          ? `${meta.current} current placement${meta.current !== 1 ? "s" : ""} · ${meta.high_risk} with risk flags`
-          : "Loading..."
+        isLoading
+          ? "Loading…"
+          : `${stats.total} current placement${stats.total !== 1 ? "s" : ""} · ${stats.withRisk} with risk flag${stats.withRisk !== 1 ? "s" : ""}`
       }
       caraContext={{ pageTitle: "Young People", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans", defaultFormType: "welfare_check", preferredTab: "form" }}
