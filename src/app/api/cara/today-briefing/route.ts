@@ -16,6 +16,7 @@ import { isLiveTenant } from "@/lib/db/live-mode";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import { todayStr } from "@/lib/utils";
 import type { SB } from "@/lib/supabase/loose-client";
+import { dal } from "@/lib/db/dal";
 
 // ── Signal Types ─────────────────────────────────────────────────────────────
 
@@ -237,127 +238,96 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
   const today = todayStr();
   const todayDate = new Date();
   const sevenDaysAgo = new Date(todayDate.getTime() - 7 * 86400000).toISOString().slice(0, 10);
+  const fourteenDaysAgo = new Date(todayDate.getTime() - 14 * 86400000).toISOString().slice(0, 10);
+  const yesterday = new Date(todayDate.getTime() - 86400000).toISOString().slice(0, 10);
   const signals: TodaySignal[] = [];
 
-  // 1. Incidents without oversight (HIGH)
-  const { data: unreviewedIncidents } = await (sb.from("cs_incidents") as SB)
-    .select("id, reference, type, severity, date, child_id")
-    .eq("home_id", homeId)
-    .is("oversight_by", null)
-    .eq("requires_oversight", true)
-    .gte("date", sevenDaysAgo)
-    .order("date", { ascending: false });
+  // Canonical, live-safe reads via the dual-mode dal. The briefing previously
+  // read a PARALLEL cs_* schema (cs_incidents / cs_safeguarding_concerns /
+  // cs_missing_episodes / cs_children_homes / cs_daily_logs) that nothing writes
+  // to on a live tenant, so it always surfaced zero signals. These hit the
+  // tables the rest of Cara actually uses — incidents / missing_episodes /
+  // young_people / daily_log_entries — plus cs_key_work_sessions, which IS the
+  // canonical key-work table (read here via dal.keyWorkingSessions).
+  const [incidents, missingEpisodes, keyWork, currentChildren, logs] = await Promise.all([
+    dal.incidents.findAll(),
+    dal.missingEpisodes.findAll(),
+    dal.keyWorkingSessions.findAll(),
+    dal.youngPeople.findAll().then((all) => all.filter((c) => c.status === "current")),
+    dal.dailyLog.findAll(),
+  ]);
 
-  if (unreviewedIncidents && unreviewedIncidents.length > 0) {
+  // 1. Incidents without management oversight in the last 7 days (HIGH)
+  const unreviewedIncidents = incidents
+    .filter((i) => i.requires_oversight && !i.oversight_by && i.date >= sevenDaysAgo)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  if (unreviewedIncidents.length > 0) {
     signals.push({
       id: `sig_incidents_${unreviewedIncidents.length}`,
       severity: unreviewedIncidents.length >= 3 ? "high" : "medium",
       category: "incident",
       title: `${unreviewedIncidents.length} incident${unreviewedIncidents.length > 1 ? "s" : ""} without management oversight`,
-      detail: `Incidents ${unreviewedIncidents.map((i: { reference: string }) => i.reference).join(", ")} need RM oversight (Reg 40).`,
+      detail: `Incidents ${unreviewedIncidents.map((i) => i.reference).join(", ")} need RM oversight (Reg 40).`,
       actionRequired: "Review and add oversight comments",
       sourceModule: "incidents",
     });
   }
 
-  // 2. Open safeguarding concerns (CRITICAL)
-  const { data: openSafeguarding } = await (sb.from("cs_safeguarding_concerns") as SB)
-    .select("id, category, child_id, created_at")
-    .eq("home_id", homeId)
-    .eq("status", "open")
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  if (openSafeguarding && openSafeguarding.length > 0) {
-    signals.push({
-      id: "sig_safeguarding_open",
-      severity: "critical",
-      category: "safeguarding",
-      title: `${openSafeguarding.length} open safeguarding concern${openSafeguarding.length > 1 ? "s" : ""}`,
-      detail: "Open safeguarding concerns require active management and multi-agency coordination.",
-      actionRequired: "Review status and progress of all open safeguarding concerns",
-      sourceModule: "safeguarding",
-    });
-  }
-
-  // 3. Missing episodes without return interview (CRITICAL)
-  const { data: missingNoInterview } = await (sb.from("cs_missing_episodes") as SB)
-    .select("id, child_id, date_missing, date_returned")
-    .eq("home_id", homeId)
-    .not("date_returned", "is", null)
-    .eq("return_interview_completed", false)
-    .order("date_returned", { ascending: false })
-    .limit(5);
-
-  if (missingNoInterview && missingNoInterview.length > 0) {
+  // 2. Missing episodes returned without a recorded return interview (CRITICAL)
+  const returnInterviewsOverdue = missingEpisodes
+    .filter((m) => m.date_returned && !m.return_interview_date)
+    .sort((a, b) => (b.date_returned ?? "").localeCompare(a.date_returned ?? ""));
+  if (returnInterviewsOverdue.length > 0) {
     signals.push({
       id: "sig_return_interview",
       severity: "critical",
       category: "safeguarding",
-      title: `${missingNoInterview.length} return interview${missingNoInterview.length > 1 ? "s" : ""} overdue`,
+      title: `${returnInterviewsOverdue.length} return interview${returnInterviewsOverdue.length > 1 ? "s" : ""} overdue`,
       detail: "Statutory guidance requires return interviews within 72 hours of a child returning from a missing episode.",
       actionRequired: "Arrange return interviews immediately",
       sourceModule: "missing_episodes",
     });
   }
 
-  // 4. Key work sessions overdue (MEDIUM)
-  const { data: recentKeyWork } = await (sb.from("cs_key_work_sessions") as SB)
-    .select("id, child_id, date")
-    .eq("home_id", homeId)
-    .gte("date", new Date(todayDate.getTime() - 14 * 86400000).toISOString().slice(0, 10))
-    .order("date", { ascending: false });
+  // 3. Key work sessions overdue — no session in the last 14 days (MEDIUM)
+  const childrenWithRecentKeyWork = new Set(
+    keyWork.filter((k) => k.date >= fourteenDaysAgo).map((k) => k.child_id),
+  );
+  const childrenMissingKeyWork = currentChildren.filter((c) => !childrenWithRecentKeyWork.has(c.id));
+  if (childrenMissingKeyWork.length > 0) {
+    signals.push({
+      id: "sig_key_work_overdue",
+      severity: "medium",
+      category: "deadline",
+      title: `${childrenMissingKeyWork.length} young ${childrenMissingKeyWork.length > 1 ? "people" : "person"} overdue key work session`,
+      detail: "Care plans specify fortnightly key work sessions. No sessions recorded in the last 14 days for these young people.",
+      actionRequired: "Schedule key work sessions this week",
+      sourceModule: "key_work",
+    });
+  }
 
-  const { data: children } = await (sb.from("cs_children_homes") as SB)
-    .select("child_id")
-    .eq("home_id", homeId)
-    .eq("status", "active");
-
-  if (children && recentKeyWork) {
-    const childrenWithKeyWork = new Set((recentKeyWork as { child_id: string }[]).map((kw) => kw.child_id));
-    const childrenMissingKeyWork = (children as { child_id: string }[]).filter(
-      (c) => !childrenWithKeyWork.has(c.child_id)
+  // 4. Daily log gaps from yesterday (MEDIUM)
+  if (currentChildren.length > 0) {
+    const childrenLoggedYesterday = new Set(
+      logs.filter((l) => l.date.slice(0, 10) === yesterday).map((l) => l.child_id),
     );
-    if (childrenMissingKeyWork.length > 0) {
+    if (childrenLoggedYesterday.size < currentChildren.length) {
+      const missingLogs = currentChildren.length - childrenLoggedYesterday.size;
       signals.push({
-        id: "sig_key_work_overdue",
+        id: "sig_log_gap",
         severity: "medium",
-        category: "deadline",
-        title: `${childrenMissingKeyWork.length} young ${childrenMissingKeyWork.length > 1 ? "people" : "person"} overdue key work session`,
-        detail: "Care plans specify fortnightly key work sessions. No sessions recorded in the last 14 days for these young people.",
-        actionRequired: "Schedule key work sessions this week",
-        sourceModule: "key_work",
+        category: "compliance",
+        title: `${missingLogs} daily log${missingLogs > 1 ? "s" : ""} missing from yesterday`,
+        detail: `Only ${childrenLoggedYesterday.size} of ${currentChildren.length} young people had daily logs recorded yesterday. Reg 36 requires accurate and up-to-date records.`,
+        actionRequired: "Speak with staff on yesterday's shift about completing records",
+        sourceModule: "daily_log",
       });
     }
   }
 
-  // 5. Daily log gaps (MEDIUM)
-  const yesterday = new Date(todayDate.getTime() - 86400000).toISOString().slice(0, 10);
-  const { count: logCount } = await (sb.from("cs_daily_logs") as SB)
-    .select("id", { count: "exact" })
-    .eq("home_id", homeId)
-    .eq("date", yesterday);
-
-  if (children && logCount !== null && children.length > 0 && logCount < children.length) {
-    const missing = children.length - logCount;
-    signals.push({
-      id: "sig_log_gap",
-      severity: "medium",
-      category: "compliance",
-      title: `${missing} daily log${missing > 1 ? "s" : ""} missing from yesterday`,
-      detail: `Only ${logCount} of ${children.length} young people had daily logs recorded yesterday. Reg 36 requires accurate and up-to-date records.`,
-      actionRequired: "Speak with staff on yesterday's shift about completing records",
-      sourceModule: "daily_log",
-    });
-  }
-
-  // 6. Positive: Zero incidents today (POSITIVE)
-  const { count: todayIncidents } = await (sb.from("cs_incidents") as SB)
-    .select("id", { count: "exact" })
-    .eq("home_id", homeId)
-    .eq("date", today);
-
-  if (todayIncidents === 0) {
+  // 5. Positive: no incidents recorded today (POSITIVE)
+  const incidentsToday = incidents.filter((i) => i.date.slice(0, 10) === today).length;
+  if (incidentsToday === 0) {
     signals.push({
       id: "sig_no_incidents",
       severity: "positive",
@@ -367,6 +337,11 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
       sourceModule: "incidents",
     });
   }
+
+  // (The previous "open safeguarding concerns" signal read cs_safeguarding_concerns,
+  // for which there is no canonical table or writer on a live tenant. Omitted
+  // rather than fabricated from an unrelated source; reinstate when a discrete
+  // safeguarding-concern record type exists.)
 
   // Sort: critical first, then high, medium, low, positive
   const severityOrder: Record<SignalSeverity, number> = { critical: 0, high: 1, medium: 2, low: 3, positive: 4 };
