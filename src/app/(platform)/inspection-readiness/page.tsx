@@ -456,12 +456,12 @@ export default function InspectionReadinessPage() {
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <MetricCard
                   title="Total hours saved"
-                  value={savedTimeData?.meta ? `${savedTimeData.meta.total_hours}h` : "0h"}
+                  value={`${savedTimeData?.meta?.total_hours ?? 0}h`}
                   colour="purple"
                 />
                 <MetricCard
                   title="Estimated value"
-                  value={savedTimeData?.meta ? `£${Math.round(savedTimeData.meta.estimated_value_gbp)}` : "£0"}
+                  value={`£${Math.round(savedTimeData?.meta?.estimated_value_gbp ?? 0)}`}
                   colour="green"
                 />
                 <MetricCard
