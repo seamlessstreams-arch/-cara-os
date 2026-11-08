@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { WhyShown } from "@/components/intelligence/why-shown";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -172,17 +173,24 @@ export function CaraPatternAlert({
 
           return (
             <div key={pattern.id} className="px-5 py-2.5">
-              <button
-                onClick={() => setExpandedPattern(isExpanded ? null : pattern.id)}
-                className="w-full text-left"
-              >
-                <div className="flex items-center gap-2">
-                  <div className={cn("h-2 w-2 rounded-full shrink-0", sigCfg.dot)} />
-                  <span className="text-[var(--cs-text-gentle)]">{TYPE_ICONS[pattern.type]}</span>
-                  <span className="text-xs font-medium text-[var(--cs-navy)] flex-1">{pattern.title}</span>
-                  <span className="text-[10px] text-[var(--cs-text-muted)] tabular-nums">{pattern.confidence}%</span>
-                </div>
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setExpandedPattern(isExpanded ? null : pattern.id)}
+                  className="flex-1 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={cn("h-2 w-2 rounded-full shrink-0", sigCfg.dot)} />
+                    <span className="text-[var(--cs-text-gentle)]">{TYPE_ICONS[pattern.type]}</span>
+                    <span className="text-xs font-medium text-[var(--cs-navy)] flex-1">{pattern.title}</span>
+                    <span className="text-[10px] text-[var(--cs-text-muted)] tabular-nums">{pattern.confidence}%</span>
+                  </div>
+                </button>
+                <WhyShown
+                  ruleId={pattern.type}
+                  condition={pattern.description}
+                  triggers={pattern.evidence[0]?.summary ? [pattern.evidence[0].summary] : undefined}
+                />
+              </div>
 
               {isExpanded && (
                 <div className="mt-2 ml-4 space-y-2">
