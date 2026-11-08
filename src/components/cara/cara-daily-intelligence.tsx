@@ -17,6 +17,7 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { WhyShown } from "@/components/intelligence/why-shown";
 import { api } from "@/hooks/use-api";
 import {
   Sparkles,
@@ -252,7 +253,10 @@ export function CaraDailyIntelligence({ homeId, className }: DailyIntelligencePr
                         <Icon className={cn("h-3.5 w-3.5 shrink-0", cat.colour)} />
                         <span className="font-medium truncate">{s.title}</span>
                       </div>
-                      <span className={cn("text-[10px] font-semibold shrink-0", sev.colour)}>{sev.label}</span>
+                      <span className="flex items-center gap-1 shrink-0">
+                        <span className={cn("text-[10px] font-semibold", sev.colour)}>{sev.label}</span>
+                        <WhyShown ruleId={s.sourceModule} condition={s.detail} />
+                      </span>
                     </div>
                     {s.detail && <p className="text-[11px] text-[var(--cs-text-secondary)] mt-1">{s.detail}</p>}
                     <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[10px] text-[var(--cs-text-muted)]">
