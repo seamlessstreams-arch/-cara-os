@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
+import { api } from "@/hooks/use-api";
 
 // ── inlined intelligence layer hooks ──────────────────────────────────────────
 
@@ -176,6 +177,14 @@ export function SmartLinkPanel({
       {
         onSuccess: () => {
           setLinkedIds((prev) => new Set(prev).add(suggestion.targetType + suggestion.relationship));
+          // Phase 1.2 — capture that this smart-link suggestion was accepted.
+          void api
+            .post("/suggestion-outcome", {
+              suggestion_type: "smart_link",
+              suggestion_ref: `${sourceType}:${sourceId}:${suggestion.targetType}:${suggestion.relationship}`,
+              outcome: "accepted",
+            })
+            .catch(() => {});
         },
       },
     );
