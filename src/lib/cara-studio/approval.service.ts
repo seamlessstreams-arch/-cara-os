@@ -6,6 +6,8 @@
 import { createServerClient } from "@/lib/supabase/server";
 import type { SB } from "@/lib/supabase/loose-client";
 import { writeStudioAuditLog } from "./audit.service";
+import { sectionEditScores } from "./edit-distance";
+import { recordArtifactEditScores } from "./edit-score.service";
 import type { CaraStudioReviewStatus } from "@/types/cara-studio";
 
 function sb(): SB {
@@ -98,6 +100,26 @@ export async function commitArtifact(artifactId: string, committedBy: string): P
       change_summary: "Committed to official record",
       changed_by: committedBy,
     });
+
+    // Phase 1.3 — measure how much a human changed the AI draft, per section, and
+    // store the section scores (not the text). Best-effort: a failure here must
+    // never fail the commit (the draft→review→approve→commit flow is untouched).
+    try {
+      const { data: baselineRows } = await client
+        .from("cara_studio_artifact_versions")
+        .select("content")
+        .eq("artifact_id", artifactId)
+        .eq("version_number", 0)
+        .limit(1);
+      const aiDraft =
+        Array.isArray(baselineRows) && baselineRows[0]?.content ? String(baselineRows[0].content) : null;
+      if (aiDraft && artifact.generated_content) {
+        const scores = sectionEditScores(aiDraft, String(artifact.generated_content));
+        await recordArtifactEditScores(artifactId, homeId(), scores);
+      }
+    } catch {
+      /* non-blocking */
+    }
   }
 
   await client.from("cara_studio_artifacts").update({

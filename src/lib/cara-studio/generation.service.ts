@@ -117,6 +117,23 @@ export async function generateArtifact(
       model_name: aiResponse.model,
       response_metadata: { tokens_used: aiResponse.tokens_used },
     });
+
+    // Phase 1.3 — snapshot the original AI draft as the baseline version (0) so
+    // the human edit-distance can be measured at commit. Best-effort; a failure
+    // here must never fail generation.
+    try {
+      await sb.from("cara_studio_artifact_versions").insert({
+        artifact_id: artifact.id,
+        version_number: 0,
+        title,
+        content: aiResponse.content,
+        structured_content: null,
+        change_summary: "AI draft (baseline)",
+        changed_by: actor.userId,
+      });
+    } catch {
+      /* non-blocking */
+    }
   } else {
     // Demo mode — return without persistence
     artifact = {
