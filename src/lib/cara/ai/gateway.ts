@@ -1,18 +1,23 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cara AI GATEWAY — Vercel AI SDK Integration
+// Cara OVERSIGHT GATEWAY — governed delegation
 //
-// Unified AI provider for all Cara intelligence features using Vercel AI Gateway.
-// Every request runs on Anthropic (Claude) — the only AI provider — across all
-// task domains: management-level oversight, pattern detection, compliance audit,
-// Ofsted readiness, risk escalation, governance verification, operational
-// intelligence, daily analysis, therapeutic support and care record enhancement.
+// Oversight-intelligence adapter for the management-oversight domains (quality of
+// care review, pattern detection, compliance audit, Ofsted readiness, risk
+// escalation, governance verification, operational intelligence, daily analysis,
+// therapeutic support, record oversight, safeguarding audit).
 //
-// All requests go through Vercel AI Gateway — authenticated via OIDC token,
-// no direct API keys needed in production.
+// This module does NOT call a model directly. Every request is delegated to the
+// single governed chokepoint — invokeAiGateway (src/lib/cara/ai-gateway/
+// ai-gateway.ts) — so it inherits sensitivity classification, PII redaction, the
+// provider risk register, the prompt-injection guard, the response scanner and the
+// audit trail. Safeguarding-sensitive content is answered deterministically rather
+// than sent to a model. The request/response shape is preserved so the oversight
+// route is unchanged. (Previously this file used the Vercel AI SDK's generateText/
+// streamText, which reached a model with none of those controls — see decision D5.)
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { generateText, streamText } from "ai";
-import { CARA_SYSTEM_PREAMBLE, sanitiseOutput } from "./safety";
+import { invokeAiGateway } from "@/lib/cara/ai-gateway/ai-gateway";
+import { CARA_SYSTEM_PREAMBLE } from "./safety";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +49,11 @@ export interface GatewayRequest {
   maxOutputTokens?: number;
   temperature?: number;
   jsonMode?: boolean;
+  /** Optional audit context — threaded into the governed gateway's audit trail
+   *  so an oversight AI call is traceable to the home and the child it concerns
+   *  (non-negotiable #5). The childPseudonym is a pseudonym, never a real id. */
+  homeId?: string;
+  childPseudonym?: string;
 }
 
 export interface GatewayResponse {
@@ -82,76 +92,59 @@ function resolveModel(provider: AIProvider): string {
   return "anthropic/claude-sonnet-4-6";
 }
 
-// ── Core Generation ──────────────────────────────────────────────────────────
+// ── Core Generation (governed) ───────────────────────────────────────────────
 
 /**
- * Generate AI content through Vercel AI Gateway. Runs on Claude (Anthropic),
- * the only AI provider.
+ * Generate oversight content through the GOVERNED AI gateway. Runs on Claude
+ * (Anthropic), the only AI provider — redacted, classified, provider-risk-checked,
+ * injection-guarded, response-scanned and audited.
+ *
+ * When the governed gateway refuses — no API key, data classified
+ * safeguarding-sensitive (must not leave the building), budget spent, or a safety
+ * step failing closed — the content degrades to an explicit, non-silent
+ * "AI second-pass unavailable" message. It never silently returns empty, and never
+ * sends ungoverned child data to a model.
  */
 export async function generateViaGateway(request: GatewayRequest): Promise<GatewayResponse> {
   const provider = resolveProvider(request.domain, request.provider);
-  const model = resolveModel(provider);
-  const fullSystem = `${CARA_SYSTEM_PREAMBLE}\n\n${request.systemPrompt}`;
-
   const start = Date.now();
 
-  try {
-    const result = await generateText({
-      model: (model),
-      system: fullSystem,
-      prompt: request.userPrompt,
-      maxOutputTokens: request.maxOutputTokens ?? 2000,
-      temperature: request.temperature ?? 0.3,
-    });
-
-    const latencyMs = Date.now() - start;
-    const raw = result.text;
-    const sanitised = sanitiseOutput(raw);
-    const wasSanitised = sanitised !== raw;
-
-    return {
-      content: sanitised,
-      model,
-      provider,
-      tokensUsed: (result.usage?.totalTokens) ?? 0,
-      finishReason: result.finishReason ?? "stop",
-      wasSanitised,
-      latencyMs,
-    };
-  } catch (err) {
-    const latencyMs = Date.now() - start;
-    console.error(`[cara-gateway] ${provider} generation failed (${model}):`, err);
-
-    // Anthropic is the only provider — no cross-provider fallback.
-    return {
-      content:
-        "Cara was unable to generate content via AI Gateway. " +
-        "The provider returned an error. Please retry or contact your administrator.",
-      model: "unavailable",
-      provider,
-      tokensUsed: 0,
-      finishReason: "error",
-      wasSanitised: false,
-      latencyMs,
-    };
-  }
-}
-
-/**
- * Stream AI content through Vercel AI Gateway (for real-time UI).
- */
-export function streamViaGateway(request: GatewayRequest) {
-  const provider = resolveProvider(request.domain, request.provider);
-  const model = resolveModel(provider);
-  const fullSystem = `${CARA_SYSTEM_PREAMBLE}\n\n${request.systemPrompt}`;
-
-  return streamText({
-    model: (model),
-    system: fullSystem,
-    prompt: request.userPrompt,
-    maxOutputTokens: request.maxOutputTokens ?? 2000,
+  const result = await invokeAiGateway({
+    purpose: `Management oversight — ${request.domain}`,
+    feature: "oversight_intelligence",
+    // The oversight framing preamble is preserved. The governed gateway redacts
+    // the userPrompt (never the system prompt) before anything leaves the building.
+    systemPrompt: `${CARA_SYSTEM_PREAMBLE}\n\n${request.systemPrompt}`,
+    userPrompt: request.userPrompt,
+    taskType: "management_oversight",
     temperature: request.temperature ?? 0.3,
+    maxOutputTokens: request.maxOutputTokens ?? 2000,
+    expectJson: request.jsonMode ?? false,
+    identity: {
+      homeId: request.homeId,
+      // Pseudonym only — real identifiers are redacted by the gateway; this links
+      // the audit entry to the child the oversight concerns (non-negotiable #5).
+      childId: request.childPseudonym,
+    },
   });
+
+  const latencyMs = Date.now() - start;
+  const refused = result.method === "refused" || !result.llmUsed;
+
+  const content = refused
+    ? `AI second-pass unavailable — deterministic checks only.${result.refusedReason ? ` (${result.refusedReason})` : ""}`
+    : result.output;
+
+  return {
+    content,
+    model: result.model ?? "unavailable",
+    provider,
+    tokensUsed: (result.tokensInput ?? 0) + (result.tokensOutput ?? 0),
+    finishReason: refused ? "refused" : "stop",
+    // The governed response scanner withheld/cut the output when this is true.
+    wasSanitised: result.responseBlocked === true,
+    latencyMs,
+  };
 }
 
 // ── Management Oversight Specific ────────────────────────────────────────────
@@ -183,15 +176,25 @@ export async function runOversightAnalysis(
   const systemPrompt = buildOversightSystemPrompt(request.domain);
   const userPrompt = buildOversightUserPrompt(request);
 
-  // Primary analysis (Anthropic / Claude)
+  // Primary analysis — governed (Anthropic / Claude)
   const primaryAnalysis = await generateViaGateway({
     provider: "anthropic",
     domain: request.domain,
     systemPrompt,
     userPrompt,
+    homeId: request.homeId,
+    childPseudonym: request.childPseudonym,
     maxOutputTokens: 2500,
     temperature: 0.2,
   });
+
+  // If the governed gateway refused (e.g. safeguarding-sensitive data must not
+  // leave the building, or no key is configured), there is no analysis to
+  // cross-validate. Return honestly with zero confidence rather than cross-
+  // checking a non-answer.
+  if (primaryAnalysis.finishReason === "refused") {
+    return { primaryAnalysis, combinedConfidence: 0 };
+  }
 
   if (!request.crossValidate) {
     return {
@@ -200,12 +203,14 @@ export async function runOversightAnalysis(
     };
   }
 
-  // Cross-validation via Anthropic
+  // Cross-validation — governed (Anthropic / Claude)
   const crossValidation = await generateViaGateway({
     provider: "anthropic",
     domain: request.domain,
     systemPrompt: `You are Cara, cross-validating a management oversight analysis. Review the analysis below and state whether you agree, partially agree, or disagree. Provide a brief rationale.\n\n${systemPrompt}`,
     userPrompt: `ORIGINAL ANALYSIS:\n${primaryAnalysis.content}\n\nORIGINAL CONTEXT:\n${request.context}`,
+    homeId: request.homeId,
+    childPseudonym: request.childPseudonym,
     maxOutputTokens: 1000,
     temperature: 0.2,
   });

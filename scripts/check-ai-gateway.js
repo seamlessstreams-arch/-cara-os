@@ -85,6 +85,30 @@ const rules = [
     pattern: /getProvider\(\s*["'](?!anthropic|claude)/,
     allowed: ["src/lib/cara/evidence/evidence-engine.ts"],
   },
+  {
+    // The Vercel AI SDK. Its generateText/streamText resolve a provider+model
+    // from gateway env and reach a model with NONE of Cara's controls — no
+    // sensitivity classification, no redaction, no provider risk register, no
+    // injection guard, no response scanner, no audit. The oversight-intelligence
+    // bypass (decision D5) was exactly this: `import { generateText } from "ai"`.
+    // Nothing in Cara may import the "ai" package — all generation goes through
+    // invokeAiGateway, whose provider seam uses the Anthropic SDK / raw fetch.
+    label: 'Vercel AI SDK import ("ai") — bypasses the governed gateway',
+    pattern: /from\s+["']ai["']/,
+    allowed: [],
+  },
+  {
+    // Google Generative Language (Gemini) REST endpoint. The legacy Cara Studio
+    // provider stack can reach it directly — ungoverned — when GEMINI_API_KEY is
+    // set (dormant on live, which runs Anthropic). It is not on the approved
+    // provider register and does not pass through invokeAiGateway. Named here so
+    // the egress is VISIBLE and no NEW Gemini caller is inherited silently;
+    // routing Cara Studio through the governed gateway is tracked as decision D1
+    // (studio consolidation), not bundled into this security fix.
+    label: "raw call to the Google Gemini (Generative Language) endpoint",
+    pattern: /generativelanguage\.googleapis\.com/,
+    allowed: ["src/lib/cara/cara-studio-provider.ts"],
+  },
 ];
 
 const textExtensions = new Set([".ts", ".tsx"]);
