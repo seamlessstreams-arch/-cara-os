@@ -351,6 +351,18 @@ export const CaraAdaptedContentOutputSchema = z
     simplifiedLanguageVersion: z.string(),
     regulationAdjustments: z.array(z.string()),
     doNotDoList: z.array(z.string()),
+    // Phase 1.5 — deterministic reading-level assertion on the adapted output.
+    // Optional for backward-compatibility; adaptCaraContent always populates it.
+    readability: z
+      .object({
+        grade: z.number(),
+        readingAge: z.number(),
+        band: z.string(),
+        targetBand: z.string(),
+        withinTarget: z.boolean(),
+        flag: z.string().nullable(),
+      })
+      .optional(),
   })
   .extend(SafetySpineSchema.shape);
 export type CaraAdaptedContentOutput = z.infer<typeof CaraAdaptedContentOutputSchema>;
