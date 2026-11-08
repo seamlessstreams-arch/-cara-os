@@ -8,6 +8,7 @@ import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { ListChecks, Loader2, Clock, AlertTriangle, CheckCircle2, CircleDot, User, CalendarClock } from "lucide-react";
 import type { ActionItem, ActionCentre } from "@/lib/action-centre/action-centre-engine";
+import { AlertFeedback } from "@/components/intelligence/alert-feedback";
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   open: { label: "Open", cls: "bg-slate-100 text-slate-600" },
@@ -45,6 +46,7 @@ function Row({ item }: { item: ActionItem }) {
         <span className="rounded-full bg-[var(--cs-cara-gold-bg,#fffbeb)] px-2 py-0.5 font-medium text-[var(--cs-cara-gold,#b45309)]">{item.source}</span>
         {item.owner && <span className="inline-flex items-center gap-1"><User className="h-3 w-3" /> {item.owner}</span>}
         {item.dueDate && <span className="inline-flex items-center gap-1"><CalendarClock className="h-3 w-3" /> {item.dueDate}</span>}
+        {item.kind !== "action" && <AlertFeedback ruleId={item.source} entityType="action_item" entityId={item.id} className="ml-auto" />}
       </div>
     </div>
   );
