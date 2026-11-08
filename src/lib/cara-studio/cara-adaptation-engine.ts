@@ -11,6 +11,7 @@
 
 import type { CaraAdaptedContentOutput, CaraChildLearningProfile } from "./cara-types";
 import { RECORDING_PROMPTS } from "./cara-prompt-library";
+import { checkReadability, readingTargetForNeeds } from "@/lib/readability";
 
 export const ADAPTATION_NEEDS = [
   "adhd", "autism", "dyslexia", "speech_and_language", "low_literacy",
@@ -183,8 +184,24 @@ export function adaptCaraContent(input: AdaptInput): CaraAdaptedContentOutput {
 
   const audioScript = `Spoken version — calm, unhurried, pauses marked:\n"${simplified}"\n[pause]\n"No right answers. You can talk, point, draw — or just listen."\n[pause]\n"Want to tell me one thing about it, or shall I go first?"`;
 
+  // Phase 1.5 — assert the adapted (child-facing) text actually hits the target
+  // reading band. Deterministic (Flesch–Kincaid / SMOG). If it misses, a visible
+  // flag is surfaced to the reviewer — the too-hard version is never shipped
+  // silently. Numbering tokens ("1. ") carry no letters and are ignored by the scorer.
+  const readingTarget = readingTargetForNeeds(needs);
+  const readabilityCheck = checkReadability(stepped, readingTarget);
+  const readability = {
+    grade: readabilityCheck.score.grade,
+    readingAge: readabilityCheck.score.readingAge,
+    band: readabilityCheck.score.band,
+    targetBand: readingTarget.label,
+    withinTarget: readabilityCheck.withinTarget,
+    flag: readabilityCheck.flag,
+  };
+
   return {
     adaptedVersion: stepped,
+    readability,
     changesMade: [...changes],
     visualSuggestions,
     audioScript,

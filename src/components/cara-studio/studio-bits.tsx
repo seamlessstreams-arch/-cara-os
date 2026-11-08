@@ -231,6 +231,12 @@ export function OutputView({ result }: { result: CaraApiResult }) {
   const handout = extractHandout(result.output);
   const staffSheet = result.output ? staffSheetOf(result.output) : null;
   const reviewRequired = result.manager_review_status === "review_required";
+  // Phase 1.5 — reading-level assertion from adaptCaraContent (present only on
+  // adapted content). Surfaced as a visible banner when the output is harder
+  // than the child's target band, so a too-hard version is never shipped silently.
+  const readability = (result.output?.readability ?? null) as
+    | { flag?: string | null; band?: string; targetBand?: string }
+    | null;
 
   // Print one part (or both) by laying the page out for it first, then opening the print dialog. While printing, every other
   // generated output on the page is hidden (see globals.css), so a list of outputs never prints as one run.
@@ -256,6 +262,15 @@ export function OutputView({ result }: { result: CaraApiResult }) {
             {result.manager_review_reasons.length > 0 && (
               <ul className="mt-1 list-inside list-disc text-xs">{result.manager_review_reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
             )}
+          </div>
+        </div>
+      )}
+      {readability?.flag && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-semibold">Reading level above target{readability.band ? ` — ${readability.band}` : ""}</p>
+            <p className="mt-0.5 text-xs">{readability.flag}</p>
           </div>
         </div>
       )}
