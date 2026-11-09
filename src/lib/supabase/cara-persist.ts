@@ -236,10 +236,15 @@ export async function persistCaraAiRun(r: CaraAiRun): Promise<void> {
   const c = createServerClient();
   if (!c) return;
   try {
+    // Populate the structured uuid columns when the ids resolve to real UUIDs
+    // (live ids pass through; seed strings map via toUUID); an unmappable id
+    // stays null so the insert can't throw. input_context keeps the raw ids.
+    const uid = toUUID(r.user_id);
+    const cid = r.child_id ? toUUID(r.child_id) : null;
     await raw(c).from("cara_ai_runs").insert({
       home_id: homeId(),
-      user_id: null, // demo staff ids aren't uuids; identity kept in input_context
-      child_id: null,
+      user_id: uid && isUUID(uid) ? uid : null,
+      child_id: cid && isUUID(cid) ? cid : null,
       module: r.module,
       prompt_type: r.prompt_type,
       input_context: { summary: r.input_summary, user: r.user_id, child: r.child_id },
