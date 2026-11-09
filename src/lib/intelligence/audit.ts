@@ -55,7 +55,7 @@ export async function writeIntelligenceAudit(
   if (!supabase) return;
 
   try {
-    await (supabase as unknown as LooseSupabase)
+    const { error } = await (supabase as unknown as LooseSupabase)
       .from("intelligence_audit_log")
       .insert({
         home_id: entry.homeId ?? null,
@@ -66,7 +66,19 @@ export async function writeIntelligenceAudit(
         actor_role: entry.actorRole ?? null,
         detail: entry.detail ?? {},
       });
-  } catch {
-    console.error("[intelligence-audit] Failed to write audit entry:", entry);
+    // supabase-js resolves (does not throw) on a missing table or bad column,
+    // so without reading `error` a failed write is silently lost — exactly how
+    // the absent intelligence_audit_log table went unnoticed on live. Never
+    // fail silently; but never log record detail (PII) either — surface the
+    // action label + error code only.
+    if (error) {
+      console.error(
+        `[intelligence-audit] write failed for "${entry.action}" (${error.code ?? "unknown"}): audit entry not recorded`,
+      );
+    }
+  } catch (e) {
+    console.error(
+      `[intelligence-audit] write threw for "${entry.action}": ${e instanceof Error ? e.message : "unknown error"}`,
+    );
   }
 }
