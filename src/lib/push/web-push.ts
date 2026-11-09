@@ -10,7 +10,8 @@
 // child / medical / safeguarding detail — the same rule as the emergency broadcast.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import webpush from "web-push";
+// web-push 4 is an ES module with named exports only: a default import breaks the build.
+import * as webpush from "web-push";
 import { db, type StoredPushSubscription } from "@/lib/db/store";
 
 let configured: boolean | null = null;
