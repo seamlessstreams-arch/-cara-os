@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { isSupabaseEnabled, createServerClient } from "./server";
+import { toUUID, isUUID } from "./id-mapping";
 import type {
   CaraSavedOutput,
   CaraAiRun,
@@ -284,10 +285,18 @@ export async function persistCaraGuardrailEvent(e: CaraGuardrailEvent): Promise<
   const c = createServerClient();
   if (!c) return;
   try {
+    // Populate the structured uuid columns when the ids resolve to real
+    // UUIDs — live ids already are, seed string ids map via toUUID. An
+    // unmappable non-UUID stays null so the insert can never throw on the
+    // uuid column; the flagged_text breadcrumb is kept either way. Without
+    // this, "everything that touched child X" is not queryable (the real id
+    // was buried in flagged_text).
+    const uid = toUUID(e.user_id);
+    const cid = e.child_id ? toUUID(e.child_id) : null;
     await raw(c).from("cara_guardrail_events").insert({
       home_id: homeId(),
-      user_id: null, // see note above — demo ids carried in flagged context
-      child_id: null,
+      user_id: uid && isUUID(uid) ? uid : null,
+      child_id: cid && isUUID(cid) ? cid : null,
       module: e.module,
       risk_type: e.risk_type,
       severity: e.severity,
