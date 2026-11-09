@@ -219,12 +219,14 @@ export async function persistCaraLearningProfile(p: {
       .eq("child_id", child_id)
       .maybeSingle();
     if (data?.id) {
-      await raw(c).from("cara_child_learning_profiles").update({ ...fields, updated_at }).eq("id", data.id);
+      const { error } = await raw(c).from("cara_child_learning_profiles").update({ ...fields, updated_at }).eq("id", data.id);
+      if (error) console.error(`[cara-persist] learning-profile update failed (${error.code ?? "unknown"}) — not persisted`);
     } else {
-      await raw(c).from("cara_child_learning_profiles").insert({ ...fields, child_id, home_id: homeId(), created_at, updated_at });
+      const { error } = await raw(c).from("cara_child_learning_profiles").insert({ ...fields, child_id, home_id: homeId(), created_at, updated_at });
+      if (error) console.error(`[cara-persist] learning-profile insert failed (${error.code ?? "unknown"}) — not persisted`);
     }
-  } catch {
-    // best-effort
+  } catch (e) {
+    console.error(`[cara-persist] learning-profile write threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -258,9 +260,10 @@ export async function persistLibraryResource(r: Record<string, unknown>): Promis
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c).from("cara_resource_library").insert({ home_id: homeId(), ...r });
-  } catch {
-    // best-effort
+    const { error } = await raw(c).from("cara_resource_library").insert({ home_id: homeId(), ...r });
+    if (error) console.error(`[cara-persist] library-resource insert failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[cara-persist] library-resource insert threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -270,12 +273,13 @@ export async function persistLibraryApproval(r: { id: string; approved: boolean;
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c)
+    const { error } = await raw(c)
       .from("cara_resource_library")
       .update({ approved: r.approved, approved_by: r.approved_by, updated_at: r.updated_at })
       .eq("id", r.id);
-  } catch {
-    // best-effort
+    if (error) console.error(`[cara-persist] library-approval update failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[cara-persist] library-approval update threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
