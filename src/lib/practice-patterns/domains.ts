@@ -30,7 +30,15 @@ export const DOMAIN_CUES: Record<PatternDomain, readonly string[]> = {
   "recording-quality": ["recording", "daily log", "case notes", "record keeping", "write-up"],
   "document-control": ["document control", "version control", "policy review", "adoption date", "review date", "controlled document"],
   "placement-stability": ["placement stability", "placement breakdown", "disruption", "unplanned ending", "stability"],
-  "evidence-vs-evaluation": ["evaluation", "evaluative", "evidence of impact", "impact on the child", "so what"],
+  "evidence-vs-evaluation": [
+    "evaluation",
+    "evaluative",
+    "evidence of impact",
+    "impact on the child",
+    "so what",
+    "difference it made",
+    "what changed",
+  ],
   "human-outcomes": ["relationships", "belonging", "what would remain", "lived experience", "outcomes"],
   "connected-system": ["connected system", "join the dots", "whole system", "golden thread"],
 };
