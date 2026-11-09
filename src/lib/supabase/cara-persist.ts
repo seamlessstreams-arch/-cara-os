@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { isSupabaseEnabled, createServerClient } from "./server";
+import { toUUID, isUUID } from "./id-mapping";
 import type {
   CaraSavedOutput,
   CaraAiRun,
@@ -218,12 +219,14 @@ export async function persistCaraLearningProfile(p: {
       .eq("child_id", child_id)
       .maybeSingle();
     if (data?.id) {
-      await raw(c).from("cara_child_learning_profiles").update({ ...fields, updated_at }).eq("id", data.id);
+      const { error } = await raw(c).from("cara_child_learning_profiles").update({ ...fields, updated_at }).eq("id", data.id);
+      if (error) console.error(`[cara-persist] learning-profile update failed (${error.code ?? "unknown"}) — not persisted`);
     } else {
-      await raw(c).from("cara_child_learning_profiles").insert({ ...fields, child_id, home_id: homeId(), created_at, updated_at });
+      const { error } = await raw(c).from("cara_child_learning_profiles").insert({ ...fields, child_id, home_id: homeId(), created_at, updated_at });
+      if (error) console.error(`[cara-persist] learning-profile insert failed (${error.code ?? "unknown"}) — not persisted`);
     }
-  } catch {
-    // best-effort
+  } catch (e) {
+    console.error(`[cara-persist] learning-profile write threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -233,10 +236,15 @@ export async function persistCaraAiRun(r: CaraAiRun): Promise<void> {
   const c = createServerClient();
   if (!c) return;
   try {
+    // Populate the structured uuid columns when the ids resolve to real UUIDs
+    // (live ids pass through; seed strings map via toUUID); an unmappable id
+    // stays null so the insert can't throw. input_context keeps the raw ids.
+    const uid = toUUID(r.user_id);
+    const cid = r.child_id ? toUUID(r.child_id) : null;
     await raw(c).from("cara_ai_runs").insert({
       home_id: homeId(),
-      user_id: null, // demo staff ids aren't uuids; identity kept in input_context
-      child_id: null,
+      user_id: uid && isUUID(uid) ? uid : null,
+      child_id: cid && isUUID(cid) ? cid : null,
       module: r.module,
       prompt_type: r.prompt_type,
       input_context: { summary: r.input_summary, user: r.user_id, child: r.child_id },
@@ -257,9 +265,10 @@ export async function persistLibraryResource(r: Record<string, unknown>): Promis
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c).from("cara_resource_library").insert({ home_id: homeId(), ...r });
-  } catch {
-    // best-effort
+    const { error } = await raw(c).from("cara_resource_library").insert({ home_id: homeId(), ...r });
+    if (error) console.error(`[cara-persist] library-resource insert failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[cara-persist] library-resource insert threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -269,12 +278,13 @@ export async function persistLibraryApproval(r: { id: string; approved: boolean;
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c)
+    const { error } = await raw(c)
       .from("cara_resource_library")
       .update({ approved: r.approved, approved_by: r.approved_by, updated_at: r.updated_at })
       .eq("id", r.id);
-  } catch {
-    // best-effort
+    if (error) console.error(`[cara-persist] library-approval update failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[cara-persist] library-approval update threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -284,10 +294,18 @@ export async function persistCaraGuardrailEvent(e: CaraGuardrailEvent): Promise<
   const c = createServerClient();
   if (!c) return;
   try {
+    // Populate the structured uuid columns when the ids resolve to real
+    // UUIDs — live ids already are, seed string ids map via toUUID. An
+    // unmappable non-UUID stays null so the insert can never throw on the
+    // uuid column; the flagged_text breadcrumb is kept either way. Without
+    // this, "everything that touched child X" is not queryable (the real id
+    // was buried in flagged_text).
+    const uid = toUUID(e.user_id);
+    const cid = e.child_id ? toUUID(e.child_id) : null;
     await raw(c).from("cara_guardrail_events").insert({
       home_id: homeId(),
-      user_id: null, // see note above — demo ids carried in flagged context
-      child_id: null,
+      user_id: uid && isUUID(uid) ? uid : null,
+      child_id: cid && isUUID(cid) ? cid : null,
       module: e.module,
       risk_type: e.risk_type,
       severity: e.severity,
