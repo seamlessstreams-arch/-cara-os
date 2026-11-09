@@ -20,8 +20,9 @@ import { dal, genericTable } from "@/lib/db/dal";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 import type { RawClient } from "@/lib/supabase/loose-client";
-import type { PracticePattern } from "./practice-patterns";
+import { PRACTICE_PATTERNS, type PracticePattern } from "./practice-patterns";
 import type { PatternCandidate, RosterChild } from "./intake-pipeline";
+import { mergeWithSeededLibrary, toPracticePattern } from "./review-queue";
 import type { TrustedVoice } from "./trusted-voices";
 
 // ── Stores ────────────────────────────────────────────────────────────────────
@@ -74,6 +75,36 @@ export const runtimePatternStore = genericTable<PracticePattern>(
   memPatterns.update,
   PATTERN_RECORD_TYPES.pattern,
 );
+
+// ── The merged practice library (P4-6) ────────────────────────────────────────
+
+export interface PracticeLibrary {
+  patterns: PracticePattern[];
+  /** false = the runtime records could not be read; only the seeded library is here. */
+  runtimeLoaded: boolean;
+  /** Runtime records left out because they failed a check. */
+  skipped: number;
+}
+
+/** Seeded patterns plus approved runtime ones. Says so when it is partial. */
+export async function loadPracticeLibrary(): Promise<PracticeLibrary> {
+  try {
+    const runtime = await runtimePatternStore.findAll();
+    return { ...mergeWithSeededLibrary(runtime), runtimeLoaded: true };
+  } catch {
+    return { patterns: [...PRACTICE_PATTERNS], runtimeLoaded: false, skipped: 0 };
+  }
+}
+
+/** An approved runtime pattern already saved from this source link, if any (retry-safe approval). */
+export async function findRuntimePatternBySourceUrl(url: string): Promise<PracticePattern | null> {
+  const rows = await runtimePatternStore.findAll();
+  for (const row of rows) {
+    const p = toPracticePattern(row);
+    if (p && p.source.url === url) return p;
+  }
+  return null;
+}
 
 // ── The roster the child-data gate screens against ────────────────────────────
 
