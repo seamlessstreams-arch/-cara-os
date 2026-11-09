@@ -6,7 +6,6 @@ export { getStudioAIProvider, generateStudioContent } from "./ai-provider.servic
 export { buildGenerationPrompt, CARA_STUDIO_SYSTEM_PROMPT, FRAMEWORK_PROMPTS, TONE_PROMPTS, ARTIFACT_TYPE_PROMPTS } from "./prompts";
 export { generateArtifact } from "./generation.service";
 export { indexSource, listSources, getSource, searchSources } from "./source.service";
-export { assessEvidence, assessMultipleSources, calculateOverallConfidence } from "./evidence.service";
 export { detectGaps, resolveGap } from "./gap-detection.service";
 export { runQualityCheck } from "./quality-check.service";
 export { submitForReview, reviewArtifact, approveArtifact, commitArtifact, rejectArtifact } from "./approval.service";

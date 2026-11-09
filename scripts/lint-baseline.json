@@ -1,5 +1,5 @@
 {
- "@typescript-eslint/no-explicit-any": 201,
+ "@typescript-eslint/no-explicit-any": 199,
  "react-hooks/immutability": 1,
  "react-hooks/preserve-manual-memoization": 5,
  "react-hooks/purity": 1,
