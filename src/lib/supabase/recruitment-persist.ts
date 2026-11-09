@@ -27,7 +27,7 @@ export async function persistCandidateReference(ref: CandidateReference): Promis
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c).from("recruitment_candidate_references").upsert(
+    const { error } = await raw(c).from("recruitment_candidate_references").upsert(
       {
         id: ref.id,
         home_id: homeId(),
@@ -59,8 +59,9 @@ export async function persistCandidateReference(ref: CandidateReference): Promis
       },
       { onConflict: "id" },
     );
-  } catch {
-    // best-effort — the in-memory write already succeeded
+    if (error) console.error(`[recruitment-persist] candidate-reference upsert failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[recruitment-persist] candidate-reference upsert threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
@@ -69,7 +70,7 @@ async function persistRecruitmentAudit(entry: RecruitmentAuditEntry): Promise<vo
   const c = createServerClient();
   if (!c) return;
   try {
-    await raw(c).from("recruitment_audit").insert({
+    const { error } = await raw(c).from("recruitment_audit").insert({
       id: entry.id,
       home_id: homeId(),
       candidate_id: entry.candidate_id,
@@ -83,8 +84,9 @@ async function persistRecruitmentAudit(entry: RecruitmentAuditEntry): Promise<vo
       notes: entry.notes,
       created_at: entry.created_at,
     });
-  } catch {
-    // best-effort
+    if (error) console.error(`[recruitment-persist] audit insert failed (${error.code ?? "unknown"}) — not persisted`);
+  } catch (e) {
+    console.error(`[recruitment-persist] audit insert threw: ${e instanceof Error ? e.message : "unknown"}`);
   }
 }
 
