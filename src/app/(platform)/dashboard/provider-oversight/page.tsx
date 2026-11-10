@@ -289,9 +289,12 @@ export default function ProviderOversightPage() {
     return [];
   // eslint-disable-next-line react-hooks/exhaustive-deps -- rich is derived from apiData
   }, [apiData]);
+  // The oversight log stands on its own — show it whenever the API returns one
+  // (live: from ri_oversight_notes; demo: the seeded log). It no longer waits on
+  // richSummaries, which only the demo response carries.
   const oversightLog = useMemo<OversightEntry[]>(
     () =>
-      apiData?.persisted && Array.isArray(rich?.richSummaries) && rich.richSummaries.length > 0 && Array.isArray(rich?.oversightLog)
+      apiData?.persisted && Array.isArray(rich?.oversightLog)
         ? (rich.oversightLog as OversightEntry[])
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rich is derived from apiData

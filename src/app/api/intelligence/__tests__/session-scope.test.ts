@@ -139,10 +139,13 @@ describe("live reads use the session's home, never ?homeId=oak-house", () => {
     expect(homes).not.toContain("oak-house");
   });
 
-  it("oversight orders by period_end and no longer filters on a provider_id column live lacks", async () => {
+  it("oversight orders summaries by period_end (the live columns) and the log by created_at, and never filters on provider_id", async () => {
     await oversight.GET(req("http://x/api/intelligence/oversight?providerId=p1"));
     const orders = h.state.calls.filter((c) => c.op === "order").map((c) => c.args[0]);
-    expect(orders).toEqual(["period_end"]);
+    // provider_home_summaries by period_end; ri_oversight_notes by created_at.
+    expect(orders).toContain("period_end");
+    expect(orders).toContain("created_at");
+    expect(orders).not.toContain("summary_date");
     expect(h.state.calls.some((c) => c.op === "eq" && c.args[0] === "provider_id")).toBe(false);
   });
 });
