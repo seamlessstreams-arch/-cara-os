@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { z } from "zod";
+import { uuidLike } from "@/lib/validation/uuid";
 import { GENERATION_TYPES, TONES, AUDIENCES, STATUSES } from "./types";
 
 // ── Generate Request ─────────────────────────────────────────────────────────
@@ -40,7 +41,7 @@ export type ApprovalRequestInput = z.infer<typeof approvalRequestSchema>;
 export const commitRequestSchema = z.object({
   generationId: z.string().uuid(),
   targetType: z.string().min(1).max(100),
-  targetId: z.string().uuid().optional(),
+  targetId: uuidLike.optional(),
 });
 
 export type CommitRequestInput = z.infer<typeof commitRequestSchema>;
@@ -48,7 +49,7 @@ export type CommitRequestInput = z.infer<typeof commitRequestSchema>;
 // ── Library Query ────────────────────────────────────────────────────────────
 
 export const libraryQuerySchema = z.object({
-  childId: z.string().uuid().optional(),
+  childId: uuidLike.optional(),
   generationType: z.enum(GENERATION_TYPES).optional(),
   status: z.enum(STATUSES).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -60,5 +61,5 @@ export type LibraryQueryInput = z.infer<typeof libraryQuerySchema>;
 // ── Profile Builder Input ────────────────────────────────────────────────────
 
 export const profileBuildRequestSchema = z.object({
-  childId: z.string().uuid(),
+  childId: uuidLike,
 });
