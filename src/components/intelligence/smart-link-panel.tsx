@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
+import { toDisplayLink, type DisplayLink } from "@/lib/intelligence/smart-link-display";
 import { api } from "@/hooks/use-api";
 
 // ── inlined intelligence layer hooks ──────────────────────────────────────────
@@ -65,15 +66,6 @@ interface SmartLinkPanelProps {
   severity?: string;
   category?: string;
   compact?: boolean;
-}
-
-interface DisplayLink {
-  id: string;
-  sourceType: string;
-  targetType: string;
-  relationship: string;
-  createdAt?: string;
-  suggestedBy?: string;
 }
 
 interface DisplaySuggestion {
@@ -130,6 +122,8 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
 export function SmartLinkPanel({
   sourceType,
   sourceId,
+  // Demo (in-memory) home only. On the live tenant the route takes the home
+  // from the signed-in session and ignores this value.
   homeId = "oak-house",
   childId,
   staffId,
@@ -139,6 +133,9 @@ export function SmartLinkPanel({
 }: SmartLinkPanelProps) {
   const [suggestions, setSuggestions] = useState<DisplaySuggestion[]>([]);
   const [linkedIds, setLinkedIds] = useState<Set<string>>(new Set());
+  // Auto-links already requested while this panel is open, so a re-render
+  // cannot fire the same create again while the first is still in flight.
+  const autoRequested = useRef<Set<string>>(new Set());
 
   const { data: linksData } = useSmartLinks({ sourceType, sourceId });
   const suggestMutation = useSmartLinkSuggestions();
@@ -161,7 +158,7 @@ export function SmartLinkPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceType, sourceId]);
 
-  const existingLinks: DisplayLink[] = (linksData?.links as DisplayLink[]) ?? [];
+  const existingLinks: DisplayLink[] = ((linksData?.links ?? []) as Record<string, unknown>[]).map(toDisplayLink);
 
   const handleCreateLink = (suggestion: DisplaySuggestion) => {
     createLink.mutate(
@@ -203,6 +200,9 @@ export function SmartLinkPanel({
   useEffect(() => {
     if (autoLinkSuggestions.length > 0 && linksData?.persisted) {
       autoLinkSuggestions.forEach((s) => {
+        const key = s.targetType + s.relationship;
+        if (autoRequested.current.has(key)) return;
+        autoRequested.current.add(key);
         handleCreateLink(s);
       });
     }

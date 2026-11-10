@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import { voiceEntries, nextFallbackId } from "@/lib/intelligence/fallback-store";
 import { todayStr } from "@/lib/utils";
 
@@ -11,7 +12,10 @@ import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const childId = searchParams.get("childId");
-  const homeId = searchParams.get("homeId");
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
   const category = searchParams.get("category");
 
   if (!isSupabaseEnabled()) {
@@ -39,7 +43,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { childId, homeId, entryDate, category, childWords, summary, actionTaken, staffResponse, linkedRecordType, linkedRecordId, actorUserId, actorRole } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { childId, entryDate, category, childWords, summary, actionTaken, staffResponse, linkedRecordType, linkedRecordId } = body;
 
     if (!childId || !homeId || !category) {
       return NextResponse.json({ error: "childId, homeId, and category are required" }, { status: 400 });
@@ -84,12 +91,12 @@ export async function POST(request: NextRequest) {
     if (error) return storageFailure("Child voice records", error);
 
     await writeIntelligenceAudit({
-      homeId,
+      homeId: homeId ?? undefined,
       entityType: "child_voice_entry",
       entityId: data?.id,
       action: "voice_entry_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
       detail: { childId, category },
     });
 

@@ -2,13 +2,17 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { generateHumanisedOversight } from "@/lib/intelligence/humanised-oversight";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import type { HumanisedOversightInput } from "@/types/intelligence.layer";
 
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { recordType, recordId, recordSummary, childName, context, actorUserId, actorRole, homeId } = body as
-      HumanisedOversightInput & { actorUserId?: string; actorRole?: string; homeId?: string };
+    // Live: who and where come from the session, never the body (see request-scope.ts).
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { recordType, recordId, recordSummary, childName, context } = body as HumanisedOversightInput;
 
     if (!recordType || !recordId || !recordSummary) {
       return NextResponse.json(
@@ -26,12 +30,12 @@ export async function POST(request: NextRequest) {
     });
 
     await writeIntelligenceAudit({
-      homeId,
+      homeId: homeId ?? undefined,
       entityType: recordType,
       entityId: recordId,
       action: "cara_draft_generated",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
       detail: { confidence: result.confidence, riskFlags: result.riskFlags },
     });
 

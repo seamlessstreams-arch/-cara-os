@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { reg45Evidence } from "@/lib/intelligence/fallback-store";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
 
   if (!isSupabaseEnabled()) {
     let rows = [...reg45Evidence];
