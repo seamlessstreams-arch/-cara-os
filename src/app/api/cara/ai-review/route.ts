@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { uuidLike } from "@/lib/validation/uuid";
 import { approveCaraRun, rejectCaraRun } from "@/lib/cara/engine";
 import { readJsonBody } from "@/lib/http/read-json";
 
 const ReviewSchema = z.object({
-  homeId: z.string().uuid(),
+  homeId: uuidLike,
   aiRunId: z.string().uuid(),
   action: z.enum(["approve", "reject"]),
   notes: z.string().optional(),

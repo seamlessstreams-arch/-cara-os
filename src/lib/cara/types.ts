@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { uuidLike } from "@/lib/validation/uuid";
 
 export const CaraRoleModeSchema = z.enum([
   "practitioner",
@@ -19,11 +20,11 @@ export type RiskLevel = z.infer<typeof RiskLevelSchema>;
 
 export const CaraEvidenceItemSchema = z.object({
   sourceTable: z.string(),
-  sourceId: z.string().uuid(),
+  sourceId: uuidLike,
   sourceDate: z.string().optional(),
   sourceTitle: z.string().optional(),
   sourceExcerpt: z.string().min(1),
-  sourceAuthorId: z.string().uuid().optional().nullable(),
+  sourceAuthorId: uuidLike.optional().nullable(),
   relevanceScore: z.number().min(0).max(100).default(0),
   evidenceType: z.string().default("record"),
   regulationRefs: z.array(z.string()).default([]),
@@ -34,7 +35,7 @@ export type CaraEvidenceItem = z.infer<typeof CaraEvidenceItemSchema>;
 
 export const CaraSuggestedUpdateSchema = z.object({
   targetTable: z.string(),
-  targetId: z.string().uuid().optional().nullable(),
+  targetId: uuidLike.optional().nullable(),
   updateType: z.enum(["create", "update", "review", "archive", "task", "notification"]),
   title: z.string(),
   rationale: z.string(),
@@ -70,8 +71,8 @@ export const CaraOutputSchema = z.object({
 export type CaraOutput = z.infer<typeof CaraOutputSchema>;
 
 export const CaraRequestSchema = z.object({
-  homeId: z.string().uuid(),
-  childId: z.string().uuid().optional().nullable(),
+  homeId: uuidLike,
+  childId: uuidLike.optional().nullable(),
   roleMode: CaraRoleModeSchema.default("practitioner"),
   featureKey: z.string(),
   userQuestion: z.string().min(3),

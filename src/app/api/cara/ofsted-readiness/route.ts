@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { uuidLike } from "@/lib/validation/uuid";
 import { generateOfstedReadinessSnapshot } from "@/lib/cara/ofsted-readiness";
 import { readJsonBody } from "@/lib/http/read-json";
 
 const Schema = z.object({
-  homeId: z.string().uuid(),
+  homeId: uuidLike,
 });
 
 export async function POST(req: NextRequest) {

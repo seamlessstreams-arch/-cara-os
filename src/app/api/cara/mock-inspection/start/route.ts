@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { uuidLike } from "@/lib/validation/uuid";
 import { startMockInspection } from "@/lib/cara/mock-inspection";
 import { readJsonBody } from "@/lib/http/read-json";
 
 const Schema = z.object({
-  homeId: z.string().uuid(),
+  homeId: uuidLike,
   focus: z.array(z.string()).optional(),
 });
 
