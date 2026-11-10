@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { storageFailure } from "@/lib/http/storage-error";
-import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { storageFailure, type StorageQueryError } from "@/lib/http/storage-error";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { careEventsDb } from "@/lib/db";
 import { reg45Evidence } from "@/lib/intelligence/fallback-store";
 import { intelligenceScope } from "@/lib/intelligence/request-scope";
+import { buildReg45EvidenceBank } from "@/lib/reg45/evidence-bank";
 
-import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
+// Regulation 45 evidence bank: the categories of record the home has captured,
+// each counted with real examples. It used to read a `reg45_evidence` table
+// that was never created on the live tenant, so on live every read failed and
+// the Reg 45 page showed a storage error with no evidence base.
+//
+// The evidence already lives on the care-event spine, which is persisted on
+// live. We assemble the bank from it (src/lib/reg45/evidence-bank.ts): real
+// counts, real example titles, nothing invented. Demo mode keeps its seeded
+// bank unchanged.
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -19,12 +29,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, evidence: rows, persisted: true });
   }
 
-  const supabase = createServerClient() as unknown as LooseSupabase;
-  let query = supabase.from("reg45_evidence").select("*");
-  if (homeId) query = query.eq("home_id", homeId);
-
-  const { data, error } = await query.limit(100);
-  if (error) return storageFailure("Regulation 45 evidence", error);
-
-  return NextResponse.json({ ok: true, evidence: data ?? [], persisted: true });
+  try {
+    const all = await careEventsDb.careEvents.findAll();
+    const events = homeId ? all.filter((e) => e.home_id === homeId) : all;
+    const evidence = buildReg45EvidenceBank(events);
+    return NextResponse.json({ ok: true, evidence, persisted: true });
+  } catch (error) {
+    return storageFailure("Regulation 45 evidence", error as StorageQueryError);
+  }
 }
