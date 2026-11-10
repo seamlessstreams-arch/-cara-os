@@ -70,7 +70,6 @@ import * as learningReview from "@/app/api/intelligence/learning-review/route";
 import * as oversight from "@/app/api/intelligence/oversight/route";
 import * as progress from "@/app/api/intelligence/progress/route";
 import * as reg45 from "@/app/api/intelligence/reg45/route";
-import * as reg45Evidence from "@/app/api/intelligence/reg45-evidence/route";
 import * as smartLinks from "@/app/api/intelligence/smart-links/route";
 import * as voice from "@/app/api/intelligence/voice/route";
 
@@ -125,10 +124,11 @@ describe("live reads use the session's home, never ?homeId=oak-house", () => {
     ["oversight", oversight.GET],
     ["progress", progress.GET],
     ["reg45", reg45.GET],
-    ["reg45-evidence", reg45Evidence.GET],
     ["smart-links", smartLinks.GET],
     ["voice", voice.GET],
   ];
+  // reg45-evidence assembles from the care-event spine (careEventsDb), not a
+  // direct client query, so it is covered in reg45-evidence-route.test.ts.
 
   it.each(routes)("%s", async (name, GET) => {
     const res = await GET(req(`http://x/api/intelligence/${name}?homeId=oak-house&sourceId=s1`));
