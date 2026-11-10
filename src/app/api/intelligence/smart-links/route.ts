@@ -3,9 +3,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import { suggestSmartLinks, type SmartLinkContext } from "@/lib/intelligence/smart-linking";
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
+
+// Linked records: a record and the things it relates to.
+//
+// Live: the home and the actor come from the session (intelligenceScope); the
+// request's homeId / actorUserId are ignored. The pages sent the demo slug
+// "oak-house", which the uuid home_id column rejected — no link had ever saved
+// on live. Reads are scoped to the session's home as well.
+//
+// A link is created at most once: the same source → target → relationship in
+// the same home returns the existing row rather than adding another. The panel
+// auto-creates some links when a record is opened, so without this every view
+// of that record would add a duplicate.
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -16,8 +29,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, links: [], persisted: false });
   }
 
+  const scope = await intelligenceScope(request);
+  if (scope instanceof NextResponse) return scope;
+
   const supabase = createServerClient() as unknown as LooseSupabase;
-  let query = supabase.from("smart_record_links").select("*").order("created_at", { ascending: false });
+  let query = supabase
+    .from("smart_record_links")
+    .select("*")
+    .eq("home_id", scope.homeId)
+    .order("created_at", { ascending: false });
 
   if (sourceType) query = query.eq("source_type", sourceType);
   if (sourceId) query = query.eq("source_id", sourceId);
@@ -48,7 +68,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a link
-    const { homeId, sourceType, sourceId, targetType, targetId, relationship, suggestedBy, actorUserId, actorRole } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { sourceType, sourceId, targetType, targetId, relationship, suggestedBy } = body;
 
     if (!homeId || !sourceType || !sourceId || !targetType || !targetId || !relationship) {
       return NextResponse.json(
@@ -62,6 +85,23 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;
+
+    const { data: existing, error: findError } = await supabase
+      .from("smart_record_links")
+      .select("*")
+      .eq("home_id", homeId)
+      .eq("source_type", sourceType)
+      .eq("source_id", sourceId)
+      .eq("target_type", targetType)
+      .eq("target_id", targetId)
+      .eq("relationship", relationship)
+      .limit(1)
+      .maybeSingle();
+    if (findError) return storageFailure("Linked records", findError);
+    if (existing) {
+      return NextResponse.json({ ok: true, link: existing, persisted: true, existing: true });
+    }
+
     const { data, error } = await supabase.from("smart_record_links").insert({
       home_id: homeId,
       source_type: sourceType,
@@ -70,7 +110,7 @@ export async function POST(request: NextRequest) {
       target_id: targetId,
       relationship,
       suggested_by: suggestedBy ?? "user",
-      created_by: actorUserId ?? null,
+      created_by: actorUserId,
     }).select().single();
 
     if (error) return storageFailure("Linked records", error);
@@ -80,8 +120,8 @@ export async function POST(request: NextRequest) {
       entityType: "smart_record_link",
       entityId: data?.id,
       action: "smart_link_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
       detail: { sourceType, targetType, relationship },
     });
 

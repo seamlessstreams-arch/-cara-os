@@ -3,14 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import { staffPassportRecords, staffPassportToFlatRecord } from "@/lib/intelligence/fallback-store";
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
   const staffId = searchParams.get("staffId");
+
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
 
   if (!isSupabaseEnabled()) {
     let rows = [...staffPassportRecords];
@@ -100,7 +105,11 @@ export function competenceColumns(fields: Record<string, unknown>): Record<strin
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { staffId, homeId, actorUserId, actorRole, ...fields } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    // The identity keys belong to the scope — they are never competence fields.
+    const { staffId, homeId: _homeId, actorUserId: _actorUserId, actorRole: _actorRole, ...fields } = body;
 
     if (!staffId || !homeId) {
       return NextResponse.json({ error: "staffId and homeId are required" }, { status: 400 });
@@ -129,8 +138,8 @@ export async function POST(request: NextRequest) {
       entityType: "staff_competence_record",
       entityId: data?.id,
       action: "record_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
     });
 
     return NextResponse.json({ ok: true, record: data, persisted: true });

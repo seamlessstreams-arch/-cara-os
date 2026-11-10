@@ -3,13 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import { incidentLearningReviews, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
   const incidentId = searchParams.get("incidentId");
   const status = searchParams.get("status");
 
@@ -38,7 +42,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { incidentId, homeId, childId, actorUserId, actorRole } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { incidentId, childId } = body;
 
     if (!incidentId || !homeId) {
       return NextResponse.json({ error: "incidentId and homeId are required" }, { status: 400 });
@@ -80,12 +87,12 @@ export async function POST(request: NextRequest) {
     if (error) return storageFailure("Incident learning reviews", error);
 
     await writeIntelligenceAudit({
-      homeId,
+      homeId: homeId ?? undefined,
       entityType: "incident_learning_review",
       entityId: data?.id,
       action: "record_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
     });
 
     return NextResponse.json({ ok: true, review: data, persisted: true });
@@ -98,7 +105,11 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
-    const { id, homeId, actorUserId, actorRole, ...updates } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    // The identity keys belong to the scope — they are never fields to update.
+    const { id, homeId: _homeId, actorUserId: _actorUserId, actorRole: _actorRole, ...updates } = body;
 
     if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
     if (!isSupabaseEnabled()) {
@@ -131,21 +142,25 @@ export async function PATCH(request: NextRequest) {
     if (updates.notificationReviewRequired !== undefined) dbUpdates.notification_review_required = updates.notificationReviewRequired;
     if (updates.actionsCreated !== undefined) dbUpdates.actions_created = updates.actionsCreated;
     if (updates.approvedBy) {
-      dbUpdates.approved_by = updates.approvedBy;
+      // Live: the approver is the signed-in user. The page sends a role label
+      // ("RI"), which the uuid approved_by column rejects.
+      dbUpdates.approved_by = actorUserId;
       dbUpdates.approved_at = new Date().toISOString();
     }
 
-    const { data, error } = await supabase.from("incident_learning_reviews").update(dbUpdates).eq("id", id).select().single();
+    let update = supabase.from("incident_learning_reviews").update(dbUpdates).eq("id", id);
+    if (homeId) update = update.eq("home_id", homeId);
+    const { data, error } = await update.select().single();
     if (error) return storageFailure("Incident learning reviews", error);
 
     const action = updates.reviewStatus === "completed" ? "learning_review_completed" : "record_updated";
     await writeIntelligenceAudit({
-      homeId,
+      homeId: homeId ?? undefined,
       entityType: "incident_learning_review",
       entityId: id,
       action: action as "learning_review_completed" | "record_updated",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
     });
 
     return NextResponse.json({ ok: true, review: data, persisted: true });

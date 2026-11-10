@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import {
   progressGoals,
   progressEntries,
@@ -38,10 +39,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, data: rows, persisted: true });
   }
 
+  // Live: reads are scoped to the session's home (see request-scope.ts).
+  const scope = await intelligenceScope(request);
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
+
   const supabase = createServerClient() as unknown as LooseSupabase;
 
   if (type === "goals") {
     let query = supabase.from("child_progress_goals").select("*").order("created_at", { ascending: false });
+    if (homeId) query = query.eq("home_id", homeId);
     if (childId) query = query.eq("child_id", childId);
     const { data, error } = await query.limit(50);
     if (error) return storageFailure("Child progress records", error);
@@ -50,6 +57,7 @@ export async function GET(request: NextRequest) {
 
   if (type === "snapshots") {
     let query = supabase.from("child_outcome_snapshots").select("*").order("snapshot_date", { ascending: false });
+    if (homeId) query = query.eq("home_id", homeId);
     if (childId) query = query.eq("child_id", childId);
     const { data, error } = await query.limit(20);
     if (error) return storageFailure("Child progress records", error);
@@ -58,6 +66,7 @@ export async function GET(request: NextRequest) {
 
   // Default: entries
   let query = supabase.from("child_progress_entries").select("*").order("entry_date", { ascending: false });
+  if (homeId) query = query.eq("home_id", homeId);
   if (childId) query = query.eq("child_id", childId);
   const { data, error } = await query.limit(100);
   if (error) return storageFailure("Child progress records", error);
@@ -67,7 +76,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { type, actorUserId, actorRole, homeId, ...payload } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    // The identity keys belong to the scope — they are never record fields.
+    const { type, homeId: _homeId, actorUserId: _actorUserId, actorRole: _actorRole, ...payload } = body;
 
     if (!isSupabaseEnabled()) {
       const now = new Date().toISOString();
@@ -141,7 +154,7 @@ export async function POST(request: NextRequest) {
       }).select().single();
       if (error) return storageFailure("Child progress records", error);
 
-      await writeIntelligenceAudit({ homeId, entityType: "child_progress_goal", entityId: data?.id, action: "goal_created", actorUserId, actorRole });
+      await writeIntelligenceAudit({ homeId: homeId ?? undefined, entityType: "child_progress_goal", entityId: data?.id, action: "goal_created", actorUserId: actorUserId ?? undefined, actorRole: actorRole ?? undefined });
       return NextResponse.json({ ok: true, data, persisted: true });
     }
 
@@ -160,7 +173,7 @@ export async function POST(request: NextRequest) {
       }).select().single();
       if (error) return storageFailure("Child progress records", error);
 
-      await writeIntelligenceAudit({ homeId, entityType: "child_progress_entry", entityId: data?.id, action: "progress_entry_created", actorUserId, actorRole });
+      await writeIntelligenceAudit({ homeId: homeId ?? undefined, entityType: "child_progress_entry", entityId: data?.id, action: "progress_entry_created", actorUserId: actorUserId ?? undefined, actorRole: actorRole ?? undefined });
       return NextResponse.json({ ok: true, data, persisted: true });
     }
 
@@ -181,7 +194,7 @@ export async function POST(request: NextRequest) {
       }).select().single();
       if (error) return storageFailure("Child progress records", error);
 
-      await writeIntelligenceAudit({ homeId, entityType: "child_outcome_snapshot", entityId: data?.id, action: "outcome_snapshot_created", actorUserId, actorRole });
+      await writeIntelligenceAudit({ homeId: homeId ?? undefined, entityType: "child_outcome_snapshot", entityId: data?.id, action: "outcome_snapshot_created", actorUserId: actorUserId ?? undefined, actorRole: actorRole ?? undefined });
       return NextResponse.json({ ok: true, data, persisted: true });
     }
 

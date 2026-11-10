@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import {
   providerHomeSummaries,
   providerOversightLog,
@@ -14,8 +15,11 @@ import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
-  const providerId = searchParams.get("providerId");
+
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
 
   if (!isSupabaseEnabled()) {
     let rows = [...providerHomeSummaries];
@@ -29,11 +33,14 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  // provider_home_summaries is keyed by period (period_start / period_end).
+  // This used to order by `summary_date` and filter on `provider_id`; the live
+  // table has neither, so every read failed (42703). The restore migration
+  // (20260918120000) recorded the drift and left it for this route to fix.
   const supabase = createServerClient() as unknown as LooseSupabase;
-  let query = supabase.from("provider_home_summaries").select("*").order("summary_date", { ascending: false });
+  let query = supabase.from("provider_home_summaries").select("*").order("period_end", { ascending: false });
 
   if (homeId) query = query.eq("home_id", homeId);
-  if (providerId) query = query.eq("provider_id", providerId);
 
   const { data, error } = await query.limit(50);
   if (error) return storageFailure("Management oversight records", error);
@@ -44,7 +51,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { homeId, providerId, summaryDate, occupancy, staffingLevel, incidentCount, complaintCount, reg44Status, reg45Status, overallRating, notes, actorUserId, actorRole } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { providerId, summaryDate, occupancy, staffingLevel, incidentCount, complaintCount, reg44Status, reg45Status, overallRating, notes } = body;
 
     if (!homeId) {
       return NextResponse.json({ error: "homeId is required" }, { status: 400 });
@@ -88,8 +98,8 @@ export async function POST(request: NextRequest) {
       entityType: "provider_home_summary",
       entityId: data?.id,
       action: "record_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
     });
 
     return NextResponse.json({ ok: true, summary: data, persisted: true });

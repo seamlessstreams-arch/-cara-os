@@ -3,16 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { intelligenceScope } from "@/lib/intelligence/request-scope";
 import { attentionItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 import type { SB as LooseSupabase } from "@/lib/supabase/loose-client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId");
   const status = searchParams.get("status");
   const urgency = searchParams.get("urgency");
   const category = searchParams.get("category");
+
+  // Live: the session's home, never ?homeId= (see request-scope.ts).
+  const scope = await intelligenceScope(request, { homeId: searchParams.get("homeId") });
+  if (scope instanceof NextResponse) return scope;
+  const { homeId } = scope;
 
   if (!isSupabaseEnabled()) {
     let rows = [...attentionItems];
@@ -41,7 +46,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-    const { homeId, title, category, urgency, childId, staffId, sourceRecordType, sourceRecordId, reason, suggestedAction, dueDate, actorUserId, actorRole } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { title, category, urgency, childId, staffId, sourceRecordType, sourceRecordId, reason, suggestedAction, dueDate } = body;
 
     if (!homeId || !title || !category || !sourceRecordType) {
       return NextResponse.json(
@@ -101,8 +109,8 @@ export async function POST(request: NextRequest) {
       entityType: "manager_attention_item",
       entityId: data?.id,
       action: "record_created",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
     });
 
     return NextResponse.json({ ok: true, item: data, persisted: true });
@@ -115,7 +123,10 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
-    const { id, status, reviewedBy, escalatedTo, oversightNote, actorUserId, actorRole, homeId } = body;
+    const scope = await intelligenceScope(request, body);
+    if (scope instanceof NextResponse) return scope;
+    const { homeId, actorUserId, actorRole } = scope;
+    const { id, status, reviewedBy, escalatedTo, oversightNote } = body;
 
     if (!id || !status) {
       return NextResponse.json({ error: "id and status are required" }, { status: 400 });
@@ -149,7 +160,8 @@ export async function PATCH(request: NextRequest) {
     const updates: Record<string, unknown> = { status, updated_at: now };
 
     if (status === "reviewed") {
-      updates.reviewed_by = reviewedBy ?? actorUserId ?? null;
+      // Live: the reviewer is the signed-in user, not a name the request supplies.
+      updates.reviewed_by = actorUserId;
       updates.reviewed_at = now;
     }
     if (status === "escalated") {
@@ -162,17 +174,19 @@ export async function PATCH(request: NextRequest) {
       updates.oversight_by = actorUserId ?? null;
     }
 
-    const { data, error } = await supabase.from("manager_attention_items").update(updates).eq("id", id).select().single();
+    let update = supabase.from("manager_attention_items").update(updates).eq("id", id);
+    if (homeId) update = update.eq("home_id", homeId);
+    const { data, error } = await update.select().single();
     if (error) return storageFailure("Manager attention items", error);
 
     const auditAction = status === "escalated" ? "attention_item_escalated" : "attention_item_reviewed";
     await writeIntelligenceAudit({
-      homeId,
+      homeId: homeId ?? undefined,
       entityType: "manager_attention_item",
       entityId: id,
       action: auditAction as "attention_item_reviewed" | "attention_item_escalated",
-      actorUserId,
-      actorRole,
+      actorUserId: actorUserId ?? undefined,
+      actorRole: actorRole ?? undefined,
       detail: { newStatus: status },
     });
 
