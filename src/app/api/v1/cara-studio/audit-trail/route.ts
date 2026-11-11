@@ -17,6 +17,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadAuditTrail, loadAuditActors } from "@/lib/cara/cara-audit-trail";
+import { getHomeAuditTrail, getHomeAuditActors } from "@/lib/cara-studio/audit.service";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CaraAuditAction } from "@/types/cara-studio";
 import { tenantHomeId } from "@/lib/supabase/tenant";
 
@@ -54,7 +56,12 @@ export async function GET(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   if (searchParams.get("actors") === "1") {
-    return NextResponse.json({ data: loadAuditActors(homeId) });
+    // Live: distinct actors come from cara_studio_audit_log (the store is
+    // emptied on a live tenant). Demo: the in-memory store.
+    const actors = isSupabaseEnabled()
+      ? await getHomeAuditActors(homeId)
+      : loadAuditActors(homeId);
+    return NextResponse.json({ data: actors });
   }
 
   const actorId = searchParams.get("actor_id") ?? undefined;
@@ -69,12 +76,10 @@ export async function GET(req: NextRequest) {
   const limit =
     Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 500) : 200;
 
-  const data = loadAuditTrail(homeId, {
-    actorId,
-    actionType,
-    artifactId,
-    sinceIso,
-    limit,
-  });
+  // Live: read the durable cara_studio_audit_log; demo: the in-memory store.
+  const opts = { actorId, actionType, artifactId, sinceIso, limit };
+  const data = isSupabaseEnabled()
+    ? await getHomeAuditTrail(homeId, opts)
+    : loadAuditTrail(homeId, opts);
   return NextResponse.json({ data });
 }
