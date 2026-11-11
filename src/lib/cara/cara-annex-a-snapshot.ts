@@ -19,7 +19,7 @@ import {
 const DEFAULT_PERIOD_DAYS = 180;
 const STALE_DAYS = 90;
 
-function defaultPeriod(): { periodStart: string; periodEnd: string } {
+export function defaultPeriod(): { periodStart: string; periodEnd: string } {
   const end = new Date();
   const start = new Date(end);
   start.setDate(end.getDate() - DEFAULT_PERIOD_DAYS);
@@ -29,20 +29,20 @@ function defaultPeriod(): { periodStart: string; periodEnd: string } {
   };
 }
 
-function inPeriod(d: string | null | undefined, start: string, end: string): boolean {
+export function inPeriod(d: string | null | undefined, start: string, end: string): boolean {
   if (!d) return false;
   const day = d.slice(0, 10);
   return day >= start && day <= end;
 }
 
-function isStale(d: string | null | undefined, asOf: string): boolean {
+export function isStale(d: string | null | undefined, asOf: string): boolean {
   if (!d) return true;
   const ts = new Date(d).getTime();
   const cutoff = new Date(asOf).getTime() - STALE_DAYS * 24 * 60 * 60 * 1000;
   return ts < cutoff;
 }
 
-function readinessFromCounts(recordCount: number, gapCount: number, isRequired: boolean): CaraAnnexAReadiness {
+export function readinessFromCounts(recordCount: number, gapCount: number, isRequired: boolean): CaraAnnexAReadiness {
   if (isRequired && recordCount === 0) return "red";
   if (gapCount === 0) return "green";
   if (recordCount === 0) return "amber";
@@ -52,7 +52,7 @@ function readinessFromCounts(recordCount: number, gapCount: number, isRequired: 
   return "green";
 }
 
-function readinessScore(sections: CaraAnnexASectionReading[]): number | null {
+export function readinessScore(sections: CaraAnnexASectionReading[]): number | null {
   let total = 0;
   let earned = 0;
   for (const s of sections) {
@@ -63,7 +63,7 @@ function readinessScore(sections: CaraAnnexASectionReading[]): number | null {
   return total > 0 ? Math.round((earned / total) * 100) : null;
 }
 
-function overallReadiness(score: number): CaraAnnexAReadiness {
+export function overallReadiness(score: number): CaraAnnexAReadiness {
   if (score >= 80) return "green";
   if (score >= 50) return "amber";
   return "red";
