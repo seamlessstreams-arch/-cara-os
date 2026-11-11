@@ -74,13 +74,33 @@ function lintResults() {
   try {
     // eslint exits 1 whenever error-severity findings exist, which is the
     // steady state until the burn-down completes — only a MISSING report file
-    // is a real failure.
+    // is a real failure. stderr is captured (not inherited) so a crash can be
+    // diagnosed, then echoed back below so the log is unchanged on every path.
     execFileSync("npx", ["eslint", ".", "--format", "json", "--output-file", out], {
       cwd: ROOT,
-      stdio: ["ignore", "inherit", "inherit"],
+      stdio: ["ignore", "inherit", "pipe"],
+      maxBuffer: 64 * 1024 * 1024,
     });
-  } catch {
-    if (!fs.existsSync(out)) fail("eslint did not produce a report — it crashed before linting.");
+  } catch (err) {
+    const stderr = err && err.stderr ? err.stderr.toString() : "";
+    if (stderr) process.stderr.write(stderr);
+    // A missing report is the only real failure — but distinguish the two ways
+    // it happens. eslint's json formatter can lint the WHOLE repo and then fail
+    // to serialize it when the combined report exceeds V8's max string length
+    // (RangeError) — a report-SIZE limit, not a crash "before linting" and not
+    // OOM, so a bigger --max-old-space-size will not help.
+    if (!fs.existsSync(out)) {
+      if (/Invalid string length/.test(stderr) || /formatters[\\/]+json/.test(stderr)) {
+        fail(
+          "eslint linted the repo but could not serialize its JSON report — the combined " +
+            "report exceeds V8's maximum string length (RangeError in eslint's json " +
+            "formatter). This is a report-SIZE limit, not a lint error and not OOM: a " +
+            "bigger --max-old-space-size will NOT help. CI runs this where the report fits; " +
+            "locally, lint changed files directly, e.g. `npx eslint <path>`.",
+        );
+      }
+      fail("eslint did not produce a report — it crashed before linting.");
+    }
   }
   const results = JSON.parse(fs.readFileSync(out, "utf8"));
   fs.unlinkSync(out);
